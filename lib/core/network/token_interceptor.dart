@@ -74,7 +74,9 @@ class TokenInterceptor extends Interceptor {
         handler.resolve(retryResponse);
         return;
       } catch (e) {
-        await storage.deleteAll();
+        await storage.delete(key: StorageKey.accessToken.name);
+        await storage.delete(key: StorageKey.refreshToken.name);
+        await storage.delete(key: StorageKey.tempToken.name);
         super.onError(err, handler);
         return;
       }
