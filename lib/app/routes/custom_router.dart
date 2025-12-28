@@ -1,6 +1,7 @@
 import 'package:go_router/go_router.dart';
 import 'package:widyu/app/routes/app_route.dart';
 import 'package:widyu/app/routes/custom_page.dart';
+import 'package:widyu/feature/auth/login_screen.dart';
 import 'package:widyu/feature/auth/onboarding_screen.dart';
 
 class CustomRouter {
@@ -10,6 +11,10 @@ class CustomRouter {
       CustomGoRoute.slideRoute(
         route: AppRoute.onboarding,
         builder: (context, state) => const OnboardingScreen(),
+      ),
+      CustomGoRoute.slideRoute(
+        route: AppRoute.login,
+        builder: (context, state) => const LoginScreen(),
       ),
     ],
   );

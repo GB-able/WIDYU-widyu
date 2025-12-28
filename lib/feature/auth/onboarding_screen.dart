@@ -1,5 +1,7 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:widyu/app/routes/app_route.dart';
 import 'package:widyu/core/theme/colors.dart';
 import 'package:widyu/core/theme/typos.dart';
 import 'package:widyu/core/widgets/text_btn.dart';
@@ -89,6 +91,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               padding: const EdgeInsets.all(16),
               child: TextBtn(
                 onTap: () {
+                  context.push(AppRoute.login.path);
                 },
                 text: '시작하기',
                 enable: true,
