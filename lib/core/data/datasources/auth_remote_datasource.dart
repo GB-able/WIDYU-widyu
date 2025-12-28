@@ -20,7 +20,7 @@ class AuthRemoteDatasource {
       );
       return response.toApiResponse(TokenPair.fromJson);
     } catch (e) {
-      throw Exception(e);
+      throw Exception("Login failed: $e");
     }
   }
 
@@ -32,7 +32,7 @@ class AuthRemoteDatasource {
       );
       return response.toApiResponse<void>((json) => {});
     } catch (e) {
-      throw Exception(e);
+      throw Exception("Logout failed: $e");
     }
   }
 }
