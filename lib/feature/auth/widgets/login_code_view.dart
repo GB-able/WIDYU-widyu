@@ -60,7 +60,7 @@ class LoginCodeView extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: List.generate(
-                    7,
+                    LoginViewModel.inviteCodeLength,
                     (index) => Container(
                       constraints: const BoxConstraints(maxWidth: 42),
                       height: 58,

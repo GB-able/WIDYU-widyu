@@ -6,10 +6,13 @@ import 'package:widyu/feature/auth/login_ui_state.dart';
 
 class LoginViewModel with ChangeNotifier {
   final AuthRepository _authRepository;
+  static const int inviteCodeLength = 7;
+
   bool _canGetPhoneNumber = false;
   final List<TextEditingController> codeControllers =
-      List.generate(7, (_) => TextEditingController());
-  final List<FocusNode> codeFocusNodes = List.generate(7, (_) => FocusNode());
+      List.generate(inviteCodeLength, (_) => TextEditingController());
+  final List<FocusNode> codeFocusNodes =
+      List.generate(inviteCodeLength, (_) => FocusNode());
   final TextEditingController phoneController = TextEditingController();
 
   bool get canGetPhoneNumber => _canGetPhoneNumber;
@@ -36,7 +39,7 @@ class LoginViewModel with ChangeNotifier {
           );
         } else if (currentValue.isNotEmpty &&
             previousValue.isEmpty &&
-            index < 6) {
+            index < inviteCodeLength - 1) {
           codeFocusNodes[index + 1].requestFocus();
         }
 
@@ -124,7 +127,7 @@ class LoginViewModel with ChangeNotifier {
     assert(_phoneNumber != null && _phoneNumber!.isNotEmpty);
 
     final inviteCode = codeControllers.map((c) => c.text).join();
-    assert(inviteCode.length == 7);
+    assert(inviteCode.length == inviteCodeLength);
 
     final result = await _authRepository.login(inviteCode, _phoneNumber!);
     if (result is Success) {
