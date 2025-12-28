@@ -42,6 +42,7 @@ class LoginCodeView extends StatelessWidget {
           },
           text: '로그인',
           enable: !viewModel.state.isLoading &&
+              viewModel.state.error == null &&
               viewModel.codeControllers.every(
                 (controller) => controller.text.isNotEmpty,
               ),

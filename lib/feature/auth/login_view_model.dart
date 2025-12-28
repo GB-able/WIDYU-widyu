@@ -131,11 +131,12 @@ class LoginViewModel with ChangeNotifier {
       onSuccess();
     } else if (result is Failure && result.statusCode == 404) {
       changeState(LoginCodeState(
-          error: _loginFailedCount++ <= 3
+          error: ++_loginFailedCount < 3
               ? LoginError.loginFailed
               : LoginError.loginFailedALot));
     } else {
       onFailure("로그인 실패. 잠시 후 다시 시도하세요");
     }
+    notifyListeners();
   }
 }
