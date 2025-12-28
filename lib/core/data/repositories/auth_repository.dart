@@ -28,4 +28,19 @@ class AuthRepository {
       return Failure(e.toString());
     }
   }
+
+  Future<ApiResult<void>> logout() async {
+    try {
+      final response = await _remoteDatasource.logout();
+      if (response.isSuccess) {
+        await _apiClient.removeToken();
+        return const Success(null);
+      } else {
+        return Failure(response.message,
+            statusCode: response.statusCode, code: response.code);
+      }
+    } catch (e) {
+      return Failure(e.toString());
+    }
+  }
 }

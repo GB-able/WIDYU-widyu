@@ -5,6 +5,7 @@ import 'package:widyu/app/routes/custom_page.dart';
 import 'package:widyu/core/widgets/bot_nav.dart';
 import 'package:widyu/feature/auth/login_screen.dart';
 import 'package:widyu/feature/auth/onboarding_screen.dart';
+import 'package:widyu/feature/home/home_screen.dart';
 import 'package:widyu/feature/splash_screen.dart';
 
 class CustomRouter {
@@ -20,7 +21,7 @@ class CustomRouter {
           StatefulShellBranch(routes: [
             CustomGoRoute.staticRoute(
               route: AppRoute.home,
-              builder: (context, state) => const Placeholder(),
+              builder: (context, state) => const HomeScreen(),
             ),
           ]),
           StatefulShellBranch(routes: [

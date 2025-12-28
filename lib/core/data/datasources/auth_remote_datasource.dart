@@ -23,4 +23,16 @@ class AuthRemoteDatasource {
       throw Exception(e);
     }
   }
+
+  Future<ApiResponse<void>> logout() async {
+    try {
+      final response = await apiClient.req(
+        '$path/logout',
+        method: HttpMethod.post,
+      );
+      return response.toApiResponse<void>((json) => {});
+    } catch (e) {
+      throw Exception(e);
+    }
+  }
 }
