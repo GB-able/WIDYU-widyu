@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:widyu/app/routes/app_route.dart';
 import 'package:widyu/core/theme/colors.dart';
 import 'package:widyu/core/theme/typos.dart';
 import 'package:widyu/core/utils/show_toast.dart';
@@ -32,7 +33,7 @@ class LoginCodeView extends StatelessWidget {
           onTap: () {
             viewModel.login(
               onSuccess: () {
-                showToast('로그인 성공');
+                context.go(AppRoute.home.path);
               },
               onFailure: (error) {
                 showToast(error);
