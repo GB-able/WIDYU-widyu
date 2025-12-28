@@ -4,21 +4,20 @@ class PhoneFormatter extends TextInputFormatter {
   @override
   TextEditingValue formatEditUpdate(
       TextEditingValue oldValue, TextEditingValue newValue) {
-    if (newValue.text.length > 11) {
-      return oldValue;
-    }
+    final digits = newValue.text.replaceAll(RegExp(r'[^\d]'), '');
+    if (digits.length > 11) return oldValue;
 
-    final newText = StringBuffer();
-    for (int i = 0; i < newValue.text.length; i++) {
+    final formatted = StringBuffer();
+    for (int i = 0; i < digits.length; i++) {
       if (i == 3 || i == 7) {
-        newText.write(' ');
+        formatted.write(' ');
       }
-      newText.write(newValue.text[i]);
+      formatted.write(digits[i]);
     }
 
     return TextEditingValue(
-      text: newText.toString(),
-      selection: TextSelection.collapsed(offset: newText.length),
+      text: formatted.toString(),
+      selection: TextSelection.collapsed(offset: formatted.length),
     );
   }
 }
