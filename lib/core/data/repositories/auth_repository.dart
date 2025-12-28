@@ -4,13 +4,11 @@ import 'package:widyu/core/network/api_client.dart';
 
 class AuthRepository {
   final AuthRemoteDatasource _remoteDatasource;
-  final ApiClient _apiClient;
+  final ApiClient _apiClient = ApiClient();
 
   AuthRepository({
     required AuthRemoteDatasource remoteDatasource,
-    required ApiClient apiClient,
-  })  : _remoteDatasource = remoteDatasource,
-        _apiClient = apiClient;
+  }) : _remoteDatasource = remoteDatasource;
 
   Future<ApiResult<void>> login(String inviteCode, String phoneNumber) async {
     try {

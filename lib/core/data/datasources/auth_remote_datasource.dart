@@ -4,10 +4,8 @@ import 'package:widyu/core/network/api_client.dart';
 import 'package:widyu/core/utils/extensions/api_response_extension.dart';
 
 class AuthRemoteDatasource {
-  final ApiClient apiClient;
+  final ApiClient apiClient = ApiClient();
   final String path = '/auth';
-
-  AuthRemoteDatasource(this.apiClient);
 
   Future<ApiResponse<TokenPair>> login(
       String inviteCode, String phoneNumber) async {
