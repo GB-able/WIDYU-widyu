@@ -25,8 +25,8 @@ class ApiClient {
     dio.interceptors.add(LoggerInterceptor());
   }
 
-  Future<Response> req(
-    String path, {
+  Future<Response> req({
+    required String path,
     required HttpMethod method,
     Map<String, dynamic>? query,
     Object? body,

@@ -11,7 +11,7 @@ class AuthRemoteDatasource {
       String inviteCode, String phoneNumber) async {
     try {
       final response = await apiClient.req(
-        '$path/seniors/sign-in',
+        path: '$path/seniors/sign-in',
         method: HttpMethod.post,
         body: {
           'inviteCode': inviteCode,
@@ -27,7 +27,7 @@ class AuthRemoteDatasource {
   Future<ApiResponse<void>> logout() async {
     try {
       final response = await apiClient.req(
-        '$path/logout',
+        path: '$path/logout',
         method: HttpMethod.post,
       );
       return response.toApiResponse<void>((json) => {});
