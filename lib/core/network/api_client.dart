@@ -3,12 +3,11 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:widyu/core/network/logger_interceptor.dart';
 import 'package:widyu/core/network/token_interceptor.dart';
 import 'package:widyu/core/storage/secure_storage.dart';
+import 'package:widyu/core/storage/storage_key.dart';
 
 enum HttpMethod { get, post, put, patch, delete }
 
 enum TokenType { none, access, temporary }
-
-enum StorageKey { accessToken, refreshToken, tempToken }
 
 class ApiClient {
   static final ApiClient _instance = ApiClient._internal();

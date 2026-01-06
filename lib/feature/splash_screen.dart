@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:go_router/go_router.dart';
 import 'package:widyu/app/routes/app_route.dart';
-import 'package:widyu/core/network/api_client.dart';
 import 'package:widyu/core/storage/secure_storage.dart';
+import 'package:widyu/core/storage/storage_key.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
