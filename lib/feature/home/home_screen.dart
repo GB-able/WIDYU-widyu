@@ -4,10 +4,10 @@ import 'package:widyu/app/routes/app_route.dart';
 import 'package:widyu/core/data/datasources/auth_remote_datasource.dart';
 import 'package:widyu/core/data/models/api_result.dart';
 import 'package:widyu/core/data/repositories/auth_repository.dart';
-import 'package:widyu/core/theme/colors.dart';
-import 'package:widyu/core/theme/typos.dart';
+import 'package:widyu/core/ui/theme/colors.dart';
+import 'package:widyu/core/ui/theme/typos.dart';
 import 'package:widyu/core/utils/show_toast.dart';
-import 'package:widyu/core/widgets/text_btn.dart';
+import 'package:widyu/core/ui/widgets/text_btn.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});

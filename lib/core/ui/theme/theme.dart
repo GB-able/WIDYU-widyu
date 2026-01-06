@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:widyu/core/theme/colors.dart';
+import 'package:widyu/core/ui/theme/colors.dart';
 
 class MyTheme {
   static final myTheme = ThemeData(

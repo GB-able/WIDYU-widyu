@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:widyu/core/theme/colors.dart';
+import 'package:widyu/core/ui/theme/colors.dart';
 
 class MyEffects {
   static BoxShadow shadow = BoxShadow(

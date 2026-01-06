@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:widyu/core/theme/colors.dart';
-import 'package:widyu/core/theme/typos.dart';
+import 'package:widyu/core/ui/theme/colors.dart';
+import 'package:widyu/core/ui/theme/typos.dart';
 
 class TextBtn extends StatelessWidget {
   const TextBtn(
