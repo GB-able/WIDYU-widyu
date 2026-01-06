@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import 'package:widyu/app/routes/app_route.dart';
 import 'package:widyu/core/data/datasources/auth_remote_datasource.dart';
 import 'package:widyu/core/data/models/api_result.dart';
 import 'package:widyu/core/data/repositories/auth_repository.dart';
+import 'package:widyu/core/network/api_client.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
 import 'package:widyu/core/utils/show_toast.dart';
@@ -14,7 +16,8 @@ class HomeScreen extends StatelessWidget {
 
   Future<void> _handleLogout(BuildContext context) async {
     final result = await AuthRepository(
-      remoteDatasource: AuthRemoteDatasource(),
+      apiClient: context.read<ApiClient>(),
+      remoteDatasource: context.read<AuthRemoteDatasource>(),
     ).logout();
 
     if (context.mounted) {

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:go_router/go_router.dart';
 import 'package:widyu/app/routes/app_route.dart';
 import 'package:widyu/core/network/api_client.dart';
+import 'package:widyu/core/storage/secure_storage.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -13,7 +13,7 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
-  final storage = const FlutterSecureStorage();
+  final _secureStorage = SecureStorage();
 
   @override
   void initState() {
@@ -22,7 +22,8 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> init() async {
-    final accessToken = await storage.read(key: StorageKey.accessToken.name);
+    final accessToken =
+        await _secureStorage.storage.read(key: StorageKey.accessToken.name);
     if (mounted) {
       if (accessToken == null) {
         context.pushReplacement(AppRoute.onboarding.path);

@@ -1,16 +1,16 @@
 import 'dart:async';
 import 'package:dio/dio.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:widyu/core/data/models/token_pair.dart';
 import 'package:widyu/core/network/api_client.dart';
+import 'package:widyu/core/storage/secure_storage.dart';
 
 class TokenInterceptor extends Interceptor {
-  final FlutterSecureStorage storage;
+  final SecureStorage _secureStorage = SecureStorage();
   late final Dio _dio;
   Completer<String>? _reissueCompleter;
 
-  TokenInterceptor(this.storage) {
+  TokenInterceptor() {
     _dio = Dio(BaseOptions(
       baseUrl: dotenv.env['BASE_URL']!,
       headers: {'Content-Type': 'application/json'},
@@ -27,10 +27,12 @@ class TokenInterceptor extends Interceptor {
       case TokenType.none:
         break;
       case TokenType.access:
-        token = await storage.read(key: StorageKey.accessToken.name);
+        token =
+            await _secureStorage.storage.read(key: StorageKey.accessToken.name);
         break;
       case TokenType.temporary:
-        token = await storage.read(key: StorageKey.tempToken.name);
+        token =
+            await _secureStorage.storage.read(key: StorageKey.tempToken.name);
         break;
     }
 
@@ -52,7 +54,7 @@ class TokenInterceptor extends Interceptor {
           try {
             newAccessToken = await _reissueCompleter!.future;
           } catch (e) {
-            await storage.deleteAll();
+            await _secureStorage.storage.deleteAll();
             super.onError(err, handler);
             return;
           }
@@ -74,9 +76,9 @@ class TokenInterceptor extends Interceptor {
         handler.resolve(retryResponse);
         return;
       } catch (e) {
-        await storage.delete(key: StorageKey.accessToken.name);
-        await storage.delete(key: StorageKey.refreshToken.name);
-        await storage.delete(key: StorageKey.tempToken.name);
+        await _secureStorage.storage.delete(key: StorageKey.accessToken.name);
+        await _secureStorage.storage.delete(key: StorageKey.refreshToken.name);
+        await _secureStorage.storage.delete(key: StorageKey.tempToken.name);
         super.onError(err, handler);
         return;
       }
@@ -86,7 +88,8 @@ class TokenInterceptor extends Interceptor {
   }
 
   Future<String> _reissue() async {
-    final refreshToken = await storage.read(key: StorageKey.refreshToken.name);
+    final refreshToken =
+        await _secureStorage.storage.read(key: StorageKey.refreshToken.name);
     if (refreshToken == null) {
       throw Exception('No refresh token');
     }
@@ -102,10 +105,10 @@ class TokenInterceptor extends Interceptor {
 
     final tokens = TokenPair.fromJson(response.data);
 
-    await storage.write(
-        key: StorageKey.accessToken.name, value: tokens.accessToken);
-    await storage.write(
-        key: StorageKey.refreshToken.name, value: tokens.refreshToken);
+    await _secureStorage.storage
+        .write(key: StorageKey.accessToken.name, value: tokens.accessToken);
+    await _secureStorage.storage
+        .write(key: StorageKey.refreshToken.name, value: tokens.refreshToken);
 
     return tokens.accessToken;
   }

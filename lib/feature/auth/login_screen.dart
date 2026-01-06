@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:widyu/core/data/datasources/auth_remote_datasource.dart';
 import 'package:widyu/core/data/repositories/auth_repository.dart';
 import 'package:widyu/feature/auth/login_ui_state.dart';
 import 'package:widyu/feature/auth/login_view_model.dart';
@@ -14,9 +13,7 @@ class LoginScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (context) => LoginViewModel(
-        authRepository: AuthRepository(
-          remoteDatasource: AuthRemoteDatasource(),
-        ),
+        authRepository: context.read<AuthRepository>(),
       ),
       child: Consumer<LoginViewModel>(builder: (context, viewModel, child) {
         final state = viewModel.state;
