@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get_phone_number/get_phone_number.dart';
 import 'package:widyu/core/data/models/api_result.dart';
-import 'package:widyu/core/data/repositories/auth_repository.dart';
+import 'package:widyu/core/data/repositories/auth/auth_repository.dart';
 import 'package:widyu/feature/auth/login_ui_state.dart';
 
 class LoginViewModel with ChangeNotifier {

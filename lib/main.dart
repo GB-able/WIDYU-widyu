@@ -3,7 +3,7 @@ import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:widyu/app/routes/custom_router.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:widyu/core/data/datasources/auth_remote_datasource.dart';
-import 'package:widyu/core/data/repositories/auth_repository.dart';
+import 'package:widyu/core/data/repositories/auth/auth_repository.dart';
 import 'package:widyu/core/network/token_manager.dart';
 import 'package:widyu/core/ui/theme/theme.dart';
 import 'package:provider/provider.dart';
@@ -27,10 +27,10 @@ void main() async {
           update: (_, apiClient, __) =>
               AuthRemoteDatasource(apiClient: apiClient),
         ),
-        ProxyProvider2<TokenManager, AuthRemoteDatasource, AuthRepository>(
-          update: (_, tokenManager, remoteDatasource, __) => AuthRepository(
-            tokenManager: tokenManager,
-            remoteDatasource: remoteDatasource,
+        ProxyProvider2<AuthRemoteDatasource, TokenManager, AuthRepository>(
+          update: (context, remote, token, previous) => AuthRepositoryImpl(
+            remoteDatasource: remote,
+            tokenManager: token,
           ),
         ),
       ],
