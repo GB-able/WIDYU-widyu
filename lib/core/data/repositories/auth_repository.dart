@@ -15,36 +15,20 @@ class AuthRepository {
         _tokenManager = tokenManager;
 
   Future<ApiResult<void>> login(String inviteCode, String phoneNumber) async {
-    try {
-      final response = await _remoteDatasource.login(inviteCode, phoneNumber);
-
-      if (response.isSuccess) {
-        await _apiClient.setToken(
-          response.data!.accessToken,
-          response.data!.refreshToken,
-        );
-        return const Success(null);
-      } else {
-        return Failure(response.message,
-            statusCode: response.statusCode, code: response.code);
-      }
-    } catch (e) {
-      return Failure(e.toString());
+    final result =
+        await _remoteDatasource.login(inviteCode, phoneNumber).toApiResult();
+    if (result is Success) {
+      final data = (result as Success<TokenPair>).data;
+      await _tokenManager.setToken(data.accessToken, data.refreshToken);
     }
+    return result;
   }
 
   Future<ApiResult<void>> logout() async {
-    try {
-      final response = await _remoteDatasource.logout();
-      if (response.isSuccess) {
-        await _apiClient.removeToken();
-        return const Success(null);
-      } else {
-        return Failure(response.message,
-            statusCode: response.statusCode, code: response.code);
-      }
-    } catch (e) {
-      return Failure(e.toString());
+    final result = await _remoteDatasource.logout().toApiResult();
+    if (result is Success) {
+      await _tokenManager.removeToken();
     }
+    return result;
   }
 }
