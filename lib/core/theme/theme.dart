@@ -19,7 +19,7 @@ class MyTheme {
       elevation: 0,
     ),
     progressIndicatorTheme: const ProgressIndicatorThemeData(
-      color: MyColor.white,
+      color: MyColor.secondary,
     ),
     textSelectionTheme: TextSelectionThemeData(
       cursorColor: MyColor.secondary,
