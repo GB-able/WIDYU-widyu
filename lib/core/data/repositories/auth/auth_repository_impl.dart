@@ -1,4 +1,4 @@
-import 'package:widyu/core/data/datasources/auth_remote_datasource.dart';
+import 'package:widyu/core/data/datasources/auth_remote_data_source.dart';
 import 'package:widyu/core/data/models/api_result.dart';
 import 'package:widyu/core/data/models/token_pair.dart';
 import 'package:widyu/core/data/repositories/auth/auth_repository.dart';
@@ -6,11 +6,11 @@ import 'package:widyu/core/network/token_manager.dart';
 import 'package:widyu/core/utils/extensions/api_result_extension.dart';
 
 class AuthRepositoryImpl implements AuthRepository {
-  final AuthRemoteDatasource _remoteDatasource;
+  final AuthRemoteDataSource _remoteDatasource;
   final TokenManager _tokenManager;
 
   AuthRepositoryImpl({
-    required AuthRemoteDatasource remoteDatasource,
+    required AuthRemoteDataSource remoteDatasource,
     required TokenManager tokenManager,
   })  : _remoteDatasource = remoteDatasource,
         _tokenManager = tokenManager;

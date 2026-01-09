@@ -3,10 +3,10 @@ import 'package:widyu/core/data/models/token_pair.dart';
 import 'package:widyu/core/network/api_client.dart';
 import 'package:widyu/core/utils/extensions/api_response_extension.dart';
 
-class AuthRemoteDatasource {
+class AuthRemoteDataSource {
   final ApiClient _apiClient;
 
-  AuthRemoteDatasource({required ApiClient apiClient}) : _apiClient = apiClient;
+  AuthRemoteDataSource({required ApiClient apiClient}) : _apiClient = apiClient;
   final String path = '/auth';
 
   Future<ApiResponse<TokenPair>> login(
