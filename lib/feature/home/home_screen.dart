@@ -10,10 +10,12 @@ import 'package:widyu/core/utils/show_toast.dart';
 import 'package:widyu/core/ui/widgets/text_btn.dart';
 
 class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
+  const HomeScreen({super.key, required this.repository});
+
+  final AuthRepository repository;
 
   Future<void> _handleLogout(BuildContext context) async {
-    final result = await context.read<AuthRepositoryImpl>().logout();
+    final result = await repository.logout();
 
     if (context.mounted) {
       switch (result) {
