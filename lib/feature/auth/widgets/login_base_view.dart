@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:widyu/core/theme/colors.dart';
-import 'package:widyu/core/theme/typos.dart';
-import 'package:widyu/core/widgets/icon_widget.dart';
+import 'package:widyu/core/ui/theme/colors.dart';
+import 'package:widyu/core/ui/theme/typos.dart';
+import 'package:widyu/core/ui/widgets/icon_widget.dart';
 import 'package:widyu/feature/auth/login_view_model.dart';
 
 class LoginBaseView extends StatelessWidget {

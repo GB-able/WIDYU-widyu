@@ -1,4 +1,4 @@
-import 'package:widyu/core/theme/colors.dart';
+import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 void showToast(String message) {
