@@ -2,12 +2,11 @@ import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:widyu/core/data/models/token_pair.dart';
-import 'package:widyu/core/network/api_client.dart';
-import 'package:widyu/core/storage/secure_storage.dart';
-import 'package:widyu/core/storage/storage_key.dart';
+import 'package:widyu/core/network/token_manager.dart';
 
 class TokenInterceptor extends Interceptor {
-  final SecureStorage _secureStorage = SecureStorage();
+  final TokenManager _tokenManager = TokenManager();
+
   late final Dio _dio;
   Completer<String>? _reissueCompleter;
 
@@ -28,12 +27,10 @@ class TokenInterceptor extends Interceptor {
       case TokenType.none:
         break;
       case TokenType.access:
-        token =
-            await _secureStorage.storage.read(key: StorageKey.accessToken.name);
+        token = await _tokenManager.accessToken;
         break;
       case TokenType.temporary:
-        token =
-            await _secureStorage.storage.read(key: StorageKey.tempToken.name);
+        token = await _tokenManager.tempToken;
         break;
     }
 
@@ -55,7 +52,7 @@ class TokenInterceptor extends Interceptor {
           try {
             newAccessToken = await _reissueCompleter!.future;
           } catch (e) {
-            await _secureStorage.storage.deleteAll();
+            await _tokenManager.removeToken();
             super.onError(err, handler);
             return;
           }
@@ -77,9 +74,7 @@ class TokenInterceptor extends Interceptor {
         handler.resolve(retryResponse);
         return;
       } catch (e) {
-        await _secureStorage.storage.delete(key: StorageKey.accessToken.name);
-        await _secureStorage.storage.delete(key: StorageKey.refreshToken.name);
-        await _secureStorage.storage.delete(key: StorageKey.tempToken.name);
+        await _tokenManager.removeAll();
         super.onError(err, handler);
         return;
       }
@@ -89,8 +84,7 @@ class TokenInterceptor extends Interceptor {
   }
 
   Future<String> _reissue() async {
-    final refreshToken =
-        await _secureStorage.storage.read(key: StorageKey.refreshToken.name);
+    final refreshToken = await _tokenManager.refreshToken;
     if (refreshToken == null) {
       throw Exception('No refresh token');
     }
@@ -105,11 +99,7 @@ class TokenInterceptor extends Interceptor {
     }
 
     final tokens = TokenPair.fromJson(response.data);
-
-    await _secureStorage.storage
-        .write(key: StorageKey.accessToken.name, value: tokens.accessToken);
-    await _secureStorage.storage
-        .write(key: StorageKey.refreshToken.name, value: tokens.refreshToken);
+    await _tokenManager.setToken(tokens.accessToken, tokens.refreshToken);
 
     return tokens.accessToken;
   }

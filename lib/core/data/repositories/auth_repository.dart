@@ -1,16 +1,18 @@
 import 'package:widyu/core/data/datasources/auth_remote_datasource.dart';
 import 'package:widyu/core/data/models/api_result.dart';
-import 'package:widyu/core/network/api_client.dart';
+import 'package:widyu/core/data/models/token_pair.dart';
+import 'package:widyu/core/network/token_manager.dart';
+import 'package:widyu/core/utils/extensions/api_result_extension.dart';
 
 class AuthRepository {
   final AuthRemoteDatasource _remoteDatasource;
-  final ApiClient _apiClient;
+  final TokenManager _tokenManager;
 
   AuthRepository({
     required AuthRemoteDatasource remoteDatasource,
-    required ApiClient apiClient,
+    required TokenManager tokenManager,
   })  : _remoteDatasource = remoteDatasource,
-        _apiClient = apiClient;
+        _tokenManager = tokenManager;
 
   Future<ApiResult<void>> login(String inviteCode, String phoneNumber) async {
     try {

@@ -4,6 +4,7 @@ import 'package:widyu/app/routes/custom_router.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:widyu/core/data/datasources/auth_remote_datasource.dart';
 import 'package:widyu/core/data/repositories/auth_repository.dart';
+import 'package:widyu/core/network/token_manager.dart';
 import 'package:widyu/core/ui/theme/theme.dart';
 import 'package:provider/provider.dart';
 import 'package:widyu/core/network/api_client.dart';
@@ -16,6 +17,9 @@ void main() async {
   runApp(
     MultiProvider(
       providers: [
+        Provider<TokenManager>(
+          create: (_) => TokenManager(),
+        ),
         Provider<ApiClient>(
           create: (_) => ApiClient(),
         ),
@@ -23,9 +27,9 @@ void main() async {
           update: (_, apiClient, __) =>
               AuthRemoteDatasource(apiClient: apiClient),
         ),
-        ProxyProvider2<ApiClient, AuthRemoteDatasource, AuthRepository>(
-          update: (_, apiClient, remoteDatasource, __) => AuthRepository(
-            apiClient: apiClient,
+        ProxyProvider2<TokenManager, AuthRemoteDatasource, AuthRepository>(
+          update: (_, tokenManager, remoteDatasource, __) => AuthRepository(
+            tokenManager: tokenManager,
             remoteDatasource: remoteDatasource,
           ),
         ),
