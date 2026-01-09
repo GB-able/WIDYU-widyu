@@ -130,15 +130,16 @@ class LoginViewModel with ChangeNotifier {
     assert(inviteCode.length == inviteCodeLength);
 
     final result = await _authRepository.login(inviteCode, _phoneNumber!);
-    if (result is Success) {
-      onSuccess();
-    } else if (result is Failure && result.statusCode == 404) {
-      changeState(LoginCodeState(
-          error: ++_loginFailedCount < 3
-              ? LoginError.loginFailed
-              : LoginError.loginFailedALot));
-    } else {
-      onFailure("로그인 실패. 잠시 후 다시 시도하세요");
+    switch (result) {
+      case Success():
+        onSuccess();
+      case Failure(statusCode: 404):
+        changeState(LoginCodeState(
+            error: ++_loginFailedCount < 3
+                ? LoginError.loginFailed
+                : LoginError.loginFailedALot));
+      case Failure():
+        onFailure("로그인 실패. 잠시 후 다시 시도하세요");
     }
     notifyListeners();
   }

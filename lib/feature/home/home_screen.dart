@@ -21,10 +21,11 @@ class HomeScreen extends StatelessWidget {
     ).logout();
 
     if (context.mounted) {
-      if (result is Success) {
-        context.go(AppRoute.onboarding.path);
-      } else {
-        showToast('로그아웃에 실패했습니다');
+      switch (result) {
+        case Success():
+          context.go(AppRoute.onboarding.path);
+        case Failure():
+          showToast('로그아웃에 실패했습니다');
       }
     }
   }
