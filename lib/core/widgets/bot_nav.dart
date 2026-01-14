@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:widyu/app/routes/app_route.dart';
-import 'package:widyu/core/theme/colors.dart';
-import 'package:widyu/core/theme/typos.dart';
+import 'package:widyu/core/ui/theme/colors.dart';
+import 'package:widyu/core/ui/theme/typos.dart';
 import 'package:widyu/core/widgets/icon_widget.dart';
 
 class BotNav extends StatefulWidget {
