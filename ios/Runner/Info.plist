@@ -47,5 +47,15 @@
 		<true/>
 		<key>UIStatusBarHidden</key>
 		<false/>
+		<key>NSLocationWhenInUseUsageDescription</key>
+        <string>앱 사용 중에 위치 정보를 수집합니다.</string>
+        <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+        <string>앱이 종료된 상태에서도 위치 정보를 수집합니다.</string>
+        <key>NSLocationAlwaysUsageDescription</key>
+        <string>백그라운드에서 위치 정보를 항상 수집합니다.</string>
+        <key>UIBackgroundModes</key>
+        <array>
+            <string>location</string>
+        </array>
 	</dict>
 </plist>
