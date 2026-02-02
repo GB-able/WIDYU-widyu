@@ -1,3 +1,5 @@
+import '../models/location/user_location.dart';
+
 abstract class LocationRepository {
-  Future<void> uploadCurrentLocation();
+  Stream<UserLocation> getLocationStream();
 }
