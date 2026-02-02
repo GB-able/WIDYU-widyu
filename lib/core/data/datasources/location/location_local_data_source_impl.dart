@@ -22,16 +22,19 @@ class LocationLocalDataSourceImpl extends LocationLocalDataSource {
             distanceFilter: 1,
             forceLocationManager: false,
             foregroundNotificationConfig: const ForegroundNotificationConfig(
-                notificationTitle: '알림',
-                notificationText: '위듀에서 사용자의 위치를 추적중입니다',
-                enableWakeLock: true),
+              notificationTitle: '알림',
+              notificationText: '위듀에서 사용자의 위치를 추적중입니다',
+              enableWakeLock: true,
+            ),
             intervalDuration: const Duration(seconds: 5),
           );
-
-    return Geolocator.getPositionStream(locationSettings: locationSetting).map(
-        (position) => UserLocation(
-            latitude: position.latitude,
-            longitude: position.longitude,
-            timestamp: position.timestamp));
+    return Geolocator.getPositionStream(locationSettings: locationSetting)
+        .map((position) {
+      return UserLocation.toKST(
+        latitude: position.latitude,
+        longitude: position.longitude,
+        timestamp: position.timestamp,
+      );
+    });
   }
 }
