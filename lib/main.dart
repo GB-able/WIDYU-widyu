@@ -6,12 +6,11 @@ import 'package:widyu/app/routes/custom_router.dart';
 import 'package:widyu/background_service.dart';
 import 'package:widyu/core/data/datasources/auth_remote_data_source.dart';
 import 'package:widyu/core/data/repositories/auth/auth_repository.dart';
+import 'package:widyu/core/data/repositories/auth/auth_repository_impl.dart';
 import 'package:widyu/core/network/api_client.dart';
 import 'package:widyu/core/network/token_manager.dart';
 import 'package:widyu/core/ui/theme/theme.dart';
-
-import 'core/data/repositories/auth/auth_repository_impl.dart';
-import 'core/utils/permission_manager.dart';
+import 'package:widyu/core/utils/permission_manager.dart';
 
 void main() async {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
