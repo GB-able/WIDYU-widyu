@@ -14,9 +14,9 @@ T _$identity<T>(T value) => value;
 
 /// @nodoc
 mixin _$UserLocation {
+  String? get memberId;
   double get latitude;
   double get longitude;
-  DateTime get timestamp;
 
   /// Create a copy of UserLocation
   /// with the given fields replaced by the non-null parameter values.
@@ -26,25 +26,29 @@ mixin _$UserLocation {
       _$UserLocationCopyWithImpl<UserLocation>(
           this as UserLocation, _$identity);
 
+  /// Serializes this UserLocation to a JSON map.
+  Map<String, dynamic> toJson();
+
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is UserLocation &&
+            (identical(other.memberId, memberId) ||
+                other.memberId == memberId) &&
             (identical(other.latitude, latitude) ||
                 other.latitude == latitude) &&
             (identical(other.longitude, longitude) ||
-                other.longitude == longitude) &&
-            (identical(other.timestamp, timestamp) ||
-                other.timestamp == timestamp));
+                other.longitude == longitude));
   }
 
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, latitude, longitude, timestamp);
+  int get hashCode => Object.hash(runtimeType, memberId, latitude, longitude);
 
   @override
   String toString() {
-    return 'UserLocation(latitude: $latitude, longitude: $longitude, timestamp: $timestamp)';
+    return 'UserLocation(memberId: $memberId, latitude: $latitude, longitude: $longitude)';
   }
 }
 
@@ -54,7 +58,7 @@ abstract mixin class $UserLocationCopyWith<$Res> {
           UserLocation value, $Res Function(UserLocation) _then) =
       _$UserLocationCopyWithImpl;
   @useResult
-  $Res call({double latitude, double longitude, DateTime timestamp});
+  $Res call({String? memberId, double latitude, double longitude});
 }
 
 /// @nodoc
@@ -69,11 +73,15 @@ class _$UserLocationCopyWithImpl<$Res> implements $UserLocationCopyWith<$Res> {
   @pragma('vm:prefer-inline')
   @override
   $Res call({
+    Object? memberId = freezed,
     Object? latitude = null,
     Object? longitude = null,
-    Object? timestamp = null,
   }) {
     return _then(_self.copyWith(
+      memberId: freezed == memberId
+          ? _self.memberId
+          : memberId // ignore: cast_nullable_to_non_nullable
+              as String?,
       latitude: null == latitude
           ? _self.latitude
           : latitude // ignore: cast_nullable_to_non_nullable
@@ -82,10 +90,6 @@ class _$UserLocationCopyWithImpl<$Res> implements $UserLocationCopyWith<$Res> {
           ? _self.longitude
           : longitude // ignore: cast_nullable_to_non_nullable
               as double,
-      timestamp: null == timestamp
-          ? _self.timestamp
-          : timestamp // ignore: cast_nullable_to_non_nullable
-              as DateTime,
     ));
   }
 }
@@ -183,14 +187,14 @@ extension UserLocationPatterns on UserLocation {
 
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>(
-    TResult Function(double latitude, double longitude, DateTime timestamp)?
+    TResult Function(String? memberId, double latitude, double longitude)?
         $default, {
     required TResult orElse(),
   }) {
     final _that = this;
     switch (_that) {
       case _UserLocation() when $default != null:
-        return $default(_that.latitude, _that.longitude, _that.timestamp);
+        return $default(_that.memberId, _that.latitude, _that.longitude);
       case _:
         return orElse();
     }
@@ -211,13 +215,13 @@ extension UserLocationPatterns on UserLocation {
 
   @optionalTypeArgs
   TResult when<TResult extends Object?>(
-    TResult Function(double latitude, double longitude, DateTime timestamp)
+    TResult Function(String? memberId, double latitude, double longitude)
         $default,
   ) {
     final _that = this;
     switch (_that) {
       case _UserLocation():
-        return $default(_that.latitude, _that.longitude, _that.timestamp);
+        return $default(_that.memberId, _that.latitude, _that.longitude);
       case _:
         throw StateError('Unexpected subclass');
     }
@@ -237,13 +241,13 @@ extension UserLocationPatterns on UserLocation {
 
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>(
-    TResult? Function(double latitude, double longitude, DateTime timestamp)?
+    TResult? Function(String? memberId, double latitude, double longitude)?
         $default,
   ) {
     final _that = this;
     switch (_that) {
       case _UserLocation() when $default != null:
-        return $default(_that.latitude, _that.longitude, _that.timestamp);
+        return $default(_that.memberId, _that.latitude, _that.longitude);
       case _:
         return null;
     }
@@ -251,19 +255,19 @@ extension UserLocationPatterns on UserLocation {
 }
 
 /// @nodoc
-
+@JsonSerializable()
 class _UserLocation implements UserLocation {
   const _UserLocation(
-      {required this.latitude,
-      required this.longitude,
-      required this.timestamp});
+      {this.memberId, required this.latitude, required this.longitude});
+  factory _UserLocation.fromJson(Map<String, dynamic> json) =>
+      _$UserLocationFromJson(json);
 
+  @override
+  final String? memberId;
   @override
   final double latitude;
   @override
   final double longitude;
-  @override
-  final DateTime timestamp;
 
   /// Create a copy of UserLocation
   /// with the given fields replaced by the non-null parameter values.
@@ -274,24 +278,32 @@ class _UserLocation implements UserLocation {
       __$UserLocationCopyWithImpl<_UserLocation>(this, _$identity);
 
   @override
+  Map<String, dynamic> toJson() {
+    return _$UserLocationToJson(
+      this,
+    );
+  }
+
+  @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _UserLocation &&
+            (identical(other.memberId, memberId) ||
+                other.memberId == memberId) &&
             (identical(other.latitude, latitude) ||
                 other.latitude == latitude) &&
             (identical(other.longitude, longitude) ||
-                other.longitude == longitude) &&
-            (identical(other.timestamp, timestamp) ||
-                other.timestamp == timestamp));
+                other.longitude == longitude));
   }
 
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, latitude, longitude, timestamp);
+  int get hashCode => Object.hash(runtimeType, memberId, latitude, longitude);
 
   @override
   String toString() {
-    return 'UserLocation(latitude: $latitude, longitude: $longitude, timestamp: $timestamp)';
+    return 'UserLocation(memberId: $memberId, latitude: $latitude, longitude: $longitude)';
   }
 }
 
@@ -303,7 +315,7 @@ abstract mixin class _$UserLocationCopyWith<$Res>
       __$UserLocationCopyWithImpl;
   @override
   @useResult
-  $Res call({double latitude, double longitude, DateTime timestamp});
+  $Res call({String? memberId, double latitude, double longitude});
 }
 
 /// @nodoc
@@ -319,11 +331,15 @@ class __$UserLocationCopyWithImpl<$Res>
   @override
   @pragma('vm:prefer-inline')
   $Res call({
+    Object? memberId = freezed,
     Object? latitude = null,
     Object? longitude = null,
-    Object? timestamp = null,
   }) {
     return _then(_UserLocation(
+      memberId: freezed == memberId
+          ? _self.memberId
+          : memberId // ignore: cast_nullable_to_non_nullable
+              as String?,
       latitude: null == latitude
           ? _self.latitude
           : latitude // ignore: cast_nullable_to_non_nullable
@@ -332,10 +348,6 @@ class __$UserLocationCopyWithImpl<$Res>
           ? _self.longitude
           : longitude // ignore: cast_nullable_to_non_nullable
               as double,
-      timestamp: null == timestamp
-          ? _self.timestamp
-          : timestamp // ignore: cast_nullable_to_non_nullable
-              as DateTime,
     ));
   }
 }

@@ -30,10 +30,9 @@ class LocationLocalDataSourceImpl extends LocationLocalDataSource {
           );
     return Geolocator.getPositionStream(locationSettings: locationSetting)
         .map((position) {
-      return UserLocation.toKST(
+      return UserLocation(
         latitude: position.latitude,
         longitude: position.longitude,
-        timestamp: position.timestamp,
       );
     });
   }
