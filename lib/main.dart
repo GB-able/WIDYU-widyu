@@ -10,15 +10,12 @@ import 'package:widyu/core/data/repositories/auth/auth_repository_impl.dart';
 import 'package:widyu/core/network/api_client.dart';
 import 'package:widyu/core/network/token_manager.dart';
 import 'package:widyu/core/ui/theme/theme.dart';
-import 'package:widyu/core/utils/permission_manager.dart';
 
 void main() async {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
   await dotenv.load(fileName: ".env");
-  if (await PermissionManager.checkLocationPermission()) {
-    await initializeService();
-  }
+  await initializeService();
 
   runApp(
     MultiProvider(
