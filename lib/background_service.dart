@@ -5,7 +5,7 @@ import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:widyu/core/data/datasources/location/location_local_data_source_impl.dart';
 import 'package:widyu/core/data/datasources/location/location_remote_data_source_impl.dart';
-import 'package:widyu/core/data/repositories/location_repository_impl.dart';
+import 'package:widyu/core/data/repositories/location/location_repository_impl.dart';
 
 Future<void> initializeService() async {
   final service = FlutterBackgroundService();
