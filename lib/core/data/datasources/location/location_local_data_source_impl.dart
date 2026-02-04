@@ -21,11 +21,6 @@ class LocationLocalDataSourceImpl extends LocationLocalDataSource {
             accuracy: LocationAccuracy.high,
             distanceFilter: 1,
             forceLocationManager: false,
-            foregroundNotificationConfig: const ForegroundNotificationConfig(
-              notificationTitle: '알림',
-              notificationText: '위듀에서 사용자의 위치를 추적중입니다',
-              enableWakeLock: true,
-            ),
             intervalDuration: const Duration(seconds: 5),
           );
     return Geolocator.getPositionStream(locationSettings: locationSetting)

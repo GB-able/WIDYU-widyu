@@ -18,10 +18,12 @@ Future<void> initializeService() async {
       onBackground: onIosBackground,
     ),
     androidConfiguration: AndroidConfiguration(
+      onStart: onStart,
       autoStart: false,
       autoStartOnBoot: true,
       isForegroundMode: true,
-      onStart: onStart,
+      initialNotificationTitle: '알림',
+      initialNotificationContent: '위듀에서 사용자의 위치를 추적중입니다.',
     ),
   );
 }
