@@ -47,7 +47,7 @@ class LocationRemoteDataSourceImpl implements LocationRemoteDataSource {
 
   @override
   void sendLocation(UserLocation location) {
-    if (_stompClient?.connected == true) {
+    if (_stompClient != null && _stompClient?.connected == true) {
       _stompClient!.send(
         destination: _sendDestination,
         body: jsonEncode(location.toJson()),
