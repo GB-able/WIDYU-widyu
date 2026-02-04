@@ -12,10 +12,10 @@ class LocationRemoteDataSourceImpl implements LocationRemoteDataSource {
   StompClient? _stompClient;
   final _tokenManager = TokenManager();
 
-  static String baseUrl = dotenv.env['BASE_URL']!;
-  static const String socketPrefix = '/ws/location';
-  static const String subscribeDestination = '/topic/location/senior';
-  static const String sendDestination = '/app/location/update';
+  String get _baseUrl => dotenv.env['BASE_URL'] ?? "";
+  static const String _socketPrefix = '/ws/location';
+  static const String _subscribeDestination = '/topic/location/senior';
+  static const String _sendDestination = '/app/location/update';
 
   @override
   Future<void> connect() async {
@@ -24,7 +24,7 @@ class LocationRemoteDataSourceImpl implements LocationRemoteDataSource {
 
     _stompClient = StompClient(
       config: StompConfig.sockJS(
-        url: '$baseUrl$socketPrefix',
+        url: '$_baseUrl$_socketPrefix',
         onConnect: (StompFrame frame) {
           _onConnect(memberId);
         },
@@ -46,7 +46,7 @@ class LocationRemoteDataSourceImpl implements LocationRemoteDataSource {
   void sendLocation(UserLocation location) {
     if (_stompClient?.connected == true) {
       _stompClient!.send(
-        destination: sendDestination,
+        destination: _sendDestination,
         body: jsonEncode(location.toJson()),
       );
     } else {
@@ -62,7 +62,7 @@ class LocationRemoteDataSourceImpl implements LocationRemoteDataSource {
 
   void _onConnect(String memberId) {
     _stompClient?.subscribe(
-      destination: '$subscribeDestination/$memberId',
+      destination: '$_subscribeDestination/$memberId',
       callback: (frame) {
         log('Received message: ${frame.body}');
       },
