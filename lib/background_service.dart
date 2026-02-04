@@ -58,3 +58,15 @@ void onStart(ServiceInstance service) async {
     service.stopSelf();
   });
 }
+
+Future<void> startBackgroundService() async {
+  final service = FlutterBackgroundService();
+  if (await service.isRunning()) return;
+  await service.startService();
+}
+
+Future<void> stopBackgroundService() async {
+  final service = FlutterBackgroundService();
+  if (!await service.isRunning()) return;
+  service.invoke('stopService');
+}
