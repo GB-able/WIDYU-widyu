@@ -37,14 +37,13 @@ class TokenManager {
         .write(key: StorageKey.tempToken.name, value: token);
   }
 
-  Future<void> setToken(
-    int memberId,
-    String accessToken,
-    String refreshToken,
-  ) async {
+  Future<void> setMemberId(int memberId) async {
+    await _secureStorage.storage
+        .write(key: StorageKey.memberId.name, value: memberId.toString());
+  }
+
+  Future<void> setToken(String accessToken, String refreshToken) async {
     await Future.wait([
-      _secureStorage.storage
-          .write(key: StorageKey.memberId.name, value: memberId.toString()),
       _secureStorage.storage
           .write(key: StorageKey.accessToken.name, value: accessToken),
       _secureStorage.storage

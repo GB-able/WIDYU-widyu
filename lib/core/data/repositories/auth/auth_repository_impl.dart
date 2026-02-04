@@ -21,8 +21,8 @@ class AuthRepositoryImpl implements AuthRepository {
         await _remoteDatasource.login(inviteCode, phoneNumber).toApiResult();
     if (result is Success) {
       final data = (result as Success<AuthResponse>).data;
-      await _tokenManager.setToken(
-          data.memberId, data.accessToken, data.refreshToken);
+      await _tokenManager.setMemberId(data.memberId);
+      await _tokenManager.setToken(data.accessToken, data.refreshToken);
     }
     return result;
   }
