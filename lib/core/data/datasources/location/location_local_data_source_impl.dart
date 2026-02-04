@@ -10,7 +10,7 @@ class LocationLocalDataSourceImpl extends LocationLocalDataSource {
   Stream<UserLocation> getLocation() {
     final locationSetting = Platform.isIOS
         ? AppleSettings(
-            accuracy: LocationAccuracy.high,
+            accuracy: LocationAccuracy.best,
             activityType: ActivityType.fitness,
             distanceFilter: 1,
             pauseLocationUpdatesAutomatically: true,
@@ -18,7 +18,7 @@ class LocationLocalDataSourceImpl extends LocationLocalDataSource {
             allowBackgroundLocationUpdates: true,
           )
         : AndroidSettings(
-            accuracy: LocationAccuracy.high,
+            accuracy: LocationAccuracy.best,
             distanceFilter: 1,
             forceLocationManager: false,
             intervalDuration: const Duration(seconds: 5),
