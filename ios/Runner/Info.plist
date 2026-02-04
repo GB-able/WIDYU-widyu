@@ -56,10 +56,13 @@
         <key>UIBackgroundModes</key>
         <array>
             <string>location</string>
+            <string>fetch</string>
+            <string>processing</string>
+            <string>remote-notification</string>
         </array>
         <key>BGTaskSchedulerPermittedIdentifiers</key>
         <array>
-            <string>dev.flutter.background.refresh</string>
+            <string>com.example.widyu.refresh</string>
         </array>
 	</dict>
 </plist>
