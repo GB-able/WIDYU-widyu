@@ -1,6 +1,6 @@
 import 'package:widyu/core/data/datasources/auth_remote_data_source.dart';
 import 'package:widyu/core/data/models/api_result.dart';
-import 'package:widyu/core/data/models/token_pair.dart';
+import 'package:widyu/core/data/models/auth/auth_response.dart';
 import 'package:widyu/core/data/repositories/auth/auth_repository.dart';
 import 'package:widyu/core/network/token_manager.dart';
 import 'package:widyu/core/utils/extensions/api_result_extension.dart';
@@ -20,8 +20,9 @@ class AuthRepositoryImpl implements AuthRepository {
     final result =
         await _remoteDatasource.login(inviteCode, phoneNumber).toApiResult();
     if (result is Success) {
-      final data = (result as Success<TokenPair>).data;
-      await _tokenManager.setToken(data.accessToken, data.refreshToken);
+      final data = (result as Success<AuthResponse>).data;
+      await _tokenManager.setToken(
+          data.memberId, data.accessToken, data.refreshToken);
     }
     return result;
   }
