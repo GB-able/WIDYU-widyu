@@ -9,8 +9,11 @@ import '../../models/location/user_location.dart';
 import 'location_remote_data_source.dart';
 
 class LocationRemoteDataSourceImpl implements LocationRemoteDataSource {
+  final TokenManager _tokenManager;
   StompClient? _stompClient;
-  final _tokenManager = TokenManager();
+
+  LocationRemoteDataSourceImpl({required TokenManager tokenManager})
+      : _tokenManager = tokenManager;
 
   String get _baseUrl => dotenv.env['BASE_URL'] ?? "";
   static const String _socketPrefix = '/ws/location';
@@ -19,8 +22,8 @@ class LocationRemoteDataSourceImpl implements LocationRemoteDataSource {
 
   @override
   Future<void> connect() async {
-    const String memberId = '1';
     final accessToken = await _tokenManager.accessToken;
+    final memberId = await _tokenManager.memberId;
 
     _stompClient = StompClient(
       config: StompConfig.sockJS(
@@ -60,7 +63,7 @@ class LocationRemoteDataSourceImpl implements LocationRemoteDataSource {
     _stompClient = null;
   }
 
-  void _onConnect(String memberId) {
+  void _onConnect(String? memberId) {
     _stompClient?.subscribe(
       destination: '$_subscribeDestination/$memberId',
       callback: (frame) {

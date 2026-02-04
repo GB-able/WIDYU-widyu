@@ -7,6 +7,8 @@ import 'package:widyu/core/data/datasources/location/location_local_data_source_
 import 'package:widyu/core/data/datasources/location/location_remote_data_source_impl.dart';
 import 'package:widyu/core/data/repositories/location/location_repository_impl.dart';
 
+import 'core/network/token_manager.dart';
+
 Future<void> initializeService() async {
   final service = FlutterBackgroundService();
   await service.configure(
@@ -37,7 +39,8 @@ void onStart(ServiceInstance service) async {
 
   final locationRepository = LocationRepositoryImpl(
     localDataSource: LocationLocalDataSourceImpl(),
-    remoteDataSource: LocationRemoteDataSourceImpl(),
+    remoteDataSource:
+        LocationRemoteDataSourceImpl(tokenManager: TokenManager()),
   );
 
   locationRepository.startLocationUpload();
