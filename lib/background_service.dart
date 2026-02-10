@@ -6,6 +6,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:widyu/core/data/datasources/location/location_local_data_source_impl.dart';
 import 'package:widyu/core/data/datasources/location/location_remote_data_source_impl.dart';
 import 'package:widyu/core/data/repositories/location/location_repository_impl.dart';
+import 'package:widyu/core/utils/permission_manager.dart';
 
 import 'core/network/token_manager.dart';
 
@@ -39,13 +40,22 @@ void onStart(ServiceInstance service) async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: ".env");
 
+  late final StreamSubscription locationServiceState;
+  PermissionManager.startMonitoring();
+
   final locationRepository = LocationRepositoryImpl(
     localDataSource: LocationLocalDataSourceImpl(),
     remoteDataSource:
         LocationRemoteDataSourceImpl(tokenManager: TokenManager()),
   );
 
-  locationRepository.startLocationUpload();
+  locationServiceState = PermissionManager.locationServiceState.listen((state) {
+    if (state.isAvailable) {
+      locationRepository.startLocationUpload();
+    } else {
+      locationRepository.stopLocationUpload();
+    }
+  });
 
   if (service is AndroidServiceInstance) {
     service.on('setAsForeground').listen((event) {
@@ -55,7 +65,10 @@ void onStart(ServiceInstance service) async {
       service.setAsBackgroundService();
     });
   }
-  service.on('stopService').listen((event) {
+
+  service.on('stopService').listen((event) async {
+    await locationServiceState.cancel();
+    PermissionManager.stopMonitoring();
     locationRepository.stopLocationUpload();
     service.stopSelf();
   });
