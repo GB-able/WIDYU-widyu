@@ -29,14 +29,16 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _handleLogout(BuildContext context) async {
     final result = await widget.repository.logout();
 
-    if (context.mounted) {
-      switch (result) {
-        case Success():
-          stopBackgroundService();
+    if (!context.mounted) return;
+
+    switch (result) {
+      case Success():
+        await stopBackgroundService();
+        if (context.mounted) {
           context.go(AppRoute.onboarding.path);
-        case Failure():
-          showToast('로그아웃에 실패했습니다');
-      }
+        }
+      case Failure():
+        showToast('로그아웃에 실패했습니다');
     }
   }
 
