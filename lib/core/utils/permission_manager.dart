@@ -41,6 +41,7 @@ class PermissionManager {
   static void stopMonitoring() {
     _timer?.cancel();
     _timer = null;
+    _currentState = null;
   }
 
   static Future<LocationServiceState> _checkState() async {
