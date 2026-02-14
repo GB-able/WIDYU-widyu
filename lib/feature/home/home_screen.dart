@@ -45,14 +45,14 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _startBackgroundService() async {
     PermissionManager.startMonitoring();
     _locationServiceState =
-        PermissionManager.locationServiceState.listen((state) {
+        PermissionManager.locationServiceState.listen((state) async {
       final message = state.message;
       if (message != null) {
         showToast(message);
-        stopBackgroundService();
+        await stopBackgroundService();
         return;
       }
-      startBackgroundService();
+      await startBackgroundService();
     });
   }
 
