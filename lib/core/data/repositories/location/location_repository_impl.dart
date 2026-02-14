@@ -20,6 +20,11 @@ class LocationRepositoryImpl implements LocationRepository {
 
   @override
   Future<void> startLocationUpload() async {
+    if (_locationSubscription != null) {
+      await _locationSubscription?.cancel();
+      _locationSubscription = null;
+    }
+
     await _remoteDataSource.connect();
     _locationSubscription = _localDataSource.getLocation().listen(
       (location) {
@@ -34,6 +39,7 @@ class LocationRepositoryImpl implements LocationRepository {
   @override
   void stopLocationUpload() {
     _locationSubscription?.cancel();
+    _locationSubscription = null;
     _remoteDataSource.disconnect();
   }
 }
