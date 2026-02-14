@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:go_router/go_router.dart';
 import 'package:widyu/app/routes/app_route.dart';
+import 'package:widyu/background_service.dart';
 import 'package:widyu/core/data/models/api_result.dart';
 import 'package:widyu/core/data/repositories/auth/auth_repository.dart';
 import 'package:widyu/core/model/location/location_service_state.dart';
@@ -13,8 +14,6 @@ import 'package:widyu/core/ui/widgets/text_btn.dart';
 import 'package:widyu/core/utils/extensions/location_service_state_extension.dart';
 import 'package:widyu/core/utils/permission_manager.dart';
 import 'package:widyu/core/utils/show_toast.dart';
-
-import '../../background_service.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key, required this.repository});
