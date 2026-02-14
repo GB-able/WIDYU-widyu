@@ -25,6 +25,7 @@ class LocationRemoteDataSourceImpl implements LocationRemoteDataSource {
     final accessToken = await _tokenManager.accessToken;
     final memberId = await _tokenManager.memberId;
 
+    _stompClient?.deactivate();
     _stompClient = StompClient(
       config: StompConfig.sockJS(
         url: '$_baseUrl$_socketPrefix',
