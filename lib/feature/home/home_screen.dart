@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:go_router/go_router.dart';
 import 'package:widyu/app/routes/app_route.dart';
 import 'package:widyu/background_service.dart';
@@ -47,7 +46,7 @@ class _HomeScreenState extends State<HomeScreen> {
         PermissionManager.locationServiceState.listen((state) {
       final message = state.message;
       if (message != null) {
-        Fluttertoast.showToast(msg: message);
+        showToast(message);
         stopBackgroundService();
         return;
       }
