@@ -25,7 +25,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  late final StreamSubscription<LocationServiceState> _locationServiceState;
+  StreamSubscription<LocationServiceState>? _locationServiceState;
 
   Future<void> _handleLogout(BuildContext context) async {
     final result = await widget.repository.logout();
@@ -63,7 +63,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   void dispose() {
-    _locationServiceState.cancel();
+    _locationServiceState?.cancel();
     super.dispose();
   }
 
