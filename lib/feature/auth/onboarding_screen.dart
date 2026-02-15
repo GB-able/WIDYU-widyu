@@ -6,7 +6,7 @@ import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
 import 'package:widyu/core/ui/widgets/text_btn.dart';
 
-import '../../core/utils/permission_manager.dart';
+import '../../core/utils/location_service_manager.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -28,7 +28,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      final hasPermission = await PermissionManager.checkLocationPermission();
+      final hasPermission = await LocationServiceManager.checkLocationPermission();
       if (!mounted) return;
       if (!hasPermission) _showPermissionDialog();
     });
@@ -54,7 +54,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             TextButton(
               onPressed: () async {
                 GoRouter.of(dialogContext).pop();
-                await PermissionManager.requestLocationPermission();
+                await LocationServiceManager.requestLocationPermission();
               },
               child: const Text("권한 버튼"),
             )

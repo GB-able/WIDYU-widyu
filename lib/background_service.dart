@@ -6,7 +6,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:widyu/core/data/datasources/location/location_local_data_source_impl.dart';
 import 'package:widyu/core/data/datasources/location/location_remote_data_source_impl.dart';
 import 'package:widyu/core/data/repositories/location/location_repository_impl.dart';
-import 'package:widyu/core/utils/permission_manager.dart';
+import 'package:widyu/core/utils/location_service_manager.dart';
 
 import 'core/network/token_manager.dart';
 
@@ -41,7 +41,7 @@ void onStart(ServiceInstance service) async {
   await dotenv.load(fileName: ".env");
 
   late final StreamSubscription locationServiceState;
-  PermissionManager.startMonitoring();
+  LocationServiceManager.startMonitoring();
 
   final locationRepository = LocationRepositoryImpl(
     localDataSource: LocationLocalDataSourceImpl(),
@@ -49,7 +49,7 @@ void onStart(ServiceInstance service) async {
         LocationRemoteDataSourceImpl(tokenManager: TokenManager()),
   );
 
-  locationServiceState = PermissionManager.locationServiceState.listen((state) {
+  locationServiceState = LocationServiceManager.locationServiceState.listen((state) {
     if (state.isAvailable) {
       locationRepository.startLocationUpload();
     } else {
@@ -68,7 +68,7 @@ void onStart(ServiceInstance service) async {
 
   service.on('stopService').listen((event) async {
     await locationServiceState.cancel();
-    PermissionManager.stopMonitoring();
+    LocationServiceManager.stopMonitoring();
     locationRepository.stopLocationUpload();
     service.stopSelf();
   });

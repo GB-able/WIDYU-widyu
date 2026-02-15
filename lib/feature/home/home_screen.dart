@@ -11,7 +11,7 @@ import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
 import 'package:widyu/core/ui/widgets/text_btn.dart';
 import 'package:widyu/core/utils/extensions/location_service_state_extension.dart';
-import 'package:widyu/core/utils/permission_manager.dart';
+import 'package:widyu/core/utils/location_service_manager.dart';
 import 'package:widyu/core/utils/show_toast.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -43,9 +43,9 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _startBackgroundService() async {
-    PermissionManager.startMonitoring();
+    LocationServiceManager.startMonitoring();
     _locationServiceState =
-        PermissionManager.locationServiceState.listen((state) async {
+        LocationServiceManager.locationServiceState.listen((state) async {
       final message = state.message;
       if (message != null) {
         showToast(message);
@@ -65,7 +65,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void dispose() {
     _locationServiceState?.cancel();
-    PermissionManager.stopMonitoring();
+    LocationServiceManager.stopMonitoring();
     super.dispose();
   }
 

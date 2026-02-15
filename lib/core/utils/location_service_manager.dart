@@ -3,8 +3,8 @@ import 'dart:async';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:widyu/core/model/location/location_service_state.dart';
 
-class PermissionManager {
-  PermissionManager._();
+class LocationServiceManager {
+  LocationServiceManager._();
 
   static final _controller = StreamController<LocationServiceState>.broadcast();
 
