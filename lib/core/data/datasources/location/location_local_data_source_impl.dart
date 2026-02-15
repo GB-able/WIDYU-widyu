@@ -6,6 +6,12 @@ import 'package:widyu/core/data/datasources/location/location_local_data_source.
 import '../../models/location/user_location.dart';
 
 class LocationLocalDataSourceImpl extends LocationLocalDataSource {
+  static final LocationLocalDataSourceImpl _instance = LocationLocalDataSourceImpl._internal();
+
+  factory LocationLocalDataSourceImpl() => _instance;
+
+  LocationLocalDataSourceImpl._internal();
+
   @override
   Stream<UserLocation> getLocation() {
     final locationSetting = Platform.isIOS
