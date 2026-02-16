@@ -1,5 +1,6 @@
 import Flutter
 import UIKit
+import flutter_background_service_ios
 
 @main
 @objc class AppDelegate: FlutterAppDelegate {
@@ -8,6 +9,8 @@ import UIKit
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
     GeneratedPluginRegistrant.register(with: self)
+    SwiftFlutterBackgroundServicePlugin.taskIdentifier = "com.example.widyu.refresh"
+    UIApplication.shared.setMinimumBackgroundFetchInterval(UIApplication.backgroundFetchIntervalMinimum)
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
 }

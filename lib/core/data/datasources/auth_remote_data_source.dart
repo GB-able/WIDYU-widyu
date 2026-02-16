@@ -1,5 +1,5 @@
 import 'package:widyu/core/data/models/api_response.dart';
-import 'package:widyu/core/data/models/token_pair.dart';
+import 'package:widyu/core/data/models/auth/auth_response.dart';
 import 'package:widyu/core/network/api_client.dart';
 import 'package:widyu/core/utils/extensions/api_response_extension.dart';
 
@@ -9,7 +9,7 @@ class AuthRemoteDataSource {
   AuthRemoteDataSource({required ApiClient apiClient}) : _apiClient = apiClient;
   final String path = '/auth';
 
-  Future<ApiResponse<TokenPair>> login(
+  Future<ApiResponse<AuthResponse>> login(
       String inviteCode, String phoneNumber) async {
     try {
       final response = await _apiClient.req(
@@ -20,7 +20,7 @@ class AuthRemoteDataSource {
           'phoneNumber': phoneNumber,
         },
       );
-      return response.toApiResponse(TokenPair.fromJson);
+      return response.toApiResponse(AuthResponse.fromJson);
     } catch (e) {
       throw Exception("Login failed: $e");
     }

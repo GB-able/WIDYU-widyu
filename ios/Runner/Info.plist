@@ -2,6 +2,10 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 	<dict>
+	   <key>NSAppTransportSecurity</key>
+        <dict>
+            <key>NSAllowsArbitraryLoads</key><true/>
+        </dict>
 		<key>CFBundleDevelopmentRegion</key>
 		<string>$(DEVELOPMENT_LANGUAGE)</string>
 		<key>CFBundleDisplayName</key>
@@ -47,5 +51,22 @@
 		<true/>
 		<key>UIStatusBarHidden</key>
 		<false/>
+		<key>NSLocationWhenInUseUsageDescription</key>
+        <string>앱 사용 중에 위치 정보를 수집합니다.</string>
+        <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+        <string>앱이 종료된 상태에서도 위치 정보를 수집합니다.</string>
+        <key>NSLocationAlwaysUsageDescription</key>
+        <string>백그라운드에서 위치 정보를 항상 수집합니다.</string>
+        <key>UIBackgroundModes</key>
+        <array>
+            <string>location</string>
+            <string>fetch</string>
+            <string>processing</string>
+            <string>remote-notification</string>
+        </array>
+        <key>BGTaskSchedulerPermittedIdentifiers</key>
+        <array>
+            <string>com.example.widyu.refresh</string>
+        </array>
 	</dict>
 </plist>

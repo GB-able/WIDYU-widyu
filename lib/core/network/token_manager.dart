@@ -5,16 +5,22 @@ enum TokenType { none, access, temporary }
 
 class TokenManager {
   static final TokenManager _instance = TokenManager._internal();
+
   factory TokenManager() => _instance;
 
   final SecureStorage _secureStorage = SecureStorage();
 
   TokenManager._internal();
 
+  Future<String?> get memberId async =>
+      _secureStorage.storage.read(key: StorageKey.memberId.name);
+
   Future<String?> get accessToken async =>
       _secureStorage.storage.read(key: StorageKey.accessToken.name);
+
   Future<String?> get refreshToken async =>
       _secureStorage.storage.read(key: StorageKey.refreshToken.name);
+
   Future<String?> get tempToken async =>
       _secureStorage.storage.read(key: StorageKey.tempToken.name);
 
@@ -29,6 +35,11 @@ class TokenManager {
   Future<void> setTempToken(String token) async {
     await _secureStorage.storage
         .write(key: StorageKey.tempToken.name, value: token);
+  }
+
+  Future<void> setMemberId(int memberId) async {
+    await _secureStorage.storage
+        .write(key: StorageKey.memberId.name, value: memberId.toString());
   }
 
   Future<void> setToken(String accessToken, String refreshToken) async {

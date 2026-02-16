@@ -1,18 +1,21 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_native_splash/flutter_native_splash.dart';
-import 'package:widyu/app/routes/custom_router.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
+import 'package:provider/provider.dart';
+import 'package:widyu/app/routes/custom_router.dart';
+import 'package:widyu/background_service.dart';
 import 'package:widyu/core/data/datasources/auth_remote_data_source.dart';
 import 'package:widyu/core/data/repositories/auth/auth_repository.dart';
+import 'package:widyu/core/data/repositories/auth/auth_repository_impl.dart';
+import 'package:widyu/core/network/api_client.dart';
 import 'package:widyu/core/network/token_manager.dart';
 import 'package:widyu/core/ui/theme/theme.dart';
-import 'package:provider/provider.dart';
-import 'package:widyu/core/network/api_client.dart';
 
 void main() async {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
   await dotenv.load(fileName: ".env");
+  await initializeService();
 
   runApp(
     MultiProvider(

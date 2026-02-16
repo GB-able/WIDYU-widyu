@@ -8,14 +8,17 @@ enum HttpMethod { get, post, put, patch, delete }
 
 class ApiClient {
   static final ApiClient _instance = ApiClient._internal();
+
   factory ApiClient() => _instance;
 
   static String baseUrl = dotenv.env['BASE_URL']!;
+  static const String apiPrefix = '/api';
   final Dio dio = Dio();
 
   ApiClient._internal() {
     dio.options = BaseOptions(
-        baseUrl: baseUrl, validateStatus: (status) => status != null);
+        baseUrl: '$baseUrl$apiPrefix',
+        validateStatus: (status) => status != null);
     dio.interceptors.add(TokenInterceptor());
     dio.interceptors.add(LoggerInterceptor());
   }
