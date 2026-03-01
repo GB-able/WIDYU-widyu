@@ -1,6 +1,5 @@
 package com.example.widyu.data.repository
 
-import HeartRateRepository
 import com.example.widyu.data.model.MeasureResult
 import com.example.widyu.data.source.HeartRateLocalDataSource
 import com.example.widyu.data.source.HeartRateRemoteDataSource

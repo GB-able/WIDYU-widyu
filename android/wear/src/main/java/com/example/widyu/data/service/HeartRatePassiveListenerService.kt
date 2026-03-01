@@ -1,9 +1,9 @@
 package com.example.widyu.data.service
 
-import HeartRateRepository
 import androidx.health.services.client.PassiveListenerService
 import androidx.health.services.client.data.DataPointContainer
 import androidx.health.services.client.data.DataType
+import com.example.widyu.data.repository.HeartRateRepository
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors

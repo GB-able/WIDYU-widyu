@@ -1,6 +1,6 @@
 package com.example.widyu.di
 
-import HeartRateRepository
+import com.example.widyu.data.repository.HeartRateRepository
 import com.example.widyu.data.repository.HeartRateRepositoryImpl
 import dagger.Binds
 import dagger.Module
