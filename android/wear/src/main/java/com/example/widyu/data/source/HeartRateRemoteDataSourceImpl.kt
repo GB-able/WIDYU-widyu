@@ -7,11 +7,11 @@ import javax.inject.Inject
 class HeartRateRemoteDataSourceImpl @Inject constructor(
     private val dataClient: DataClient,
 ) : HeartRateRemoteDataSource {
-    override suspend fun sendHeartRate(heartRate: Double) {
+    override suspend fun sendHeartRate(heartRate: Int) {
         try {
             val putDataMapReq =
                 PutDataMapRequest.create("/heart_rate").apply {
-                    dataMap.putDouble("value", heartRate)
+                    dataMap.putInt("value", heartRate)
                     dataMap.putLong("timestamp", System.currentTimeMillis())
                 }
             val putDataReq = putDataMapReq.asPutDataRequest().setUrgent()

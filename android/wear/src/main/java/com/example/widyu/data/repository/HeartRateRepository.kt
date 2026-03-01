@@ -12,5 +12,5 @@ interface HeartRateRepository {
 
     fun stopPassiveMonitoring(): Result<Unit>
 
-    suspend fun sendHeartRate(heartRate: Double): Result<Unit>
+    suspend fun sendHeartRate(heartRate: Int): Result<Unit>
 }

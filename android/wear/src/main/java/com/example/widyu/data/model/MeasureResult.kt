@@ -8,7 +8,7 @@ sealed interface MeasureResult {
     ) : MeasureResult
 
     data class HeartRate(
-        val value: Double,
+        val value: Int,
         val isStable: Boolean? = null,
         val timeStamp: LocalDateTime = LocalDateTime.now(),
     ) : MeasureResult {

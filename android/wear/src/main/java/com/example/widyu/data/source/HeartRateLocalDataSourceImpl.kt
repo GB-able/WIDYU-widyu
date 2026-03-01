@@ -46,7 +46,7 @@ class HeartRateLocalDataSourceImpl @Inject constructor(
 
                     override fun onDataReceived(data: DataPointContainer) {
                         data.getData(DataType.HEART_RATE_BPM).lastOrNull()?.let { sample ->
-                            trySendBlocking(MeasureResult.HeartRate(sample.value))
+                            trySendBlocking(MeasureResult.HeartRate(sample.value.toInt()))
                         }
                     }
                 }

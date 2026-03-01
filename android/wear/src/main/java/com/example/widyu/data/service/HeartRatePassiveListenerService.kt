@@ -28,7 +28,7 @@ class HeartRatePassiveListenerService : PassiveListenerService() {
         val heartRateSamples = dataPoints.getData(DataType.HEART_RATE_BPM)
         heartRateSamples.lastOrNull()?.let { sample ->
             serviceScope.launch {
-                repository.sendHeartRate(sample.value)
+                repository.sendHeartRate(sample.value.toInt())
             }
         }
     }
