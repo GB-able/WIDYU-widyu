@@ -1,7 +1,5 @@
 package com.example.widyu.data.model
 
-import java.time.LocalDateTime
-
 sealed interface MeasureResult {
     data class Availability(
         val isAvailable: Boolean,
@@ -10,7 +8,6 @@ sealed interface MeasureResult {
     data class HeartRate(
         val value: Int,
         val isStable: Boolean? = null,
-        val timeStamp: LocalDateTime = LocalDateTime.now(),
     ) : MeasureResult {
         init {
             require(value > 0) { HEART_RATE_ERROR }
