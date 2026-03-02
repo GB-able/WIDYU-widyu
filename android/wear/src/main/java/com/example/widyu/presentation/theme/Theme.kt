@@ -24,7 +24,11 @@ object WidyuTheme {
 
 @Composable
 fun WidyuTheme(content: @Composable () -> Unit) {
-    CompositionLocalProvider {
+    CompositionLocalProvider(
+        LocalWidyuColorSystem provides WidyuColorSystem(),
+        LocalWidyuSpacing provides WidyuSpacing(),
+        LocalWidyuTypography provides WidyuTypography(),
+    ) {
         content()
     }
 }

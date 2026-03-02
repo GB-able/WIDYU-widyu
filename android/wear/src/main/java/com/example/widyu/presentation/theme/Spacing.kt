@@ -7,11 +7,11 @@ import androidx.compose.ui.unit.dp
 
 @Immutable
 data class WidyuSpacing(
-    val spaceXSmall: Dp = 8.dp,
-    val spaceSmall: Dp = 12.dp,
-    val spaceMedium: Dp = 16.dp,
-    val spaceLarge: Dp = 20.dp,
-    val spaceXLarge: Dp = 40.dp,
+    val spaceXSmall: Dp = 4.dp,
+    val spaceSmall: Dp = 6.dp,
+    val spaceMedium: Dp = 8.dp,
+    val spaceLarge: Dp = 10.dp,
+    val spaceXLarge: Dp = 20.dp,
 )
 
 val LocalWidyuSpacing = staticCompositionLocalOf { WidyuSpacing() }

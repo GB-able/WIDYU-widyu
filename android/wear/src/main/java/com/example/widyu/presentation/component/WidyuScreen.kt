@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -89,13 +88,13 @@ private fun WidyuScreen(uiModel: UiModel) {
             Text(
                 text = uiModel.text,
                 color = uiModel.primaryColor,
-                style = WidyuTheme.typography.bold40.toTextStyle(),
+                style = WidyuTheme.typography.bold20.toTextStyle(),
             )
 
             Icon(
                 imageVector = uiModel.icon,
                 contentDescription = "심박 상태",
-                modifier = Modifier.size(180.dp),
+                modifier = Modifier.size(70.dp),
                 tint = Color.Unspecified,
             )
 
@@ -104,7 +103,7 @@ private fun WidyuScreen(uiModel: UiModel) {
                     text = uiModel.heartRate,
                     modifier = Modifier.alignBy(FirstBaseline),
                     color = uiModel.heartRateTextColor,
-                    style = WidyuTheme.typography.bold58.toTextStyle(),
+                    style = WidyuTheme.typography.bold32.toTextStyle(),
                 )
 
                 Spacer(modifier = Modifier.width(WidyuTheme.spacing.spaceXSmall))
@@ -113,7 +112,7 @@ private fun WidyuScreen(uiModel: UiModel) {
                     text = "BPM",
                     modifier = Modifier.alignBy(FirstBaseline),
                     color = WidyuTheme.colors.gray700,
-                    style = WidyuTheme.typography.medium32.toTextStyle(),
+                    style = WidyuTheme.typography.medium16.toTextStyle(),
                 )
             }
         }

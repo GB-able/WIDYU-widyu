@@ -11,7 +11,14 @@ import com.example.widyu.presentation.theme.WidyuTheme
 fun WidyuApp() {
     Scaffold(
         modifier = Modifier.fillMaxSize(),
-        timeText = { TimeText(timeTextStyle = WidyuTheme.typography.semibold34.toTextStyle()) },
+        timeText = {
+            TimeText(
+                timeTextStyle =
+                    WidyuTheme.typography.semibold16
+                        .copy(color = WidyuTheme.colors.gray700)
+                        .toTextStyle(),
+            )
+        },
     ) {
         WidyuScreen()
     }
