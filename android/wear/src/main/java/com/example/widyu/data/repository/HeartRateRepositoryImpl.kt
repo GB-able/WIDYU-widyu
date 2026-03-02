@@ -24,5 +24,5 @@ class HeartRateRepositoryImpl @Inject constructor(
 
     override fun stopPassiveMonitoring() = runCatching { localDataSource.stopPassiveMonitoring() }
 
-    override suspend fun sendHeartRate(heartRate: Int) = runCatching { remoteDataSource.sendHeartRate(heartRate) }
+    override fun sendHeartRate(heartRate: Int) = remoteDataSource.sendHeartRate(heartRate)
 }
