@@ -1,8 +1,10 @@
 package com.example.widyu.data.service
 
+import android.util.Log
 import androidx.health.services.client.PassiveListenerService
 import androidx.health.services.client.data.DataPointContainer
 import androidx.health.services.client.data.DataType
+import com.example.widyu.data.model.MeasureResult
 import com.example.widyu.data.repository.HeartRateRepository
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
@@ -19,7 +21,9 @@ class HeartRatePassiveListenerService : PassiveListenerService() {
     override fun onNewDataPointsReceived(dataPoints: DataPointContainer) {
         val heartRateSamples = dataPoints.getData(DataType.HEART_RATE_BPM)
         heartRateSamples.lastOrNull()?.let { sample ->
-            repository.sendHeartRate(sample.value.toInt())
+            runCatching { MeasureResult.HeartRate(sample.value.toInt()) }
+                .onSuccess { repository.sendHeartRate(it.value) }
+                .onFailure { Log.i("Widyu", "Error", it) }
         }
     }
 
