@@ -25,11 +25,7 @@ class MainViewModel @Inject constructor(
     private val _uiState: MutableStateFlow<UiState> = MutableStateFlow(UiState.Loading)
     val uiState: StateFlow<UiState> = _uiState.asStateFlow()
 
-    init {
-        checkSupported()
-    }
-
-    private fun checkSupported() {
+    fun checkSupported() {
         viewModelScope.launch {
             repository
                 .hasHeartRateCapability()
@@ -40,6 +36,7 @@ class MainViewModel @Inject constructor(
                     }
                     updateState { UiState.WatchDisconnect }
                 }.onFailure {
+                    Log.i("Widyu", "Error", it)
                     updateState { UiState.WatchDisconnect }
                 }
         }
@@ -49,7 +46,7 @@ class MainViewModel @Inject constructor(
         repository
             .getHeartRate()
             .catch {
-                Log.i("Widyu", it.stackTraceToString())
+                Log.i("Widyu", "Error", it)
                 updateState { UiState.WatchDisconnect }
             }.onEach { measureResult ->
                 when (measureResult) {
