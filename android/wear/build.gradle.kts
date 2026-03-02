@@ -49,6 +49,7 @@ dependencies {
     implementation("com.google.android.material:material:1.11.0")
     implementation("androidx.activity:activity:1.8.2")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
+    implementation("androidx.lifecycle:lifecycle-process:2.7.0")
 
     // Compose
     val composeBom = platform("androidx.compose:compose-bom:2024.05.00")
