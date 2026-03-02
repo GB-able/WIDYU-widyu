@@ -18,13 +18,19 @@
             android:value="false" />
         <activity
             android:name=".presentation.MainActivity"
-            android:exported="false"
-            android:theme="@android:style/Theme.DeviceDefault.NoActionBar" />
+            android:exported="true"
+            android:theme="@android:style/Theme.DeviceDefault.NoActionBar">
+
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
 
         <service
             android:name=".data.service.HeartRatePassiveListenerService"
-            android:permission="com.google.android.gms.permission.PASSIVE_DATA_BINDING"
-            android:exported="true" />
+            android:exported="true"
+            android:permission="com.google.android.gms.permission.PASSIVE_DATA_BINDING" />
     </application>
 
 </manifest>
