@@ -1,5 +1,6 @@
 package com.example.widyu.data.source
 
+import android.util.Log
 import androidx.health.services.client.HealthServicesClient
 import androidx.health.services.client.MeasureCallback
 import androidx.health.services.client.data.Availability
@@ -46,7 +47,9 @@ class HeartRateLocalDataSourceImpl @Inject constructor(
 
                     override fun onDataReceived(data: DataPointContainer) {
                         data.getData(DataType.HEART_RATE_BPM).lastOrNull()?.let { sample ->
-                            trySendBlocking(MeasureResult.HeartRate(sample.value.toInt()))
+                            runCatching { MeasureResult.HeartRate(sample.value.toInt()) }
+                                .onSuccess { trySendBlocking(it) }
+                                .onFailure { Log.i("Widyu", "Error", it) }
                         }
                     }
                 }
