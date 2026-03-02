@@ -1,5 +1,6 @@
 package com.example.widyu.data.source
 
+import android.util.Log
 import com.google.android.gms.wearable.DataClient
 import com.google.android.gms.wearable.PutDataMapRequest
 import javax.inject.Inject
@@ -7,18 +8,24 @@ import javax.inject.Inject
 class HeartRateRemoteDataSourceImpl @Inject constructor(
     private val dataClient: DataClient,
 ) : HeartRateRemoteDataSource {
-    override suspend fun sendHeartRate(heartRate: Int) {
-        try {
-            val putDataMapReq =
-                PutDataMapRequest.create("/heart_rate").apply {
-                    dataMap.putInt("value", heartRate)
-                    dataMap.putLong("timestamp", System.currentTimeMillis())
-                }
-            val putDataReq = putDataMapReq.asPutDataRequest().setUrgent()
-//            dataClient.putDataItem(putDataReq).await()
-        } catch (e: Exception) {
-            // Handle transmission errors
-            e.printStackTrace()
-        }
+    override fun sendHeartRate(heartRate: Int) {
+        val putDataReq =
+            PutDataMapRequest.create(REQUEST_PATH).run {
+                dataMap.putInt(HEART_RATE_KEY, heartRate)
+                dataMap.putLong(TIMESTAMP_KEY, System.currentTimeMillis())
+                asPutDataRequest().setUrgent()
+            }
+
+        dataClient
+            .putDataItem(putDataReq)
+            .addOnFailureListener { e ->
+                Log.i("Widyu", "Error", e)
+            }
+    }
+
+    companion object {
+        private const val REQUEST_PATH = "/widyu"
+        private const val HEART_RATE_KEY = "heart_rate"
+        private const val TIMESTAMP_KEY = "timestamp"
     }
 }
