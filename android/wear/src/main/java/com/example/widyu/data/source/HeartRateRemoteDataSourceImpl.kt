@@ -19,12 +19,12 @@ class HeartRateRemoteDataSourceImpl @Inject constructor(
         dataClient
             .putDataItem(putDataReq)
             .addOnFailureListener { e ->
-                Log.i("Widyu", "Error", e)
+                Log.i("Widyu", "Error sending request to device", e)
             }
     }
 
     companion object {
-        private const val REQUEST_PATH = "/widyu"
+        private const val REQUEST_PATH = "/widyu_request"
         private const val HEART_RATE_KEY = "heart_rate"
         private const val TIMESTAMP_KEY = "timestamp"
     }

@@ -13,4 +13,6 @@ interface HeartRateRepository {
     fun stopPassiveMonitoring(): Result<Unit>
 
     fun sendHeartRate(heartRate: Int)
+
+    fun getHeartRateStatus(): Flow<String>
 }
