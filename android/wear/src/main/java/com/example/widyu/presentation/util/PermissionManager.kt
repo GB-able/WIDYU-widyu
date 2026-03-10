@@ -5,6 +5,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.health.connect.HealthPermissions
 import android.os.Build
 import android.provider.Settings
 import androidx.activity.compose.ManagedActivityResultLauncher
@@ -19,24 +20,32 @@ import com.example.widyu.presentation.util.PermissionManager.hasBackgroundPermis
 import com.example.widyu.presentation.util.PermissionManager.isPermanentlyDenied
 
 object PermissionManager {
-    private val requiredPermissions: Array<String> by lazy {
+    val requiredPermissions: Array<String> by lazy {
         buildList {
-            add(Manifest.permission.BODY_SENSORS)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                add(Manifest.permission.BODY_SENSORS_BACKGROUND)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA) {
+                add(HealthPermissions.READ_HEART_RATE)
+                add(HealthPermissions.READ_HEALTH_DATA_IN_BACKGROUND)
+                return@buildList
             }
+            add(Manifest.permission.BODY_SENSORS)
         }.toTypedArray()
     }
 
-    fun hasBackgroundPermission(context: Context): Boolean =
+    fun hasBackgroundPermission(context: Context): Boolean {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA) {
+            return ContextCompat.checkSelfPermission(
+                context,
+                HealthPermissions.READ_HEALTH_DATA_IN_BACKGROUND,
+            ) == PackageManager.PERMISSION_GRANTED
+        }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            ContextCompat.checkSelfPermission(
+            return ContextCompat.checkSelfPermission(
                 context,
                 Manifest.permission.BODY_SENSORS_BACKGROUND,
             ) == PackageManager.PERMISSION_GRANTED
-        } else {
-            true
         }
+        return true
+    }
 
     fun isPermanentlyDenied(activity: Activity): Boolean =
         requiredPermissions.any { permission ->
@@ -65,11 +74,12 @@ fun rememberPermissionLauncher(
     onGranted: () -> Unit,
     onRequireRuntimePermission: () -> Unit,
     onRequireBackgroundPermission: () -> Unit,
-): ManagedActivityResultLauncher<String, Boolean> {
+): ManagedActivityResultLauncher<Array<String>, Map<String, Boolean>> {
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
 
-    return rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+    return rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
+        val isGranted = permissions.all { it.value }
         when {
             isGranted -> {
                 if (hasBackgroundPermission(context)) {

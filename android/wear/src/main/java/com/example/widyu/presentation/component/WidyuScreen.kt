@@ -33,6 +33,7 @@ import com.example.widyu.presentation.model.UiModel
 import com.example.widyu.presentation.model.UiModel.Companion.toUiModel
 import com.example.widyu.presentation.theme.WidyuTheme
 import com.example.widyu.presentation.util.PermissionManager.openAppSettings
+import com.example.widyu.presentation.util.PermissionManager.requiredPermissions
 import com.example.widyu.presentation.util.rememberPermissionLauncher
 
 @Composable
@@ -48,7 +49,7 @@ fun WidyuScreen(viewModel: MainViewModel = hiltViewModel()) {
         )
 
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
-        permissionLauncher.launch(Manifest.permission.BODY_SENSORS)
+        permissionLauncher.launch(requiredPermissions)
     }
 
     val uiState = viewModel.uiState.collectAsStateWithLifecycle().value
