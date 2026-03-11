@@ -8,9 +8,9 @@ interface HeartRateRepository {
 
     fun getHeartRate(): Flow<MeasureResult>
 
-    fun startPassiveMonitoring(): Result<Unit>
+    suspend fun startPassiveMonitoring(): Result<Unit>
 
-    fun stopPassiveMonitoring(): Result<Unit>
+    suspend fun stopPassiveMonitoring(): Result<Unit>
 
     fun sendHeartRate(heartRate: Int)
 
