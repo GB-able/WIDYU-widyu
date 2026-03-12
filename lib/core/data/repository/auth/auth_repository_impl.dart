@@ -1,5 +1,5 @@
-import 'package:widyu/core/data/datasources/auth_remote_data_source.dart';
-import 'package:widyu/core/data/repositories/auth/auth_repository.dart';
+import 'package:widyu/core/data/repository/auth/auth_repository.dart';
+import 'package:widyu/core/data/source/auth_remote_data_source.dart';
 import 'package:widyu/core/model/api/api_result.dart';
 import 'package:widyu/core/model/auth/auth_response.dart';
 import 'package:widyu/core/network/token_manager.dart';

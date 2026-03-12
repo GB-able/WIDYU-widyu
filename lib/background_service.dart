@@ -3,9 +3,9 @@ import 'dart:async';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:widyu/core/data/datasources/location/location_local_data_source_impl.dart';
-import 'package:widyu/core/data/datasources/location/location_remote_data_source_impl.dart';
-import 'package:widyu/core/data/repositories/location/location_repository_impl.dart';
+import 'package:widyu/core/data/repository/location/location_repository_impl.dart';
+import 'package:widyu/core/data/source/location/location_local_data_source_impl.dart';
+import 'package:widyu/core/data/source/location/location_remote_data_source_impl.dart';
 import 'package:widyu/core/utils/location_service_manager.dart';
 
 import 'core/network/token_manager.dart';

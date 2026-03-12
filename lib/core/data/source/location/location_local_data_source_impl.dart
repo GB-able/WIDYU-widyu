@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:geolocator/geolocator.dart';
-import 'package:widyu/core/data/datasources/location/location_local_data_source.dart';
+import 'package:widyu/core/data/source/location/location_local_data_source.dart';
 import 'package:widyu/core/model/location/user_location.dart';
 
 class LocationLocalDataSourceImpl extends LocationLocalDataSource {
