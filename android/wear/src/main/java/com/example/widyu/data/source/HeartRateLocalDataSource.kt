@@ -8,7 +8,7 @@ interface HeartRateLocalDataSource {
 
     fun getMeasureResult(): Flow<MeasureResult>
 
-    fun startPassiveMonitoring()
+    suspend fun startPassiveMonitoring()
 
-    fun stopPassiveMonitoring()
+    suspend fun stopPassiveMonitoring()
 }

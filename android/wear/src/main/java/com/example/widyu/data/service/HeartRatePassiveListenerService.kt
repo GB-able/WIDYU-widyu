@@ -6,24 +6,29 @@ import androidx.health.services.client.data.DataPointContainer
 import androidx.health.services.client.data.DataType
 import com.example.widyu.data.model.MeasureResult
 import com.example.widyu.data.repository.HeartRateRepository
+import com.example.widyu.data.util.latestHeartRate
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.components.SingletonComponent
 
 class HeartRatePassiveListenerService : PassiveListenerService() {
-    private val entryPoint by lazy {
-        EntryPointAccessors.fromApplication<ServiceEntryPoint>(applicationContext)
+    private val repository: HeartRateRepository by lazy {
+        EntryPointAccessors
+            .fromApplication<ServiceEntryPoint>(applicationContext)
+            .heartRateRepository()
     }
 
-    private val repository: HeartRateRepository by lazy { entryPoint.heartRateRepository() }
-
     override fun onNewDataPointsReceived(dataPoints: DataPointContainer) {
-        val heartRateSamples = dataPoints.getData(DataType.HEART_RATE_BPM)
-        heartRateSamples.lastOrNull()?.let { sample ->
-            runCatching { MeasureResult.HeartRate(sample.value.toInt()) }
-                .onSuccess { repository.sendHeartRate(it.value) }
-                .onFailure { Log.i("Widyu", "Error", it) }
+        Log.i(
+            "Widyu",
+            "PassiveListenerService Triggered: ${dataPoints.getData(DataType.HEART_RATE_BPM)}",
+        )
+        dataPoints.getData(DataType.HEART_RATE_BPM).latestHeartRate()?.let { heartRate ->
+            Log.i("Widyu", "PassiveListenerService Heart Rate: $heartRate")
+            runCatching { MeasureResult.HeartRate(heartRate) }
+                .onSuccess { repository.sendHeartRate(heartRate) }
+                .onFailure { Log.i("Widyu", "Heart Rate Error", it) }
         }
     }
 

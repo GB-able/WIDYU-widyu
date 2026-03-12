@@ -1,6 +1,7 @@
 package com.example.widyu.data.source
 
 import android.util.Log
+import androidx.concurrent.futures.await
 import androidx.health.services.client.HealthServicesClient
 import androidx.health.services.client.MeasureCallback
 import androidx.health.services.client.data.Availability
@@ -9,14 +10,13 @@ import androidx.health.services.client.data.DataType
 import androidx.health.services.client.data.DataTypeAvailability
 import androidx.health.services.client.data.DeltaDataType
 import androidx.health.services.client.data.PassiveListenerConfig
-import androidx.health.services.client.unregisterMeasureCallback
 import com.example.widyu.data.model.MeasureResult
 import com.example.widyu.data.service.HeartRatePassiveListenerService
+import com.example.widyu.data.util.latestHeartRate
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.channels.trySendBlocking
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.guava.await
 import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 
@@ -25,6 +25,7 @@ class HeartRateLocalDataSourceImpl @Inject constructor(
 ) : HeartRateLocalDataSource {
     private val measureClient = healthClient.measureClient
     private val passiveMonitoringClient = healthClient.passiveMonitoringClient
+    private var measureCallback: MeasureCallback? = null
 
     override suspend fun hasHeartRateCapability(): Boolean {
         val capabilities = measureClient.getCapabilitiesAsync().await()
@@ -33,7 +34,7 @@ class HeartRateLocalDataSourceImpl @Inject constructor(
 
     override fun getMeasureResult(): Flow<MeasureResult> =
         callbackFlow {
-            val callback =
+            measureCallback =
                 object : MeasureCallback {
                     override fun onAvailabilityChanged(
                         dataType: DeltaDataType<*, *>,
@@ -46,36 +47,40 @@ class HeartRateLocalDataSourceImpl @Inject constructor(
                     }
 
                     override fun onDataReceived(data: DataPointContainer) {
-                        data.getData(DataType.HEART_RATE_BPM).lastOrNull()?.let { sample ->
-                            runCatching { MeasureResult.HeartRate(sample.value.toInt()) }
+                        data.getData(DataType.HEART_RATE_BPM).latestHeartRate()?.let { heartRate ->
+                            runCatching { MeasureResult.HeartRate(heartRate) }
                                 .onSuccess { trySendBlocking(it) }
-                                .onFailure { Log.i("Widyu", "Error", it) }
+                                .onFailure { Log.i("Widyu", "Heart Rate Error", it) }
                         }
                     }
                 }
 
-            measureClient.registerMeasureCallback(DataType.HEART_RATE_BPM, callback)
+            measureClient.registerMeasureCallback(DataType.HEART_RATE_BPM, measureCallback!!)
 
-            awaitClose {
-                runBlocking {
-                    measureClient.unregisterMeasureCallback(DataType.HEART_RATE_BPM, callback)
-                }
-            }
+            awaitClose { runBlocking { stopMeasure() } }
         }
 
-    override fun startPassiveMonitoring() {
+    override suspend fun startPassiveMonitoring() {
         val config =
             PassiveListenerConfig
                 .builder()
                 .setDataTypes(setOf(DataType.HEART_RATE_BPM))
                 .build()
-        passiveMonitoringClient.setPassiveListenerServiceAsync(
-            HeartRatePassiveListenerService::class.java,
-            config,
-        )
+        passiveMonitoringClient
+            .setPassiveListenerServiceAsync(
+                HeartRatePassiveListenerService::class.java,
+                config,
+            ).await()
     }
 
-    override fun stopPassiveMonitoring() {
-        passiveMonitoringClient.clearPassiveListenerServiceAsync()
+    override suspend fun stopPassiveMonitoring() {
+        passiveMonitoringClient.clearPassiveListenerServiceAsync().await()
+    }
+
+    private suspend fun stopMeasure() {
+        measureCallback?.let { callback ->
+            measureClient.unregisterMeasureCallbackAsync(DataType.HEART_RATE_BPM, callback).await()
+            measureCallback = null
+        }
     }
 }
