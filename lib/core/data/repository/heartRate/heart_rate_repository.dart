@@ -1,5 +1,5 @@
 abstract class HeartRateRepository {
-  void sendHeartRates();
+  void observeHeartRate();
 
-  void sendHeartRateStatus();
+  void stopObserveHeartRate();
 }

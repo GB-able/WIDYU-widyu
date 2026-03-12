@@ -3,9 +3,13 @@ import 'dart:async';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:widyu/core/data/repository/heartRate/heart_rate_repository_impl.dart';
 import 'package:widyu/core/data/repository/location/location_repository_impl.dart';
+import 'package:widyu/core/data/source/heartRate/heart_rate_local_data_source_impl.dart';
+import 'package:widyu/core/data/source/heartRate/heart_rate_remote_data_source_impl.dart';
 import 'package:widyu/core/data/source/location/location_local_data_source_impl.dart';
 import 'package:widyu/core/data/source/location/location_remote_data_source_impl.dart';
+import 'package:widyu/core/network/api_client.dart';
 import 'package:widyu/core/network/socket_client.dart';
 import 'package:widyu/core/utils/location_service_manager.dart';
 
@@ -44,12 +48,21 @@ void onStart(ServiceInstance service) async {
   late final StreamSubscription locationServiceState;
   LocationServiceManager.startMonitoring();
 
-  final socketClient = await SocketClient.create(tokenManager: TokenManager());
+  final tokenManager = TokenManager();
+  final socketClient = await SocketClient.create(tokenManager: tokenManager);
+  final apiClient = ApiClient();
+
+  final heartRateRepository = HeartRateRepositoryImpl(
+      localDataSource: HeartRateLocalDataSourceImpl(),
+      remoteDataSource: HeartRateRemoteDataSourceImpl(
+        socketClient: socketClient,
+        apiClient: apiClient,
+      ));
+  heartRateRepository.observeHeartRate();
 
   final locationRepository = LocationRepositoryImpl(
     localDataSource: LocationLocalDataSourceImpl(),
-    remoteDataSource:
-        LocationRemoteDataSourceImpl(socketClient: socketClient),
+    remoteDataSource: LocationRemoteDataSourceImpl(socketClient: socketClient),
   );
 
   locationServiceState =
@@ -73,6 +86,7 @@ void onStart(ServiceInstance service) async {
   service.on('stopService').listen((event) async {
     await locationServiceState.cancel();
     LocationServiceManager.stopMonitoring();
+    heartRateRepository.stopObserveHeartRate();
     locationRepository.stopLocationUpload();
     socketClient.disconnect();
     service.stopSelf();

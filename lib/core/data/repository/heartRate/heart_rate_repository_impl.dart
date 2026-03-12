@@ -22,18 +22,25 @@ class HeartRateRepositoryImpl implements HeartRateRepository {
         _remoteDataSource = remoteDataSource;
 
   @override
-  void sendHeartRates() {
+  void observeHeartRate() {
     _heartRates?.cancel();
     _heartRates = _localDataSource
         .getHeartRates()
         .bufferCount(15)
         .map((heartRates) => HeartRateRequest(heartRates: heartRates))
-        .listen((request) => _remoteDataSource.sendHeartRates(request),
-            onError: (e) => log("Stream Error: $e"));
+        .listen((request) {
+      _remoteDataSource.sendHeartRates(request);
+      _sendHeartRateStatus();
+    }, onError: (e) => log("Stream Error: $e"));
   }
 
   @override
-  void sendHeartRateStatus() {
+  void stopObserveHeartRate() {
+    _heartRates?.cancel();
+    _heartRates = null;
+  }
+
+  void _sendHeartRateStatus() {
     final result = _remoteDataSource.fetchHeartRateStatus().toApiResult();
     if (result is Success) {
       final data = (result as Success<HeartRateResponse>).data;
