@@ -37,6 +37,7 @@ dependencies:
   geolocator: ^13.0.4
   flutter_background_service: ^5.1.0
   stomp_dart_client: ^3.0.1
+  rxdart: ^0.28.0
 
 dev_dependencies:
   flutter_test:
