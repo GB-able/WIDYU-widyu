@@ -72,7 +72,7 @@ dependencies {
 
     // Concurrent
     implementation("com.google.guava:guava:33.3.1-android")
-    implementation("androidx.concurrent:concurrent-futures:1.3.0")
+    implementation("androidx.concurrent:concurrent-futures-ktx:1.3.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-guava:1.7.3")
 
     // Health Service
