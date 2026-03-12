@@ -1,4 +1,4 @@
-import 'package:widyu/core/data/models/api_response.dart';
+import 'package:widyu/core/model/api/api_response.dart';
 import 'package:dio/dio.dart';
 
 extension ApiResponseExtension on Response {

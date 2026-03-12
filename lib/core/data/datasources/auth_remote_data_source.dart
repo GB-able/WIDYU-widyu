@@ -1,5 +1,5 @@
-import 'package:widyu/core/data/models/api_response.dart';
-import 'package:widyu/core/data/models/auth/auth_response.dart';
+import 'package:widyu/core/model/api/api_response.dart';
+import 'package:widyu/core/model/auth/auth_response.dart';
 import 'package:widyu/core/network/api_client.dart';
 import 'package:widyu/core/utils/extensions/api_response_extension.dart';
 

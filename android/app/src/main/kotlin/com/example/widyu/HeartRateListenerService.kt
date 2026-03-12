@@ -1,11 +1,9 @@
 package com.example.widyu
 
-import android.content.Intent
 import com.google.android.gms.wearable.DataEvent
 import com.google.android.gms.wearable.DataEventBuffer
 import com.google.android.gms.wearable.DataMapItem
 import com.google.android.gms.wearable.WearableListenerService
-import id.flutter.flutter_background_service.BackgroundService
 
 class HeartRateListenerService : WearableListenerService() {
     private val heartRateChannelManager: HeartRateChannelManager by lazy { (application as App).heartRateChannelManager }

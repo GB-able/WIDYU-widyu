@@ -1,7 +1,8 @@
 import 'dart:async';
+
 import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:widyu/core/data/models/token/token_pair.dart';
+import 'package:widyu/core/model/token/token_pair.dart';
 import 'package:widyu/core/network/token_manager.dart';
 
 class TokenInterceptor extends Interceptor {

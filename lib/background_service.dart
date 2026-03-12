@@ -49,7 +49,8 @@ void onStart(ServiceInstance service) async {
         LocationRemoteDataSourceImpl(tokenManager: TokenManager()),
   );
 
-  locationServiceState = LocationServiceManager.locationServiceState.listen((state) {
+  locationServiceState =
+      LocationServiceManager.locationServiceState.listen((state) {
     if (state.isAvailable) {
       locationRepository.startLocationUpload();
     } else {

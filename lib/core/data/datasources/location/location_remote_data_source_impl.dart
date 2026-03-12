@@ -3,9 +3,9 @@ import 'dart:developer';
 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:stomp_dart_client/stomp_dart_client.dart';
+import 'package:widyu/core/model/location/user_location.dart';
 import 'package:widyu/core/network/token_manager.dart';
 
-import '../../models/location/user_location.dart';
 import 'location_remote_data_source.dart';
 
 class LocationRemoteDataSourceImpl implements LocationRemoteDataSource {

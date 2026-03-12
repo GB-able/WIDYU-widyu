@@ -25,6 +25,12 @@ class MainViewModel @Inject constructor(
     private val _uiState: MutableStateFlow<UiState> = MutableStateFlow(UiState.Loading)
     val uiState: StateFlow<UiState> = _uiState.asStateFlow()
 
+    private var currentHeartRate: Int = 0
+
+    init {
+        observeServerResponse()
+    }
+
     fun checkSupported() {
         viewModelScope.launch {
             repository
@@ -54,7 +60,8 @@ class MainViewModel @Inject constructor(
                         if (measureResult.isAvailable.not()) updateState { UiState.WatchDisconnect }
                     }
 
-                    is MeasureResult.HeartRate ->
+                    is MeasureResult.HeartRate -> {
+                        currentHeartRate = measureResult.value
                         updateState {
                             val isStable = measureResult.isStable
                             if (isStable == null || isStable) {
@@ -63,6 +70,22 @@ class MainViewModel @Inject constructor(
                                 UiState.Caution(measureResult.value)
                             }
                         }
+                    }
+                }
+            }.launchIn(viewModelScope)
+    }
+
+    private fun observeServerResponse() {
+        repository
+            .getHeartRateStatus()
+            .onEach { response ->
+                Log.d("MainViewModel", "Received server response: $response")
+                updateState {
+                    when (response.lowercase()) {
+                        "stable" -> UiState.Stable(currentHeartRate)
+                        "caution" -> UiState.Caution(currentHeartRate)
+                        else -> this
+                    }
                 }
             }.launchIn(viewModelScope)
     }
