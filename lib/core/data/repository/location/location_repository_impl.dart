@@ -25,7 +25,6 @@ class LocationRepositoryImpl implements LocationRepository {
       _locationSubscription = null;
     }
 
-    await _remoteDataSource.connect();
     _locationSubscription = _localDataSource.getLocation().listen(
       (location) {
         _remoteDataSource.sendLocation(location);
@@ -40,6 +39,5 @@ class LocationRepositoryImpl implements LocationRepository {
   void stopLocationUpload() {
     _locationSubscription?.cancel();
     _locationSubscription = null;
-    _remoteDataSource.disconnect();
   }
 }

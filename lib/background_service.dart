@@ -6,6 +6,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:widyu/core/data/repository/location/location_repository_impl.dart';
 import 'package:widyu/core/data/source/location/location_local_data_source_impl.dart';
 import 'package:widyu/core/data/source/location/location_remote_data_source_impl.dart';
+import 'package:widyu/core/network/socket_client.dart';
 import 'package:widyu/core/utils/location_service_manager.dart';
 
 import 'core/network/token_manager.dart';
@@ -43,10 +44,12 @@ void onStart(ServiceInstance service) async {
   late final StreamSubscription locationServiceState;
   LocationServiceManager.startMonitoring();
 
+  final socketClient = await SocketClient.create(tokenManager: TokenManager());
+
   final locationRepository = LocationRepositoryImpl(
     localDataSource: LocationLocalDataSourceImpl(),
     remoteDataSource:
-        LocationRemoteDataSourceImpl(tokenManager: TokenManager()),
+        LocationRemoteDataSourceImpl(socketClient: socketClient),
   );
 
   locationServiceState =
@@ -71,6 +74,7 @@ void onStart(ServiceInstance service) async {
     await locationServiceState.cancel();
     LocationServiceManager.stopMonitoring();
     locationRepository.stopLocationUpload();
+    socketClient.disconnect();
     service.stopSelf();
   });
 }
