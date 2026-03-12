@@ -16,7 +16,7 @@ class SocketClient {
 
   String get _baseUrl => dotenv.env['BASE_URL'] ?? "";
 
-  bool get isConnected => _stompClient?.connected ?? false;
+  bool get _isConnected => _stompClient?.connected ?? false;
 
   static const String _socketPrefix = '/ws/location';
   static const String _subscribeDestination = '/topic/location/senior';
@@ -24,10 +24,11 @@ class SocketClient {
   static const String _heartRateDestination = '/app/heart-rate/send';
 
   Future<void> connect() async {
+    if (_isConnected) return;
+
     final accessToken = await _tokenManager.accessToken;
     final memberId = await _tokenManager.memberId;
 
-    _stompClient?.deactivate();
     _stompClient = StompClient(
         config: StompConfig.sockJS(
       url: '$_baseUrl$_socketPrefix',
@@ -47,7 +48,7 @@ class SocketClient {
   }
 
   void sendLocation(UserLocation location) {
-    if (isConnected) {
+    if (_isConnected) {
       _stompClient!.send(
         destination: _locationDestination,
         body: jsonEncode(location.toJson()),
@@ -58,7 +59,7 @@ class SocketClient {
   }
 
   void sendHeartRate(HeartRate heartRate) {
-    if (isConnected) {
+    if (_isConnected) {
       _stompClient!.send(
         destination: _heartRateDestination,
         body: jsonEncode(heartRate.toJson()),
