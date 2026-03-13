@@ -79,11 +79,10 @@ class MainViewModel @Inject constructor(
         repository
             .getHeartRateStatus()
             .onEach { response ->
-                Log.d("MainViewModel", "Received server response: $response")
                 updateState {
-                    when (response.lowercase()) {
-                        "stable" -> UiState.Stable(currentHeartRate)
-                        "caution" -> UiState.Caution(currentHeartRate)
+                    when (response) {
+                        "NORMAL" -> UiState.Stable(currentHeartRate)
+                        "ANORMALY" -> UiState.Caution(currentHeartRate)
                         else -> this
                     }
                 }
