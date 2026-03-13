@@ -1,13 +1,12 @@
 package com.example.widyu
 
+import com.example.widyu.heart_rate.HeartRatePlugin
 import com.google.android.gms.wearable.DataEvent
 import com.google.android.gms.wearable.DataEventBuffer
 import com.google.android.gms.wearable.DataMapItem
 import com.google.android.gms.wearable.WearableListenerService
 
 class HeartRateListenerService : WearableListenerService() {
-    private val heartRateChannelManager: HeartRateChannelManager by lazy { (application as App).heartRateChannelManager }
-
     override fun onDataChanged(dataEvents: DataEventBuffer) {
         dataEvents.forEach { event ->
             if (event.type == DataEvent.TYPE_CHANGED) {
@@ -16,7 +15,7 @@ class HeartRateListenerService : WearableListenerService() {
                     val dataMap = DataMapItem.fromDataItem(item).dataMap
                     val heartRate = dataMap.getInt(HEART_RATE_KEY)
                     val timestamp = dataMap.getLong(TIMESTAMP_KEY)
-                    heartRateChannelManager.sendHeartRate(heartRate, timestamp)
+                    HeartRatePlugin.sendHeartRate(heartRate, timestamp)
                 }
             }
         }
