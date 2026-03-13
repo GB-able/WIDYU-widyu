@@ -28,9 +28,9 @@ class HeartRateRepositoryImpl implements HeartRateRepository {
         .getHeartRates()
         .bufferCount(15)
         .map((heartRates) => HeartRateRequest(heartRates: heartRates))
-        .listen((request) {
+        .listen((request) async {
       _remoteDataSource.sendHeartRates(request);
-      _sendHeartRateStatus();
+      await _sendHeartRateStatus();
     }, onError: (e) => log("Stream Error: $e"));
   }
 
@@ -40,11 +40,11 @@ class HeartRateRepositoryImpl implements HeartRateRepository {
     _heartRates = null;
   }
 
-  void _sendHeartRateStatus() {
-    final result = _remoteDataSource.fetchHeartRateStatus().toApiResult();
+  Future<void> _sendHeartRateStatus() async {
+    final result = await _remoteDataSource.fetchHeartRateStatus().toApiResult();
     if (result is Success) {
       final data = (result as Success<HeartRateResponse>).data;
-      _localDataSource.sendHeartRateStatus(data.heartRateStatus);
+      await _localDataSource.sendHeartRateStatus(data.heartRateStatus);
     }
   }
 }
