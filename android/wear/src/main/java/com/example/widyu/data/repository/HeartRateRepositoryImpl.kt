@@ -7,10 +7,13 @@ import com.example.widyu.di.ApplicationScope
 import com.example.widyu.di.IoDispatcher
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.sample
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -21,9 +24,11 @@ class HeartRateRepositoryImpl @Inject constructor(
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
     @ApplicationScope applicationScope: CoroutineScope,
 ) : HeartRateRepository {
+    @OptIn(FlowPreview::class)
     private val heartRates: SharedFlow<MeasureResult> =
         heartRateLocalDataSource
             .getMeasureResult()
+            .sample(1000)
             .onEach { measureResult ->
                 if (measureResult is MeasureResult.HeartRate) {
                     withContext(ioDispatcher) {
