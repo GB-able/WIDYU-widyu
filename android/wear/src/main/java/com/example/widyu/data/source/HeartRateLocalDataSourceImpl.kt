@@ -2,13 +2,16 @@ package com.example.widyu.data.source
 
 import android.util.Log
 import androidx.concurrent.futures.await
+import androidx.health.services.client.ExerciseUpdateCallback
 import androidx.health.services.client.HealthServicesClient
-import androidx.health.services.client.MeasureCallback
 import androidx.health.services.client.data.Availability
-import androidx.health.services.client.data.DataPointContainer
+import androidx.health.services.client.data.BatchingMode
 import androidx.health.services.client.data.DataType
 import androidx.health.services.client.data.DataTypeAvailability
-import androidx.health.services.client.data.DeltaDataType
+import androidx.health.services.client.data.ExerciseConfig
+import androidx.health.services.client.data.ExerciseLapSummary
+import androidx.health.services.client.data.ExerciseType
+import androidx.health.services.client.data.ExerciseUpdate
 import androidx.health.services.client.data.PassiveListenerConfig
 import com.example.widyu.data.model.MeasureResult
 import com.example.widyu.data.service.HeartRatePassiveListenerService
@@ -23,42 +26,77 @@ import javax.inject.Inject
 class HeartRateLocalDataSourceImpl @Inject constructor(
     healthClient: HealthServicesClient,
 ) : HeartRateLocalDataSource {
-    private val measureClient = healthClient.measureClient
     private val passiveMonitoringClient = healthClient.passiveMonitoringClient
-    private var measureCallback: MeasureCallback? = null
+    private val exerciseClient = healthClient.exerciseClient
 
     override suspend fun hasHeartRateCapability(): Boolean {
-        val capabilities = measureClient.getCapabilitiesAsync().await()
-        return (DataType.HEART_RATE_BPM in capabilities.supportedDataTypesMeasure)
+        val capabilities = exerciseClient.getCapabilitiesAsync().await()
+        if (ExerciseType.WALKING in capabilities.supportedExerciseTypes) {
+            val walkingCapabilities = capabilities.getExerciseTypeCapabilities(ExerciseType.WALKING)
+            return (
+                DataType.HEART_RATE_BPM in walkingCapabilities.supportedDataTypes &&
+                    BatchingMode.HEART_RATE_5_SECONDS in capabilities.supportedBatchingModeOverrides
+            )
+        }
+        return false
     }
 
     override fun getMeasureResult(): Flow<MeasureResult> =
         callbackFlow {
-            measureCallback =
-                object : MeasureCallback {
+            val callback =
+                object : ExerciseUpdateCallback {
                     override fun onAvailabilityChanged(
-                        dataType: DeltaDataType<*, *>,
+                        dataType: DataType<*, *>,
                         availability: Availability,
                     ) {
-                        if (availability is DataTypeAvailability) {
-                            val isAvailable = (availability == DataTypeAvailability.AVAILABLE)
-                            trySendBlocking(MeasureResult.Availability(isAvailable))
+                        if (dataType == DataType.HEART_RATE_BPM && availability is DataTypeAvailability) {
+                            trySendBlocking(MeasureResult.Availability(availability == DataTypeAvailability.AVAILABLE))
                         }
                     }
 
-                    override fun onDataReceived(data: DataPointContainer) {
-                        data.getData(DataType.HEART_RATE_BPM).latestHeartRate()?.let { heartRate ->
-                            runCatching { MeasureResult.HeartRate(heartRate) }
-                                .onSuccess { trySendBlocking(it) }
-                                .onFailure { Log.i("Widyu", "Heart Rate Error", it) }
+                    override fun onExerciseUpdateReceived(update: ExerciseUpdate) {
+                        val heartRateData = update.latestMetrics.getData(DataType.HEART_RATE_BPM)
+                        heartRateData.latestHeartRate()?.let { heartRate ->
+                            trySendBlocking(MeasureResult.HeartRate(heartRate))
                         }
                     }
+
+                    override fun onRegistered() {}
+
+                    override fun onRegistrationFailed(throwable: Throwable) {}
+
+                    override fun onLapSummaryReceived(lapSummary: ExerciseLapSummary) {}
                 }
 
-            measureClient.registerMeasureCallback(DataType.HEART_RATE_BPM, measureCallback!!)
+            exerciseClient.setUpdateCallback(callback)
+            startExerciseSession()
 
-            awaitClose { runBlocking { stopMeasure() } }
+            awaitClose {
+                runBlocking {
+                    stopExerciseSession()
+                    exerciseClient.clearUpdateCallbackAsync(callback)
+                }
+            }
         }
+
+    private suspend fun startExerciseSession() {
+        runCatching {
+            val config =
+                ExerciseConfig
+                    .builder(ExerciseType.WALKING)
+                    .setDataTypes(setOf(DataType.HEART_RATE_BPM))
+                    .setBatchingModeOverrides(setOf(BatchingMode.HEART_RATE_5_SECONDS))
+                    .setIsAutoPauseAndResumeEnabled(false)
+                    .build()
+            exerciseClient.startExerciseAsync(config).await()
+        }.onFailure { Log.e("Widyu", "Failed to start exercise session", it) }
+    }
+
+    private suspend fun stopExerciseSession() {
+        runCatching {
+            exerciseClient.endExerciseAsync().await()
+        }.onFailure { Log.e("Widyu", "Failed to stop exercise session", it) }
+    }
 
     override suspend fun startPassiveMonitoring() {
         val config =
@@ -75,12 +113,5 @@ class HeartRateLocalDataSourceImpl @Inject constructor(
 
     override suspend fun stopPassiveMonitoring() {
         passiveMonitoringClient.clearPassiveListenerServiceAsync().await()
-    }
-
-    private suspend fun stopMeasure() {
-        measureCallback?.let { callback ->
-            measureClient.unregisterMeasureCallbackAsync(DataType.HEART_RATE_BPM, callback).await()
-            measureCallback = null
-        }
     }
 }
