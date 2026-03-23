@@ -1,5 +1,7 @@
 package com.example.widyu.presentation
 
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -18,5 +20,9 @@ class MainActivity : ComponentActivity() {
                 WidyuApp()
             }
         }
+    }
+
+    companion object {
+        fun newIntent(context: Context): Intent = Intent(context, MainActivity::class.java)
     }
 }
