@@ -7,9 +7,12 @@
     <uses-permission
         android:name="android.permission.BODY_SENSORS_BACKGROUND"
         android:maxSdkVersion="35" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_HEALTH" />
     <uses-permission android:name="android.permission.health.READ_HEART_RATE" />
     <uses-permission android:name="android.permission.health.READ_HEALTH_DATA_IN_BACKGROUND" />
     <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <uses-feature android:name="android.hardware.type.watch" />
 
@@ -40,6 +43,11 @@
             android:name=".data.service.HeartRatePassiveListenerService"
             android:exported="true"
             android:permission="com.google.android.gms.permission.PASSIVE_DATA_BINDING" />
+
+        <service
+            android:name=".data.service.HeartRateForegroundService"
+            android:exported="false"
+            android:foregroundServiceType="health" />
     </application>
 
 </manifest>
