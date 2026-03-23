@@ -12,9 +12,7 @@ import androidx.health.services.client.data.ExerciseConfig
 import androidx.health.services.client.data.ExerciseLapSummary
 import androidx.health.services.client.data.ExerciseType
 import androidx.health.services.client.data.ExerciseUpdate
-import androidx.health.services.client.data.PassiveListenerConfig
 import com.example.widyu.data.model.MeasureResult
-import com.example.widyu.data.service.HeartRatePassiveListenerService
 import com.example.widyu.data.util.latestHeartRate
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.channels.trySendBlocking
@@ -26,7 +24,6 @@ import javax.inject.Inject
 class HeartRateLocalDataSourceImpl @Inject constructor(
     healthClient: HealthServicesClient,
 ) : HeartRateLocalDataSource {
-    private val passiveMonitoringClient = healthClient.passiveMonitoringClient
     private val exerciseClient = healthClient.exerciseClient
 
     override suspend fun hasHeartRateCapability(): Boolean {
@@ -96,22 +93,5 @@ class HeartRateLocalDataSourceImpl @Inject constructor(
         runCatching {
             exerciseClient.endExerciseAsync().await()
         }.onFailure { Log.e("Widyu", "Failed to stop exercise session", it) }
-    }
-
-    override suspend fun startPassiveMonitoring() {
-        val config =
-            PassiveListenerConfig
-                .builder()
-                .setDataTypes(setOf(DataType.HEART_RATE_BPM))
-                .build()
-        passiveMonitoringClient
-            .setPassiveListenerServiceAsync(
-                HeartRatePassiveListenerService::class.java,
-                config,
-            ).await()
-    }
-
-    override suspend fun stopPassiveMonitoring() {
-        passiveMonitoringClient.clearPassiveListenerServiceAsync().await()
     }
 }

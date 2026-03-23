@@ -44,10 +44,6 @@ class HeartRateRepositoryImpl @Inject constructor(
 
     override fun getHeartRate(): Flow<MeasureResult> = heartRates
 
-    override suspend fun startPassiveMonitoring() = runCatching { heartRateLocalDataSource.startPassiveMonitoring() }
-
-    override suspend fun stopPassiveMonitoring() = runCatching { heartRateLocalDataSource.stopPassiveMonitoring() }
-
     override fun sendHeartRate(heartRate: Int) = heartRateRemoteDataSource.sendHeartRate(heartRate)
 
     override fun getHeartRateStatus(): Flow<String> = heartRateRemoteDataSource.fetchHeartRateStatus()
