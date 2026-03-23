@@ -22,6 +22,9 @@ import com.example.widyu.presentation.util.PermissionManager.isPermanentlyDenied
 object PermissionManager {
     val requiredPermissions: Array<String> by lazy {
         buildList {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                add(Manifest.permission.POST_NOTIFICATIONS)
+            }
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA) {
                 add(HealthPermissions.READ_HEART_RATE)
                 add(HealthPermissions.READ_HEALTH_DATA_IN_BACKGROUND)
