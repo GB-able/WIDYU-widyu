@@ -1,6 +1,5 @@
 package com.example.widyu.presentation.component
 
-import android.Manifest
 import android.content.res.Configuration
 import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.Canvas
@@ -27,6 +26,7 @@ import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.wear.compose.material.Icon
 import androidx.wear.compose.material.Text
+import com.example.widyu.data.service.HeartRateForegroundService
 import com.example.widyu.presentation.MainViewModel
 import com.example.widyu.presentation.UiState
 import com.example.widyu.presentation.model.UiModel
@@ -43,7 +43,10 @@ fun WidyuScreen(viewModel: MainViewModel = hiltViewModel()) {
     val permissionLauncher =
         rememberPermissionLauncher(
             activity = activity,
-            onGranted = viewModel::checkSupported,
+            onGranted = {
+                viewModel.checkSupported()
+                context.startForegroundService(HeartRateForegroundService.newIntent(context))
+            },
             onRequireRuntimePermission = {},
             onRequireBackgroundPermission = { openAppSettings(context) },
         )
