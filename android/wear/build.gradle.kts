@@ -67,8 +67,10 @@ dependencies {
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
 
     // Wear OS
+    implementation("androidx.wear:wear:1.3.0")
     implementation("androidx.wear.compose:compose-material:1.4.1")
     implementation("androidx.wear.compose:compose-ui-tooling:1.4.1")
+    implementation("androidx.wear:wear-ongoing:1.1.0")
 
     // Concurrent
     implementation("com.google.guava:guava:33.3.1-android")
