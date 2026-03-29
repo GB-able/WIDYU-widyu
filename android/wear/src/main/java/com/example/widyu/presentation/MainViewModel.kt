@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.compose.runtime.Stable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.widyu.data.model.HeartRateStatus
 import com.example.widyu.data.model.MeasureResult
 import com.example.widyu.data.repository.HeartRateRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -81,9 +82,9 @@ class MainViewModel @Inject constructor(
             .onEach { response ->
                 updateState {
                     when (response) {
-                        "NORMAL" -> UiState.Stable(currentHeartRate)
-                        "ANORMALY" -> UiState.Caution(currentHeartRate)
-                        else -> this
+                        HeartRateStatus.STABLE -> UiState.Stable(currentHeartRate)
+                        HeartRateStatus.CAUTION -> UiState.Caution(currentHeartRate)
+                        HeartRateStatus.UNKNOWN -> this
                     }
                 }
             }.launchIn(viewModelScope)

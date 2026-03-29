@@ -1,5 +1,6 @@
 package com.example.widyu.data.repository
 
+import com.example.widyu.data.model.HeartRateStatus
 import com.example.widyu.data.model.MeasureResult
 import kotlinx.coroutines.flow.Flow
 
@@ -10,5 +11,5 @@ interface HeartRateRepository {
 
     fun sendHeartRate(heartRate: Int)
 
-    fun getHeartRateStatus(): Flow<String>
+    fun getHeartRateStatus(): Flow<HeartRateStatus>
 }

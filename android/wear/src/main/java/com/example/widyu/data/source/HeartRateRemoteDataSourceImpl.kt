@@ -2,6 +2,7 @@ package com.example.widyu.data.source
 
 import android.content.Context
 import android.util.Log
+import com.example.widyu.data.model.HeartRateStatus
 import com.google.android.gms.wearable.DataClient
 import com.google.android.gms.wearable.MessageClient
 import com.google.android.gms.wearable.PutDataMapRequest
@@ -32,13 +33,14 @@ class HeartRateRemoteDataSourceImpl @Inject constructor(
             }
     }
 
-    override fun fetchHeartRateStatus(): Flow<String> =
+    override fun fetchHeartRateStatus(): Flow<HeartRateStatus> =
         callbackFlow {
             val listener =
                 MessageClient.OnMessageReceivedListener { messageEvent ->
                     if (messageEvent.path == HEART_RATE_STATUS_PATH) {
-                        val status = String(messageEvent.data)
-                        trySend(status)
+                        val data = String(messageEvent.data)
+                        val heartRateStatus = HeartRateStatus.from(data)
+                        trySend(heartRateStatus)
                     }
                 }
 

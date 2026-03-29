@@ -1,5 +1,6 @@
 package com.example.widyu.data.repository
 
+import com.example.widyu.data.model.HeartRateStatus
 import com.example.widyu.data.model.MeasureResult
 import com.example.widyu.data.source.HeartRateLocalDataSource
 import com.example.widyu.data.source.HeartRateRemoteDataSource
@@ -46,5 +47,5 @@ class HeartRateRepositoryImpl @Inject constructor(
 
     override fun sendHeartRate(heartRate: Int) = heartRateRemoteDataSource.sendHeartRate(heartRate)
 
-    override fun getHeartRateStatus(): Flow<String> = heartRateRemoteDataSource.fetchHeartRateStatus()
+    override fun getHeartRateStatus(): Flow<HeartRateStatus> = heartRateRemoteDataSource.fetchHeartRateStatus()
 }
