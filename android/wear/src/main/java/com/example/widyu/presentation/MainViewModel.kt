@@ -64,12 +64,7 @@ class MainViewModel @Inject constructor(
                     is MeasureResult.HeartRate -> {
                         currentHeartRate = measureResult.value
                         updateState {
-                            val isStable = measureResult.isStable
-                            if (isStable == null || isStable) {
-                                UiState.Stable(measureResult.value)
-                            } else {
-                                UiState.Caution(measureResult.value)
-                            }
+                            UiState.Stable(measureResult.value)
                         }
                     }
                 }

@@ -7,7 +7,6 @@ sealed interface MeasureResult {
 
     data class HeartRate(
         val value: Int,
-        val isStable: Boolean? = null,
     ) : MeasureResult {
         init {
             require(value > 0) { HEART_RATE_ERROR }
