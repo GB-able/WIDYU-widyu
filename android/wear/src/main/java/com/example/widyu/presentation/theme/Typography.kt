@@ -54,12 +54,26 @@ data class WidyuTextStyle(
 
 @Immutable
 data class WidyuTypography(
+    val medium12: WidyuTextStyle =
+        WidyuTextStyle(
+            fontFamily = Pretendard,
+            fontWeight = FontWeight.W500,
+            fontSize = 12.dp,
+            lineHeight = 12.dp,
+        ),
     val medium16: WidyuTextStyle =
         WidyuTextStyle(
             fontFamily = Pretendard,
             fontWeight = FontWeight.W500,
             fontSize = 16.dp,
             lineHeight = 16.dp,
+        ),
+    val semibold12: WidyuTextStyle =
+        WidyuTextStyle(
+            fontFamily = Pretendard,
+            fontWeight = FontWeight.W600,
+            fontSize = 12.dp,
+            lineHeight = 12.dp,
         ),
     val semibold16: WidyuTextStyle =
         WidyuTextStyle(
