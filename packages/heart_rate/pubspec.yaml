@@ -1,0 +1,19 @@
+name: heart_rate
+description: A new Flutter plugin project for heart rate monitoring.
+version: 0.0.1
+publish_to: 'none'
+
+environment:
+  sdk: ^3.5.3
+  flutter: ">=3.3.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+flutter:
+  plugin:
+    platforms:
+      android:
+        package: com.example.widyu.heart_rate
+        pluginClass: HeartRatePlugin

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:widyu/core/data/repositories/auth/auth_repository.dart';
+import 'package:widyu/core/data/repository/auth/auth_repository.dart';
 import 'package:widyu/feature/auth/login_ui_state.dart';
 import 'package:widyu/feature/auth/login_view_model.dart';
 import 'package:widyu/feature/auth/widgets/login_code_view.dart';

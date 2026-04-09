@@ -1,11 +1,17 @@
 import 'dart:async';
+import 'dart:ui';
 
 import 'package:flutter/widgets.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:widyu/core/data/datasources/location/location_local_data_source_impl.dart';
-import 'package:widyu/core/data/datasources/location/location_remote_data_source_impl.dart';
-import 'package:widyu/core/data/repositories/location/location_repository_impl.dart';
+import 'package:widyu/core/data/repository/heartRate/heart_rate_repository_impl.dart';
+import 'package:widyu/core/data/repository/location/location_repository_impl.dart';
+import 'package:widyu/core/data/source/heartRate/heart_rate_local_data_source_impl.dart';
+import 'package:widyu/core/data/source/heartRate/heart_rate_remote_data_source_impl.dart';
+import 'package:widyu/core/data/source/location/location_local_data_source_impl.dart';
+import 'package:widyu/core/data/source/location/location_remote_data_source_impl.dart';
+import 'package:widyu/core/network/api_client.dart';
+import 'package:widyu/core/network/socket_client.dart';
 import 'package:widyu/core/utils/location_service_manager.dart';
 
 import 'core/network/token_manager.dart';
@@ -38,18 +44,31 @@ Future<bool> onIosBackground(ServiceInstance service) async {
 @pragma('vm:entry-point')
 void onStart(ServiceInstance service) async {
   WidgetsFlutterBinding.ensureInitialized();
+  DartPluginRegistrant.ensureInitialized();
   await dotenv.load(fileName: ".env");
 
   late final StreamSubscription locationServiceState;
   LocationServiceManager.startMonitoring();
 
+  final tokenManager = TokenManager();
+  final socketClient = await SocketClient.create(tokenManager: tokenManager);
+  final apiClient = ApiClient();
+
+  final heartRateRepository = HeartRateRepositoryImpl(
+      localDataSource: HeartRateLocalDataSourceImpl(),
+      remoteDataSource: HeartRateRemoteDataSourceImpl(
+        socketClient: socketClient,
+        apiClient: apiClient,
+      ));
+  heartRateRepository.observeHeartRate();
+
   final locationRepository = LocationRepositoryImpl(
     localDataSource: LocationLocalDataSourceImpl(),
-    remoteDataSource:
-        LocationRemoteDataSourceImpl(tokenManager: TokenManager()),
+    remoteDataSource: LocationRemoteDataSourceImpl(socketClient: socketClient),
   );
 
-  locationServiceState = LocationServiceManager.locationServiceState.listen((state) {
+  locationServiceState =
+      LocationServiceManager.locationServiceState.listen((state) {
     if (state.isAvailable) {
       locationRepository.startLocationUpload();
     } else {
@@ -69,7 +88,9 @@ void onStart(ServiceInstance service) async {
   service.on('stopService').listen((event) async {
     await locationServiceState.cancel();
     LocationServiceManager.stopMonitoring();
+    heartRateRepository.stopObserveHeartRate();
     locationRepository.stopLocationUpload();
+    socketClient.disconnect();
     service.stopSelf();
   });
 }

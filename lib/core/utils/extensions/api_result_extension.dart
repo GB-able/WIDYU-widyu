@@ -1,5 +1,5 @@
-import 'package:widyu/core/data/models/api_response.dart';
-import 'package:widyu/core/data/models/api_result.dart';
+import 'package:widyu/core/model/api/api_response.dart';
+import 'package:widyu/core/model/api/api_result.dart';
 
 extension ApiResponseHandler<T> on Future<ApiResponse<T>> {
   Future<ApiResult<T>> toApiResult() async {
