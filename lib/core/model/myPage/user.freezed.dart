@@ -14,7 +14,7 @@ T _$identity<T>(T value) => value;
 
 /// @nodoc
 mixin _$User {
-  String get memberId;
+  int get memberId;
   String? get profileImage;
   String get name;
   int get points;
@@ -58,7 +58,7 @@ abstract mixin class $UserCopyWith<$Res> {
   factory $UserCopyWith(User value, $Res Function(User) _then) =
       _$UserCopyWithImpl;
   @useResult
-  $Res call({String memberId, String? profileImage, String name, int points});
+  $Res call({int memberId, String? profileImage, String name, int points});
 }
 
 /// @nodoc
@@ -82,7 +82,7 @@ class _$UserCopyWithImpl<$Res> implements $UserCopyWith<$Res> {
       memberId: null == memberId
           ? _self.memberId
           : memberId // ignore: cast_nullable_to_non_nullable
-              as String,
+              as int,
       profileImage: freezed == profileImage
           ? _self.profileImage
           : profileImage // ignore: cast_nullable_to_non_nullable
@@ -193,7 +193,7 @@ extension UserPatterns on User {
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>(
     TResult Function(
-            String memberId, String? profileImage, String name, int points)?
+            int memberId, String? profileImage, String name, int points)?
         $default, {
     required TResult orElse(),
   }) {
@@ -223,7 +223,7 @@ extension UserPatterns on User {
   @optionalTypeArgs
   TResult when<TResult extends Object?>(
     TResult Function(
-            String memberId, String? profileImage, String name, int points)
+            int memberId, String? profileImage, String name, int points)
         $default,
   ) {
     final _that = this;
@@ -251,7 +251,7 @@ extension UserPatterns on User {
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>(
     TResult? Function(
-            String memberId, String? profileImage, String name, int points)?
+            int memberId, String? profileImage, String name, int points)?
         $default,
   ) {
     final _that = this;
@@ -276,7 +276,7 @@ class _User implements User {
   factory _User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);
 
   @override
-  final String memberId;
+  final int memberId;
   @override
   final String? profileImage;
   @override
@@ -329,7 +329,7 @@ abstract mixin class _$UserCopyWith<$Res> implements $UserCopyWith<$Res> {
       __$UserCopyWithImpl;
   @override
   @useResult
-  $Res call({String memberId, String? profileImage, String name, int points});
+  $Res call({int memberId, String? profileImage, String name, int points});
 }
 
 /// @nodoc
@@ -353,7 +353,7 @@ class __$UserCopyWithImpl<$Res> implements _$UserCopyWith<$Res> {
       memberId: null == memberId
           ? _self.memberId
           : memberId // ignore: cast_nullable_to_non_nullable
-              as String,
+              as int,
       profileImage: freezed == profileImage
           ? _self.profileImage
           : profileImage // ignore: cast_nullable_to_non_nullable
