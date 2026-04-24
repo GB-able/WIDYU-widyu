@@ -20,6 +20,7 @@ class MyTypo {
   static final title1 = boldBase.copyWith(height: 1.5, fontSize: 24);
   static final title2 = boldBase.copyWith(height: 1.5, fontSize: 20);
   static final title3 = semiboldBase.copyWith(height: 1.5, fontSize: 18);
+  static final title4 = boldBase.copyWith(height: 1.5, fontSize: 18);
 
   static final subTitle1 = boldBase.copyWith(height: 1.5, fontSize: 16);
   static final subTitle2 = semiboldBase.copyWith(height: 1.5, fontSize: 14);
