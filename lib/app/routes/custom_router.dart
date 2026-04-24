@@ -8,6 +8,7 @@ import 'package:widyu/core/ui/widgets/bot_nav.dart';
 import 'package:widyu/feature/auth/login_screen.dart';
 import 'package:widyu/feature/auth/onboarding_screen.dart';
 import 'package:widyu/feature/home/home_screen.dart';
+import 'package:widyu/feature/myPage/my_page_screen.dart';
 import 'package:widyu/feature/splash_screen.dart';
 
 class CustomRouter {
@@ -42,7 +43,7 @@ class CustomRouter {
           StatefulShellBranch(routes: [
             CustomGoRoute.staticRoute(
               route: AppRoute.my,
-              builder: (context, state) => const Placeholder(),
+              builder: (context, state) => const MyPageScreen(),
             ),
           ]),
         ],
