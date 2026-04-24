@@ -20,18 +20,10 @@ class _ManagementMenuContent extends StatelessWidget {
         children: [
           SvgPicture.asset(asset, width: 24, height: 24),
           const SizedBox(width: 8),
-          Text(title, style: MyTypo.body1.copyWith(color: MyColor.black)),
-          const Spacer(),
-          IconButton(
-            onPressed: onClick,
-            icon: SvgPicture.asset(
-              'assets/icons/ic_20_chevron_right.svg',
-              width: 20,
-              height: 20,
-              colorFilter: const ColorFilter.mode(
-                MyColor.grey400,
-                BlendMode.srcIn,
-              ),
+          Expanded(
+            child: _TextMenu(
+              title: title,
+              onClick: onClick,
             ),
           ),
         ],
