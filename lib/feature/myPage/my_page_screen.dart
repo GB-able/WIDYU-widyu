@@ -18,6 +18,7 @@ part 'widget/management_menu_view.dart';
 part 'widget/management_menu_content.dart';
 part 'widget/setting_menu_view.dart';
 part 'widget/text_menu.dart';
+part 'widget/information_menu_view.dart';
 
 class MyPageScreen extends StatelessWidget {
   const MyPageScreen({super.key});
@@ -40,21 +41,32 @@ class MyPageScreen extends StatelessWidget {
           ),
           centerTitle: true,
         ),
-        body: const SingleChildScrollView(
-          child: Column(
-            children: [
-              _MyPageHeader(),
-              _ManagementMenuView(),
-              SizedBox(
-                width: double.infinity,
-                height: 10,
-                child: DecoratedBox(
-                  decoration: BoxDecoration(color: MyColor.grey50),
+        body: Column(
+          children: [
+            const _MyPageHeader(),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: EdgeInsets.only(
+                  bottom: MediaQuery.of(context).viewPadding.bottom + 64,
+                ),
+                scrollDirection: Axis.vertical,
+                child: const Column(
+                  children: [
+                    _ManagementMenuView(),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 10,
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(color: MyColor.grey50),
+                      ),
+                    ),
+                    _SettingMenuView(),
+                    _InformationMenuView(),
+                  ],
                 ),
               ),
-              _SettingMenuView(),
-            ],
-          ),
+            )
+          ],
         ),
       ),
     );

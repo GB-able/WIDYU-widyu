@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:widyu/core/data/repository/myPage/my_page_repository.dart';
 import 'package:widyu/core/model/api/api_result.dart' as api;
 import 'package:widyu/core/model/myPage/user.dart';
@@ -10,9 +11,13 @@ class MyPageViewModel with ChangeNotifier {
   MyPageUiState _uiState = const Loading();
   MyPageUiState get uiState => _uiState;
 
+  String _appVersion = '';
+  String get appVersion => _appVersion;
+
   MyPageViewModel({required MyPageRepository repository})
       : _repository = repository {
     _fetchUser();
+    _fetchAppVersion();
   }
 
   Future<void> _fetchUser() async {
@@ -30,6 +35,12 @@ class MyPageViewModel with ChangeNotifier {
     } else {
       _uiState = const Failure();
     }
+    notifyListeners();
+  }
+
+  Future<void> _fetchAppVersion() async {
+    final info = await PackageInfo.fromPlatform();
+    _appVersion = info.version;
     notifyListeners();
   }
 }

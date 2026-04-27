@@ -16,13 +16,9 @@ class _SettingMenuView extends StatelessWidget {
           ),
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 4),
-            child: Column(
-              children: [
-                _TextMenu(
-                  title: '알림 설정',
-                  onClick: () => {},
-                ),
-              ],
+            child: _TextMenu(
+              title: '알림 설정',
+              onClick: () => {},
             ),
           ),
         ],
