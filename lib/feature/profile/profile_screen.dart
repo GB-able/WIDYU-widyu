@@ -9,6 +9,7 @@ import 'package:widyu/core/data/repository/myPage/my_page_repository.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
 import 'package:widyu/core/ui/widgets/ui_event_listener.dart';
+import 'package:widyu/core/utils/extensions/string_extension.dart';
 import 'package:widyu/core/utils/show_toast.dart';
 import 'package:widyu/feature/profile/profile_ui_event.dart';
 import 'package:widyu/feature/profile/profile_ui_state.dart';
@@ -17,6 +18,7 @@ import 'package:widyu/feature/profile/profile_view_model.dart';
 part 'widget/profile_edit_view.dart';
 part 'widget/profile_image_view.dart';
 part 'widget/profile_name_view.dart';
+part 'widget/profile_information_view.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -39,12 +41,12 @@ class ProfileScreen extends StatelessWidget {
         repository: context.read<MyPageRepository>(),
       ),
       builder: (context, child) {
+        final viewModel = context.read<ProfileViewModel>();
         final uiState = context
             .select<ProfileViewModel, ProfileUiState>((vm) => vm.uiState);
-        final uiEvent = context.read<ProfileViewModel>().uiEvent;
 
         return UiEventListener(
-          stream: uiEvent,
+          stream: viewModel.uiEvent,
           onEvent: _handleEvent,
           child: Scaffold(
             appBar: AppBar(
@@ -65,17 +67,29 @@ class ProfileScreen extends StatelessWidget {
             ),
             body: uiState.isLoading
                 ? const Center(child: CircularProgressIndicator())
-                : const Padding(
-                    padding: EdgeInsets.only(top: 24),
+                : Padding(
+                    padding: const EdgeInsets.only(top: 24),
                     child: Column(
                       children: [
-                        _ProfileEditView(),
-                        SizedBox(
+                        _ProfileEditView(
+                          name: uiState.name,
+                          profileImage: uiState.profileImage,
+                          onNameChanged: viewModel.updateName,
+                          onImagePicked: viewModel.updateProfileImage,
+                        ),
+                        const SizedBox(
                           width: double.infinity,
                           height: 10,
                           child: DecoratedBox(
                             decoration: BoxDecoration(color: MyColor.grey50),
                           ),
+                        ),
+                        _ProfileInformationView(
+                          name: uiState.name,
+                          phoneNumber: uiState.phoneNumber,
+                          address: uiState.address,
+                          detailAddress: uiState.detailAddress,
+                          inviteCode: uiState.inviteCode,
                         ),
                       ],
                     ),

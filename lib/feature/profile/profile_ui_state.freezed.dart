@@ -132,6 +132,17 @@ class _$ProfileUiStateCopyWithImpl<$Res>
 /// Adds pattern-matching-related methods to [ProfileUiState].
 extension ProfileUiStatePatterns on ProfileUiState {
   /// A variant of `map` that fallback to returning `orElse`.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case _:
+  ///     return orElse();
+  /// }
+  /// ```
+
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>(
     TResult Function(_ProfileUiState value)? $default, {
@@ -147,6 +158,18 @@ extension ProfileUiStatePatterns on ProfileUiState {
   }
 
   /// A `switch`-like method, using callbacks.
+  ///
+  /// Callbacks receives the raw object, upcasted.
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case final Subclass2 value:
+  ///     return ...;
+  /// }
+  /// ```
+
   @optionalTypeArgs
   TResult map<TResult extends Object?>(
     TResult Function(_ProfileUiState value) $default,
@@ -161,6 +184,17 @@ extension ProfileUiStatePatterns on ProfileUiState {
   }
 
   /// A variant of `map` that fallback to returning `null`.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case _:
+  ///     return null;
+  /// }
+  /// ```
+
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>(
     TResult? Function(_ProfileUiState value)? $default,
@@ -175,6 +209,17 @@ extension ProfileUiStatePatterns on ProfileUiState {
   }
 
   /// A variant of `when` that fallback to an `orElse` callback.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case _:
+  ///     return orElse();
+  /// }
+  /// ```
+
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>(
     TResult Function(
@@ -205,6 +250,18 @@ extension ProfileUiStatePatterns on ProfileUiState {
   }
 
   /// A `switch`-like method, using callbacks.
+  ///
+  /// As opposed to `map`, this offers destructuring.
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case Subclass2(:final field2):
+  ///     return ...;
+  /// }
+  /// ```
+
   @optionalTypeArgs
   TResult when<TResult extends Object?>(
     TResult Function(
@@ -234,6 +291,17 @@ extension ProfileUiStatePatterns on ProfileUiState {
   }
 
   /// A variant of `when` that fallback to returning `null`
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case _:
+  ///     return null;
+  /// }
+  /// ```
+
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>(
     TResult? Function(
@@ -269,7 +337,7 @@ class _ProfileUiState implements ProfileUiState {
   const _ProfileUiState(
       {this.isLoading = false,
       this.name = '',
-      this.profileImage,
+      this.profileImage = null,
       this.phoneNumber = '',
       this.address = '',
       this.detailAddress = '',
@@ -282,6 +350,7 @@ class _ProfileUiState implements ProfileUiState {
   @JsonKey()
   final String name;
   @override
+  @JsonKey()
   final String? profileImage;
   @override
   @JsonKey()

@@ -7,7 +7,7 @@ abstract class ProfileUiState with _$ProfileUiState {
   const factory ProfileUiState({
     @Default(false) bool isLoading,
     @Default('') String name,
-    String? profileImage,
+    @Default(null) String? profileImage,
     @Default('') String phoneNumber,
     @Default('') String address,
     @Default('') String detailAddress,
