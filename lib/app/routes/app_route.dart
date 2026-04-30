@@ -7,6 +7,8 @@ enum AppRoute {
   goal("/goal"),
   album("/album"),
   my("/my"),
+
+  profile("/my/profile"),
   ;
 
   final String path;

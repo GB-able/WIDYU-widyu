@@ -9,6 +9,7 @@ import 'package:widyu/feature/auth/login_screen.dart';
 import 'package:widyu/feature/auth/onboarding_screen.dart';
 import 'package:widyu/feature/home/home_screen.dart';
 import 'package:widyu/feature/myPage/my_page_screen.dart';
+import 'package:widyu/feature/profile/profile_screen.dart';
 import 'package:widyu/feature/splash_screen.dart';
 
 class CustomRouter {
@@ -59,6 +60,10 @@ class CustomRouter {
       CustomGoRoute.slideRoute(
         route: AppRoute.login,
         builder: (context, state) => const LoginScreen(),
+      ),
+      CustomGoRoute.slideRoute(
+        route: AppRoute.profile,
+        builder: (context, state) => const ProfileScreen(),
       ),
     ],
   );
