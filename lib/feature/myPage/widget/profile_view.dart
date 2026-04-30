@@ -26,7 +26,7 @@ class _ProfileView extends StatelessWidget {
           ),
           const Spacer(),
           IconButton(
-            onPressed: () => {},
+            onPressed: () => context.push(AppRoute.profile.path),
             icon: SvgPicture.asset(
               'assets/icons/ic_20_chevron_right_large.svg',
               width: 20,
@@ -57,6 +57,16 @@ Widget _profileImageView(String? profileImage) {
         : Image.network(
             profileImage,
             fit: BoxFit.cover,
+            loadingBuilder: (_, child, loadingProgress) {
+              if (loadingProgress == null) return child;
+              return const SizedBox(
+                width: 76,
+                height: 76,
+                child: Center(
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+              );
+            },
             errorBuilder: (_, __, ___) => SvgPicture.asset(
               'assets/icons/ic_76_profile.svg',
               width: 76,
