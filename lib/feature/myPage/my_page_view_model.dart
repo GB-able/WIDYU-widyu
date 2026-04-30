@@ -16,11 +16,11 @@ class MyPageViewModel with ChangeNotifier {
 
   MyPageViewModel({required MyPageRepository repository})
       : _repository = repository {
-    _fetchUser();
+    fetchUser();
     _fetchAppVersion();
   }
 
-  Future<void> _fetchUser() async {
+  Future<void> fetchUser() async {
     _uiState = const Loading();
     notifyListeners();
 

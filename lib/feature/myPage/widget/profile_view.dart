@@ -26,7 +26,12 @@ class _ProfileView extends StatelessWidget {
           ),
           const Spacer(),
           IconButton(
-            onPressed: () => context.push(AppRoute.profile.path),
+            onPressed: () async {
+              await context.push(AppRoute.profile.path);
+              if (context.mounted) {
+                context.read<MyPageViewModel>().fetchUser();
+              }
+            },
             icon: SvgPicture.asset(
               'assets/icons/ic_20_chevron_right_large.svg',
               width: 20,
