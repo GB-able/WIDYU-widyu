@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:widyu/core/data/repository/myPage/my_page_repository.dart';
 import 'package:widyu/core/model/api/api_result.dart' as api;
-import 'package:widyu/core/model/myPage/user.dart';
+import 'package:widyu/core/model/myPage/user/user.dart';
 import 'package:widyu/feature/myPage/my_page_ui_state.dart';
 
 class MyPageViewModel with ChangeNotifier {

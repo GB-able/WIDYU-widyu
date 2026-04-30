@@ -4,7 +4,7 @@ import 'dart:io';
 import 'package:flutter/widgets.dart';
 import 'package:widyu/core/data/repository/myPage/my_page_repository.dart';
 import 'package:widyu/core/model/api/api_result.dart' as api;
-import 'package:widyu/core/model/myPage/user_profile.dart';
+import 'package:widyu/core/model/myPage/profile/user_profile.dart';
 import 'package:widyu/feature/profile/profile_ui_event.dart';
 import 'package:widyu/feature/profile/profile_ui_state.dart';
 

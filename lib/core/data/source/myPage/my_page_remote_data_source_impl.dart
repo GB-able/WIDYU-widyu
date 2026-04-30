@@ -3,8 +3,8 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:widyu/core/data/source/myPage/my_page_remote_data_source.dart';
 import 'package:widyu/core/model/api/api_response.dart';
-import 'package:widyu/core/model/myPage/user.dart';
-import 'package:widyu/core/model/myPage/user_profile.dart';
+import 'package:widyu/core/model/myPage/user/user.dart';
+import 'package:widyu/core/model/myPage/profile/user_profile.dart';
 import 'package:widyu/core/network/api_client.dart';
 import 'package:widyu/core/utils/extensions/api_response_extension.dart';
 
