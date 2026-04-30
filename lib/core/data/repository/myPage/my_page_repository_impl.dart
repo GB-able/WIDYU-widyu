@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:widyu/core/data/repository/myPage/my_page_repository.dart';
 import 'package:widyu/core/data/source/myPage/my_page_remote_data_source.dart';
 import 'package:widyu/core/model/api/api_result.dart';
@@ -19,5 +21,15 @@ class MyPageRepositoryImpl extends MyPageRepository {
   @override
   Future<ApiResult<UserProfile>> fetchUserProfile() async {
     return await _remoteDataSource.fetchUserProfile().toApiResult();
+  }
+
+  @override
+  Future<ApiResult<void>> updateName(String name) async {
+    return await _remoteDataSource.updateName(name).toApiResult();
+  }
+
+  @override
+  Future<ApiResult<void>> updateProfileImage(File profileImage) {
+    return _remoteDataSource.updateProfileImage(profileImage).toApiResult();
   }
 }

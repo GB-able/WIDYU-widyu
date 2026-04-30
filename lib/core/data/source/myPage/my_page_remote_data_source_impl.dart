@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:dio/dio.dart';
 import 'package:widyu/core/data/source/myPage/my_page_remote_data_source.dart';
 import 'package:widyu/core/model/api/api_response.dart';
 import 'package:widyu/core/model/myPage/user.dart';
@@ -32,6 +35,42 @@ class MyPageRemoteDataSourceImpl extends MyPageRemoteDataSource {
       return response.toApiResponse(UserProfile.fromJson);
     } catch (e) {
       throw Exception("프로필 조회에 실패했습니다: $e");
+    }
+  }
+
+  @override
+  Future<ApiResponse<void>> updateName(String name) async {
+    try {
+      final response = await _apiClient.req(
+        path: '$_path/profile/name',
+        method: HttpMethod.patch,
+        body: {
+          'name': name,
+        },
+      );
+      return response.toApiResponse<void>((json) => {});
+    } catch (e) {
+      throw Exception("이름 변경에 실패했습니다: $e");
+    }
+  }
+
+  @override
+  Future<ApiResponse<void>> updateProfileImage(File profileImage) async {
+    try {
+      final formData = FormData.fromMap({
+        'image': await MultipartFile.fromFile(
+          profileImage.path,
+          filename: profileImage.path.split('/').last,
+        ),
+      });
+      final response = await _apiClient.req(
+        path: '$_path/profile/image',
+        method: HttpMethod.patch,
+        body: formData,
+      );
+      return response.toApiResponse<void>((json) => {});
+    } catch (e) {
+      throw Exception("프로필 이미지 변경에 실패했습니다: $e");
     }
   }
 }
