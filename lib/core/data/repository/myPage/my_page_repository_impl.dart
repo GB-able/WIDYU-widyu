@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:widyu/core/data/repository/myPage/my_page_repository.dart';
 import 'package:widyu/core/data/source/myPage/my_page_remote_data_source.dart';
 import 'package:widyu/core/model/api/api_result.dart';
+import 'package:widyu/core/model/myPage/contact/contact.dart';
 import 'package:widyu/core/model/myPage/point/point_history.dart';
 import 'package:widyu/core/model/myPage/user/user.dart';
 import 'package:widyu/core/model/myPage/profile/user_profile.dart';
@@ -33,4 +34,14 @@ class MyPageRepositoryImpl extends MyPageRepository {
   @override
   Future<ApiResult<PointHistory>> fetchPointHistory() async =>
       await _remoteDataSource.fetchPointHistory().toApiResult();
+
+  @override
+  Future<ApiResult<Contact>> fetchContact() async =>
+      await _remoteDataSource.fetchContact().toApiResult();
+
+  @override
+  Future<ApiResult<void>> updateRepresentativeContact(int memberId) async =>
+      await _remoteDataSource
+          .updateRepresentativeContact(memberId)
+          .toApiResult();
 }
