@@ -9,6 +9,7 @@ enum AppRoute {
   my("/my"),
 
   profile("/my/profile"),
+  point("/my/point"),
   ;
 
   final String path;

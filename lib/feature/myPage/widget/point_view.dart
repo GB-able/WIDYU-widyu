@@ -35,7 +35,7 @@ class _PointView extends StatelessWidget {
           ),
         ),
         IconButton(
-          onPressed: () => {},
+          onPressed: () => context.push(AppRoute.point.path),
           icon: SvgPicture.asset(
             'assets/icons/ic_20_chevron_right.svg',
             width: 20,
