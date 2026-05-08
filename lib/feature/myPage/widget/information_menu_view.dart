@@ -1,7 +1,7 @@
 part of '../my_page_screen.dart';
 
 class _InformationMenuView extends StatelessWidget {
-  const _InformationMenuView({super.key});
+  const _InformationMenuView();
 
   @override
   Widget build(BuildContext context) {

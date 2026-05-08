@@ -5,7 +5,6 @@ class _TextMenu extends StatelessWidget {
   final VoidCallback onClick;
 
   const _TextMenu({
-    super.key,
     required this.title,
     required this.onClick,
   });

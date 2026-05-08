@@ -6,7 +6,6 @@ class _ProfileView extends StatelessWidget {
   final String? name;
 
   const _ProfileView({
-    super.key,
     this.isLoading = false,
     this.profileImage,
     this.name,
@@ -21,7 +20,7 @@ class _ProfileView extends StatelessWidget {
           _profileImageView(profileImage),
           const SizedBox(width: 16),
           Text(
-            name ?? "-",
+            isLoading ? '홍길동' : (name ?? "-"),
             style: MyTypo.title4.copyWith(color: MyColor.white),
           ),
           const Spacer(),

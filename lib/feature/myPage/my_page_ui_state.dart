@@ -1,32 +1,13 @@
-sealed class MyPageUiState {
-  const MyPageUiState();
-}
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-class Loading extends MyPageUiState {
-  const Loading();
-}
+part 'my_page_ui_state.freezed.dart';
 
-class Success extends MyPageUiState {
-  const Success({
-    this.profileImage,
-    this.name = '',
-    this.points = 0,
-  });
-
-  final String? profileImage;
-  final String name;
-  final int points;
-}
-
-class Failure extends MyPageUiState {
-  const Failure();
-}
-
-extension MyPageUiStateExtension on MyPageUiState {
-  String? get profileImage =>
-      this is Success ? (this as Success).profileImage : null;
-  String get name => this is Success ? (this as Success).name : '사용자';
-  int get points => this is Success ? (this as Success).points : 0;
-  bool get isLoading => this is Loading;
-  bool get isError => this is Failure;
+@freezed
+abstract class MyPageUiState with _$MyPageUiState {
+  const factory MyPageUiState({
+    @Default(false) bool isLoading,
+    @Default(null) String? profileImage,
+    @Default(null) String? name,
+    @Default(null) int? points,
+  }) = _MyPageUiState;
 }

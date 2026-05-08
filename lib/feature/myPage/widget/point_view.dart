@@ -5,7 +5,6 @@ class _PointView extends StatelessWidget {
   final int? points;
 
   const _PointView({
-    super.key,
     this.isLoading = false,
     this.points,
   });
@@ -30,7 +29,7 @@ class _PointView extends StatelessWidget {
         Skeletonizer(
           enabled: isLoading,
           child: Text(
-            "${points ?? "- "}P",
+            isLoading ? '999P' : "${points ?? "- "}P",
             style: MyTypo.title4.copyWith(color: MyColor.white),
           ),
         ),

@@ -1,7 +1,7 @@
 part of '../my_page_screen.dart';
 
 class _ManagementMenuView extends StatelessWidget {
-  const _ManagementMenuView({super.key});
+  const _ManagementMenuView();
 
   @override
   Widget build(BuildContext context) {

@@ -6,7 +6,6 @@ class _ManagementMenuContent extends StatelessWidget {
   final VoidCallback onClick;
 
   const _ManagementMenuContent({
-    super.key,
     required this.asset,
     required this.title,
     required this.onClick,
