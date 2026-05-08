@@ -1,7 +1,7 @@
 part of '../contact_screen.dart';
 
 class _ContactAppBar extends StatelessWidget implements PreferredSizeWidget {
-  const _ContactAppBar({super.key});
+  const _ContactAppBar();
 
   @override
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
