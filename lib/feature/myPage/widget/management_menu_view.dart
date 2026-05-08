@@ -13,7 +13,7 @@ class _ManagementMenuView extends StatelessWidget {
           _ManagementMenuContent(
             asset: 'assets/icons/ic_24_phone.svg',
             title: '비상연락처 관리',
-            onClick: () => {},
+            onClick: () => context.push(AppRoute.contact.path),
           ),
           _ManagementMenuContent(
             asset: 'assets/icons/ic_24_house.svg',

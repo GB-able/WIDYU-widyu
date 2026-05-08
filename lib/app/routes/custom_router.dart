@@ -7,6 +7,7 @@ import 'package:widyu/core/data/repository/auth/auth_repository.dart';
 import 'package:widyu/core/ui/widgets/bot_nav.dart';
 import 'package:widyu/feature/auth/login_screen.dart';
 import 'package:widyu/feature/auth/onboarding_screen.dart';
+import 'package:widyu/feature/contact/contact_screen.dart';
 import 'package:widyu/feature/home/home_screen.dart';
 import 'package:widyu/feature/myPage/my_page_screen.dart';
 import 'package:widyu/feature/point/point_screen.dart';
@@ -69,6 +70,10 @@ class CustomRouter {
       CustomGoRoute.slideRoute(
         route: AppRoute.point,
         builder: (_, __) => const PointScreen(),
+      ),
+      CustomGoRoute.slideRoute(
+        route: AppRoute.contact,
+        builder: (_, __) => const ContactScreen(),
       ),
     ],
   );
