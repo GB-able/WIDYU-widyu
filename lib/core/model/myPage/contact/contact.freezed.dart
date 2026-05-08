@@ -14,7 +14,7 @@ T _$identity<T>(T value) => value;
 
 /// @nodoc
 mixin _$Contact {
-  Representative get representative;
+  Representative? get representative;
   List<FamilyMember> get familyMembers;
 
   /// Create a copy of Contact
@@ -54,9 +54,9 @@ abstract mixin class $ContactCopyWith<$Res> {
   factory $ContactCopyWith(Contact value, $Res Function(Contact) _then) =
       _$ContactCopyWithImpl;
   @useResult
-  $Res call({Representative representative, List<FamilyMember> familyMembers});
+  $Res call({Representative? representative, List<FamilyMember> familyMembers});
 
-  $RepresentativeCopyWith<$Res> get representative;
+  $RepresentativeCopyWith<$Res>? get representative;
 }
 
 /// @nodoc
@@ -71,14 +71,14 @@ class _$ContactCopyWithImpl<$Res> implements $ContactCopyWith<$Res> {
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? representative = null,
+    Object? representative = freezed,
     Object? familyMembers = null,
   }) {
     return _then(_self.copyWith(
-      representative: null == representative
+      representative: freezed == representative
           ? _self.representative
           : representative // ignore: cast_nullable_to_non_nullable
-              as Representative,
+              as Representative?,
       familyMembers: null == familyMembers
           ? _self.familyMembers
           : familyMembers // ignore: cast_nullable_to_non_nullable
@@ -90,8 +90,12 @@ class _$ContactCopyWithImpl<$Res> implements $ContactCopyWith<$Res> {
   /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
-  $RepresentativeCopyWith<$Res> get representative {
-    return $RepresentativeCopyWith<$Res>(_self.representative, (value) {
+  $RepresentativeCopyWith<$Res>? get representative {
+    if (_self.representative == null) {
+      return null;
+    }
+
+    return $RepresentativeCopyWith<$Res>(_self.representative!, (value) {
       return _then(_self.copyWith(representative: value));
     });
   }
@@ -191,7 +195,7 @@ extension ContactPatterns on Contact {
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>(
     TResult Function(
-            Representative representative, List<FamilyMember> familyMembers)?
+            Representative? representative, List<FamilyMember> familyMembers)?
         $default, {
     required TResult orElse(),
   }) {
@@ -220,7 +224,7 @@ extension ContactPatterns on Contact {
   @optionalTypeArgs
   TResult when<TResult extends Object?>(
     TResult Function(
-            Representative representative, List<FamilyMember> familyMembers)
+            Representative? representative, List<FamilyMember> familyMembers)
         $default,
   ) {
     final _that = this;
@@ -247,7 +251,7 @@ extension ContactPatterns on Contact {
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>(
     TResult? Function(
-            Representative representative, List<FamilyMember> familyMembers)?
+            Representative? representative, List<FamilyMember> familyMembers)?
         $default,
   ) {
     final _that = this;
@@ -271,7 +275,7 @@ class _Contact implements Contact {
       _$ContactFromJson(json);
 
   @override
-  final Representative representative;
+  final Representative? representative;
   final List<FamilyMember> _familyMembers;
   @override
   List<FamilyMember> get familyMembers {
@@ -323,10 +327,10 @@ abstract mixin class _$ContactCopyWith<$Res> implements $ContactCopyWith<$Res> {
       __$ContactCopyWithImpl;
   @override
   @useResult
-  $Res call({Representative representative, List<FamilyMember> familyMembers});
+  $Res call({Representative? representative, List<FamilyMember> familyMembers});
 
   @override
-  $RepresentativeCopyWith<$Res> get representative;
+  $RepresentativeCopyWith<$Res>? get representative;
 }
 
 /// @nodoc
@@ -341,14 +345,14 @@ class __$ContactCopyWithImpl<$Res> implements _$ContactCopyWith<$Res> {
   @override
   @pragma('vm:prefer-inline')
   $Res call({
-    Object? representative = null,
+    Object? representative = freezed,
     Object? familyMembers = null,
   }) {
     return _then(_Contact(
-      representative: null == representative
+      representative: freezed == representative
           ? _self.representative
           : representative // ignore: cast_nullable_to_non_nullable
-              as Representative,
+              as Representative?,
       familyMembers: null == familyMembers
           ? _self._familyMembers
           : familyMembers // ignore: cast_nullable_to_non_nullable
@@ -360,8 +364,12 @@ class __$ContactCopyWithImpl<$Res> implements _$ContactCopyWith<$Res> {
   /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
-  $RepresentativeCopyWith<$Res> get representative {
-    return $RepresentativeCopyWith<$Res>(_self.representative, (value) {
+  $RepresentativeCopyWith<$Res>? get representative {
+    if (_self.representative == null) {
+      return null;
+    }
+
+    return $RepresentativeCopyWith<$Res>(_self.representative!, (value) {
       return _then(_self.copyWith(representative: value));
     });
   }

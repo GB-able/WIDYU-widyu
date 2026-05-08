@@ -7,8 +7,10 @@ part of 'contact.dart';
 // **************************************************************************
 
 _Contact _$ContactFromJson(Map<String, dynamic> json) => _Contact(
-      representative: Representative.fromJson(
-          json['representative'] as Map<String, dynamic>),
+      representative: json['representative'] == null
+          ? null
+          : Representative.fromJson(
+              json['representative'] as Map<String, dynamic>),
       familyMembers: (json['familyMembers'] as List<dynamic>)
           .map((e) => FamilyMember.fromJson(e as Map<String, dynamic>))
           .toList(),

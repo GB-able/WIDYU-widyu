@@ -8,7 +8,7 @@ part 'contact.g.dart';
 @freezed
 abstract class Contact with _$Contact {
   const factory Contact({
-    required Representative representative,
+    required Representative? representative,
     required List<FamilyMember> familyMembers,
   }) = _Contact;
 
