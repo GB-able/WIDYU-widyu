@@ -8,6 +8,7 @@ import 'package:skeletonizer/skeletonizer.dart';
 import 'package:widyu/core/data/repository/myPage/my_page_repository.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
+import 'package:widyu/core/ui/widgets/widyu_divider.dart';
 import 'package:widyu/core/utils/show_toast.dart';
 import 'package:widyu/feature/myPage/my_page_ui_state.dart';
 import 'package:widyu/feature/myPage/my_page_view_model.dart';
@@ -55,13 +56,7 @@ class MyPageScreen extends StatelessWidget {
                 child: const Column(
                   children: [
                     _ManagementMenuView(),
-                    SizedBox(
-                      width: double.infinity,
-                      height: 10,
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(color: MyColor.grey50),
-                      ),
-                    ),
+                    WidyuDivider(),
                     _SettingMenuView(),
                     _InformationMenuView(),
                   ],
