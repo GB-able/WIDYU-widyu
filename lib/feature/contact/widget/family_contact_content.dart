@@ -5,14 +5,14 @@ class _FamilyContactContent extends StatelessWidget {
   final String name;
   final String phoneNumber;
   final bool isRepresentative;
-  final ValueChanged<int>? onUpdateRepresentative;
+  final ValueChanged<int>? onRepresentativeSelected;
 
   const _FamilyContactContent({
     required this.memberId,
     required this.name,
     required this.phoneNumber,
     required this.isRepresentative,
-    required this.onUpdateRepresentative,
+    required this.onRepresentativeSelected,
   });
 
   @override
@@ -46,7 +46,7 @@ class _FamilyContactContent extends StatelessWidget {
             ),
             child: Center(
               child: GestureDetector(
-                onTap: () => onUpdateRepresentative?.call(memberId),
+                onTap: () => onRepresentativeSelected?.call(memberId),
                 child: Text(
                   isRepresentative ? '현재 대표 번호' : '대표 번호로 변경',
                   style: MyTypo.helper.copyWith(

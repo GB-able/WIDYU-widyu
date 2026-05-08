@@ -61,7 +61,7 @@ class ContactScreen extends StatelessWidget {
                       const SizedBox(height: 40),
                       _FamilyContactView(
                         familyMembers: uiState.familyMembers,
-                        onUpdateRepresentative:
+                        onRepresentativeSelected:
                             viewModel.updateRepresentativeContact,
                       ),
                     ],

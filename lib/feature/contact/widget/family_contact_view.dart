@@ -2,10 +2,12 @@ part of '../contact_screen.dart';
 
 class _FamilyContactView extends StatelessWidget {
   final List<FamilyMember> familyMembers;
-  final ValueChanged<int> onUpdateRepresentative;
+  final ValueChanged<int> onRepresentativeSelected;
 
-  const _FamilyContactView(
-      {required this.familyMembers, required this.onUpdateRepresentative});
+  const _FamilyContactView({
+    required this.familyMembers,
+    required this.onRepresentativeSelected,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -31,8 +33,8 @@ class _FamilyContactView extends StatelessWidget {
                   name: member.name,
                   phoneNumber: member.phoneNumber.formattedPhoneNumber,
                   isRepresentative: member.isRepresentative,
-                  onUpdateRepresentative:
-                      member.isRepresentative ? null : onUpdateRepresentative,
+                  onRepresentativeSelected:
+                      member.isRepresentative ? null : onRepresentativeSelected,
                 );
               },
             ),
