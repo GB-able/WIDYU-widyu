@@ -72,5 +72,9 @@
         <array>
             <string>com.example.widyu.refresh</string>
         </array>
+        <key>LSApplicationQueriesSchemes</key>
+        <array>
+            <string>sms</string>
+        </array>
 	</dict>
 </plist>

@@ -18,7 +18,7 @@ class _ManagementMenuView extends StatelessWidget {
           _ManagementMenuContent(
             asset: 'assets/icons/ic_24_house.svg',
             title: '가족 멤버 관리',
-            onClick: () => {},
+            onClick: () => context.push(AppRoute.management.path),
           ),
           _ManagementMenuContent(
             asset: 'assets/icons/ic_24_card.svg',

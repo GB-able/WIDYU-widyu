@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:widyu/core/model/api/api_result.dart';
+import 'package:widyu/core/model/myPage/code/family_code.dart';
 import 'package:widyu/core/model/myPage/contact/contact.dart';
 import 'package:widyu/core/model/myPage/point/point_history.dart';
 import 'package:widyu/core/model/myPage/user/user.dart';
@@ -20,4 +21,6 @@ abstract class MyPageRepository {
   Future<ApiResult<Contact>> fetchContact();
 
   Future<ApiResult<void>> updateRepresentativeContact(int memberId);
+
+  Future<ApiResult<FamilyCode>> fetchFamilyCode();
 }

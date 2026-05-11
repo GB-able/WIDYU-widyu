@@ -11,6 +11,7 @@ enum AppRoute {
   profile("/my/profile"),
   point("/my/point"),
   contact("/my/contact"),
+  management("/my/management"),
   ;
 
   final String path;

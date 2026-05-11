@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:widyu/core/data/source/myPage/my_page_remote_data_source.dart';
 import 'package:widyu/core/model/api/api_response.dart';
+import 'package:widyu/core/model/myPage/code/family_code.dart';
 import 'package:widyu/core/model/myPage/contact/contact.dart';
 import 'package:widyu/core/model/myPage/point/point_history.dart';
 import 'package:widyu/core/model/myPage/user/user.dart';
@@ -112,6 +113,19 @@ class MyPageRemoteDataSourceImpl extends MyPageRemoteDataSource {
       return response.toApiResponse<void>((json) => {});
     } catch (e) {
       throw Exception("대표 연락처 변경에 실패했습니다: $e");
+    }
+  }
+
+  @override
+  Future<ApiResponse<FamilyCode>> fetchFamilyCode() async {
+    try {
+      final response = await _apiClient.req(
+        path: '$_path/family-code',
+        method: HttpMethod.get,
+      );
+      return response.toApiResponse(FamilyCode.fromJson);
+    } catch (e) {
+      throw Exception("가족 코드 조회에 실패했습니다: $e");
     }
   }
 }
