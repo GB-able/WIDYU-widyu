@@ -4,7 +4,7 @@ class _PointAppBar extends StatelessWidget implements PreferredSizeWidget {
   const _PointAppBar();
 
   @override
-  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
+  Size get preferredSize => AppBar().preferredSize;
 
   @override
   Widget build(BuildContext context) {
