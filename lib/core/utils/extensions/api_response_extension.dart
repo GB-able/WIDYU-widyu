@@ -7,4 +7,19 @@ extension ApiResponseExtension on Response {
   ) {
     return ApiResponse<T>.fromJson(statusCode, data, fromJson);
   }
+
+  ApiResponse<List<T>> toApiResponses<T>(
+    T Function(Map<String, dynamic>) fromJson,
+  ) {
+    final raw = data as Map<String, dynamic>;
+    final items = (raw['data'] as List<dynamic>? ?? [])
+        .map((e) => fromJson(e as Map<String, dynamic>))
+        .toList();
+    return ApiResponse<List<T>>(
+      statusCode: statusCode,
+      code: raw['code'] as String,
+      message: raw['message'] as String,
+      data: items,
+    );
+  }
 }
