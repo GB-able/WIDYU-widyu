@@ -12,6 +12,7 @@ enum AppRoute {
   point("/my/point"),
   contact("/my/contact"),
   management("/my/management"),
+  notification("/my/notification"),
   ;
 
   final String path;

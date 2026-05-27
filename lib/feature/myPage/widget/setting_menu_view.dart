@@ -18,7 +18,7 @@ class _SettingMenuView extends StatelessWidget {
             padding: const EdgeInsets.symmetric(vertical: 4),
             child: _TextMenu(
               title: '알림 설정',
-              onClick: () => {},
+              onClick: () => context.push(AppRoute.notification.path),
             ),
           ),
         ],

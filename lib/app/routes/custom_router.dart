@@ -11,6 +11,7 @@ import 'package:widyu/feature/contact/contact_screen.dart';
 import 'package:widyu/feature/home/home_screen.dart';
 import 'package:widyu/feature/management/management_screen.dart';
 import 'package:widyu/feature/myPage/my_page_screen.dart';
+import 'package:widyu/feature/notification/notification_screen.dart';
 import 'package:widyu/feature/point/point_screen.dart';
 import 'package:widyu/feature/profile/profile_screen.dart';
 import 'package:widyu/feature/splash_screen.dart';
@@ -79,6 +80,10 @@ class CustomRouter {
       CustomGoRoute.slideRoute(
         route: AppRoute.management,
         builder: (_, __) => const ManagementScreen(),
+      ),
+      CustomGoRoute.slideRoute(
+        route: AppRoute.notification,
+        builder: (_, __) => const NotificationScreen(),
       ),
     ],
   );
