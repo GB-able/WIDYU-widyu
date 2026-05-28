@@ -67,31 +67,33 @@ class ProfileScreen extends StatelessWidget {
             ),
             body: uiState.isLoading
                 ? const Center(child: CircularProgressIndicator())
-                : Padding(
-                    padding: const EdgeInsets.only(top: 24),
-                    child: Column(
-                      children: [
-                        _ProfileEditView(
-                          name: uiState.name,
-                          profileImage: uiState.profileImage,
-                          onNameChanged: viewModel.updateName,
-                          onImagePicked: viewModel.updateProfileImage,
-                        ),
-                        const SizedBox(
-                          width: double.infinity,
-                          height: 10,
-                          child: DecoratedBox(
-                            decoration: BoxDecoration(color: MyColor.grey50),
+                : SingleChildScrollView(
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 24),
+                      child: Column(
+                        children: [
+                          _ProfileEditView(
+                            name: uiState.name,
+                            profileImage: uiState.profileImage,
+                            onNameChanged: viewModel.updateName,
+                            onImagePicked: viewModel.updateProfileImage,
                           ),
-                        ),
-                        _ProfileInformationView(
-                          name: uiState.name,
-                          phoneNumber: uiState.phoneNumber,
-                          address: uiState.address,
-                          detailAddress: uiState.detailAddress,
-                          inviteCode: uiState.inviteCode,
-                        ),
-                      ],
+                          const SizedBox(
+                            width: double.infinity,
+                            height: 10,
+                            child: DecoratedBox(
+                              decoration: BoxDecoration(color: MyColor.grey50),
+                            ),
+                          ),
+                          _ProfileInformationView(
+                            name: uiState.name,
+                            phoneNumber: uiState.phoneNumber,
+                            address: uiState.address,
+                            detailAddress: uiState.detailAddress,
+                            inviteCode: uiState.inviteCode,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
           ),
