@@ -12,10 +12,10 @@ class _CloseButton extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         customBorder: const CircleBorder(),
-        child: Padding(
-          padding: const EdgeInsets.all(8),
-          child: SvgPicture.asset(
-            'assets/icons/ic_16_close.svg',
+        child: const Padding(
+          padding: EdgeInsets.all(8),
+          child: WidyuIcon(
+            icon: 'ic_16_close.svg',
             width: 16,
             height: 16,
           ),

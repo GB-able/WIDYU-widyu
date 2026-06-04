@@ -17,8 +17,8 @@ class _ManagementAppBar extends StatelessWidget implements PreferredSizeWidget {
       centerTitle: true,
       leading: IconButton(
         onPressed: () => context.pop(),
-        icon: SvgPicture.asset(
-          'assets/icons/ic_22_arrow_left_bold.svg',
+        icon: const WidyuIcon(
+          icon: 'ic_22_arrow_left_bold.svg',
           width: 22,
           height: 22,
         ),

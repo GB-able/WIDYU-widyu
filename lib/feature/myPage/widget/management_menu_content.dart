@@ -17,7 +17,7 @@ class _ManagementMenuContent extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         children: [
-          SvgPicture.asset(asset, width: 24, height: 24),
+          WidyuIcon(icon: asset, width: 24, height: 24),
           const SizedBox(width: 8),
           Expanded(
             child: _TextMenu(

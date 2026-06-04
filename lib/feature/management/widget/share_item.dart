@@ -17,7 +17,7 @@ class _ShareItem extends StatelessWidget {
       children: [
         GestureDetector(
           onTap: onTap,
-          child: SvgPicture.asset(icon, width: 70, height: 70),
+          child: WidyuIcon(icon: icon, width: 70, height: 70),
         ),
         const SizedBox(height: 10),
         Text(

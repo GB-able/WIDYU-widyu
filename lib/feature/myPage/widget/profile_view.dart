@@ -13,34 +13,36 @@ class _ProfileView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Skeletonizer(
-      enabled: isLoading,
-      child: Row(
-        children: [
-          _profileImageView(profileImage),
-          const SizedBox(width: 16),
-          Text(
+    return Row(
+      children: [
+        Skeletonizer(
+          enabled: isLoading,
+          child: _profileImageView(profileImage),
+        ),
+        const SizedBox(width: 16),
+        Skeletonizer(
+          enabled: isLoading,
+          child: Text(
             isLoading ? '홍길동' : (name ?? "-"),
             style: MyTypo.title4.copyWith(color: MyColor.white),
           ),
-          const Spacer(),
-          IconButton(
-            onPressed: () async {
-              await context.push(AppRoute.profile.path);
-              if (context.mounted) {
-                context.read<MyPageViewModel>().fetchUser();
-              }
-            },
-            icon: SvgPicture.asset(
-              'assets/icons/ic_20_chevron_right_large.svg',
-              width: 20,
-              height: 20,
-              colorFilter:
-                  const ColorFilter.mode(MyColor.white, BlendMode.srcIn),
-            ),
+        ),
+        const Spacer(),
+        IconButton(
+          onPressed: () async {
+            await context.push(AppRoute.profile.path);
+            if (context.mounted) {
+              context.read<MyPageViewModel>().fetchUser();
+            }
+          },
+          icon: const WidyuIcon(
+            icon: 'ic_20_chevron_right_large.svg',
+            width: 20,
+            height: 20,
+            color: MyColor.white,
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
@@ -53,8 +55,8 @@ Widget _profileImageView(String? profileImage) {
     decoration: const BoxDecoration(shape: BoxShape.circle),
     clipBehavior: Clip.hardEdge,
     child: profileImage == null || profileImage.isEmpty
-        ? SvgPicture.asset(
-            'assets/icons/ic_76_profile.svg',
+        ? const WidyuIcon(
+            icon: 'ic_76_profile.svg',
             width: 76,
             height: 76,
           )
@@ -71,8 +73,8 @@ Widget _profileImageView(String? profileImage) {
                 ),
               );
             },
-            errorBuilder: (_, __, ___) => SvgPicture.asset(
-              'assets/icons/ic_76_profile.svg',
+            errorBuilder: (_, __, ___) => const WidyuIcon(
+              icon: 'ic_76_profile.svg',
               width: 76,
               height: 76,
             ),

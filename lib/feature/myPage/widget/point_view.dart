@@ -35,11 +35,11 @@ class _PointView extends StatelessWidget {
         ),
         IconButton(
           onPressed: () => context.push(AppRoute.point.path),
-          icon: SvgPicture.asset(
-            'assets/icons/ic_20_chevron_right.svg',
+          icon: const WidyuIcon(
+            icon: 'ic_20_chevron_right.svg',
             width: 20,
             height: 20,
-            colorFilter: const ColorFilter.mode(MyColor.white, BlendMode.srcIn),
+            color: MyColor.white,
           ),
         )
       ],

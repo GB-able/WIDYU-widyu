@@ -17,14 +17,11 @@ class _TextMenu extends StatelessWidget {
         const Spacer(),
         IconButton(
           onPressed: onClick,
-          icon: SvgPicture.asset(
-            'assets/icons/ic_20_chevron_right.svg',
+          icon: const WidyuIcon(
+            icon: 'ic_20_chevron_right.svg',
             width: 20,
             height: 20,
-            colorFilter: const ColorFilter.mode(
-              MyColor.grey400,
-              BlendMode.srcIn,
-            ),
+            color: MyColor.grey400,
           ),
         ),
       ],

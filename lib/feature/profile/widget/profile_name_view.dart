@@ -75,8 +75,8 @@ class _ProfileNameViewState extends State<_ProfileNameView> {
               }
               _isEditing = !_isEditing;
             }),
-            child: SvgPicture.asset(
-              'assets/icons/ic_24_edit.svg',
+            child: const WidyuIcon(
+              icon: 'ic_24_edit.svg',
               width: 24,
               height: 24,
             ),
