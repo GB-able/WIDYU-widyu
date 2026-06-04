@@ -16,4 +16,6 @@ sealed interface MeasureResult {
             private const val HEART_RATE_ERROR = "심박수는 자연수여야 합니다."
         }
     }
+
+    data object SessionSuperseded : MeasureResult
 }

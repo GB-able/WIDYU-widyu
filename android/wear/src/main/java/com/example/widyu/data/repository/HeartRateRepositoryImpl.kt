@@ -37,7 +37,7 @@ class HeartRateRepositoryImpl @Inject constructor(
                 }
             }.shareIn(
                 scope = applicationScope,
-                started = SharingStarted.WhileSubscribed(5000),
+                started = SharingStarted.Lazily,
                 replay = 1,
             )
 
