@@ -6,7 +6,15 @@ import 'package:widyu/app/routes/custom_router.dart';
 import 'package:widyu/background_service.dart';
 import 'package:widyu/core/data/repository/auth/auth_repository.dart';
 import 'package:widyu/core/data/repository/auth/auth_repository_impl.dart';
+import 'package:widyu/core/data/repository/myPage/my_page_repository.dart';
+import 'package:widyu/core/data/repository/myPage/my_page_repository_impl.dart';
+import 'package:widyu/core/data/repository/notification/notification_repository.dart';
+import 'package:widyu/core/data/repository/notification/notification_repository_impl.dart';
 import 'package:widyu/core/data/source/auth_remote_data_source.dart';
+import 'package:widyu/core/data/source/myPage/my_page_remote_data_source.dart';
+import 'package:widyu/core/data/source/myPage/my_page_remote_data_source_impl.dart';
+import 'package:widyu/core/data/source/notification/notification_remote_data_source.dart';
+import 'package:widyu/core/data/source/notification/notification_remote_data_source_impl.dart';
 import 'package:widyu/core/network/api_client.dart';
 import 'package:widyu/core/network/token_manager.dart';
 import 'package:widyu/core/ui/theme/theme.dart';
@@ -30,12 +38,24 @@ void main() async {
           update: (_, apiClient, __) =>
               AuthRemoteDataSource(apiClient: apiClient),
         ),
+        ProxyProvider<ApiClient, MyPageRemoteDataSource>(
+            update: (_, apiClient, __) =>
+                MyPageRemoteDataSourceImpl(apiClient: apiClient)),
+        ProxyProvider<ApiClient, NotificationRemoteDataSource>(
+            update: (_, apiClient, __) =>
+                NotificationRemoteDataSourceImpl(apiClient: apiClient)),
         ProxyProvider2<AuthRemoteDataSource, TokenManager, AuthRepository>(
           update: (context, remote, token, previous) => AuthRepositoryImpl(
             remoteDatasource: remote,
             tokenManager: token,
           ),
         ),
+        ProxyProvider<MyPageRemoteDataSource, MyPageRepository>(
+            update: (_, remote, __) =>
+                MyPageRepositoryImpl(remoteDataSource: remote)),
+        ProxyProvider<NotificationRemoteDataSource, NotificationRepository>(
+            update: (_, remote, __) =>
+                NotificationRepositoryImpl(remoteDataSource: remote))
       ],
       child: const MyApp(),
     ),

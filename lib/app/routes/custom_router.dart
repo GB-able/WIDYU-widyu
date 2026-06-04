@@ -7,7 +7,13 @@ import 'package:widyu/core/data/repository/auth/auth_repository.dart';
 import 'package:widyu/core/ui/widgets/bot_nav.dart';
 import 'package:widyu/feature/auth/login_screen.dart';
 import 'package:widyu/feature/auth/onboarding_screen.dart';
+import 'package:widyu/feature/contact/contact_screen.dart';
 import 'package:widyu/feature/home/home_screen.dart';
+import 'package:widyu/feature/management/management_screen.dart';
+import 'package:widyu/feature/myPage/my_page_screen.dart';
+import 'package:widyu/feature/notification/notification_screen.dart';
+import 'package:widyu/feature/point/point_screen.dart';
+import 'package:widyu/feature/profile/profile_screen.dart';
 import 'package:widyu/feature/splash_screen.dart';
 
 class CustomRouter {
@@ -42,7 +48,7 @@ class CustomRouter {
           StatefulShellBranch(routes: [
             CustomGoRoute.staticRoute(
               route: AppRoute.my,
-              builder: (context, state) => const Placeholder(),
+              builder: (context, state) => const MyPageScreen(),
             ),
           ]),
         ],
@@ -58,6 +64,26 @@ class CustomRouter {
       CustomGoRoute.slideRoute(
         route: AppRoute.login,
         builder: (context, state) => const LoginScreen(),
+      ),
+      CustomGoRoute.slideRoute(
+        route: AppRoute.profile,
+        builder: (_, __) => const ProfileScreen(),
+      ),
+      CustomGoRoute.slideRoute(
+        route: AppRoute.point,
+        builder: (_, __) => const PointScreen(),
+      ),
+      CustomGoRoute.slideRoute(
+        route: AppRoute.contact,
+        builder: (_, __) => const ContactScreen(),
+      ),
+      CustomGoRoute.slideRoute(
+        route: AppRoute.management,
+        builder: (_, __) => const ManagementScreen(),
+      ),
+      CustomGoRoute.slideRoute(
+        route: AppRoute.notification,
+        builder: (_, __) => const NotificationScreen(),
       ),
     ],
   );

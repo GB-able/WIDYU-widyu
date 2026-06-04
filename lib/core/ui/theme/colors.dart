@@ -3,6 +3,7 @@ import 'dart:ui';
 class MyColor {
   static const white = Color(0xFFFFFFFF);
   static const black = Color(0xFF000000);
+  static const transparent = Color(0x00000000);
 
   static const grey50 = Color(0xFFFAFAFA);
   static const grey100 = Color(0xFFEEEEEE);
@@ -58,6 +59,8 @@ class MyColor {
   static const purple700 = Color(0xFF5C00B9);
   static const purple800 = Color(0xFF4C009A);
   static const purple900 = Color(0xFF3D007A);
+
+  static const blue500 = Color(0xFF4886F9);
 
   static const primary = orange500;
   static const primaryLight = orange50;

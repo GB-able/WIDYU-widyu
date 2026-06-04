@@ -32,7 +32,11 @@ class ApiClient {
     TokenType tokenType = TokenType.access,
   }) {
     path = '/v$version$path';
-    final options = Options(extra: {'tokenType': tokenType});
+    final isMultiPart = body is FormData;
+    final options = Options(
+      extra: {'tokenType': tokenType},
+      contentType: isMultiPart ? 'multipart/form-data' : 'application/json',
+    );
 
     switch (method) {
       case HttpMethod.get:
