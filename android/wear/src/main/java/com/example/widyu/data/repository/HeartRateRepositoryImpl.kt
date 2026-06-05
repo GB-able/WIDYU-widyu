@@ -48,4 +48,6 @@ class HeartRateRepositoryImpl @Inject constructor(
     override fun sendHeartRate(heartRate: Int) = heartRateRemoteDataSource.sendHeartRate(heartRate)
 
     override fun getHeartRateStatus(): Flow<HeartRateStatus> = heartRateRemoteDataSource.fetchHeartRateStatus()
+
+    override suspend fun restartSession() = heartRateLocalDataSource.restartSession()
 }

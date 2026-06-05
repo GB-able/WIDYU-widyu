@@ -12,4 +12,6 @@ interface HeartRateRepository {
     fun sendHeartRate(heartRate: Int)
 
     fun getHeartRateStatus(): Flow<HeartRateStatus>
+
+    suspend fun restartSession()
 }

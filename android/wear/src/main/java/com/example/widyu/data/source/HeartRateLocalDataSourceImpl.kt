@@ -81,6 +81,11 @@ class HeartRateLocalDataSourceImpl @Inject constructor(
             }
         }
 
+    override suspend fun restartSession() {
+        stopExerciseSession()
+        startExerciseSession()
+    }
+
     private suspend fun startExerciseSession() {
         runCatching {
             val config =

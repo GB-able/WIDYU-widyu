@@ -19,6 +19,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -42,7 +43,7 @@ class HeartRateForegroundService : Service() {
 
         if (intent?.action == ACTION_RESTART_SESSION) {
             if (!isRunning) startService()
-            startMeasurement()
+            serviceScope.launch { repository.restartSession() }
             return START_STICKY
         }
 
@@ -79,8 +80,6 @@ class HeartRateForegroundService : Service() {
                         is MeasureResult.Availability -> Unit
                         is MeasureResult.HeartRate -> Log.d("Widyu", "Service Heart Rate: ${result.value}")
                         is MeasureResult.SessionSuperseded -> {
-                            job?.cancel()
-                            job = null
                             notificationManager.showRestartNotification()
                         }
                     }
