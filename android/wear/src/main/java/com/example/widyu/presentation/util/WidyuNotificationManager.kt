@@ -23,13 +23,20 @@ class WidyuNotificationManager @Inject constructor(
         )
 
     fun createChannel() {
-        val channel =
+        notificationManager.createNotificationChannel(
             NotificationChannel(
                 NOTIFICATION_CHANNEL,
                 NOTIFICATION_CHANNEL_DISPLAY,
                 NotificationManager.IMPORTANCE_DEFAULT,
-            )
-        notificationManager.createNotificationChannel(channel)
+            ),
+        )
+        notificationManager.createNotificationChannel(
+            NotificationChannel(
+                RESTART_NOTIFICATION_CHANNEL,
+                RESTART_NOTIFICATION_CHANNEL_DISPLAY,
+                NotificationManager.IMPORTANCE_HIGH,
+            ),
+        )
     }
 
     // 알림 아이콘 추가 필요
@@ -75,7 +82,7 @@ class WidyuNotificationManager @Inject constructor(
 
         val notification =
             NotificationCompat
-                .Builder(context, NOTIFICATION_CHANNEL)
+                .Builder(context, RESTART_NOTIFICATION_CHANNEL)
                 .setContentTitle(RESTART_NOTIFICATION_TITLE)
                 .setContentText(RESTART_NOTIFICATION_TEXT)
                 .setSmallIcon(R.drawable.ic_launcher_background)
@@ -94,6 +101,8 @@ class WidyuNotificationManager @Inject constructor(
         const val RESTART_NOTIFICATION_ID = 2
         private const val NOTIFICATION_CHANNEL = "com.example.widyu.HEART_RATE"
         private const val NOTIFICATION_CHANNEL_DISPLAY = "Widyu Heart Rate"
+        private const val RESTART_NOTIFICATION_CHANNEL = "com.example.widyu.HEART_RATE_RESTART"
+        private const val RESTART_NOTIFICATION_CHANNEL_DISPLAY = "Widyu Heart Rate Alert"
         private const val NOTIFICATION_TITLE = "위듀"
         private const val NOTIFICATION_TEXT = "위듀에서 심박수를 측정하고 있습니다."
         private const val RESTART_NOTIFICATION_TITLE = "심박수 측정이 중단되었습니다"
