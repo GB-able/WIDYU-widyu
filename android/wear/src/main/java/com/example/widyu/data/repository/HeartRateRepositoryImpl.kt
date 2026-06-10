@@ -37,7 +37,7 @@ class HeartRateRepositoryImpl @Inject constructor(
                 }
             }.shareIn(
                 scope = applicationScope,
-                started = SharingStarted.WhileSubscribed(5000),
+                started = SharingStarted.Lazily,
                 replay = 1,
             )
 
@@ -48,4 +48,6 @@ class HeartRateRepositoryImpl @Inject constructor(
     override fun sendHeartRate(heartRate: Int) = heartRateRemoteDataSource.sendHeartRate(heartRate)
 
     override fun getHeartRateStatus(): Flow<HeartRateStatus> = heartRateRemoteDataSource.fetchHeartRateStatus()
+
+    override suspend fun restartSession() = heartRateLocalDataSource.restartSession()
 }

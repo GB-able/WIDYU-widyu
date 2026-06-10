@@ -63,10 +63,10 @@ class MainViewModel @Inject constructor(
 
                     is MeasureResult.HeartRate -> {
                         currentHeartRate = measureResult.value
-                        updateState {
-                            UiState.Stable(measureResult.value)
-                        }
+                        updateState { UiState.Stable(measureResult.value) }
                     }
+
+                    is MeasureResult.SessionSuperseded -> updateState { UiState.WatchDisconnect }
                 }
             }.launchIn(viewModelScope)
     }

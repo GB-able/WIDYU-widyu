@@ -7,4 +7,6 @@ interface HeartRateLocalDataSource {
     suspend fun hasHeartRateCapability(): Boolean
 
     fun getMeasureResult(): Flow<MeasureResult>
+
+    suspend fun restartSession()
 }

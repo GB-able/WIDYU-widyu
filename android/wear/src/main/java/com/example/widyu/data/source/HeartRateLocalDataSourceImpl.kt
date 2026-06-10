@@ -9,6 +9,7 @@ import androidx.health.services.client.data.BatchingMode
 import androidx.health.services.client.data.DataType
 import androidx.health.services.client.data.DataTypeAvailability
 import androidx.health.services.client.data.ExerciseConfig
+import androidx.health.services.client.data.ExerciseEndReason.Companion.AUTO_END_SUPERSEDED
 import androidx.health.services.client.data.ExerciseLapSummary
 import androidx.health.services.client.data.ExerciseType
 import androidx.health.services.client.data.ExerciseUpdate
@@ -52,6 +53,10 @@ class HeartRateLocalDataSourceImpl @Inject constructor(
                     }
 
                     override fun onExerciseUpdateReceived(update: ExerciseUpdate) {
+                        if (update.exerciseStateInfo.endReason == AUTO_END_SUPERSEDED) {
+                            trySendBlocking(MeasureResult.SessionSuperseded)
+                            return
+                        }
                         val heartRateData = update.latestMetrics.getData(DataType.HEART_RATE_BPM)
                         heartRateData.latestHeartRate()?.let { heartRate ->
                             trySendBlocking(MeasureResult.HeartRate(heartRate))
@@ -75,6 +80,11 @@ class HeartRateLocalDataSourceImpl @Inject constructor(
                 }
             }
         }
+
+    override suspend fun restartSession() {
+        stopExerciseSession()
+        startExerciseSession()
+    }
 
     private suspend fun startExerciseSession() {
         runCatching {

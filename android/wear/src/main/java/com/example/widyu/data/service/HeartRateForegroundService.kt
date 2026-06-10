@@ -19,6 +19,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -39,8 +40,14 @@ class HeartRateForegroundService : Service() {
         startId: Int,
     ): Int {
         super.onStartCommand(intent, flags, startId)
-        if (isRunning) return START_STICKY
 
+        if (intent?.action == ACTION_RESTART_SESSION) {
+            if (!isRunning) startService()
+            serviceScope.launch { repository.restartSession() }
+            return START_STICKY
+        }
+
+        if (isRunning) return START_STICKY
         startService()
         startMeasurement()
         return START_STICKY
@@ -69,8 +76,12 @@ class HeartRateForegroundService : Service() {
                 .getHeartRate()
                 .catch { Log.e("Widyu", "Service Measurement Error", it) }
                 .onEach { result ->
-                    if (result is MeasureResult.HeartRate) {
-                        Log.d("Widyu", "Service Heart Rate: ${result.value}")
+                    when (result) {
+                        is MeasureResult.Availability -> Unit
+                        is MeasureResult.HeartRate -> Log.d("Widyu", "Service Heart Rate: ${result.value}")
+                        is MeasureResult.SessionSuperseded -> {
+                            notificationManager.showRestartNotification()
+                        }
                     }
                 }.launchIn(serviceScope)
     }
@@ -85,6 +96,11 @@ class HeartRateForegroundService : Service() {
     override fun onBind(intent: Intent?): IBinder? = null
 
     companion object {
+        private const val ACTION_RESTART_SESSION = "com.example.widyu.ACTION_RESTART_SESSION"
+
         fun newIntent(context: Context): Intent = Intent(context, HeartRateForegroundService::class.java)
+
+        fun restartSessionIntent(context: Context): Intent =
+            newIntent(context).apply { action = ACTION_RESTART_SESSION }
     }
 }
