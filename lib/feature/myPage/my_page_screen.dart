@@ -6,8 +6,8 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:widyu/app/routes/app_route.dart';
 import 'package:skeletonizer/skeletonizer.dart';
-import 'package:widyu/background_service.dart';
 import 'package:widyu/core/data/repository/myPage/my_page_repository.dart';
+import 'package:widyu/core/utils/app_service_controller.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
 import 'package:widyu/core/ui/widgets/ui_event_listener.dart';
@@ -35,7 +35,7 @@ class MyPageScreen extends StatelessWidget {
       case FetchUserFailure():
         showToast('사용자 정보를 불러오지 못했어요.\n잠시 후 다시 시도해주세요.');
       case LogoutSuccess():
-        stopBackgroundService();
+        context.read<AppServiceController>().stop();
         context.go(AppRoute.onboarding.path);
       case LogoutFailure():
         showToast('로그아웃에 실패했어요.\n잠시 후 다시 시도해주세요.');
