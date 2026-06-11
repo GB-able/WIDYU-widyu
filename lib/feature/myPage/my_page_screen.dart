@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:widyu/core/data/repository/auth/auth_repository.dart';
 import 'package:widyu/core/ui/widgets/widyu_icon.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:widyu/app/routes/app_route.dart';
 import 'package:skeletonizer/skeletonizer.dart';
+import 'package:widyu/background_service.dart';
 import 'package:widyu/core/data/repository/myPage/my_page_repository.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
@@ -28,18 +30,25 @@ part 'widget/information_menu_view.dart';
 class MyPageScreen extends StatelessWidget {
   const MyPageScreen({super.key});
 
-  void _handleEvent(MyPageUiEvent event) {
+  void _handleEvent(BuildContext context, MyPageUiEvent event) {
     switch (event) {
       case FetchUserFailure():
         showToast('사용자 정보를 불러오지 못했어요.\n잠시 후 다시 시도해주세요.');
+      case LogoutSuccess():
+        stopBackgroundService();
+        context.go(AppRoute.onboarding.path);
+      case LogoutFailure():
+        showToast('로그아웃에 실패했어요.\n잠시 후 다시 시도해주세요.');
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (context) =>
-          MyPageViewModel(repository: context.read<MyPageRepository>()),
+      create: (context) => MyPageViewModel(
+        repository: context.read<MyPageRepository>(),
+        authRepository: context.read<AuthRepository>(),
+      ),
       builder: (context, child) {
         final uiEvent = context.read<MyPageViewModel>().uiEvent;
         final uiState =
@@ -47,7 +56,7 @@ class MyPageScreen extends StatelessWidget {
 
         return UiEventListener(
           stream: uiEvent,
-          onEvent: _handleEvent,
+          onEvent: (event) => _handleEvent(context, event),
           child: Scaffold(
             appBar: AppBar(
               backgroundColor: MyColor.orange400,
