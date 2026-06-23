@@ -50,8 +50,8 @@ void onStart(ServiceInstance service) async {
   late final StreamSubscription locationServiceState;
   LocationServiceManager.startMonitoring();
 
-  final tokenManager = TokenManager();
-  final socketClient = await SocketClient.create(tokenManager: tokenManager);
+  final socketClient = SocketClient();
+  await socketClient.connect();
   final apiClient = ApiClient();
 
   final heartRateRepository = HeartRateRepositoryImpl(

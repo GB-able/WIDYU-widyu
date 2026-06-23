@@ -8,11 +8,14 @@ import 'package:widyu/core/model/location/user_location.dart';
 import 'package:widyu/core/network/token_manager.dart';
 
 class SocketClient {
-  final TokenManager _tokenManager;
-  StompClient? _stompClient;
+  static final SocketClient _instance = SocketClient._internal();
 
-  SocketClient._({required TokenManager tokenManager})
-      : _tokenManager = tokenManager;
+  factory SocketClient() => _instance;
+
+  SocketClient._internal();
+
+  final TokenManager _tokenManager = TokenManager();
+  StompClient? _stompClient;
 
   String get _baseUrl => dotenv.env['BASE_URL'] ?? "";
 
@@ -23,11 +26,28 @@ class SocketClient {
   static const String _locationDestination = '/app/location/update';
   static const String _heartRateDestination = '/app/heart-rate/send';
 
-  static Future<SocketClient> create(
-      {required TokenManager tokenManager}) async {
-    final client = SocketClient._(tokenManager: tokenManager);
-    await client._connect();
-    return client;
+  Future<void> connect() async {
+    if (_isConnected) return;
+
+    final accessToken = await _tokenManager.accessToken;
+    final memberId = await _tokenManager.memberId;
+
+    _stompClient = StompClient(
+        config: StompConfig.sockJS(
+      url: '$_baseUrl$_socketPrefix',
+      onConnect: (StompFrame frame) {
+        _onConnect(memberId);
+      },
+      onWebSocketError: (dynamic error) {
+        log('WebSocket Error: ${error.toString()}');
+      },
+      onStompError: (StompFrame frame) {
+        log('STOMP Error: ${frame.body}');
+      },
+      stompConnectHeaders: {'Authorization': 'Bearer $accessToken'},
+      webSocketConnectHeaders: {'Authorization': 'Bearer $accessToken'},
+    ));
+    _stompClient!.activate();
   }
 
   void sendLocation(UserLocation location) {
@@ -55,30 +75,6 @@ class SocketClient {
   void disconnect() {
     _stompClient?.deactivate();
     _stompClient = null;
-  }
-
-  Future<void> _connect() async {
-    if (_isConnected) return;
-
-    final accessToken = await _tokenManager.accessToken;
-    final memberId = await _tokenManager.memberId;
-
-    _stompClient = StompClient(
-        config: StompConfig.sockJS(
-      url: '$_baseUrl$_socketPrefix',
-      onConnect: (StompFrame frame) {
-        _onConnect(memberId);
-      },
-      onWebSocketError: (dynamic error) {
-        log('WebSocket Error: ${error.toString()}');
-      },
-      onStompError: (StompFrame frame) {
-        log('STOMP Error: ${frame.body}');
-      },
-      stompConnectHeaders: {'Authorization': 'Bearer $accessToken'},
-      webSocketConnectHeaders: {'Authorization': 'Bearer $accessToken'},
-    ));
-    _stompClient!.activate();
   }
 
   void _onConnect(String? memberId) {
