@@ -8,10 +8,7 @@ import 'package:widyu/core/utils/location_service_manager.dart';
 import 'package:widyu/core/utils/show_toast.dart';
 
 class AppServiceController {
-  final TokenManager _tokenManager;
-
-  AppServiceController({required TokenManager tokenManager})
-      : _tokenManager = tokenManager;
+  final TokenManager _tokenManager = TokenManager();
 
   StreamSubscription<LocationServiceState>? _locationSubscription;
 
