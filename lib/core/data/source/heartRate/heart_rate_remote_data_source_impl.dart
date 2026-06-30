@@ -10,9 +10,10 @@ class HeartRateRemoteDataSourceImpl implements HeartRateRemoteDataSource {
   final SocketClient _socketClient;
   final ApiClient _apiClient;
 
-  HeartRateRemoteDataSourceImpl(
-      {required SocketClient socketClient, required ApiClient apiClient})
-      : _socketClient = socketClient,
+  HeartRateRemoteDataSourceImpl({
+    required SocketClient socketClient,
+    required ApiClient apiClient,
+  })  : _socketClient = socketClient,
         _apiClient = apiClient;
 
   static const _path = "/heart-rate/status";
