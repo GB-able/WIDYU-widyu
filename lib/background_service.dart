@@ -14,8 +14,6 @@ import 'package:widyu/core/network/api_client.dart';
 import 'package:widyu/core/network/socket_client.dart';
 import 'package:widyu/core/utils/location_service_manager.dart';
 
-import 'core/network/token_manager.dart';
-
 Future<void> initializeService() async {
   final service = FlutterBackgroundService();
   await service.configure(
@@ -55,11 +53,12 @@ void onStart(ServiceInstance service) async {
   final apiClient = ApiClient();
 
   final heartRateRepository = HeartRateRepositoryImpl(
-      localDataSource: HeartRateLocalDataSourceImpl(),
-      remoteDataSource: HeartRateRemoteDataSourceImpl(
-        socketClient: socketClient,
-        apiClient: apiClient,
-      ));
+    localDataSource: HeartRateLocalDataSourceImpl(),
+    remoteDataSource: HeartRateRemoteDataSourceImpl(
+      socketClient: socketClient,
+      apiClient: apiClient,
+    ),
+  );
   heartRateRepository.observeHeartRate();
 
   final locationRepository = LocationRepositoryImpl(
