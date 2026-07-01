@@ -51,4 +51,7 @@ class HeartRateRepositoryImpl implements HeartRateRepository {
       await _localDataSource.sendHeartRateStatus(data.heartRateStatus);
     }
   }
+
+  @override
+  Stream<bool> observeConnection() => _localDataSource.observeConnection();
 }

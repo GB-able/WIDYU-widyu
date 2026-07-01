@@ -29,4 +29,11 @@ class HeartRateLocalDataSourceImpl implements HeartRateLocalDataSource {
       log("Error in sendHeartRateStatus: ${e.message}");
     }
   }
+
+  @override
+  Stream<bool> observeConnection() =>
+      _eventChannel.receiveBroadcastStream().map((_) => true).timeout(
+            const Duration(seconds: 30),
+            onTimeout: (sink) => sink.add(false),
+          );
 }

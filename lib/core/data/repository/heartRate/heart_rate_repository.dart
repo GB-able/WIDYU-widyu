@@ -7,4 +7,6 @@ abstract class HeartRateRepository {
   void stopObserveHeartRate();
 
   Future<ApiResult<HeartRateResponse>> fetchHeartRate();
+
+  Stream<bool> observeConnection();
 }
