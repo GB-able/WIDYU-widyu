@@ -1,98 +1,104 @@
-import 'dart:async';
+import 'dart:ui';
 
+import 'package:app_settings/app_settings.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'package:widyu/app/routes/app_route.dart';
-import 'package:widyu/background_service.dart';
-import 'package:widyu/core/data/repository/auth/auth_repository.dart';
-import 'package:widyu/core/model/api/api_result.dart';
-import 'package:widyu/core/model/location/location_service_state.dart';
+import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+import 'package:skeletonizer/skeletonizer.dart';
+import 'package:watch_connectivity/watch_connectivity.dart';
+import 'package:widyu/core/data/repository/heartRate/heart_rate_repository.dart';
+import 'package:widyu/core/data/repository/myPage/my_page_repository.dart';
+import 'package:widyu/core/data/repository/notification/notification_repository.dart';
+import 'package:widyu/core/model/heartRate/heart_rate_status.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
-import 'package:widyu/core/ui/widgets/text_btn.dart';
-import 'package:widyu/core/utils/extensions/location_service_state_extension.dart';
-import 'package:widyu/core/utils/location_service_manager.dart';
-import 'package:widyu/core/utils/show_toast.dart';
+import 'package:widyu/core/ui/widgets/ui_event_listener.dart';
+import 'package:widyu/core/ui/widgets/widyu_icon.dart';
+import 'package:widyu/feature/home/home_ui_event.dart';
+import 'package:widyu/feature/home/home_ui_state.dart';
+import 'package:widyu/feature/home/home_view_model.dart';
 
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key, required this.repository});
+part 'widget/home_app_bar.dart';
+part 'widget/notification_view.dart';
+part 'widget/home_greeting_view.dart';
+part 'widget/watch_data_view.dart';
 
-  final AuthRepository repository;
+class HomeScreen extends StatelessWidget {
+  const HomeScreen({super.key});
 
-  @override
-  State<HomeScreen> createState() => _HomeScreenState();
-}
-
-class _HomeScreenState extends State<HomeScreen> {
-  StreamSubscription<LocationServiceState>? _locationServiceState;
-
-  Future<void> _handleLogout(BuildContext context) async {
-    final result = await widget.repository.logout();
-
-    if (!context.mounted) return;
-
-    switch (result) {
-      case Success():
-        await stopBackgroundService();
-        if (context.mounted) {
-          context.go(AppRoute.onboarding.path);
-        }
-      case Failure():
-        showToast('로그아웃에 실패했습니다');
-    }
-  }
-
-  Future<void> _startBackgroundService() async {
-    LocationServiceManager.startMonitoring();
-    _locationServiceState =
-        LocationServiceManager.locationServiceState.listen((state) async {
-      final message = state.message;
-      if (message != null) {
-        showToast(message);
-        await stopBackgroundService();
-        return;
-      }
-      await startBackgroundService();
-    });
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _startBackgroundService();
-  }
-
-  @override
-  void dispose() {
-    _locationServiceState?.cancel();
-    LocationServiceManager.stopMonitoring();
-    super.dispose();
-  }
+  void _handleEvent(HomeUiEvent event) {}
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: MyColor.white,
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                '홈 화면',
-                style: MyTypo.title1.copyWith(color: MyColor.grey900),
-              ),
-              const SizedBox(height: 48),
-              TextBtn(
-                onTap: () => _handleLogout(context),
-                text: '로그아웃',
-                enable: true,
-              ),
-            ],
+    return ChangeNotifierProvider(
+      create: (context) {
+        final watch = WatchConnectivity();
+        return HomeViewModel(
+          myPageRepository: context.read<MyPageRepository>(),
+          notificationRepository: context.read<NotificationRepository>(),
+          heartRateRepository: context.read<HeartRateRepository>(),
+          isPaired: watch.isPaired,
+        );
+      },
+      builder: (context, child) {
+        final viewModel = context.read<HomeViewModel>();
+        final uiState =
+            context.select<HomeViewModel, HomeUiState>((vm) => vm.uiState);
+
+        return UiEventListener(
+          stream: viewModel.uiEvent,
+          onEvent: _handleEvent,
+          child: Scaffold(
+            extendBodyBehindAppBar: true,
+            appBar: const _HomeAppBar(),
+            body: Stack(
+              children: [
+                Positioned(
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  child: Image.asset(
+                    'assets/images/img_home_background.png',
+                    fit: BoxFit.fitWidth,
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.only(
+                    top: MediaQuery.of(context).padding.top + kToolbarHeight,
+                  ),
+                  child: Column(
+                    spacing: 24,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const SizedBox(height: 12),
+                            _HomeGreetingView(
+                              isLoading: uiState.isUserLoading,
+                              name: uiState.name,
+                            ),
+                            const SizedBox(height: 26),
+                            _WatchDataView(
+                              isLoading: uiState.isHeartRateLoading,
+                              isWearing: uiState.isWearing,
+                              heartRate: uiState.heartRate,
+                              status: uiState.heartRateStatus,
+                              measuredAt: uiState.measuredAt,
+                              onHeartRateClick: viewModel.fetchHeartRate,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }

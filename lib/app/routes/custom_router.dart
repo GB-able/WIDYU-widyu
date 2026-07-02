@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
 import 'package:widyu/app/routes/app_route.dart';
 import 'package:widyu/app/routes/custom_page.dart';
-import 'package:widyu/core/data/repository/auth/auth_repository.dart';
 import 'package:widyu/core/ui/widgets/bot_nav.dart';
 import 'package:widyu/feature/auth/login_screen.dart';
 import 'package:widyu/feature/auth/onboarding_screen.dart';
@@ -29,8 +27,7 @@ class CustomRouter {
           StatefulShellBranch(routes: [
             CustomGoRoute.staticRoute(
               route: AppRoute.home,
-              builder: (context, state) =>
-                  HomeScreen(repository: context.read<AuthRepository>()),
+              builder: (context, state) => const HomeScreen(),
             ),
           ]),
           StatefulShellBranch(routes: [
