@@ -55,11 +55,11 @@ class ProfileViewModel with ChangeNotifier {
     if (result is api.Success) {
       final user = (result as api.Success<UserProfile>).data;
       _uiState = _uiState.copyWith(
-        profileImage: user.profileImage,
+        profileImage: user.profileImage ?? '',
         name: user.name,
+        birthDate: user.birthDate,
         phoneNumber: user.phoneNumber,
         address: user.address,
-        detailAddress: user.detailAddress,
         inviteCode: user.inviteCode,
       );
     } else {

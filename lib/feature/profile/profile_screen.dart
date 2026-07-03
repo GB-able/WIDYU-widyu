@@ -87,9 +87,9 @@ class ProfileScreen extends StatelessWidget {
                           ),
                           _ProfileInformationView(
                             name: uiState.name,
+                            birthDate: uiState.birthDate,
                             phoneNumber: uiState.phoneNumber,
                             address: uiState.address,
-                            detailAddress: uiState.detailAddress,
                             inviteCode: uiState.inviteCode,
                           ),
                         ],

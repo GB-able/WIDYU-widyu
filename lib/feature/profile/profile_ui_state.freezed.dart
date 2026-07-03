@@ -16,10 +16,10 @@ T _$identity<T>(T value) => value;
 mixin _$ProfileUiState {
   bool get isLoading;
   String get name;
-  String? get profileImage;
+  String get profileImage;
+  String get birthDate;
   String get phoneNumber;
   String get address;
-  String get detailAddress;
   String get inviteCode;
 
   /// Create a copy of ProfileUiState
@@ -40,22 +40,22 @@ mixin _$ProfileUiState {
             (identical(other.name, name) || other.name == name) &&
             (identical(other.profileImage, profileImage) ||
                 other.profileImage == profileImage) &&
+            (identical(other.birthDate, birthDate) ||
+                other.birthDate == birthDate) &&
             (identical(other.phoneNumber, phoneNumber) ||
                 other.phoneNumber == phoneNumber) &&
             (identical(other.address, address) || other.address == address) &&
-            (identical(other.detailAddress, detailAddress) ||
-                other.detailAddress == detailAddress) &&
             (identical(other.inviteCode, inviteCode) ||
                 other.inviteCode == inviteCode));
   }
 
   @override
   int get hashCode => Object.hash(runtimeType, isLoading, name, profileImage,
-      phoneNumber, address, detailAddress, inviteCode);
+      birthDate, phoneNumber, address, inviteCode);
 
   @override
   String toString() {
-    return 'ProfileUiState(isLoading: $isLoading, name: $name, profileImage: $profileImage, phoneNumber: $phoneNumber, address: $address, detailAddress: $detailAddress, inviteCode: $inviteCode)';
+    return 'ProfileUiState(isLoading: $isLoading, name: $name, profileImage: $profileImage, birthDate: $birthDate, phoneNumber: $phoneNumber, address: $address, inviteCode: $inviteCode)';
   }
 }
 
@@ -68,10 +68,10 @@ abstract mixin class $ProfileUiStateCopyWith<$Res> {
   $Res call(
       {bool isLoading,
       String name,
-      String? profileImage,
+      String profileImage,
+      String birthDate,
       String phoneNumber,
       String address,
-      String detailAddress,
       String inviteCode});
 }
 
@@ -90,10 +90,10 @@ class _$ProfileUiStateCopyWithImpl<$Res>
   $Res call({
     Object? isLoading = null,
     Object? name = null,
-    Object? profileImage = freezed,
+    Object? profileImage = null,
+    Object? birthDate = null,
     Object? phoneNumber = null,
     Object? address = null,
-    Object? detailAddress = null,
     Object? inviteCode = null,
   }) {
     return _then(_self.copyWith(
@@ -105,10 +105,14 @@ class _$ProfileUiStateCopyWithImpl<$Res>
           ? _self.name
           : name // ignore: cast_nullable_to_non_nullable
               as String,
-      profileImage: freezed == profileImage
+      profileImage: null == profileImage
           ? _self.profileImage
           : profileImage // ignore: cast_nullable_to_non_nullable
-              as String?,
+              as String,
+      birthDate: null == birthDate
+          ? _self.birthDate
+          : birthDate // ignore: cast_nullable_to_non_nullable
+              as String,
       phoneNumber: null == phoneNumber
           ? _self.phoneNumber
           : phoneNumber // ignore: cast_nullable_to_non_nullable
@@ -116,10 +120,6 @@ class _$ProfileUiStateCopyWithImpl<$Res>
       address: null == address
           ? _self.address
           : address // ignore: cast_nullable_to_non_nullable
-              as String,
-      detailAddress: null == detailAddress
-          ? _self.detailAddress
-          : detailAddress // ignore: cast_nullable_to_non_nullable
               as String,
       inviteCode: null == inviteCode
           ? _self.inviteCode
@@ -225,10 +225,10 @@ extension ProfileUiStatePatterns on ProfileUiState {
     TResult Function(
             bool isLoading,
             String name,
-            String? profileImage,
+            String profileImage,
+            String birthDate,
             String phoneNumber,
             String address,
-            String detailAddress,
             String inviteCode)?
         $default, {
     required TResult orElse(),
@@ -240,9 +240,9 @@ extension ProfileUiStatePatterns on ProfileUiState {
             _that.isLoading,
             _that.name,
             _that.profileImage,
+            _that.birthDate,
             _that.phoneNumber,
             _that.address,
-            _that.detailAddress,
             _that.inviteCode);
       case _:
         return orElse();
@@ -267,10 +267,10 @@ extension ProfileUiStatePatterns on ProfileUiState {
     TResult Function(
             bool isLoading,
             String name,
-            String? profileImage,
+            String profileImage,
+            String birthDate,
             String phoneNumber,
             String address,
-            String detailAddress,
             String inviteCode)
         $default,
   ) {
@@ -281,9 +281,9 @@ extension ProfileUiStatePatterns on ProfileUiState {
             _that.isLoading,
             _that.name,
             _that.profileImage,
+            _that.birthDate,
             _that.phoneNumber,
             _that.address,
-            _that.detailAddress,
             _that.inviteCode);
       case _:
         throw StateError('Unexpected subclass');
@@ -307,10 +307,10 @@ extension ProfileUiStatePatterns on ProfileUiState {
     TResult? Function(
             bool isLoading,
             String name,
-            String? profileImage,
+            String profileImage,
+            String birthDate,
             String phoneNumber,
             String address,
-            String detailAddress,
             String inviteCode)?
         $default,
   ) {
@@ -321,9 +321,9 @@ extension ProfileUiStatePatterns on ProfileUiState {
             _that.isLoading,
             _that.name,
             _that.profileImage,
+            _that.birthDate,
             _that.phoneNumber,
             _that.address,
-            _that.detailAddress,
             _that.inviteCode);
       case _:
         return null;
@@ -337,10 +337,10 @@ class _ProfileUiState implements ProfileUiState {
   const _ProfileUiState(
       {this.isLoading = false,
       this.name = '',
-      this.profileImage = null,
+      this.profileImage = '',
+      this.birthDate = '',
       this.phoneNumber = '',
       this.address = '',
-      this.detailAddress = '',
       this.inviteCode = ''});
 
   @override
@@ -351,16 +351,16 @@ class _ProfileUiState implements ProfileUiState {
   final String name;
   @override
   @JsonKey()
-  final String? profileImage;
+  final String profileImage;
+  @override
+  @JsonKey()
+  final String birthDate;
   @override
   @JsonKey()
   final String phoneNumber;
   @override
   @JsonKey()
   final String address;
-  @override
-  @JsonKey()
-  final String detailAddress;
   @override
   @JsonKey()
   final String inviteCode;
@@ -383,22 +383,22 @@ class _ProfileUiState implements ProfileUiState {
             (identical(other.name, name) || other.name == name) &&
             (identical(other.profileImage, profileImage) ||
                 other.profileImage == profileImage) &&
+            (identical(other.birthDate, birthDate) ||
+                other.birthDate == birthDate) &&
             (identical(other.phoneNumber, phoneNumber) ||
                 other.phoneNumber == phoneNumber) &&
             (identical(other.address, address) || other.address == address) &&
-            (identical(other.detailAddress, detailAddress) ||
-                other.detailAddress == detailAddress) &&
             (identical(other.inviteCode, inviteCode) ||
                 other.inviteCode == inviteCode));
   }
 
   @override
   int get hashCode => Object.hash(runtimeType, isLoading, name, profileImage,
-      phoneNumber, address, detailAddress, inviteCode);
+      birthDate, phoneNumber, address, inviteCode);
 
   @override
   String toString() {
-    return 'ProfileUiState(isLoading: $isLoading, name: $name, profileImage: $profileImage, phoneNumber: $phoneNumber, address: $address, detailAddress: $detailAddress, inviteCode: $inviteCode)';
+    return 'ProfileUiState(isLoading: $isLoading, name: $name, profileImage: $profileImage, birthDate: $birthDate, phoneNumber: $phoneNumber, address: $address, inviteCode: $inviteCode)';
   }
 }
 
@@ -413,10 +413,10 @@ abstract mixin class _$ProfileUiStateCopyWith<$Res>
   $Res call(
       {bool isLoading,
       String name,
-      String? profileImage,
+      String profileImage,
+      String birthDate,
       String phoneNumber,
       String address,
-      String detailAddress,
       String inviteCode});
 }
 
@@ -435,10 +435,10 @@ class __$ProfileUiStateCopyWithImpl<$Res>
   $Res call({
     Object? isLoading = null,
     Object? name = null,
-    Object? profileImage = freezed,
+    Object? profileImage = null,
+    Object? birthDate = null,
     Object? phoneNumber = null,
     Object? address = null,
-    Object? detailAddress = null,
     Object? inviteCode = null,
   }) {
     return _then(_ProfileUiState(
@@ -450,10 +450,14 @@ class __$ProfileUiStateCopyWithImpl<$Res>
           ? _self.name
           : name // ignore: cast_nullable_to_non_nullable
               as String,
-      profileImage: freezed == profileImage
+      profileImage: null == profileImage
           ? _self.profileImage
           : profileImage // ignore: cast_nullable_to_non_nullable
-              as String?,
+              as String,
+      birthDate: null == birthDate
+          ? _self.birthDate
+          : birthDate // ignore: cast_nullable_to_non_nullable
+              as String,
       phoneNumber: null == phoneNumber
           ? _self.phoneNumber
           : phoneNumber // ignore: cast_nullable_to_non_nullable
@@ -461,10 +465,6 @@ class __$ProfileUiStateCopyWithImpl<$Res>
       address: null == address
           ? _self.address
           : address // ignore: cast_nullable_to_non_nullable
-              as String,
-      detailAddress: null == detailAddress
-          ? _self.detailAddress
-          : detailAddress // ignore: cast_nullable_to_non_nullable
               as String,
       inviteCode: null == inviteCode
           ? _self.inviteCode

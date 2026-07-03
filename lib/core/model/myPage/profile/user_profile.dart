@@ -8,9 +8,9 @@ abstract class UserProfile with _$UserProfile {
   const factory UserProfile({
     String? profileImage,
     required String name,
+    required String birthDate,
     required String phoneNumber,
     required String address,
-    required String detailAddress,
     required String inviteCode,
   }) = _UserProfile;
 
