@@ -2,7 +2,7 @@ part of '../profile_screen.dart';
 
 class _ProfileEditView extends StatelessWidget {
   final String name;
-  final String? profileImage;
+  final String profileImage;
   final ValueChanged<String> onNameChanged;
   final ValueChanged<File> onImagePicked;
 

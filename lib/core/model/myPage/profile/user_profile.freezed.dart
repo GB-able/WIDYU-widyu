@@ -16,9 +16,9 @@ T _$identity<T>(T value) => value;
 mixin _$UserProfile {
   String? get profileImage;
   String get name;
+  String get birthDate;
   String get phoneNumber;
   String get address;
-  String get detailAddress;
   String get inviteCode;
 
   /// Create a copy of UserProfile
@@ -39,23 +39,23 @@ mixin _$UserProfile {
             (identical(other.profileImage, profileImage) ||
                 other.profileImage == profileImage) &&
             (identical(other.name, name) || other.name == name) &&
+            (identical(other.birthDate, birthDate) ||
+                other.birthDate == birthDate) &&
             (identical(other.phoneNumber, phoneNumber) ||
                 other.phoneNumber == phoneNumber) &&
             (identical(other.address, address) || other.address == address) &&
-            (identical(other.detailAddress, detailAddress) ||
-                other.detailAddress == detailAddress) &&
             (identical(other.inviteCode, inviteCode) ||
                 other.inviteCode == inviteCode));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, profileImage, name, phoneNumber,
-      address, detailAddress, inviteCode);
+  int get hashCode => Object.hash(runtimeType, profileImage, name, birthDate,
+      phoneNumber, address, inviteCode);
 
   @override
   String toString() {
-    return 'UserProfile(profileImage: $profileImage, name: $name, phoneNumber: $phoneNumber, address: $address, detailAddress: $detailAddress, inviteCode: $inviteCode)';
+    return 'UserProfile(profileImage: $profileImage, name: $name, birthDate: $birthDate, phoneNumber: $phoneNumber, address: $address, inviteCode: $inviteCode)';
   }
 }
 
@@ -68,9 +68,9 @@ abstract mixin class $UserProfileCopyWith<$Res> {
   $Res call(
       {String? profileImage,
       String name,
+      String birthDate,
       String phoneNumber,
       String address,
-      String detailAddress,
       String inviteCode});
 }
 
@@ -88,9 +88,9 @@ class _$UserProfileCopyWithImpl<$Res> implements $UserProfileCopyWith<$Res> {
   $Res call({
     Object? profileImage = freezed,
     Object? name = null,
+    Object? birthDate = null,
     Object? phoneNumber = null,
     Object? address = null,
-    Object? detailAddress = null,
     Object? inviteCode = null,
   }) {
     return _then(_self.copyWith(
@@ -102,6 +102,10 @@ class _$UserProfileCopyWithImpl<$Res> implements $UserProfileCopyWith<$Res> {
           ? _self.name
           : name // ignore: cast_nullable_to_non_nullable
               as String,
+      birthDate: null == birthDate
+          ? _self.birthDate
+          : birthDate // ignore: cast_nullable_to_non_nullable
+              as String,
       phoneNumber: null == phoneNumber
           ? _self.phoneNumber
           : phoneNumber // ignore: cast_nullable_to_non_nullable
@@ -109,10 +113,6 @@ class _$UserProfileCopyWithImpl<$Res> implements $UserProfileCopyWith<$Res> {
       address: null == address
           ? _self.address
           : address // ignore: cast_nullable_to_non_nullable
-              as String,
-      detailAddress: null == detailAddress
-          ? _self.detailAddress
-          : detailAddress // ignore: cast_nullable_to_non_nullable
               as String,
       inviteCode: null == inviteCode
           ? _self.inviteCode
@@ -215,16 +215,16 @@ extension UserProfilePatterns on UserProfile {
 
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>(
-    TResult Function(String? profileImage, String name, String phoneNumber,
-            String address, String detailAddress, String inviteCode)?
+    TResult Function(String? profileImage, String name, String birthDate,
+            String phoneNumber, String address, String inviteCode)?
         $default, {
     required TResult orElse(),
   }) {
     final _that = this;
     switch (_that) {
       case _UserProfile() when $default != null:
-        return $default(_that.profileImage, _that.name, _that.phoneNumber,
-            _that.address, _that.detailAddress, _that.inviteCode);
+        return $default(_that.profileImage, _that.name, _that.birthDate,
+            _that.phoneNumber, _that.address, _that.inviteCode);
       case _:
         return orElse();
     }
@@ -245,15 +245,15 @@ extension UserProfilePatterns on UserProfile {
 
   @optionalTypeArgs
   TResult when<TResult extends Object?>(
-    TResult Function(String? profileImage, String name, String phoneNumber,
-            String address, String detailAddress, String inviteCode)
+    TResult Function(String? profileImage, String name, String birthDate,
+            String phoneNumber, String address, String inviteCode)
         $default,
   ) {
     final _that = this;
     switch (_that) {
       case _UserProfile():
-        return $default(_that.profileImage, _that.name, _that.phoneNumber,
-            _that.address, _that.detailAddress, _that.inviteCode);
+        return $default(_that.profileImage, _that.name, _that.birthDate,
+            _that.phoneNumber, _that.address, _that.inviteCode);
       case _:
         throw StateError('Unexpected subclass');
     }
@@ -273,15 +273,15 @@ extension UserProfilePatterns on UserProfile {
 
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>(
-    TResult? Function(String? profileImage, String name, String phoneNumber,
-            String address, String detailAddress, String inviteCode)?
+    TResult? Function(String? profileImage, String name, String birthDate,
+            String phoneNumber, String address, String inviteCode)?
         $default,
   ) {
     final _that = this;
     switch (_that) {
       case _UserProfile() when $default != null:
-        return $default(_that.profileImage, _that.name, _that.phoneNumber,
-            _that.address, _that.detailAddress, _that.inviteCode);
+        return $default(_that.profileImage, _that.name, _that.birthDate,
+            _that.phoneNumber, _that.address, _that.inviteCode);
       case _:
         return null;
     }
@@ -294,9 +294,9 @@ class _UserProfile implements UserProfile {
   const _UserProfile(
       {this.profileImage,
       required this.name,
+      required this.birthDate,
       required this.phoneNumber,
       required this.address,
-      required this.detailAddress,
       required this.inviteCode});
   factory _UserProfile.fromJson(Map<String, dynamic> json) =>
       _$UserProfileFromJson(json);
@@ -306,11 +306,11 @@ class _UserProfile implements UserProfile {
   @override
   final String name;
   @override
+  final String birthDate;
+  @override
   final String phoneNumber;
   @override
   final String address;
-  @override
-  final String detailAddress;
   @override
   final String inviteCode;
 
@@ -337,23 +337,23 @@ class _UserProfile implements UserProfile {
             (identical(other.profileImage, profileImage) ||
                 other.profileImage == profileImage) &&
             (identical(other.name, name) || other.name == name) &&
+            (identical(other.birthDate, birthDate) ||
+                other.birthDate == birthDate) &&
             (identical(other.phoneNumber, phoneNumber) ||
                 other.phoneNumber == phoneNumber) &&
             (identical(other.address, address) || other.address == address) &&
-            (identical(other.detailAddress, detailAddress) ||
-                other.detailAddress == detailAddress) &&
             (identical(other.inviteCode, inviteCode) ||
                 other.inviteCode == inviteCode));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, profileImage, name, phoneNumber,
-      address, detailAddress, inviteCode);
+  int get hashCode => Object.hash(runtimeType, profileImage, name, birthDate,
+      phoneNumber, address, inviteCode);
 
   @override
   String toString() {
-    return 'UserProfile(profileImage: $profileImage, name: $name, phoneNumber: $phoneNumber, address: $address, detailAddress: $detailAddress, inviteCode: $inviteCode)';
+    return 'UserProfile(profileImage: $profileImage, name: $name, birthDate: $birthDate, phoneNumber: $phoneNumber, address: $address, inviteCode: $inviteCode)';
   }
 }
 
@@ -368,9 +368,9 @@ abstract mixin class _$UserProfileCopyWith<$Res>
   $Res call(
       {String? profileImage,
       String name,
+      String birthDate,
       String phoneNumber,
       String address,
-      String detailAddress,
       String inviteCode});
 }
 
@@ -388,9 +388,9 @@ class __$UserProfileCopyWithImpl<$Res> implements _$UserProfileCopyWith<$Res> {
   $Res call({
     Object? profileImage = freezed,
     Object? name = null,
+    Object? birthDate = null,
     Object? phoneNumber = null,
     Object? address = null,
-    Object? detailAddress = null,
     Object? inviteCode = null,
   }) {
     return _then(_UserProfile(
@@ -402,6 +402,10 @@ class __$UserProfileCopyWithImpl<$Res> implements _$UserProfileCopyWith<$Res> {
           ? _self.name
           : name // ignore: cast_nullable_to_non_nullable
               as String,
+      birthDate: null == birthDate
+          ? _self.birthDate
+          : birthDate // ignore: cast_nullable_to_non_nullable
+              as String,
       phoneNumber: null == phoneNumber
           ? _self.phoneNumber
           : phoneNumber // ignore: cast_nullable_to_non_nullable
@@ -409,10 +413,6 @@ class __$UserProfileCopyWithImpl<$Res> implements _$UserProfileCopyWith<$Res> {
       address: null == address
           ? _self.address
           : address // ignore: cast_nullable_to_non_nullable
-              as String,
-      detailAddress: null == detailAddress
-          ? _self.detailAddress
-          : detailAddress // ignore: cast_nullable_to_non_nullable
               as String,
       inviteCode: null == inviteCode
           ? _self.inviteCode

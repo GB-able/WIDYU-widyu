@@ -1,7 +1,7 @@
 part of '../profile_screen.dart';
 
 class _ProfileImageView extends StatelessWidget {
-  final String? profileImage;
+  final String profileImage;
   final ValueChanged<File> onImagePicked;
 
   const _ProfileImageView({
@@ -29,14 +29,14 @@ class _ProfileImageView extends StatelessWidget {
           decoration: const BoxDecoration(shape: BoxShape.circle),
           child: ClipOval(
             child: IgnorePointer(
-              child: profileImage == null || profileImage!.isEmpty
+              child: profileImage.isEmpty
                   ? const WidyuIcon(
                       icon: 'ic_104_profile.svg',
                       width: 104,
                       height: 104,
                     )
                   : Image.network(
-                      profileImage!,
+                      profileImage,
                       width: 104,
                       height: 104,
                       fit: BoxFit.cover,

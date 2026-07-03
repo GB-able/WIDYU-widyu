@@ -15,10 +15,7 @@ class _ProfileView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Skeletonizer(
-          enabled: isLoading,
-          child: _profileImageView(profileImage),
-        ),
+        _profileImageView(profileImage, isLoading),
         const SizedBox(width: 16),
         Skeletonizer(
           enabled: isLoading,
@@ -47,37 +44,36 @@ class _ProfileView extends StatelessWidget {
   }
 }
 
-Widget _profileImageView(String? profileImage) {
+Widget _profileImageView(String? profileImage, bool isLoading) {
   return Container(
-    padding: const EdgeInsets.all(4),
     width: 76,
     height: 76,
     decoration: const BoxDecoration(shape: BoxShape.circle),
     clipBehavior: Clip.hardEdge,
-    child: profileImage == null || profileImage.isEmpty
-        ? const WidyuIcon(
-            icon: 'ic_76_profile.svg',
-            width: 76,
-            height: 76,
-          )
-        : Image.network(
-            profileImage,
-            fit: BoxFit.cover,
-            loadingBuilder: (_, child, loadingProgress) {
-              if (loadingProgress == null) return child;
-              return const SizedBox(
+    child: isLoading
+        ? const Center(child: CircularProgressIndicator(strokeWidth: 2))
+        : (profileImage == null || profileImage.isEmpty)
+            ? const WidyuIcon(
+                icon: 'ic_76_profile.svg',
                 width: 76,
                 height: 76,
-                child: Center(
-                  child: CircularProgressIndicator(strokeWidth: 2),
+              )
+            : Image.network(
+                profileImage,
+                width: 76,
+                height: 76,
+                fit: BoxFit.cover,
+                loadingBuilder: (_, child, loadingProgress) {
+                  if (loadingProgress == null) return child;
+                  return const Center(
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  );
+                },
+                errorBuilder: (_, __, ___) => const WidyuIcon(
+                  icon: 'ic_76_profile.svg',
+                  width: 76,
+                  height: 76,
                 ),
-              );
-            },
-            errorBuilder: (_, __, ___) => const WidyuIcon(
-              icon: 'ic_76_profile.svg',
-              width: 76,
-              height: 76,
-            ),
-          ),
+              ),
   );
 }

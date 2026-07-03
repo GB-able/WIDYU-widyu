@@ -50,12 +50,7 @@ class _ProfileNameViewState extends State<_ProfileNameView> {
               contentPadding: EdgeInsets.symmetric(vertical: 4),
               enabledBorder: InputBorder.none,
               disabledBorder: InputBorder.none,
-              focusedBorder: UnderlineInputBorder(
-                borderSide: BorderSide(
-                  color: MyColor.black,
-                  width: 2,
-                ),
-              ),
+              focusedBorder: InputBorder.none,
             ),
             onSubmitted: (_) {
               widget.onNameChanged(_controller.text);
@@ -63,24 +58,36 @@ class _ProfileNameViewState extends State<_ProfileNameView> {
             },
           ),
         ),
-        Material(
-          color: MyColor.transparent,
-          child: InkWell(
-            onTap: () => setState(() {
-              if (_isEditing) {
-                widget.onNameChanged(_controller.text);
-                _focusNode.unfocus();
-              } else {
-                _focusNode.requestFocus();
-              }
-              _isEditing = !_isEditing;
-            }),
-            child: const WidyuIcon(
-              icon: 'ic_24_edit.svg',
-              width: 24,
-              height: 24,
-            ),
-          ),
+        GestureDetector(
+          onTap: () => setState(() {
+            if (_isEditing) {
+              widget.onNameChanged(_controller.text);
+              _focusNode.unfocus();
+            } else {
+              _focusNode.requestFocus();
+            }
+            _isEditing = !_isEditing;
+          }),
+          child: _isEditing
+              ? Container(
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 2,
+                    horizontal: 12,
+                  ),
+                  decoration: BoxDecoration(
+                    color: MyColor.green100,
+                    borderRadius: BorderRadius.circular(1000),
+                  ),
+                  child: Text(
+                    '완료',
+                    style: MyTypo.helper.copyWith(color: MyColor.green600),
+                  ),
+                )
+              : const WidyuIcon(
+                  icon: 'ic_24_edit.svg',
+                  width: 24,
+                  height: 24,
+                ),
         ),
       ],
     );

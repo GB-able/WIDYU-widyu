@@ -3,7 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/widgets.dart';
 import 'package:widyu/core/data/repository/myPage/my_page_repository.dart';
-import 'package:widyu/core/model/api/api_result.dart' as api;
+import 'package:widyu/core/model/api/api_result.dart';
 import 'package:widyu/core/model/myPage/profile/user_profile.dart';
 import 'package:widyu/feature/profile/profile_ui_event.dart';
 import 'package:widyu/feature/profile/profile_ui_state.dart';
@@ -30,7 +30,7 @@ class ProfileViewModel with ChangeNotifier {
     notifyListeners();
 
     final result = await _repository.updateName(newName);
-    if (result is api.Failure) {
+    if (result is Failure) {
       _uiState = _uiState.copyWith(name: oldName);
       notifyListeners();
       _uiEvent.add(const UpdateNameFailure());
@@ -40,7 +40,7 @@ class ProfileViewModel with ChangeNotifier {
   Future<void> updateProfileImage(File file) async {
     final result = await _repository.updateProfileImage(file);
 
-    if (result is api.Success) {
+    if (result is Success) {
       await _fetchUserProfile();
     } else {
       _uiEvent.add(const UpdateProfileImageFailure());
@@ -52,14 +52,14 @@ class ProfileViewModel with ChangeNotifier {
     notifyListeners();
 
     final result = await _repository.fetchUserProfile();
-    if (result is api.Success) {
-      final user = (result as api.Success<UserProfile>).data;
+    if (result is Success) {
+      final user = (result as Success<UserProfile>).data;
       _uiState = _uiState.copyWith(
-        profileImage: user.profileImage,
+        profileImage: user.profileImage ?? '',
         name: user.name,
+        birthDate: user.birthDate,
         phoneNumber: user.phoneNumber,
         address: user.address,
-        detailAddress: user.detailAddress,
         inviteCode: user.inviteCode,
       );
     } else {
