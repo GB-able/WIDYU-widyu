@@ -13,7 +13,10 @@ import 'package:widyu/core/data/repository/myPage/my_page_repository.dart';
 import 'package:widyu/core/data/repository/myPage/my_page_repository_impl.dart';
 import 'package:widyu/core/data/repository/notification/notification_repository.dart';
 import 'package:widyu/core/data/repository/notification/notification_repository_impl.dart';
-import 'package:widyu/core/data/source/auth_remote_data_source.dart';
+import 'package:widyu/core/data/source/auth/auth_local_data_source.dart';
+import 'package:widyu/core/data/source/auth/auth_local_data_source_impl.dart';
+import 'package:widyu/core/data/source/auth/auth_remote_data_source.dart';
+import 'package:widyu/core/data/source/auth/auth_remote_data_source_impl.dart';
 import 'package:widyu/core/data/source/heartRate/heart_rate_local_data_source.dart';
 import 'package:widyu/core/data/source/heartRate/heart_rate_local_data_source_impl.dart';
 import 'package:widyu/core/data/source/heartRate/heart_rate_remote_data_source.dart';
@@ -44,8 +47,9 @@ void main() async {
         Provider<SocketClient>(create: (_) => SocketClient()),
         ProxyProvider<ApiClient, AuthRemoteDataSource>(
           update: (_, apiClient, __) =>
-              AuthRemoteDataSource(apiClient: apiClient),
+              AuthRemoteDataSourceImpl(apiClient: apiClient),
         ),
+        Provider<AuthLocalDataSource>(create: (_) => AuthLocalDataSourceImpl()),
         ProxyProvider<ApiClient, MyPageRemoteDataSource>(
           update: (_, apiClient, __) =>
               MyPageRemoteDataSourceImpl(apiClient: apiClient),
@@ -64,10 +68,11 @@ void main() async {
             apiClient: apiClient,
           ),
         ),
-        ProxyProvider2<AuthRemoteDataSource, TokenManager, AuthRepository>(
-          update: (_, remote, token, __) => AuthRepositoryImpl(
+        ProxyProvider2<AuthRemoteDataSource, AuthLocalDataSource,
+            AuthRepository>(
+          update: (_, remote, local, __) => AuthRepositoryImpl(
             remoteDatasource: remote,
-            tokenManager: token,
+            localDataSource: local,
           ),
         ),
         ProxyProvider<MyPageRemoteDataSource, MyPageRepository>(
