@@ -26,27 +26,24 @@ class SocketClient {
   static const String _locationDestination = '/app/location/update';
   static const String _heartRateDestination = '/app/heart-rate/send';
 
-  Future<void> connect() async {
+  Future<void> connect(String token) async {
     if (_isConnected) return;
 
-    final accessToken = await _tokenManager.accessToken;
     final memberId = await _tokenManager.memberId;
-
     _stompClient = StompClient(
-        config: StompConfig.sockJS(
-      url: '$_baseUrl$_socketPrefix',
-      onConnect: (StompFrame frame) {
-        _onConnect(memberId);
-      },
-      onWebSocketError: (dynamic error) {
-        log('WebSocket Error: ${error.toString()}');
-      },
-      onStompError: (StompFrame frame) {
-        log('STOMP Error: ${frame.body}');
-      },
-      stompConnectHeaders: {'Authorization': 'Bearer $accessToken'},
-      webSocketConnectHeaders: {'Authorization': 'Bearer $accessToken'},
-    ));
+      config: StompConfig.sockJS(
+        url: '$_baseUrl$_socketPrefix?token=$token',
+        onConnect: (StompFrame frame) {
+          _onConnect(memberId);
+        },
+        onWebSocketError: (dynamic error) {
+          log('WebSocket Error: ${error.toString()}');
+        },
+        onStompError: (StompFrame frame) {
+          log('STOMP Error: ${frame.body}');
+        },
+      ),
+    );
     _stompClient!.activate();
   }
 

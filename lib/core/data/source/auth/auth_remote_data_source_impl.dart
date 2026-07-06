@@ -49,7 +49,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     try {
       final response = await _apiClient.req(
         path: '/ws/token',
-        method: HttpMethod.get,
+        method: HttpMethod.post,
       );
       return ApiResponse<String>(
         statusCode: response.statusCode,

@@ -4,12 +4,18 @@ import 'dart:ui';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:widyu/core/data/repository/auth/auth_repository_impl.dart';
+import 'package:widyu/core/data/repository/heartRate/heart_rate_repository.dart';
 import 'package:widyu/core/data/repository/heartRate/heart_rate_repository_impl.dart';
+import 'package:widyu/core/data/repository/location/location_repository.dart';
 import 'package:widyu/core/data/repository/location/location_repository_impl.dart';
+import 'package:widyu/core/data/source/auth/auth_local_data_source_impl.dart';
+import 'package:widyu/core/data/source/auth/auth_remote_data_source_impl.dart';
 import 'package:widyu/core/data/source/heartRate/heart_rate_local_data_source_impl.dart';
 import 'package:widyu/core/data/source/heartRate/heart_rate_remote_data_source_impl.dart';
 import 'package:widyu/core/data/source/location/location_local_data_source_impl.dart';
 import 'package:widyu/core/data/source/location/location_remote_data_source_impl.dart';
+import 'package:widyu/core/model/api/api_result.dart';
 import 'package:widyu/core/network/api_client.dart';
 import 'package:widyu/core/network/socket_client.dart';
 import 'package:widyu/core/utils/location_service_manager.dart';
@@ -39,6 +45,42 @@ Future<bool> onIosBackground(ServiceInstance service) async {
   return true;
 }
 
+Future<
+    ({
+      SocketClient socketClient,
+      HeartRateRepository heartRateRepository,
+      LocationRepository locationRepository,
+    })> createDependencies() async {
+  final apiClient = ApiClient();
+  final socketClient = SocketClient();
+  final authRepository = AuthRepositoryImpl(
+    remoteDatasource: AuthRemoteDataSourceImpl(apiClient: apiClient),
+    localDataSource: AuthLocalDataSourceImpl(),
+  );
+
+  final result = await authRepository.fetchSocketToken();
+  if (result is Success) {
+    final socketToken = (result as Success<String>).data;
+    await socketClient.connect(socketToken);
+  }
+
+  return (
+    socketClient: socketClient,
+    heartRateRepository: HeartRateRepositoryImpl(
+      localDataSource: HeartRateLocalDataSourceImpl(),
+      remoteDataSource: HeartRateRemoteDataSourceImpl(
+        socketClient: socketClient,
+        apiClient: apiClient,
+      ),
+    ),
+    locationRepository: LocationRepositoryImpl(
+      localDataSource: LocationLocalDataSourceImpl(),
+      remoteDataSource:
+          LocationRemoteDataSourceImpl(socketClient: socketClient),
+    )
+  );
+}
+
 @pragma('vm:entry-point')
 void onStart(ServiceInstance service) async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -48,23 +90,11 @@ void onStart(ServiceInstance service) async {
   late final StreamSubscription locationServiceState;
   LocationServiceManager.startMonitoring();
 
-  final socketClient = SocketClient();
-  await socketClient.connect();
-  final apiClient = ApiClient();
-
-  final heartRateRepository = HeartRateRepositoryImpl(
-    localDataSource: HeartRateLocalDataSourceImpl(),
-    remoteDataSource: HeartRateRemoteDataSourceImpl(
-      socketClient: socketClient,
-      apiClient: apiClient,
-    ),
-  );
-  heartRateRepository.observeHeartRate();
-
-  final locationRepository = LocationRepositoryImpl(
-    localDataSource: LocationLocalDataSourceImpl(),
-    remoteDataSource: LocationRemoteDataSourceImpl(socketClient: socketClient),
-  );
+  final (
+    socketClient: socketClient,
+    heartRateRepository: heartRateRepository,
+    locationRepository: locationRepository,
+  ) = await createDependencies();
 
   locationServiceState =
       LocationServiceManager.locationServiceState.listen((state) {
