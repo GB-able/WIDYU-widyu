@@ -9,16 +9,20 @@ class HeartRateLocalDataSourceImpl implements HeartRateLocalDataSource {
   static const _methodChannel =
       MethodChannel("com.example.widyu/heart_rate_status");
 
-  @override
-  Stream<HeartRate> getHeartRates() {
-    return _eventChannel.receiveBroadcastStream().map((dynamic event) {
+  late final Stream<HeartRate> _heartRateStream =
+      _eventChannel.receiveBroadcastStream().map(
+    (dynamic event) {
       final data = event as Map<dynamic, dynamic>;
       return HeartRate(
-          heartRate: data['heartRate'] as int,
-          measuredAt:
-              DateTime.fromMillisecondsSinceEpoch(data['timestamp'] as int));
-    });
-  }
+        heartRate: data['heartRate'] as int,
+        measuredAt:
+            DateTime.fromMillisecondsSinceEpoch(data['timestamp'] as int),
+      );
+    },
+  );
+
+  @override
+  Stream<HeartRate> getHeartRates() => _heartRateStream;
 
   @override
   Future<void> sendHeartRateStatus(String heartRateStatus) async {
@@ -31,9 +35,8 @@ class HeartRateLocalDataSourceImpl implements HeartRateLocalDataSource {
   }
 
   @override
-  Stream<bool> observeConnection() =>
-      _eventChannel.receiveBroadcastStream().map((_) => true).timeout(
-            const Duration(seconds: 30),
-            onTimeout: (sink) => sink.add(false),
-          );
+  Stream<bool> observeConnection() => _heartRateStream.map((_) => true).timeout(
+        const Duration(seconds: 30),
+        onTimeout: (sink) => sink.add(false),
+      );
 }

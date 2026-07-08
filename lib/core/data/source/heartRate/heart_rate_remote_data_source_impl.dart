@@ -29,7 +29,7 @@ class HeartRateRemoteDataSourceImpl implements HeartRateRemoteDataSource {
       final response = await _apiClient.req(
         path: _path,
         method: HttpMethod.get,
-        body: {'memberId': ''},
+        query: {'memberId': ''},
       );
       return response.toApiResponse(HeartRateResponse.fromJson);
     } catch (e) {

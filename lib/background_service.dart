@@ -96,6 +96,8 @@ void onStart(ServiceInstance service) async {
     locationRepository: locationRepository,
   ) = await createDependencies();
 
+  heartRateRepository.observeHeartRate();
+
   locationServiceState =
       LocationServiceManager.locationServiceState.listen((state) {
     if (state.isAvailable) {

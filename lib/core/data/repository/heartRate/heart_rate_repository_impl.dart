@@ -28,10 +28,13 @@ class HeartRateRepositoryImpl implements HeartRateRepository {
         .getHeartRates()
         .bufferCount(15)
         .map((heartRates) => HeartRateRequest(heartRates: heartRates))
-        .listen((request) async {
-      _remoteDataSource.sendHeartRates(request);
-      await _sendHeartRateStatus();
-    }, onError: (e) => log("Stream Error: $e"));
+        .listen(
+      (request) async {
+        _remoteDataSource.sendHeartRates(request);
+        await _sendHeartRateStatus();
+      },
+      onError: (e) => log("Stream Error: $e"),
+    );
   }
 
   @override
