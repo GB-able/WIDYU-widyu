@@ -68,6 +68,20 @@ data class WidyuTypography(
             fontSize = 16.dp,
             lineHeight = 16.dp,
         ),
+    val medium8: WidyuTextStyle =
+        WidyuTextStyle(
+            fontFamily = Pretendard,
+            fontWeight = FontWeight.W500,
+            fontSize = 8.dp,
+            lineHeight = 8.dp,
+        ),
+    val semibold10: WidyuTextStyle =
+        WidyuTextStyle(
+            fontFamily = Pretendard,
+            fontWeight = FontWeight.W600,
+            fontSize = 10.dp,
+            lineHeight = 10.dp,
+        ),
     val semibold12: WidyuTextStyle =
         WidyuTextStyle(
             fontFamily = Pretendard,

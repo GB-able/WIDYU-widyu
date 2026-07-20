@@ -4,6 +4,8 @@ import com.example.widyu.data.source.HeartRateLocalDataSource
 import com.example.widyu.data.source.HeartRateLocalDataSourceImpl
 import com.example.widyu.data.source.HeartRateRemoteDataSource
 import com.example.widyu.data.source.HeartRateRemoteDataSourceImpl
+import com.example.widyu.data.source.OnboardingLocalDataSource
+import com.example.widyu.data.source.OnboardingLocalDataSourceImpl
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -20,4 +22,8 @@ abstract class DataSourceModule {
     @Binds
     @Singleton
     abstract fun bindHeartRateRemoteDataSource(impl: HeartRateRemoteDataSourceImpl): HeartRateRemoteDataSource
+
+    @Binds
+    @Singleton
+    abstract fun bindOnboardingLocalDataSource(impl: OnboardingLocalDataSourceImpl): OnboardingLocalDataSource
 }

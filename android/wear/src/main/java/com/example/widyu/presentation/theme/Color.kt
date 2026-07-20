@@ -19,6 +19,7 @@ data class WidyuColorSystem(
     val gray500: Color = Color(0xFF959595),
     val gray600: Color = Color(0xFF636363),
     val gray700: Color = Color(0xFF414141),
+    val gray900: Color = Color(0xFF1F1F1F),
 )
 
 val LocalWidyuColorSystem = staticCompositionLocalOf { WidyuColorSystem() }
