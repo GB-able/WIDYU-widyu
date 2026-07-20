@@ -50,6 +50,13 @@ object PermissionManager {
         return true
     }
 
+    fun hasRuntimePermissions(context: Context): Boolean =
+        requiredPermissions.all { permission ->
+            ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED
+        }
+
+    fun hasAllPermissions(context: Context): Boolean = hasRuntimePermissions(context) && hasBackgroundPermission(context)
+
     fun isPermanentlyDenied(activity: Activity): Boolean =
         requiredPermissions.any { permission ->
             ContextCompat.checkSelfPermission(
@@ -77,6 +84,7 @@ fun rememberPermissionLauncher(
     onGranted: () -> Unit,
     onRequireRuntimePermission: () -> Unit,
     onRequireBackgroundPermission: () -> Unit,
+    onDenied: () -> Unit = {},
 ): ManagedActivityResultLauncher<Array<String>, Map<String, Boolean>> {
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
@@ -94,8 +102,7 @@ fun rememberPermissionLauncher(
 
             isPermanentlyDenied(activity) -> onRequireRuntimePermission()
 
-            else -> {
-            }
+            else -> onDenied()
         }
     }
 }

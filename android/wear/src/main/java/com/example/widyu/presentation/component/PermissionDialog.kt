@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.wear.compose.material.Button
@@ -65,6 +66,8 @@ private fun PermissionDialogContent(
             tint = Color.Unspecified,
         )
 
+        Spacer(modifier = Modifier.height(WidyuTheme.spacing.spaceMedium))
+
         Text(
             text = title,
             color = WidyuTheme.colors.white,
@@ -78,7 +81,7 @@ private fun PermissionDialogContent(
             color = WidyuTheme.colors.gray500,
             style =
                 WidyuTheme.typography.medium12
-                    .copy(lineHeight = 16.dp)
+                    .copy(lineHeight = 16.dp, textAlign = TextAlign.Center)
                     .toTextStyle(),
         )
 
@@ -116,7 +119,7 @@ private fun PermissionDialogPreview() {
             onNavigateClick = {},
             onDismiss = {},
             title = "항상 허용 권한 요청",
-            description = "착용 중 정확한 실시간 심박수\n 측정을 위해 센서 데이터의\n 권한이 필요합니다. 설정으로 이동해서\n 항상 허용으로 설정해주세요.",
+            description = "착용 중 정확한 실시간 심박수\n측정을 위해 센서의 권한이 필요합니다.\n설정으로 이동해서 센서 권한을\n항상 허용으로 설정해주세요.",
         )
     }
 }

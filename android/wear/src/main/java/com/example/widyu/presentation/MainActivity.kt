@@ -9,6 +9,7 @@ import androidx.activity.enableEdgeToEdge
 import com.example.widyu.data.service.HeartRateForegroundService
 import com.example.widyu.presentation.component.WidyuApp
 import com.example.widyu.presentation.theme.WidyuTheme
+import com.example.widyu.presentation.util.PermissionManager
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -30,7 +31,9 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun handleRestartIntent(intent: Intent?) {
-        if (intent?.getBooleanExtra(EXTRA_RESTART_SESSION, false) == true) {
+        if (intent?.getBooleanExtra(EXTRA_RESTART_SESSION, false) == true &&
+            PermissionManager.hasAllPermissions(this)
+        ) {
             startForegroundService(HeartRateForegroundService.restartSessionIntent(this))
         }
     }
