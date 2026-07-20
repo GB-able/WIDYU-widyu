@@ -31,7 +31,6 @@ import androidx.wear.compose.material.Icon
 import androidx.wear.compose.material.Text
 import com.example.widyu.R
 import com.example.widyu.presentation.theme.WidyuTheme
-import java.security.Permission
 
 @Composable
 fun PermissionOnboardingScreen(
@@ -80,19 +79,30 @@ fun PermissionOnboardingScreen(
             PermissionContent(
                 resId = R.drawable.ic_notification,
                 title = "알림",
-                description = "앱 실행 알림",
+                description = "측정 상태 알림",
             )
 
             Spacer(modifier = Modifier.height(WidyuTheme.spacing.spaceXSmall))
 
             PermissionContent(
                 resId = R.drawable.ic_heart_rate,
-                title = "센서",
+                title = "심박수",
                 description = "실시간 심박수 측정",
             )
         }
 
-        Spacer(modifier = Modifier.height(WidyuTheme.spacing.spaceXLarge))
+        Spacer(modifier = Modifier.height(WidyuTheme.spacing.spaceSmall))
+
+        Text(
+            text = "앱을 닫아도 측정하려면\n'항상 허용'이 필요해요.",
+            color = WidyuTheme.colors.gray500,
+            style =
+                WidyuTheme.typography.medium8
+                    .copy(lineHeight = 12.dp, textAlign = TextAlign.Center)
+                    .toTextStyle(),
+        )
+
+        Spacer(modifier = Modifier.height(WidyuTheme.spacing.spaceMedium))
 
         Button(
             onClick = onConfirmClick,

@@ -15,6 +15,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -39,12 +40,16 @@ import com.example.widyu.presentation.UiState
 import com.example.widyu.presentation.model.UiModel
 import com.example.widyu.presentation.model.UiModel.Companion.toUiModel
 import com.example.widyu.presentation.theme.WidyuTheme
+import com.example.widyu.presentation.util.PermissionManager.backgroundPermission
+import com.example.widyu.presentation.util.PermissionManager.canRequestBackgroundAtRuntime
 import com.example.widyu.presentation.util.PermissionManager.hasAllPermissions
 import com.example.widyu.presentation.util.PermissionManager.hasBackgroundPermission
 import com.example.widyu.presentation.util.PermissionManager.hasRuntimePermissions
+import com.example.widyu.presentation.util.PermissionManager.isBackgroundPermanentlyDenied
 import com.example.widyu.presentation.util.PermissionManager.isPermanentlyDenied
 import com.example.widyu.presentation.util.PermissionManager.openAppSettings
 import com.example.widyu.presentation.util.PermissionManager.requiredPermissions
+import com.example.widyu.presentation.util.rememberBackgroundPermissionLauncher
 import com.example.widyu.presentation.util.rememberPermissionLauncher
 
 @Composable
@@ -60,11 +65,39 @@ fun WidyuScreen(
 
     var showRuntimePermissionDialog by rememberSaveable { mutableStateOf(false) }
     var showBackgroundPermissionDialog by rememberSaveable { mutableStateOf(false) }
+    var isRequestingBackground by remember { mutableStateOf(false) }
+
+    // shouldShowRationale 갱신을 기다리지 않고 즉시 설정 화면 유도로 전환하기 위한 플래그
+    var isBackgroundPermissionDenied by rememberSaveable { mutableStateOf(false) }
 
     val onAllGranted: () -> Unit = {
         permissionViewModel.updatePermissionState(PermissionState.Granted)
         mainViewModel.checkSupported()
         context.startForegroundService(HeartRateForegroundService.newIntent(context))
+    }
+
+    val backgroundPermissionLauncher =
+        rememberBackgroundPermissionLauncher(
+            onGranted = {
+                isRequestingBackground = false
+                isBackgroundPermissionDenied = false
+                onAllGranted()
+            },
+            onDenied = {
+                isRequestingBackground = false
+                isBackgroundPermissionDenied = true
+                permissionViewModel.updatePermissionState(PermissionState.Restricted)
+            },
+        )
+
+    val requestBackgroundPermission: () -> Unit = {
+        val permission = backgroundPermission
+        if (permission != null) {
+            isRequestingBackground = true
+            backgroundPermissionLauncher.launch(arrayOf(permission))
+        } else {
+            onAllGranted()
+        }
     }
 
     val permissionLauncher =
@@ -76,8 +109,12 @@ fun WidyuScreen(
                 showRuntimePermissionDialog = true
             },
             onRequireBackgroundPermission = {
-                permissionViewModel.updatePermissionState(PermissionState.Restricted)
-                showBackgroundPermissionDialog = true
+                if (canRequestBackgroundAtRuntime()) {
+                    requestBackgroundPermission()
+                } else {
+                    permissionViewModel.updatePermissionState(PermissionState.Restricted)
+                    showBackgroundPermissionDialog = true
+                }
             },
             onDenied = { permissionViewModel.updatePermissionState(PermissionState.Restricted) },
         )
@@ -86,6 +123,12 @@ fun WidyuScreen(
         when {
             hasAllPermissions(context) -> {
                 onAllGranted()
+            }
+
+            // 백그라운드 런타임 권한 요청이 진행 중인 동안(Android 16+)에는
+            // 순차 플로우가 끝날 때까지 제한 화면으로 전환하지 않고 현재 상태를 유지한다
+            isRequestingBackground -> {
+                Unit
             }
 
             permissionViewModel.isOnboardingCompleted() -> {
@@ -106,7 +149,7 @@ fun WidyuScreen(
         },
         onDismiss = { showBackgroundPermissionDialog = false },
         title = "항상 허용 권한 요청",
-        description = "착용 중 정확한 실시간 심박수\n측정을 위해 센서의 권한이 필요합니다.\n설정으로 이동해서 센서 권한을\n항상 허용으로 설정해주세요.",
+        description = "앱을 닫아도 심박수를 측정하려면\n심박수 데이터 접근을\n'항상 허용'으로 설정해야 해요.\n설정으로 이동해 주세요.",
     )
 
     PermissionDialog(
@@ -117,7 +160,7 @@ fun WidyuScreen(
         },
         onDismiss = { showRuntimePermissionDialog = false },
         title = "권한 설정 필요",
-        description = "심박수 측정을 위해 필요한\n권한이 거부되었습니다.\n설정으로 이동해서 권한을\n허용해주세요.",
+        description = "심박수 측정을 위해\n알림과 심박수 권한이 필요해요.\n설정으로 이동해\n권한을 허용해 주세요.",
     )
 
     when (permissionState) {
@@ -139,19 +182,21 @@ fun WidyuScreen(
         is PermissionState.Restricted -> {
             val isDialogVisible = showRuntimePermissionDialog || showBackgroundPermissionDialog
             if (!isDialogVisible) {
+                val needsBackgroundOnly = hasRuntimePermissions(context) && !hasBackgroundPermission(context)
                 val goToSettings =
                     when {
                         !hasRuntimePermissions(context) && isPermanentlyDenied(activity) -> true
-                        hasRuntimePermissions(context) && !hasBackgroundPermission(context) -> true
+                        needsBackgroundOnly && !canRequestBackgroundAtRuntime() -> true
+                        needsBackgroundOnly && (isBackgroundPermissionDenied || isBackgroundPermanentlyDenied(activity)) -> true
                         else -> false
                     }
                 PermissionRestrictedScreen(
                     buttonText = if (goToSettings) "설정으로 이동" else "권한 허용",
                     onActionClick = {
-                        if (goToSettings) {
-                            openAppSettings(context)
-                        } else {
-                            permissionLauncher.launch(requiredPermissions)
+                        when {
+                            goToSettings -> openAppSettings(context)
+                            needsBackgroundOnly -> requestBackgroundPermission()
+                            else -> permissionLauncher.launch(requiredPermissions)
                         }
                     },
                 )

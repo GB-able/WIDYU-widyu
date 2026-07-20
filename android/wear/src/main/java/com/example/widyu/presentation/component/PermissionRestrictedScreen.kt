@@ -45,7 +45,7 @@ fun PermissionRestrictedScreen(
         Spacer(modifier = Modifier.height(WidyuTheme.spacing.spaceSmall))
 
         Text(
-            text = "심박수 측정 기능을 사용할 수 없어요.\n알림 및 센서 권한을 허용해 주세요.",
+            text = "심박수 측정 기능을 사용할 수 없어요.\n알림과 심박수 권한을 허용해 주세요.",
             color = WidyuTheme.colors.gray500,
             style =
                 WidyuTheme.typography.medium12
