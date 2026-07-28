@@ -13,3 +13,7 @@ class FetchNotificationFailure extends HomeUiEvent {
 class FetchUserFailure extends HomeUiEvent {
   const FetchUserFailure();
 }
+
+class FetchSeniorCardFailure extends HomeUiEvent {
+  const FetchSeniorCardFailure();
+}

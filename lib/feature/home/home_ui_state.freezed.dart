@@ -17,11 +17,17 @@ mixin _$HomeUiState {
   bool get isUserLoading;
   bool get isHeartRateLoading;
   bool get isNotificationLoading;
+  bool get isSeniorCardLoading;
   String get name;
   bool get isWearing;
   int get heartRate;
   HeartRateStatus get heartRateStatus;
   DateTime get measuredAt;
+  List<String> get thumbnails;
+  int get todayTakenCount;
+  int get todayTotalCount;
+  Duration get nextDoseRemainingTime;
+  double get stepProgress;
 
   /// Create a copy of HomeUiState
   /// with the given fields replaced by the non-null parameter values.
@@ -41,6 +47,8 @@ mixin _$HomeUiState {
                 other.isHeartRateLoading == isHeartRateLoading) &&
             (identical(other.isNotificationLoading, isNotificationLoading) ||
                 other.isNotificationLoading == isNotificationLoading) &&
+            (identical(other.isSeniorCardLoading, isSeniorCardLoading) ||
+                other.isSeniorCardLoading == isSeniorCardLoading) &&
             (identical(other.name, name) || other.name == name) &&
             (identical(other.isWearing, isWearing) ||
                 other.isWearing == isWearing) &&
@@ -49,7 +57,17 @@ mixin _$HomeUiState {
             (identical(other.heartRateStatus, heartRateStatus) ||
                 other.heartRateStatus == heartRateStatus) &&
             (identical(other.measuredAt, measuredAt) ||
-                other.measuredAt == measuredAt));
+                other.measuredAt == measuredAt) &&
+            const DeepCollectionEquality()
+                .equals(other.thumbnails, thumbnails) &&
+            (identical(other.todayTakenCount, todayTakenCount) ||
+                other.todayTakenCount == todayTakenCount) &&
+            (identical(other.todayTotalCount, todayTotalCount) ||
+                other.todayTotalCount == todayTotalCount) &&
+            (identical(other.nextDoseRemainingTime, nextDoseRemainingTime) ||
+                other.nextDoseRemainingTime == nextDoseRemainingTime) &&
+            (identical(other.stepProgress, stepProgress) ||
+                other.stepProgress == stepProgress));
   }
 
   @override
@@ -58,15 +76,21 @@ mixin _$HomeUiState {
       isUserLoading,
       isHeartRateLoading,
       isNotificationLoading,
+      isSeniorCardLoading,
       name,
       isWearing,
       heartRate,
       heartRateStatus,
-      measuredAt);
+      measuredAt,
+      const DeepCollectionEquality().hash(thumbnails),
+      todayTakenCount,
+      todayTotalCount,
+      nextDoseRemainingTime,
+      stepProgress);
 
   @override
   String toString() {
-    return 'HomeUiState(isUserLoading: $isUserLoading, isHeartRateLoading: $isHeartRateLoading, isNotificationLoading: $isNotificationLoading, name: $name, isWearing: $isWearing, heartRate: $heartRate, heartRateStatus: $heartRateStatus, measuredAt: $measuredAt)';
+    return 'HomeUiState(isUserLoading: $isUserLoading, isHeartRateLoading: $isHeartRateLoading, isNotificationLoading: $isNotificationLoading, isSeniorCardLoading: $isSeniorCardLoading, name: $name, isWearing: $isWearing, heartRate: $heartRate, heartRateStatus: $heartRateStatus, measuredAt: $measuredAt, thumbnails: $thumbnails, todayTakenCount: $todayTakenCount, todayTotalCount: $todayTotalCount, nextDoseRemainingTime: $nextDoseRemainingTime, stepProgress: $stepProgress)';
   }
 }
 
@@ -80,11 +104,17 @@ abstract mixin class $HomeUiStateCopyWith<$Res> {
       {bool isUserLoading,
       bool isHeartRateLoading,
       bool isNotificationLoading,
+      bool isSeniorCardLoading,
       String name,
       bool isWearing,
       int heartRate,
       HeartRateStatus heartRateStatus,
-      DateTime measuredAt});
+      DateTime measuredAt,
+      List<String> thumbnails,
+      int todayTakenCount,
+      int todayTotalCount,
+      Duration nextDoseRemainingTime,
+      double stepProgress});
 }
 
 /// @nodoc
@@ -102,11 +132,17 @@ class _$HomeUiStateCopyWithImpl<$Res> implements $HomeUiStateCopyWith<$Res> {
     Object? isUserLoading = null,
     Object? isHeartRateLoading = null,
     Object? isNotificationLoading = null,
+    Object? isSeniorCardLoading = null,
     Object? name = null,
     Object? isWearing = null,
     Object? heartRate = null,
     Object? heartRateStatus = null,
     Object? measuredAt = null,
+    Object? thumbnails = null,
+    Object? todayTakenCount = null,
+    Object? todayTotalCount = null,
+    Object? nextDoseRemainingTime = null,
+    Object? stepProgress = null,
   }) {
     return _then(_self.copyWith(
       isUserLoading: null == isUserLoading
@@ -120,6 +156,10 @@ class _$HomeUiStateCopyWithImpl<$Res> implements $HomeUiStateCopyWith<$Res> {
       isNotificationLoading: null == isNotificationLoading
           ? _self.isNotificationLoading
           : isNotificationLoading // ignore: cast_nullable_to_non_nullable
+              as bool,
+      isSeniorCardLoading: null == isSeniorCardLoading
+          ? _self.isSeniorCardLoading
+          : isSeniorCardLoading // ignore: cast_nullable_to_non_nullable
               as bool,
       name: null == name
           ? _self.name
@@ -141,6 +181,26 @@ class _$HomeUiStateCopyWithImpl<$Res> implements $HomeUiStateCopyWith<$Res> {
           ? _self.measuredAt
           : measuredAt // ignore: cast_nullable_to_non_nullable
               as DateTime,
+      thumbnails: null == thumbnails
+          ? _self.thumbnails
+          : thumbnails // ignore: cast_nullable_to_non_nullable
+              as List<String>,
+      todayTakenCount: null == todayTakenCount
+          ? _self.todayTakenCount
+          : todayTakenCount // ignore: cast_nullable_to_non_nullable
+              as int,
+      todayTotalCount: null == todayTotalCount
+          ? _self.todayTotalCount
+          : todayTotalCount // ignore: cast_nullable_to_non_nullable
+              as int,
+      nextDoseRemainingTime: null == nextDoseRemainingTime
+          ? _self.nextDoseRemainingTime
+          : nextDoseRemainingTime // ignore: cast_nullable_to_non_nullable
+              as Duration,
+      stepProgress: null == stepProgress
+          ? _self.stepProgress
+          : stepProgress // ignore: cast_nullable_to_non_nullable
+              as double,
     ));
   }
 }
@@ -242,11 +302,17 @@ extension HomeUiStatePatterns on HomeUiState {
             bool isUserLoading,
             bool isHeartRateLoading,
             bool isNotificationLoading,
+            bool isSeniorCardLoading,
             String name,
             bool isWearing,
             int heartRate,
             HeartRateStatus heartRateStatus,
-            DateTime measuredAt)?
+            DateTime measuredAt,
+            List<String> thumbnails,
+            int todayTakenCount,
+            int todayTotalCount,
+            Duration nextDoseRemainingTime,
+            double stepProgress)?
         $default, {
     required TResult orElse(),
   }) {
@@ -257,11 +323,17 @@ extension HomeUiStatePatterns on HomeUiState {
             _that.isUserLoading,
             _that.isHeartRateLoading,
             _that.isNotificationLoading,
+            _that.isSeniorCardLoading,
             _that.name,
             _that.isWearing,
             _that.heartRate,
             _that.heartRateStatus,
-            _that.measuredAt);
+            _that.measuredAt,
+            _that.thumbnails,
+            _that.todayTakenCount,
+            _that.todayTotalCount,
+            _that.nextDoseRemainingTime,
+            _that.stepProgress);
       case _:
         return orElse();
     }
@@ -286,11 +358,17 @@ extension HomeUiStatePatterns on HomeUiState {
             bool isUserLoading,
             bool isHeartRateLoading,
             bool isNotificationLoading,
+            bool isSeniorCardLoading,
             String name,
             bool isWearing,
             int heartRate,
             HeartRateStatus heartRateStatus,
-            DateTime measuredAt)
+            DateTime measuredAt,
+            List<String> thumbnails,
+            int todayTakenCount,
+            int todayTotalCount,
+            Duration nextDoseRemainingTime,
+            double stepProgress)
         $default,
   ) {
     final _that = this;
@@ -300,11 +378,17 @@ extension HomeUiStatePatterns on HomeUiState {
             _that.isUserLoading,
             _that.isHeartRateLoading,
             _that.isNotificationLoading,
+            _that.isSeniorCardLoading,
             _that.name,
             _that.isWearing,
             _that.heartRate,
             _that.heartRateStatus,
-            _that.measuredAt);
+            _that.measuredAt,
+            _that.thumbnails,
+            _that.todayTakenCount,
+            _that.todayTotalCount,
+            _that.nextDoseRemainingTime,
+            _that.stepProgress);
       case _:
         throw StateError('Unexpected subclass');
     }
@@ -328,11 +412,17 @@ extension HomeUiStatePatterns on HomeUiState {
             bool isUserLoading,
             bool isHeartRateLoading,
             bool isNotificationLoading,
+            bool isSeniorCardLoading,
             String name,
             bool isWearing,
             int heartRate,
             HeartRateStatus heartRateStatus,
-            DateTime measuredAt)?
+            DateTime measuredAt,
+            List<String> thumbnails,
+            int todayTakenCount,
+            int todayTotalCount,
+            Duration nextDoseRemainingTime,
+            double stepProgress)?
         $default,
   ) {
     final _that = this;
@@ -342,11 +432,17 @@ extension HomeUiStatePatterns on HomeUiState {
             _that.isUserLoading,
             _that.isHeartRateLoading,
             _that.isNotificationLoading,
+            _that.isSeniorCardLoading,
             _that.name,
             _that.isWearing,
             _that.heartRate,
             _that.heartRateStatus,
-            _that.measuredAt);
+            _that.measuredAt,
+            _that.thumbnails,
+            _that.todayTakenCount,
+            _that.todayTotalCount,
+            _that.nextDoseRemainingTime,
+            _that.stepProgress);
       case _:
         return null;
     }
@@ -360,11 +456,18 @@ class _HomeUiState implements HomeUiState {
       {required this.isUserLoading,
       required this.isHeartRateLoading,
       required this.isNotificationLoading,
+      required this.isSeniorCardLoading,
       required this.name,
       required this.isWearing,
       required this.heartRate,
       required this.heartRateStatus,
-      required this.measuredAt});
+      required this.measuredAt,
+      required final List<String> thumbnails,
+      required this.todayTakenCount,
+      required this.todayTotalCount,
+      required this.nextDoseRemainingTime,
+      required this.stepProgress})
+      : _thumbnails = thumbnails;
 
   @override
   final bool isUserLoading;
@@ -372,6 +475,8 @@ class _HomeUiState implements HomeUiState {
   final bool isHeartRateLoading;
   @override
   final bool isNotificationLoading;
+  @override
+  final bool isSeniorCardLoading;
   @override
   final String name;
   @override
@@ -382,6 +487,22 @@ class _HomeUiState implements HomeUiState {
   final HeartRateStatus heartRateStatus;
   @override
   final DateTime measuredAt;
+  final List<String> _thumbnails;
+  @override
+  List<String> get thumbnails {
+    if (_thumbnails is EqualUnmodifiableListView) return _thumbnails;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_thumbnails);
+  }
+
+  @override
+  final int todayTakenCount;
+  @override
+  final int todayTotalCount;
+  @override
+  final Duration nextDoseRemainingTime;
+  @override
+  final double stepProgress;
 
   /// Create a copy of HomeUiState
   /// with the given fields replaced by the non-null parameter values.
@@ -402,6 +523,8 @@ class _HomeUiState implements HomeUiState {
                 other.isHeartRateLoading == isHeartRateLoading) &&
             (identical(other.isNotificationLoading, isNotificationLoading) ||
                 other.isNotificationLoading == isNotificationLoading) &&
+            (identical(other.isSeniorCardLoading, isSeniorCardLoading) ||
+                other.isSeniorCardLoading == isSeniorCardLoading) &&
             (identical(other.name, name) || other.name == name) &&
             (identical(other.isWearing, isWearing) ||
                 other.isWearing == isWearing) &&
@@ -410,7 +533,17 @@ class _HomeUiState implements HomeUiState {
             (identical(other.heartRateStatus, heartRateStatus) ||
                 other.heartRateStatus == heartRateStatus) &&
             (identical(other.measuredAt, measuredAt) ||
-                other.measuredAt == measuredAt));
+                other.measuredAt == measuredAt) &&
+            const DeepCollectionEquality()
+                .equals(other._thumbnails, _thumbnails) &&
+            (identical(other.todayTakenCount, todayTakenCount) ||
+                other.todayTakenCount == todayTakenCount) &&
+            (identical(other.todayTotalCount, todayTotalCount) ||
+                other.todayTotalCount == todayTotalCount) &&
+            (identical(other.nextDoseRemainingTime, nextDoseRemainingTime) ||
+                other.nextDoseRemainingTime == nextDoseRemainingTime) &&
+            (identical(other.stepProgress, stepProgress) ||
+                other.stepProgress == stepProgress));
   }
 
   @override
@@ -419,15 +552,21 @@ class _HomeUiState implements HomeUiState {
       isUserLoading,
       isHeartRateLoading,
       isNotificationLoading,
+      isSeniorCardLoading,
       name,
       isWearing,
       heartRate,
       heartRateStatus,
-      measuredAt);
+      measuredAt,
+      const DeepCollectionEquality().hash(_thumbnails),
+      todayTakenCount,
+      todayTotalCount,
+      nextDoseRemainingTime,
+      stepProgress);
 
   @override
   String toString() {
-    return 'HomeUiState(isUserLoading: $isUserLoading, isHeartRateLoading: $isHeartRateLoading, isNotificationLoading: $isNotificationLoading, name: $name, isWearing: $isWearing, heartRate: $heartRate, heartRateStatus: $heartRateStatus, measuredAt: $measuredAt)';
+    return 'HomeUiState(isUserLoading: $isUserLoading, isHeartRateLoading: $isHeartRateLoading, isNotificationLoading: $isNotificationLoading, isSeniorCardLoading: $isSeniorCardLoading, name: $name, isWearing: $isWearing, heartRate: $heartRate, heartRateStatus: $heartRateStatus, measuredAt: $measuredAt, thumbnails: $thumbnails, todayTakenCount: $todayTakenCount, todayTotalCount: $todayTotalCount, nextDoseRemainingTime: $nextDoseRemainingTime, stepProgress: $stepProgress)';
   }
 }
 
@@ -443,11 +582,17 @@ abstract mixin class _$HomeUiStateCopyWith<$Res>
       {bool isUserLoading,
       bool isHeartRateLoading,
       bool isNotificationLoading,
+      bool isSeniorCardLoading,
       String name,
       bool isWearing,
       int heartRate,
       HeartRateStatus heartRateStatus,
-      DateTime measuredAt});
+      DateTime measuredAt,
+      List<String> thumbnails,
+      int todayTakenCount,
+      int todayTotalCount,
+      Duration nextDoseRemainingTime,
+      double stepProgress});
 }
 
 /// @nodoc
@@ -465,11 +610,17 @@ class __$HomeUiStateCopyWithImpl<$Res> implements _$HomeUiStateCopyWith<$Res> {
     Object? isUserLoading = null,
     Object? isHeartRateLoading = null,
     Object? isNotificationLoading = null,
+    Object? isSeniorCardLoading = null,
     Object? name = null,
     Object? isWearing = null,
     Object? heartRate = null,
     Object? heartRateStatus = null,
     Object? measuredAt = null,
+    Object? thumbnails = null,
+    Object? todayTakenCount = null,
+    Object? todayTotalCount = null,
+    Object? nextDoseRemainingTime = null,
+    Object? stepProgress = null,
   }) {
     return _then(_HomeUiState(
       isUserLoading: null == isUserLoading
@@ -483,6 +634,10 @@ class __$HomeUiStateCopyWithImpl<$Res> implements _$HomeUiStateCopyWith<$Res> {
       isNotificationLoading: null == isNotificationLoading
           ? _self.isNotificationLoading
           : isNotificationLoading // ignore: cast_nullable_to_non_nullable
+              as bool,
+      isSeniorCardLoading: null == isSeniorCardLoading
+          ? _self.isSeniorCardLoading
+          : isSeniorCardLoading // ignore: cast_nullable_to_non_nullable
               as bool,
       name: null == name
           ? _self.name
@@ -504,6 +659,26 @@ class __$HomeUiStateCopyWithImpl<$Res> implements _$HomeUiStateCopyWith<$Res> {
           ? _self.measuredAt
           : measuredAt // ignore: cast_nullable_to_non_nullable
               as DateTime,
+      thumbnails: null == thumbnails
+          ? _self._thumbnails
+          : thumbnails // ignore: cast_nullable_to_non_nullable
+              as List<String>,
+      todayTakenCount: null == todayTakenCount
+          ? _self.todayTakenCount
+          : todayTakenCount // ignore: cast_nullable_to_non_nullable
+              as int,
+      todayTotalCount: null == todayTotalCount
+          ? _self.todayTotalCount
+          : todayTotalCount // ignore: cast_nullable_to_non_nullable
+              as int,
+      nextDoseRemainingTime: null == nextDoseRemainingTime
+          ? _self.nextDoseRemainingTime
+          : nextDoseRemainingTime // ignore: cast_nullable_to_non_nullable
+              as Duration,
+      stepProgress: null == stepProgress
+          ? _self.stepProgress
+          : stepProgress // ignore: cast_nullable_to_non_nullable
+              as double,
     ));
   }
 }

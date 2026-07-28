@@ -2,16 +2,19 @@ import 'dart:async';
 
 import 'package:flutter/widgets.dart';
 import 'package:widyu/core/data/repository/heartRate/heart_rate_repository.dart';
+import 'package:widyu/core/data/repository/home/home_repository.dart';
 import 'package:widyu/core/data/repository/myPage/my_page_repository.dart';
 import 'package:widyu/core/data/repository/notification/notification_repository.dart';
 import 'package:widyu/core/model/api/api_result.dart';
 import 'package:widyu/core/model/heartRate/heart_rate_response.dart';
 import 'package:widyu/core/model/heartRate/heart_rate_status.dart';
+import 'package:widyu/core/model/home/senior_card.dart';
 import 'package:widyu/core/model/myPage/user/user.dart';
 import 'package:widyu/feature/home/home_ui_event.dart';
 import 'package:widyu/feature/home/home_ui_state.dart';
 
 class HomeViewModel with ChangeNotifier {
+  final HomeRepository _homeRepository;
   final MyPageRepository _myPageRepository;
   final NotificationRepository _notificationRepository;
   final HeartRateRepository _heartRateRepository;
@@ -25,16 +28,19 @@ class HomeViewModel with ChangeNotifier {
   StreamSubscription? _watchConnection;
 
   HomeViewModel({
+    required HomeRepository homeRepository,
     required MyPageRepository myPageRepository,
     required NotificationRepository notificationRepository,
     required HeartRateRepository heartRateRepository,
     required Future<bool> isPaired,
-  })  : _heartRateRepository = heartRateRepository,
+  })  : _homeRepository = homeRepository,
+        _heartRateRepository = heartRateRepository,
         _notificationRepository = notificationRepository,
         _myPageRepository = myPageRepository {
-    _observeWatchConnection(isPaired);
-    _fetchUser();
-    fetchHeartRate();
+    unawaited(_fetchUser());
+    unawaited(_observeWatchConnection(isPaired));
+    unawaited(fetchHeartRate());
+    unawaited(_fetchSeniorCard());
   }
 
   Future<void> fetchHeartRate() async {
@@ -46,7 +52,7 @@ class HomeViewModel with ChangeNotifier {
       final data = (result as Success<HeartRateResponse>).data;
       _uiState = _uiState.copyWith(
         heartRate: data.heartRate,
-        heartRateStatus: _convert(data.heartRateStatus),
+        heartRateStatus: _convertToHeartRateStatus(data.heartRateStatus),
         measuredAt: data.measuredAt,
       );
     } else {
@@ -71,7 +77,56 @@ class HomeViewModel with ChangeNotifier {
     notifyListeners();
   }
 
-  void _observeWatchConnection(Future<bool> isPaired) async {
+  Future<void> _fetchSeniorCard() async {
+    _uiState = _uiState.copyWith(isSeniorCardLoading: true);
+    notifyListeners();
+
+    final result = await _homeRepository.fetchSeniorCard();
+    if (result is Success) {
+      final data = (result as Success<SeniorCard>).data;
+      final albums = data.albums;
+      final medicine = data.medicine;
+      final goal = data.walk?.goal ?? 0;
+      final actual = data.walk?.actual ?? 0;
+      _uiState = _uiState.copyWith(
+        thumbnails: albums
+            .map((album) => album.thumbnailUrl)
+            .whereType<String>()
+            .where((url) => url.isNotEmpty)
+            .toList(),
+        todayTakenCount: medicine?.todayTakenCount ?? 0,
+        todayTotalCount: medicine?.todayTotalCount ?? 0,
+        nextDoseRemainingTime:
+            _calcNextDoseRemainingTime(medicine?.nextAlarmTime),
+        stepProgress: goal == 0 ? 0.0 : (actual / goal) * 100,
+      );
+    } else {
+      _uiEvent.add(const FetchSeniorCardFailure());
+    }
+    _uiState = _uiState.copyWith(isSeniorCardLoading: false);
+    notifyListeners();
+  }
+
+  Duration _calcNextDoseRemainingTime(String? nextAlarmTime) {
+    if (nextAlarmTime == null || nextAlarmTime.isEmpty) return Duration.zero;
+
+    final parts = nextAlarmTime.split(':');
+    final hour = int.tryParse(parts[0]);
+    final minute = parts.length > 1 ? int.tryParse(parts[1]) : null;
+    if (hour == null || minute == null) return Duration.zero;
+
+    final now = DateTime.now();
+    var deadline = DateTime(now.year, now.month, now.day, hour, minute)
+        .add(const Duration(minutes: 30));
+
+    if (deadline.isBefore(now)) {
+      deadline = deadline.add(const Duration(days: 1));
+    }
+
+    return deadline.difference(now);
+  }
+
+  Future<void> _observeWatchConnection(Future<bool> isPaired) async {
     final isWearing = await isPaired;
     _uiState = _uiState.copyWith(isWearing: isWearing);
     notifyListeners();
@@ -83,7 +138,7 @@ class HomeViewModel with ChangeNotifier {
     });
   }
 
-  HeartRateStatus _convert(String status) {
+  HeartRateStatus _convertToHeartRateStatus(String status) {
     switch (status) {
       case 'NORMAL':
         return HeartRateStatus.normal;
