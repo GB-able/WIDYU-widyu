@@ -24,12 +24,19 @@ class _AlbumCard extends StatelessWidget {
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  MyColor.black.withValues(alpha: 0.8),
+                  MyColor.black.withValues(alpha: 0.7),
                   MyColor.black.withValues(alpha: 0.0),
                 ],
               ),
             ),
           ),
+          if (thumbnails.isEmpty)
+            Center(
+              child: Text(
+                '게시물이 없어요',
+                style: MyTypo.subTitle5.copyWith(color: MyColor.grey300),
+              ),
+            ),
         ],
       ),
       content: Align(
@@ -108,9 +115,7 @@ class _AlbumSlideshowState extends State<_AlbumSlideshow> {
 
   @override
   Widget build(BuildContext context) {
-    if (widget.thumbnails.isEmpty) {
-      return Container(color: MyColor.red400);
-    }
+    if (widget.thumbnails.isEmpty) return const SizedBox.shrink();
 
     return AnimatedSwitcher(
       duration: _albumSlideTransitionDuration,
