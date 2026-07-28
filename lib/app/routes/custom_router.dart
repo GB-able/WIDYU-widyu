@@ -51,7 +51,10 @@ class CustomRouter {
         ],
         builder: (context, state, navigationShell) => Stack(
           alignment: Alignment.bottomCenter,
-          children: [navigationShell, const BotNav()],
+          children: [
+            navigationShell,
+            BotNav(navigationShell: navigationShell),
+          ],
         ),
       ),
       CustomGoRoute.slideRoute(

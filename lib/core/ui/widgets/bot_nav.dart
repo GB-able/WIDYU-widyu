@@ -5,27 +5,17 @@ import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
 import 'package:widyu/core/ui/widgets/icon_widget.dart';
 
-class BotNav extends StatefulWidget {
-  const BotNav({super.key});
+class BotNav extends StatelessWidget {
+  final StatefulNavigationShell navigationShell;
 
-  @override
-  State<BotNav> createState() => _BotNavState();
-}
+  const BotNav({super.key, required this.navigationShell});
 
-class _BotNavState extends State<BotNav> {
-  final List<({AppRoute route, String label, String icon})> _routes = [
+  static const _routes = <({AppRoute route, String label, String icon})>[
     (route: AppRoute.home, label: "홈", icon: "home"),
     (route: AppRoute.goal, label: "목표", icon: "health"),
     (route: AppRoute.album, label: "앨범", icon: "album"),
     (route: AppRoute.my, label: "내정보", icon: "user"),
   ];
-  int _currentIndex = 0;
-
-  void setIdx(int index) {
-    setState(() {
-      _currentIndex = index;
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,11 +34,12 @@ class _BotNavState extends State<BotNav> {
       ),
       child: BottomNavigationBar(
         elevation: 0,
-        currentIndex: _currentIndex,
-        onTap: (index) {
-          setIdx(index);
-          context.go(_routes[index].route.path);
-        },
+        currentIndex: navigationShell.currentIndex,
+        onTap: (index) => navigationShell.goBranch(
+          index,
+          // 같은 탭을 다시 누르면 해당 탭의 첫 화면으로 돌아간다
+          initialLocation: index == navigationShell.currentIndex,
+        ),
         backgroundColor: Colors.transparent,
         type: BottomNavigationBarType.fixed,
         selectedItemColor: MyColor.grey700,
