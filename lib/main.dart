@@ -9,6 +9,8 @@ import 'package:widyu/core/data/repository/auth/auth_repository.dart';
 import 'package:widyu/core/data/repository/auth/auth_repository_impl.dart';
 import 'package:widyu/core/data/repository/heartRate/heart_rate_repository.dart';
 import 'package:widyu/core/data/repository/heartRate/heart_rate_repository_impl.dart';
+import 'package:widyu/core/data/repository/home/home_repository.dart';
+import 'package:widyu/core/data/repository/home/home_repository_impl.dart';
 import 'package:widyu/core/data/repository/myPage/my_page_repository.dart';
 import 'package:widyu/core/data/repository/myPage/my_page_repository_impl.dart';
 import 'package:widyu/core/data/repository/notification/notification_repository.dart';
@@ -21,6 +23,8 @@ import 'package:widyu/core/data/source/heartRate/heart_rate_local_data_source.da
 import 'package:widyu/core/data/source/heartRate/heart_rate_local_data_source_impl.dart';
 import 'package:widyu/core/data/source/heartRate/heart_rate_remote_data_source.dart';
 import 'package:widyu/core/data/source/heartRate/heart_rate_remote_data_source_impl.dart';
+import 'package:widyu/core/data/source/home/home_remote_data_source.dart';
+import 'package:widyu/core/data/source/home/home_remote_data_source_impl.dart';
 import 'package:widyu/core/data/source/myPage/my_page_remote_data_source.dart';
 import 'package:widyu/core/data/source/myPage/my_page_remote_data_source_impl.dart';
 import 'package:widyu/core/data/source/notification/notification_remote_data_source.dart';
@@ -50,6 +54,10 @@ void main() async {
               AuthRemoteDataSourceImpl(apiClient: apiClient),
         ),
         Provider<AuthLocalDataSource>(create: (_) => AuthLocalDataSourceImpl()),
+        ProxyProvider<ApiClient, HomeRemoteDataSource>(
+          update: (_, apiClient, __) =>
+              HomeRemoteDataSourceImpl(apiClient: apiClient),
+        ),
         ProxyProvider<ApiClient, MyPageRemoteDataSource>(
           update: (_, apiClient, __) =>
               MyPageRemoteDataSourceImpl(apiClient: apiClient),
@@ -74,6 +82,10 @@ void main() async {
             remoteDatasource: remote,
             localDataSource: local,
           ),
+        ),
+        ProxyProvider<HomeRemoteDataSource, HomeRepository>(
+          update: (_, remote, __) =>
+              HomeRepositoryImpl(remoteDataSource: remote),
         ),
         ProxyProvider<MyPageRemoteDataSource, MyPageRepository>(
           update: (_, remote, __) =>
@@ -100,10 +112,10 @@ class App extends StatefulWidget {
   const App({super.key});
 
   @override
-  State<App> createState() => _MyAppState();
+  State<App> createState() => _AppState();
 }
 
-class _MyAppState extends State<App> {
+class _AppState extends State<App> {
   late final AppServiceController _serviceController;
 
   @override
