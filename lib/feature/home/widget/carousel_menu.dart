@@ -1,18 +1,5 @@
 part of '../home_screen.dart';
 
-/// 무한 순환을 위해 양방향으로 충분한 여유를 둔 시작 페이지
-/// 첫 인디케이터가 0을 가리키려면 [_carouselCards] 길이의 배수여야 한다
-const _carouselInitialPage = 4000;
-const _cardsLength = 4;
-const _carouselArcOffset = 40.0;
-const _carouselMaxAngle = 0.12;
-const _carouselCardGap = 52.0;
-const _carouselCardWidth = 220.0;
-const _carouselCardMaxHeight = 278.0;
-
-// 인디케이터 영역 높이 (카드와의 간격 20 + 인디케이터 크기 6 + 하단 여백 16)
-const _carouselIndicatorArea = 42.0;
-
 class _CarouselMenu extends StatefulWidget {
   final List<String> thumbanils;
   final int todayTakenCount;
@@ -34,6 +21,19 @@ class _CarouselMenu extends StatefulWidget {
 
 class _CarouselMenuState extends State<_CarouselMenu> {
   PageController? _controller;
+
+  // 무한 순환을 위해 양방향으로 충분한 여유를 둔 시작 페이지
+  // 첫 인디케이터가 0을 가리키려면 [_carouselCards] 길이의 배수여야 한다
+  static const _carouselInitialPage = 4000;
+  static const _cardsLength = 4;
+  static const _carouselArcOffset = 40.0;
+  static const _carouselMaxAngle = 0.12;
+  static const _carouselCardGap = 52.0;
+  static const _carouselCardWidth = 220.0;
+  static const _carouselCardMaxHeight = 278.0;
+
+  // 인디케이터 영역 높이 (카드와의 간격 20 + 인디케이터 크기 6 + 하단 여백 16)
+  static const _carouselIndicatorArea = 42.0;
 
   int _currentIndex = _carouselInitialPage % _cardsLength;
 
@@ -62,7 +62,7 @@ class _CarouselMenuState extends State<_CarouselMenu> {
     final cards = <Widget>[
       _MedicationCard(),
       _HealthScheduleCard(),
-      _WalkingCard(),
+      _WalkingCard(stepProgress: widget.stepProgress),
       _AlbumCard(thumbnails: widget.thumbanils),
     ];
 
