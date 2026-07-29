@@ -25,15 +25,6 @@ class _HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
           ),
         ),
         const SizedBox(width: 16),
-        GestureDetector(
-          onTap: () => {},
-          child: const WidyuIcon(
-            icon: 'ic_24_hamburger.svg',
-            width: 24,
-            height: 24,
-          ),
-        ),
-        const SizedBox(width: 16),
       ],
     );
   }
