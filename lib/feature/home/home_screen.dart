@@ -26,6 +26,7 @@ import 'package:widyu/feature/home/home_ui_state.dart';
 import 'package:widyu/feature/home/home_view_model.dart';
 
 part 'widget/home_app_bar.dart';
+part 'widget/mesh_gradient_background.dart';
 part 'widget/notification_view.dart';
 part 'widget/home_greeting_view.dart';
 part 'widget/watch_data_view.dart';

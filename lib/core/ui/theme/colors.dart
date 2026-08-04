@@ -62,8 +62,11 @@ class MyColor {
 
   static const blue500 = Color(0xFF4886F9);
 
-  static const primary = orange500;
+  static const primary = orange600;
   static const primary200 = Color(0xFFFFD1B6);
+  static const primary300 = Color(0xFFFFCC56);
+  static const primary400 = Color(0xFFFF9E66);
+  static const primary500 = Color(0xFFFF9500);
   static const primary900 = Color(0xFF863100);
   static const primaryLight = orange50;
   static const secondary = purple600;
