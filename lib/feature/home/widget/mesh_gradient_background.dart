@@ -8,8 +8,14 @@ class MeshGradientBackground extends StatefulWidget {
   /// blob 뒤에 깔리는 베이스 배경색
   final Color baseColor;
 
-  /// blob에 사용할 색상 목록
+  /// blob에 사용할 색상 목록.
+  /// blob 이 자체 색([_BlobSpec.color])을 지정하지 않은 경우에만 사용된다.
   final List<Color> colors;
+
+  /// 그릴 blob 궤도 목록.
+  /// 같은 part 파일들끼리만 쓰는 타입이라 private 타입 노출을 허용한다.
+  // ignore: library_private_types_in_public_api
+  final List<_BlobSpec> blobs;
 
   /// blob 경계를 뭉개는 블러 강도
   final double blurSigma;
@@ -23,7 +29,8 @@ class MeshGradientBackground extends StatefulWidget {
   const MeshGradientBackground({
     super.key,
     required this.baseColor,
-    required this.colors,
+    this.colors = const [],
+    required this.blobs,
     this.blurSigma = 50,
     this.duration = const Duration(seconds: 12),
     this.topScrimAlpha = 0.16,
@@ -68,6 +75,7 @@ class _MeshGradientBackgroundState extends State<MeshGradientBackground>
               animation: _controller,
               baseColor: widget.baseColor,
               colors: widget.colors,
+              blobs: widget.blobs,
               blurSigma: widget.blurSigma,
             ),
           ),
@@ -113,6 +121,13 @@ class _BlobSpec {
   /// 시간에 따라 축 비율이 출렁이는 정도. 형태를 유기적으로 일그러뜨린다.
   final double wobble;
 
+  /// blob 중심의 색. null 이면 [MeshGradientBackground.colors] 에서 순환 배정된 색을 사용한다.
+  final Color? color;
+
+  /// blob 가장자리의 색. 지정하면 [color] 에서 이 색으로 번지는 radial gradient 로 칠한다.
+  /// null 이면 기존처럼 단색으로 칠하고 블러로 경계를 뭉갠다.
+  final Color? edgeColor;
+
   const _BlobSpec({
     required this.centerX,
     required this.centerY,
@@ -127,76 +142,29 @@ class _BlobSpec {
     required this.aspect,
     required this.angle,
     required this.wobble,
+    this.color,
+    this.edgeColor,
   });
 }
-
-/// 좌측 상단 모서리에서 카드 중심을 향해 타원형으로 늘어선 3개의 blob 궤도
-/// [MeshGradientBackground.colors] 의 색상이 코너에서 가까운 순서대로 배정되며,
-/// 코너에 가장 큰 blob 을 두고 중심 방향으로 갈수록 작아진다.
-const _blobSpecs = <_BlobSpec>[
-  _BlobSpec(
-    centerX: 0.10,
-    centerY: 0.12,
-    amplitudeX: 0.04,
-    amplitudeY: 0.04,
-    freqX: 1,
-    freqY: 1,
-    phaseX: 0.00,
-    phaseY: 0.28,
-    radius: 0.46,
-    opacity: 0.90,
-    aspect: 1.20,
-    angle: 0.22 * pi,
-    wobble: 0.06,
-  ),
-  _BlobSpec(
-    centerX: 0.32,
-    centerY: 0.30,
-    amplitudeX: 0.05,
-    amplitudeY: 0.04,
-    freqX: 1,
-    freqY: 2,
-    phaseX: 0.41,
-    phaseY: 0.13,
-    radius: 0.46,
-    opacity: 0.85,
-    aspect: 1.30,
-    angle: 0.14 * pi,
-    wobble: 0.08,
-  ),
-  _BlobSpec(
-    centerX: 0.55,
-    centerY: 0.48,
-    amplitudeX: 0.05,
-    amplitudeY: 0.05,
-    freqX: 2,
-    freqY: 1,
-    phaseX: 0.67,
-    phaseY: 0.72,
-    radius: 0.42,
-    opacity: 0.80,
-    aspect: 1.12,
-    angle: 0.32 * pi,
-    wobble: 0.07,
-  ),
-];
 
 class _MeshGradientPainter extends CustomPainter {
   final Animation<double> animation;
   final Color baseColor;
   final List<Color> colors;
+  final List<_BlobSpec> blobs;
   final double blurSigma;
 
   _MeshGradientPainter({
     required this.animation,
     required this.baseColor,
     required this.colors,
+    required this.blobs,
     required this.blurSigma,
   }) : super(repaint: animation);
 
   @override
   void paint(Canvas canvas, Size size) {
-    if (size.isEmpty || colors.isEmpty) return;
+    if (size.isEmpty || blobs.isEmpty) return;
 
     final bounds = Offset.zero & size;
     canvas.clipRect(bounds);
@@ -208,8 +176,12 @@ class _MeshGradientPainter extends CustomPainter {
       ..isAntiAlias = true
       ..maskFilter = MaskFilter.blur(BlurStyle.normal, blurSigma);
 
-    for (var i = 0; i < _blobSpecs.length; i++) {
-      final spec = _blobSpecs[i];
+    for (var i = 0; i < blobs.length; i++) {
+      final spec = blobs[i];
+      final baseBlobColor =
+          spec.color ?? (colors.isEmpty ? null : colors[i % colors.length]);
+      if (baseBlobColor == null) continue;
+
       final center = Offset(
         size.width *
             (spec.centerX +
@@ -219,25 +191,34 @@ class _MeshGradientPainter extends CustomPainter {
                 spec.amplitudeY * sin(2 * pi * (spec.freqY * t + spec.phaseY))),
       );
 
-      // freqX + freqY 가 정수라 루프가 되감겨도 형태가 이어진다.
       final wobble = spec.wobble *
           sin(2 * pi * ((spec.freqX + spec.freqY) * t + spec.phaseX));
       final radiusX = shortestSide * spec.radius * (spec.aspect + wobble);
       final radiusY = shortestSide * spec.radius * (1 / spec.aspect - wobble);
 
+      final rect = Rect.fromCenter(
+        center: Offset.zero,
+        width: radiusX * 2,
+        height: radiusY * 2,
+      );
+      final edgeColor = spec.edgeColor;
+
       canvas.save();
       canvas.translate(center.dx, center.dy);
       canvas.rotate(spec.angle);
       canvas.drawOval(
-        Rect.fromCenter(
-          center: Offset.zero,
-          width: radiusX * 2,
-          height: radiusY * 2,
-        ),
-        paint
-          ..color = colors[i % colors.length].withValues(
-            alpha: spec.opacity,
-          ),
+        rect,
+        edgeColor == null
+            ? (paint..color = baseBlobColor.withValues(alpha: spec.opacity))
+            : (Paint()
+              ..isAntiAlias = true
+              ..maskFilter = MaskFilter.blur(BlurStyle.normal, blurSigma)
+              ..shader = RadialGradient(
+                colors: [
+                  baseBlobColor.withValues(alpha: spec.opacity),
+                  edgeColor.withValues(alpha: spec.opacity),
+                ],
+              ).createShader(rect)),
       );
       canvas.restore();
     }
@@ -247,5 +228,6 @@ class _MeshGradientPainter extends CustomPainter {
   bool shouldRepaint(_MeshGradientPainter oldDelegate) =>
       oldDelegate.baseColor != baseColor ||
       oldDelegate.blurSigma != blurSigma ||
-      !listEquals(oldDelegate.colors, colors);
+      !listEquals(oldDelegate.colors, colors) ||
+      !listEquals(oldDelegate.blobs, blobs);
 }
