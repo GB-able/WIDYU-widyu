@@ -45,7 +45,7 @@ class HeartRateRepositoryImpl implements HeartRateRepository {
 
   @override
   Future<ApiResult<HeartRateResponse>> fetchHeartRate() async =>
-      _remoteDataSource.fetchHeartRateStatus().toApiResult();
+      await _remoteDataSource.fetchHeartRateStatus().toApiResult();
 
   Future<void> _sendHeartRateStatus() async {
     final result = await _remoteDataSource.fetchHeartRateStatus().toApiResult();

@@ -20,7 +20,7 @@ class _WatchDataView extends StatelessWidget {
   String _statusMessage(HeartRateStatus status) {
     return switch (status) {
       HeartRateStatus.normal => '안정',
-      HeartRateStatus.anomaly => '주의',
+      HeartRateStatus.emergency => '주의',
       HeartRateStatus.unknown => '-',
     };
   }
@@ -28,7 +28,7 @@ class _WatchDataView extends StatelessWidget {
   String _statusIcon(HeartRateStatus status) {
     return switch (status) {
       HeartRateStatus.normal => 'ic_50_heart_rate_normal.svg',
-      HeartRateStatus.anomaly => 'ic_50_heart_rate_warning.svg',
+      HeartRateStatus.emergency => 'ic_50_heart_rate_warning.svg',
       HeartRateStatus.unknown => 'ic_50_heart_rate_disconnect.svg',
     };
   }
@@ -36,7 +36,7 @@ class _WatchDataView extends StatelessWidget {
   Color _statusColor(HeartRateStatus status) {
     return switch (status) {
       HeartRateStatus.normal => MyColor.purple600,
-      HeartRateStatus.anomaly => MyColor.red600,
+      HeartRateStatus.emergency => MyColor.red600,
       HeartRateStatus.unknown => MyColor.grey600,
     };
   }

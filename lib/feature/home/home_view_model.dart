@@ -139,8 +139,8 @@ class HomeViewModel with ChangeNotifier {
     switch (status) {
       case 'NORMAL':
         return HeartRateStatus.normal;
-      case 'ANOMALY':
-        return HeartRateStatus.anomaly;
+      case 'EMERGENCY':
+        return HeartRateStatus.emergency;
       default:
         return HeartRateStatus.unknown;
     }

@@ -1,1 +1,1 @@
-enum HeartRateStatus { normal, anomaly, unknown }
+enum HeartRateStatus { normal, emergency, unknown }
