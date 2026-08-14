@@ -16,6 +16,7 @@ import 'package:widyu/core/data/repository/home/home_repository.dart';
 import 'package:widyu/core/data/repository/myPage/my_page_repository.dart';
 import 'package:widyu/core/data/repository/notification/notification_repository.dart';
 import 'package:widyu/core/model/heartRate/heart_rate_status.dart';
+import 'package:widyu/core/model/home/medication_status.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
 import 'package:widyu/core/ui/widgets/text_btn.dart';
@@ -34,6 +35,7 @@ part 'widget/carousel_menu.dart';
 part 'widget/carousel_card_shell.dart';
 part 'widget/carousel_indicator.dart';
 part 'widget/medication_card.dart';
+part 'widget/dose_countdown.dart';
 part 'widget/health_schedule_card.dart';
 part 'widget/walking_card.dart';
 part 'widget/album_card.dart';
@@ -84,9 +86,7 @@ class HomeScreen extends StatelessWidget {
                   right: 0,
                   child: _CarouselMenu(
                     thumbanils: uiState.thumbnails,
-                    todayTakenCount: uiState.todayTakenCount,
-                    todayTotalCount: uiState.todayTotalCount,
-                    nextDoseRemainingTime: uiState.nextDoseRemainingTime,
+                    medicationStatus: uiState.medicationStatus,
                     stepProgress: uiState.stepProgress,
                   ),
                 ),

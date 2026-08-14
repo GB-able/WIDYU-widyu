@@ -1,5 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:widyu/core/model/heartRate/heart_rate_status.dart';
+import 'package:widyu/core/model/home/medication_status.dart';
 
 part 'home_ui_state.freezed.dart';
 
@@ -16,9 +17,7 @@ abstract class HomeUiState with _$HomeUiState {
     required HeartRateStatus heartRateStatus,
     required DateTime measuredAt,
     required List<String> thumbnails,
-    required int todayTakenCount,
-    required int todayTotalCount,
-    required Duration nextDoseRemainingTime,
+    required MedicationStatus medicationStatus,
     required double stepProgress,
   }) = _HomeUiState;
 
@@ -33,9 +32,7 @@ abstract class HomeUiState with _$HomeUiState {
         heartRateStatus: HeartRateStatus.unknown,
         measuredAt: DateTime.now(),
         thumbnails: [],
-        todayTakenCount: 0,
-        todayTotalCount: 0,
-        nextDoseRemainingTime: Duration.zero,
+        medicationStatus: const MedicationStatus.unknown(),
         stepProgress: 0.0,
       );
 }

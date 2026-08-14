@@ -2,16 +2,12 @@ part of '../home_screen.dart';
 
 class _CarouselMenu extends StatefulWidget {
   final List<String> thumbanils;
-  final int todayTakenCount;
-  final int todayTotalCount;
-  final Duration nextDoseRemainingTime;
+  final MedicationStatus medicationStatus;
   final double stepProgress;
 
   const _CarouselMenu({
     required this.thumbanils,
-    required this.todayTakenCount,
-    required this.todayTotalCount,
-    required this.nextDoseRemainingTime,
+    required this.medicationStatus,
     required this.stepProgress,
   });
 
@@ -60,8 +56,8 @@ class _CarouselMenuState extends State<_CarouselMenu> {
   Widget build(BuildContext context) {
     final controller = _controller!;
     final cards = <Widget>[
-      _MedicationCard(),
-      _HealthScheduleCard(),
+      _MedicationCard(medicationStatus: widget.medicationStatus),
+      const _HealthScheduleCard(),
       _WalkingCard(stepProgress: widget.stepProgress),
       _AlbumCard(thumbnails: widget.thumbanils),
     ];

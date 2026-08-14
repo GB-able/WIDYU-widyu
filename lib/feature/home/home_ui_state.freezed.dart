@@ -24,9 +24,7 @@ mixin _$HomeUiState {
   HeartRateStatus get heartRateStatus;
   DateTime get measuredAt;
   List<String> get thumbnails;
-  int get todayTakenCount;
-  int get todayTotalCount;
-  Duration get nextDoseRemainingTime;
+  MedicationStatus get medicationStatus;
   double get stepProgress;
 
   /// Create a copy of HomeUiState
@@ -60,12 +58,8 @@ mixin _$HomeUiState {
                 other.measuredAt == measuredAt) &&
             const DeepCollectionEquality()
                 .equals(other.thumbnails, thumbnails) &&
-            (identical(other.todayTakenCount, todayTakenCount) ||
-                other.todayTakenCount == todayTakenCount) &&
-            (identical(other.todayTotalCount, todayTotalCount) ||
-                other.todayTotalCount == todayTotalCount) &&
-            (identical(other.nextDoseRemainingTime, nextDoseRemainingTime) ||
-                other.nextDoseRemainingTime == nextDoseRemainingTime) &&
+            (identical(other.medicationStatus, medicationStatus) ||
+                other.medicationStatus == medicationStatus) &&
             (identical(other.stepProgress, stepProgress) ||
                 other.stepProgress == stepProgress));
   }
@@ -83,14 +77,12 @@ mixin _$HomeUiState {
       heartRateStatus,
       measuredAt,
       const DeepCollectionEquality().hash(thumbnails),
-      todayTakenCount,
-      todayTotalCount,
-      nextDoseRemainingTime,
+      medicationStatus,
       stepProgress);
 
   @override
   String toString() {
-    return 'HomeUiState(isUserLoading: $isUserLoading, isHeartRateLoading: $isHeartRateLoading, isNotificationLoading: $isNotificationLoading, isSeniorCardLoading: $isSeniorCardLoading, name: $name, isWearing: $isWearing, heartRate: $heartRate, heartRateStatus: $heartRateStatus, measuredAt: $measuredAt, thumbnails: $thumbnails, todayTakenCount: $todayTakenCount, todayTotalCount: $todayTotalCount, nextDoseRemainingTime: $nextDoseRemainingTime, stepProgress: $stepProgress)';
+    return 'HomeUiState(isUserLoading: $isUserLoading, isHeartRateLoading: $isHeartRateLoading, isNotificationLoading: $isNotificationLoading, isSeniorCardLoading: $isSeniorCardLoading, name: $name, isWearing: $isWearing, heartRate: $heartRate, heartRateStatus: $heartRateStatus, measuredAt: $measuredAt, thumbnails: $thumbnails, medicationStatus: $medicationStatus, stepProgress: $stepProgress)';
   }
 }
 
@@ -111,10 +103,10 @@ abstract mixin class $HomeUiStateCopyWith<$Res> {
       HeartRateStatus heartRateStatus,
       DateTime measuredAt,
       List<String> thumbnails,
-      int todayTakenCount,
-      int todayTotalCount,
-      Duration nextDoseRemainingTime,
+      MedicationStatus medicationStatus,
       double stepProgress});
+
+  $MedicationStatusCopyWith<$Res> get medicationStatus;
 }
 
 /// @nodoc
@@ -139,9 +131,7 @@ class _$HomeUiStateCopyWithImpl<$Res> implements $HomeUiStateCopyWith<$Res> {
     Object? heartRateStatus = null,
     Object? measuredAt = null,
     Object? thumbnails = null,
-    Object? todayTakenCount = null,
-    Object? todayTotalCount = null,
-    Object? nextDoseRemainingTime = null,
+    Object? medicationStatus = null,
     Object? stepProgress = null,
   }) {
     return _then(_self.copyWith(
@@ -185,23 +175,25 @@ class _$HomeUiStateCopyWithImpl<$Res> implements $HomeUiStateCopyWith<$Res> {
           ? _self.thumbnails
           : thumbnails // ignore: cast_nullable_to_non_nullable
               as List<String>,
-      todayTakenCount: null == todayTakenCount
-          ? _self.todayTakenCount
-          : todayTakenCount // ignore: cast_nullable_to_non_nullable
-              as int,
-      todayTotalCount: null == todayTotalCount
-          ? _self.todayTotalCount
-          : todayTotalCount // ignore: cast_nullable_to_non_nullable
-              as int,
-      nextDoseRemainingTime: null == nextDoseRemainingTime
-          ? _self.nextDoseRemainingTime
-          : nextDoseRemainingTime // ignore: cast_nullable_to_non_nullable
-              as Duration,
+      medicationStatus: null == medicationStatus
+          ? _self.medicationStatus
+          : medicationStatus // ignore: cast_nullable_to_non_nullable
+              as MedicationStatus,
       stepProgress: null == stepProgress
           ? _self.stepProgress
           : stepProgress // ignore: cast_nullable_to_non_nullable
               as double,
     ));
+  }
+
+  /// Create a copy of HomeUiState
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $MedicationStatusCopyWith<$Res> get medicationStatus {
+    return $MedicationStatusCopyWith<$Res>(_self.medicationStatus, (value) {
+      return _then(_self.copyWith(medicationStatus: value));
+    });
   }
 }
 
@@ -309,9 +301,7 @@ extension HomeUiStatePatterns on HomeUiState {
             HeartRateStatus heartRateStatus,
             DateTime measuredAt,
             List<String> thumbnails,
-            int todayTakenCount,
-            int todayTotalCount,
-            Duration nextDoseRemainingTime,
+            MedicationStatus medicationStatus,
             double stepProgress)?
         $default, {
     required TResult orElse(),
@@ -330,9 +320,7 @@ extension HomeUiStatePatterns on HomeUiState {
             _that.heartRateStatus,
             _that.measuredAt,
             _that.thumbnails,
-            _that.todayTakenCount,
-            _that.todayTotalCount,
-            _that.nextDoseRemainingTime,
+            _that.medicationStatus,
             _that.stepProgress);
       case _:
         return orElse();
@@ -365,9 +353,7 @@ extension HomeUiStatePatterns on HomeUiState {
             HeartRateStatus heartRateStatus,
             DateTime measuredAt,
             List<String> thumbnails,
-            int todayTakenCount,
-            int todayTotalCount,
-            Duration nextDoseRemainingTime,
+            MedicationStatus medicationStatus,
             double stepProgress)
         $default,
   ) {
@@ -385,9 +371,7 @@ extension HomeUiStatePatterns on HomeUiState {
             _that.heartRateStatus,
             _that.measuredAt,
             _that.thumbnails,
-            _that.todayTakenCount,
-            _that.todayTotalCount,
-            _that.nextDoseRemainingTime,
+            _that.medicationStatus,
             _that.stepProgress);
       case _:
         throw StateError('Unexpected subclass');
@@ -419,9 +403,7 @@ extension HomeUiStatePatterns on HomeUiState {
             HeartRateStatus heartRateStatus,
             DateTime measuredAt,
             List<String> thumbnails,
-            int todayTakenCount,
-            int todayTotalCount,
-            Duration nextDoseRemainingTime,
+            MedicationStatus medicationStatus,
             double stepProgress)?
         $default,
   ) {
@@ -439,9 +421,7 @@ extension HomeUiStatePatterns on HomeUiState {
             _that.heartRateStatus,
             _that.measuredAt,
             _that.thumbnails,
-            _that.todayTakenCount,
-            _that.todayTotalCount,
-            _that.nextDoseRemainingTime,
+            _that.medicationStatus,
             _that.stepProgress);
       case _:
         return null;
@@ -463,9 +443,7 @@ class _HomeUiState implements HomeUiState {
       required this.heartRateStatus,
       required this.measuredAt,
       required final List<String> thumbnails,
-      required this.todayTakenCount,
-      required this.todayTotalCount,
-      required this.nextDoseRemainingTime,
+      required this.medicationStatus,
       required this.stepProgress})
       : _thumbnails = thumbnails;
 
@@ -496,11 +474,7 @@ class _HomeUiState implements HomeUiState {
   }
 
   @override
-  final int todayTakenCount;
-  @override
-  final int todayTotalCount;
-  @override
-  final Duration nextDoseRemainingTime;
+  final MedicationStatus medicationStatus;
   @override
   final double stepProgress;
 
@@ -536,12 +510,8 @@ class _HomeUiState implements HomeUiState {
                 other.measuredAt == measuredAt) &&
             const DeepCollectionEquality()
                 .equals(other._thumbnails, _thumbnails) &&
-            (identical(other.todayTakenCount, todayTakenCount) ||
-                other.todayTakenCount == todayTakenCount) &&
-            (identical(other.todayTotalCount, todayTotalCount) ||
-                other.todayTotalCount == todayTotalCount) &&
-            (identical(other.nextDoseRemainingTime, nextDoseRemainingTime) ||
-                other.nextDoseRemainingTime == nextDoseRemainingTime) &&
+            (identical(other.medicationStatus, medicationStatus) ||
+                other.medicationStatus == medicationStatus) &&
             (identical(other.stepProgress, stepProgress) ||
                 other.stepProgress == stepProgress));
   }
@@ -559,14 +529,12 @@ class _HomeUiState implements HomeUiState {
       heartRateStatus,
       measuredAt,
       const DeepCollectionEquality().hash(_thumbnails),
-      todayTakenCount,
-      todayTotalCount,
-      nextDoseRemainingTime,
+      medicationStatus,
       stepProgress);
 
   @override
   String toString() {
-    return 'HomeUiState(isUserLoading: $isUserLoading, isHeartRateLoading: $isHeartRateLoading, isNotificationLoading: $isNotificationLoading, isSeniorCardLoading: $isSeniorCardLoading, name: $name, isWearing: $isWearing, heartRate: $heartRate, heartRateStatus: $heartRateStatus, measuredAt: $measuredAt, thumbnails: $thumbnails, todayTakenCount: $todayTakenCount, todayTotalCount: $todayTotalCount, nextDoseRemainingTime: $nextDoseRemainingTime, stepProgress: $stepProgress)';
+    return 'HomeUiState(isUserLoading: $isUserLoading, isHeartRateLoading: $isHeartRateLoading, isNotificationLoading: $isNotificationLoading, isSeniorCardLoading: $isSeniorCardLoading, name: $name, isWearing: $isWearing, heartRate: $heartRate, heartRateStatus: $heartRateStatus, measuredAt: $measuredAt, thumbnails: $thumbnails, medicationStatus: $medicationStatus, stepProgress: $stepProgress)';
   }
 }
 
@@ -589,10 +557,11 @@ abstract mixin class _$HomeUiStateCopyWith<$Res>
       HeartRateStatus heartRateStatus,
       DateTime measuredAt,
       List<String> thumbnails,
-      int todayTakenCount,
-      int todayTotalCount,
-      Duration nextDoseRemainingTime,
+      MedicationStatus medicationStatus,
       double stepProgress});
+
+  @override
+  $MedicationStatusCopyWith<$Res> get medicationStatus;
 }
 
 /// @nodoc
@@ -617,9 +586,7 @@ class __$HomeUiStateCopyWithImpl<$Res> implements _$HomeUiStateCopyWith<$Res> {
     Object? heartRateStatus = null,
     Object? measuredAt = null,
     Object? thumbnails = null,
-    Object? todayTakenCount = null,
-    Object? todayTotalCount = null,
-    Object? nextDoseRemainingTime = null,
+    Object? medicationStatus = null,
     Object? stepProgress = null,
   }) {
     return _then(_HomeUiState(
@@ -663,23 +630,25 @@ class __$HomeUiStateCopyWithImpl<$Res> implements _$HomeUiStateCopyWith<$Res> {
           ? _self._thumbnails
           : thumbnails // ignore: cast_nullable_to_non_nullable
               as List<String>,
-      todayTakenCount: null == todayTakenCount
-          ? _self.todayTakenCount
-          : todayTakenCount // ignore: cast_nullable_to_non_nullable
-              as int,
-      todayTotalCount: null == todayTotalCount
-          ? _self.todayTotalCount
-          : todayTotalCount // ignore: cast_nullable_to_non_nullable
-              as int,
-      nextDoseRemainingTime: null == nextDoseRemainingTime
-          ? _self.nextDoseRemainingTime
-          : nextDoseRemainingTime // ignore: cast_nullable_to_non_nullable
-              as Duration,
+      medicationStatus: null == medicationStatus
+          ? _self.medicationStatus
+          : medicationStatus // ignore: cast_nullable_to_non_nullable
+              as MedicationStatus,
       stepProgress: null == stepProgress
           ? _self.stepProgress
           : stepProgress // ignore: cast_nullable_to_non_nullable
               as double,
     ));
+  }
+
+  /// Create a copy of HomeUiState
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $MedicationStatusCopyWith<$Res> get medicationStatus {
+    return $MedicationStatusCopyWith<$Res>(_self.medicationStatus, (value) {
+      return _then(_self.copyWith(medicationStatus: value));
+    });
   }
 }
 

@@ -8,6 +8,7 @@ import 'package:widyu/core/data/repository/notification/notification_repository.
 import 'package:widyu/core/model/api/api_result.dart';
 import 'package:widyu/core/model/heartRate/heart_rate_response.dart';
 import 'package:widyu/core/model/heartRate/heart_rate_status.dart';
+import 'package:widyu/core/model/home/medication_status.dart';
 import 'package:widyu/core/model/home/senior_card.dart';
 import 'package:widyu/core/model/myPage/user/user.dart';
 import 'package:widyu/feature/home/home_ui_event.dart';
@@ -27,6 +28,10 @@ class HomeViewModel with ChangeNotifier {
 
   StreamSubscription? _watchConnection;
 
+  // 갱신용 타이머
+  Timer? _medicationTicker;
+  MedicationSummary? _medicine;
+
   HomeViewModel({
     required HomeRepository homeRepository,
     required MyPageRepository myPageRepository,
@@ -41,7 +46,13 @@ class HomeViewModel with ChangeNotifier {
     unawaited(_observeWatchConnection(isPaired));
     unawaited(fetchHeartRate());
     unawaited(_fetchSeniorCard());
+    _medicationTicker = Timer.periodic(
+      const Duration(seconds: 30),
+      (_) => _applyMedicationStatus(),
+    );
   }
+
+  Future<void> refreshSeniorCard() => _fetchSeniorCard();
 
   Future<void> fetchHeartRate() async {
     _uiState = _uiState.copyWith(isHeartRateLoading: true);
@@ -85,21 +96,18 @@ class HomeViewModel with ChangeNotifier {
     if (result is Success) {
       final data = (result as Success<SeniorCard>).data;
       final albums = data.albums;
-      final medicine = data.medicine;
       final goal = data.walk?.goal ?? 0;
       final actual = data.walk?.actual ?? 0;
+      _medicine = data.medicine;
       _uiState = _uiState.copyWith(
         thumbnails: albums
             .map((album) => album.thumbnailUrl)
             .whereType<String>()
             .where((url) => url.isNotEmpty)
             .toList(),
-        todayTakenCount: medicine?.todayTakenCount ?? 0,
-        todayTotalCount: medicine?.todayTotalCount ?? 0,
-        nextDoseRemainingTime:
-            _calcNextDoseRemainingTime(medicine?.nextAlarmTime),
         stepProgress: goal == 0 ? 0.0 : (actual / goal) * 100,
       );
+      _applyMedicationStatus();
     } else {
       _uiEvent.add(const FetchSeniorCardFailure());
     }
@@ -107,23 +115,12 @@ class HomeViewModel with ChangeNotifier {
     notifyListeners();
   }
 
-  Duration _calcNextDoseRemainingTime(String? nextAlarmTime) {
-    if (nextAlarmTime == null || nextAlarmTime.isEmpty) return Duration.zero;
-
-    final parts = nextAlarmTime.split(':');
-    final hour = int.tryParse(parts[0]);
-    final minute = parts.length > 1 ? int.tryParse(parts[1]) : null;
-    if (hour == null || minute == null) return Duration.zero;
-
-    final now = DateTime.now();
-    var deadline = DateTime(now.year, now.month, now.day, hour, minute)
-        .add(const Duration(minutes: 30));
-
-    if (deadline.isBefore(now)) {
-      deadline = deadline.add(const Duration(days: 1));
-    }
-
-    return deadline.difference(now);
+  void _applyMedicationStatus() {
+    final next =
+        resolveMedicationStatus(medicine: _medicine, now: DateTime.now());
+    if (next == _uiState.medicationStatus) return;
+    _uiState = _uiState.copyWith(medicationStatus: next);
+    notifyListeners();
   }
 
   Future<void> _observeWatchConnection(Future<bool> isPaired) async {
@@ -152,6 +149,7 @@ class HomeViewModel with ChangeNotifier {
   @override
   void dispose() {
     _watchConnection?.cancel();
+    _medicationTicker?.cancel();
     _uiEvent.close();
     super.dispose();
   }

@@ -16,7 +16,7 @@ T _$identity<T>(T value) => value;
 mixin _$SeniorCard {
   SeniorHeartRate? get heartRate;
   MedicationSummary? get medicine;
-  @JsonKey(defaultValue: <Album>[])
+  @JsonKey(defaultValue: [])
   List<Album> get albums;
   HealthSchedule? get healthSchedule;
   StepProgress? get walk;
@@ -66,7 +66,7 @@ abstract mixin class $SeniorCardCopyWith<$Res> {
   $Res call(
       {SeniorHeartRate? heartRate,
       MedicationSummary? medicine,
-      @JsonKey(defaultValue: <Album>[]) List<Album> albums,
+      @JsonKey(defaultValue: []) List<Album> albums,
       HealthSchedule? healthSchedule,
       StepProgress? walk});
 
@@ -271,7 +271,7 @@ extension SeniorCardPatterns on SeniorCard {
     TResult Function(
             SeniorHeartRate? heartRate,
             MedicationSummary? medicine,
-            @JsonKey(defaultValue: <Album>[]) List<Album> albums,
+            @JsonKey(defaultValue: []) List<Album> albums,
             HealthSchedule? healthSchedule,
             StepProgress? walk)?
         $default, {
@@ -305,7 +305,7 @@ extension SeniorCardPatterns on SeniorCard {
     TResult Function(
             SeniorHeartRate? heartRate,
             MedicationSummary? medicine,
-            @JsonKey(defaultValue: <Album>[]) List<Album> albums,
+            @JsonKey(defaultValue: []) List<Album> albums,
             HealthSchedule? healthSchedule,
             StepProgress? walk)
         $default,
@@ -337,7 +337,7 @@ extension SeniorCardPatterns on SeniorCard {
     TResult? Function(
             SeniorHeartRate? heartRate,
             MedicationSummary? medicine,
-            @JsonKey(defaultValue: <Album>[]) List<Album> albums,
+            @JsonKey(defaultValue: []) List<Album> albums,
             HealthSchedule? healthSchedule,
             StepProgress? walk)?
         $default,
@@ -359,7 +359,7 @@ class _SeniorCard implements SeniorCard {
   const _SeniorCard(
       {required this.heartRate,
       required this.medicine,
-      @JsonKey(defaultValue: <Album>[]) required final List<Album> albums,
+      @JsonKey(defaultValue: []) required final List<Album> albums,
       required this.healthSchedule,
       required this.walk})
       : _albums = albums;
@@ -372,7 +372,7 @@ class _SeniorCard implements SeniorCard {
   final MedicationSummary? medicine;
   final List<Album> _albums;
   @override
-  @JsonKey(defaultValue: <Album>[])
+  @JsonKey(defaultValue: [])
   List<Album> get albums {
     if (_albums is EqualUnmodifiableListView) return _albums;
     // ignore: implicit_dynamic_type
@@ -436,7 +436,7 @@ abstract mixin class _$SeniorCardCopyWith<$Res>
   $Res call(
       {SeniorHeartRate? heartRate,
       MedicationSummary? medicine,
-      @JsonKey(defaultValue: <Album>[]) List<Album> albums,
+      @JsonKey(defaultValue: []) List<Album> albums,
       HealthSchedule? healthSchedule,
       StepProgress? walk});
 
@@ -908,7 +908,7 @@ mixin _$MedicationSummary {
   int? get todayTotalCount;
   int? get nextDoseCount;
   String? get nextAlarmTime;
-  @JsonKey(defaultValue: <MedicationDoseStatus>[])
+  @JsonKey(defaultValue: [])
   List<MedicationDoseStatus> get scheduleStatuses;
 
   /// Create a copy of MedicationSummary
@@ -970,8 +970,7 @@ abstract mixin class $MedicationSummaryCopyWith<$Res> {
       int? todayTotalCount,
       int? nextDoseCount,
       String? nextAlarmTime,
-      @JsonKey(defaultValue: <MedicationDoseStatus>[])
-      List<MedicationDoseStatus> scheduleStatuses});
+      @JsonKey(defaultValue: []) List<MedicationDoseStatus> scheduleStatuses});
 }
 
 /// @nodoc
@@ -1122,7 +1121,7 @@ extension MedicationSummaryPatterns on MedicationSummary {
             int? todayTotalCount,
             int? nextDoseCount,
             String? nextAlarmTime,
-            @JsonKey(defaultValue: <MedicationDoseStatus>[])
+            @JsonKey(defaultValue: [])
             List<MedicationDoseStatus> scheduleStatuses)?
         $default, {
     required TResult orElse(),
@@ -1163,7 +1162,7 @@ extension MedicationSummaryPatterns on MedicationSummary {
             int? todayTotalCount,
             int? nextDoseCount,
             String? nextAlarmTime,
-            @JsonKey(defaultValue: <MedicationDoseStatus>[])
+            @JsonKey(defaultValue: [])
             List<MedicationDoseStatus> scheduleStatuses)
         $default,
   ) {
@@ -1202,7 +1201,7 @@ extension MedicationSummaryPatterns on MedicationSummary {
             int? todayTotalCount,
             int? nextDoseCount,
             String? nextAlarmTime,
-            @JsonKey(defaultValue: <MedicationDoseStatus>[])
+            @JsonKey(defaultValue: [])
             List<MedicationDoseStatus> scheduleStatuses)?
         $default,
   ) {
@@ -1231,7 +1230,7 @@ class _MedicationSummary implements MedicationSummary {
       required this.todayTotalCount,
       required this.nextDoseCount,
       required this.nextAlarmTime,
-      @JsonKey(defaultValue: <MedicationDoseStatus>[])
+      @JsonKey(defaultValue: [])
       required final List<MedicationDoseStatus> scheduleStatuses})
       : _scheduleStatuses = scheduleStatuses;
   factory _MedicationSummary.fromJson(Map<String, dynamic> json) =>
@@ -1249,7 +1248,7 @@ class _MedicationSummary implements MedicationSummary {
   final String? nextAlarmTime;
   final List<MedicationDoseStatus> _scheduleStatuses;
   @override
-  @JsonKey(defaultValue: <MedicationDoseStatus>[])
+  @JsonKey(defaultValue: [])
   List<MedicationDoseStatus> get scheduleStatuses {
     if (_scheduleStatuses is EqualUnmodifiableListView)
       return _scheduleStatuses;
@@ -1322,8 +1321,7 @@ abstract mixin class _$MedicationSummaryCopyWith<$Res>
       int? todayTotalCount,
       int? nextDoseCount,
       String? nextAlarmTime,
-      @JsonKey(defaultValue: <MedicationDoseStatus>[])
-      List<MedicationDoseStatus> scheduleStatuses});
+      @JsonKey(defaultValue: []) List<MedicationDoseStatus> scheduleStatuses});
 }
 
 /// @nodoc
