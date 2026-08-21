@@ -22,6 +22,7 @@ import 'package:widyu/core/ui/theme/typos.dart';
 import 'package:widyu/core/ui/widgets/text_btn.dart';
 import 'package:widyu/core/ui/widgets/ui_event_listener.dart';
 import 'package:widyu/core/ui/widgets/widyu_icon.dart';
+import 'package:widyu/core/utils/show_toast.dart';
 import 'package:widyu/feature/home/home_ui_event.dart';
 import 'package:widyu/feature/home/home_ui_state.dart';
 import 'package:widyu/feature/home/home_view_model.dart';
@@ -39,11 +40,33 @@ part 'widget/dose_countdown.dart';
 part 'widget/health_schedule_card.dart';
 part 'widget/walking_card.dart';
 part 'widget/album_card.dart';
+part 'widget/reward_dialog.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
-  void _handleEvent(HomeUiEvent event) {}
+  void _handleEvent(BuildContext context, HomeUiEvent event) {
+    switch (event) {
+      case TakeMedicationPhotoSuccess():
+        // 추후 서버 연결 필요
+        showDialog(
+          context: context,
+          builder: (_) => const _RewardDialog(point: 100),
+        );
+      case RequestCameraPermissionFailure():
+        showToast('카메라 권한이 필요해요.');
+      case RequestCameraPermissionPermanentlyFailure():
+        showToast('설정에서 카메라 권한을 허용해 주세요.');
+        AppSettings.openAppSettings();
+      case OpenCameraFailure():
+        showToast('카메라를 실행할 수 없어요. 잠시 후 다시 시도해 주세요.');
+      case FetchHeartRateFailure():
+      case FetchNotificationFailure():
+      case FetchUserFailure():
+      case FetchSeniorCardFailure():
+        break;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -65,7 +88,7 @@ class HomeScreen extends StatelessWidget {
 
         return UiEventListener(
           stream: viewModel.uiEvent,
-          onEvent: _handleEvent,
+          onEvent: (event) => _handleEvent(context, event),
           child: Scaffold(
             extendBodyBehindAppBar: true,
             appBar: const _HomeAppBar(),
@@ -88,6 +111,7 @@ class HomeScreen extends StatelessWidget {
                     thumbanils: uiState.thumbnails,
                     medicationStatus: uiState.medicationStatus,
                     stepProgress: uiState.stepProgress,
+                    onCameraTap: viewModel.takeMedicationPhoto,
                   ),
                 ),
                 Padding(

@@ -2,8 +2,12 @@ part of '../home_screen.dart';
 
 class _MedicationCard extends StatelessWidget {
   final MedicationStatus medicationStatus;
+  final VoidCallback onCameraTap;
 
-  const _MedicationCard({required this.medicationStatus});
+  const _MedicationCard({
+    required this.medicationStatus,
+    required this.onCameraTap,
+  });
 
   static const _medicationBlobSpecs = <_BlobSpec>[
     _BlobSpec(
@@ -65,8 +69,16 @@ class _MedicationCard extends StatelessWidget {
         _ => null,
       };
 
-  bool get _isUpcoming => switch (medicationStatus) {
-        MedicationUpcoming() => true,
+  String? get _badgeLabel => switch (medicationStatus) {
+        MedicationUpcoming() => '예정',
+        MedicationCompleted() => '완료',
+        _ => null,
+      };
+
+  bool get _isDimmed => _badgeLabel != null;
+
+  bool get _isCompleted => switch (medicationStatus) {
+        MedicationCompleted() => true,
         _ => false,
       };
 
@@ -77,26 +89,40 @@ class _MedicationCard extends StatelessWidget {
     topScrimAlpha: 0,
   );
 
-  Widget get _background => _isUpcoming
-      ? Stack(
-          fit: StackFit.expand,
-          children: [
-            _meshBackground,
-            ColoredBox(color: MyColor.black.withValues(alpha: 0.2)),
-          ],
-        )
-      : _meshBackground;
+  Widget get _pillImage => Padding(
+        padding: const EdgeInsets.all(20),
+        child: FractionalTranslation(
+          translation: const Offset(0.05, 0.05),
+          child: Transform.scale(
+            scale: 1.1,
+            child: Image.asset(
+              'assets/images/img_medicine.png',
+              fit: BoxFit.contain,
+            ),
+          ),
+        ),
+      );
 
-  Widget get _upcomingBadge => Align(
+  Widget get _background => Stack(
+        fit: StackFit.expand,
+        children: [
+          _meshBackground,
+          _pillImage,
+          if (_isDimmed)
+            ColoredBox(color: MyColor.black.withValues(alpha: 0.5)),
+        ],
+      );
+
+  Widget _statusBadge(String label) => Align(
         alignment: Alignment.center,
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 10),
           decoration: BoxDecoration(
-            color: MyColor.black.withValues(alpha: 0.2),
+            color: MyColor.white.withValues(alpha: 0.2),
             borderRadius: BorderRadius.circular(10000),
           ),
           child: Text(
-            '예정',
+            label,
             style: MyTypo.title1.copyWith(color: MyColor.white),
           ),
         ),
@@ -106,6 +132,7 @@ class _MedicationCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final progress = _progress;
     final closesAt = _closesAt;
+    final badgeLabel = _badgeLabel;
 
     return _CarouselCardShell(
       title: '약 복용',
@@ -113,17 +140,7 @@ class _MedicationCard extends StatelessWidget {
       content: Stack(
         fit: StackFit.expand,
         children: [
-          FractionalTranslation(
-            translation: const Offset(0.05, 0.05),
-            child: Transform.scale(
-              scale: 1.1,
-              child: Image.asset(
-                'assets/images/img_medicine.png',
-                fit: BoxFit.contain,
-              ),
-            ),
-          ),
-          if (_isUpcoming) _upcomingBadge,
+          if (badgeLabel != null) _statusBadge(badgeLabel),
           Align(
             alignment: Alignment.bottomCenter,
             child: Column(
@@ -131,14 +148,15 @@ class _MedicationCard extends StatelessWidget {
               spacing: 2,
               children: [
                 if (closesAt != null) _DoseCountdown(closesAt: closesAt),
-                Material(
-                  type: MaterialType.transparency,
-                  child: TextBtn(
-                    onTap: () {},
-                    text: '카메라',
-                    enable: true,
+                if (!_isCompleted)
+                  Material(
+                    type: MaterialType.transparency,
+                    child: TextBtn(
+                      onTap: onCameraTap,
+                      text: '카메라',
+                      enable: true,
+                    ),
                   ),
-                ),
               ],
             ),
           ),

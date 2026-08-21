@@ -6,11 +6,13 @@ import 'package:widyu/core/data/repository/home/home_repository.dart';
 import 'package:widyu/core/data/repository/myPage/my_page_repository.dart';
 import 'package:widyu/core/data/repository/notification/notification_repository.dart';
 import 'package:widyu/core/model/api/api_result.dart';
+import 'package:widyu/core/model/camera/camera_capture_result.dart';
 import 'package:widyu/core/model/heartRate/heart_rate_response.dart';
 import 'package:widyu/core/model/heartRate/heart_rate_status.dart';
 import 'package:widyu/core/model/home/medication_status.dart';
 import 'package:widyu/core/model/home/senior_card.dart';
 import 'package:widyu/core/model/myPage/user/user.dart';
+import 'package:widyu/core/utils/camera_manager.dart';
 import 'package:widyu/feature/home/home_ui_event.dart';
 import 'package:widyu/feature/home/home_ui_state.dart';
 
@@ -53,6 +55,23 @@ class HomeViewModel with ChangeNotifier {
   }
 
   Future<void> refreshSeniorCard() => _fetchSeniorCard();
+
+  /// 시스템 기본 카메라 앱으로 약 복용 인증 사진을 촬영한다.
+  Future<void> takeMedicationPhoto() async {
+    final result = await CameraManager.takePhoto();
+    switch (result) {
+      case CameraCaptureSuccess():
+        _uiEvent.add(const TakeMedicationPhotoSuccess());
+      case CameraCaptureCanceled():
+        break;
+      case CameraPermissionDenied():
+        _uiEvent.add(const RequestCameraPermissionFailure());
+      case CameraPermissionPermanentlyDenied():
+        _uiEvent.add(const RequestCameraPermissionPermanentlyFailure());
+      case CameraCaptureFailure():
+        _uiEvent.add(const OpenCameraFailure());
+    }
+  }
 
   Future<void> fetchHeartRate() async {
     _uiState = _uiState.copyWith(isHeartRateLoading: true);

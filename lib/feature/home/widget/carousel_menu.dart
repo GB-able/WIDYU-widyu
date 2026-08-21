@@ -4,11 +4,13 @@ class _CarouselMenu extends StatefulWidget {
   final List<String> thumbanils;
   final MedicationStatus medicationStatus;
   final double stepProgress;
+  final VoidCallback onCameraTap;
 
   const _CarouselMenu({
     required this.thumbanils,
     required this.medicationStatus,
     required this.stepProgress,
+    required this.onCameraTap,
   });
 
   @override
@@ -56,7 +58,10 @@ class _CarouselMenuState extends State<_CarouselMenu> {
   Widget build(BuildContext context) {
     final controller = _controller!;
     final cards = <Widget>[
-      _MedicationCard(medicationStatus: widget.medicationStatus),
+      _MedicationCard(
+        medicationStatus: widget.medicationStatus,
+        onCameraTap: widget.onCameraTap,
+      ),
       const _HealthScheduleCard(),
       _WalkingCard(stepProgress: widget.stepProgress),
       _AlbumCard(thumbnails: widget.thumbanils),
