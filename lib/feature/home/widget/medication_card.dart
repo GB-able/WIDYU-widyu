@@ -56,12 +56,7 @@ class _MedicationCard extends StatelessWidget {
             totalCount
           ),
         MedicationCompleted(:final totalCount) => (totalCount, totalCount),
-        MedicationMissed(:final takenCount, :final totalCount) => (
-            takenCount,
-            totalCount
-          ),
-        MedicationNone() => null,
-        MedicationUnknown() => null,
+        MedicationMissed() || MedicationNone() || MedicationUnknown() => null,
       };
 
   DateTime? get _closesAt => switch (medicationStatus) {
@@ -70,16 +65,24 @@ class _MedicationCard extends StatelessWidget {
       };
 
   String? get _badgeLabel => switch (medicationStatus) {
+        MedicationAvailable() => null,
         MedicationUpcoming() => '예정',
         MedicationCompleted() => '완료',
-        _ => null,
+        MedicationMissed() ||
+        MedicationNone() ||
+        MedicationUnknown() =>
+          '인증 불가능',
       };
 
   bool get _isDimmed => _badgeLabel != null;
 
-  bool get _isCompleted => switch (medicationStatus) {
-        MedicationCompleted() => true,
-        _ => false,
+  bool get _showCameraButton => switch (medicationStatus) {
+        MedicationAvailable() || MedicationUpcoming() => true,
+        MedicationCompleted() ||
+        MedicationMissed() ||
+        MedicationNone() ||
+        MedicationUnknown() =>
+          false,
       };
 
   static const _meshBackground = MeshGradientBackground(
@@ -148,7 +151,7 @@ class _MedicationCard extends StatelessWidget {
               spacing: 2,
               children: [
                 if (closesAt != null) _DoseCountdown(closesAt: closesAt),
-                if (!_isCompleted)
+                if (_showCameraButton)
                   Material(
                     type: MaterialType.transparency,
                     child: TextBtn(
