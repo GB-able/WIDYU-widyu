@@ -52,7 +52,10 @@ class PointScreen extends StatelessWidget {
                         const SizedBox(height: 16),
                         _TotalPointView(amount: uiState.currentPoints),
                         const SizedBox(height: 16),
-                        _PointHistoryView(histories: uiState.histories),
+                        Expanded(
+                          child:
+                              _PointHistoryView(histories: uiState.histories),
+                        ),
                       ],
                     ),
                   ),
