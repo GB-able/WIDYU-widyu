@@ -22,15 +22,26 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> init() async {
-    final accessToken =
-        await _secureStorage.storage.read(key: StorageKey.accessToken.name);
-    if (mounted) {
-      if (accessToken == null) {
-        context.pushReplacement(AppRoute.onboarding.path);
-      } else {
-        context.pushReplacement(AppRoute.home.path);
+    try {
+      String? accessToken;
+      try {
+        accessToken = await _secureStorage.storage
+            .read(key: StorageKey.accessToken.name)
+            .timeout(const Duration(seconds: 3), onTimeout: () => null);
+      } catch (e, stack) {
+        debugPrint('[Splash] 토큰 읽기 실패, 온보딩으로 폴백: $e\n$stack');
+        accessToken = null;
       }
+
       await Future.delayed(const Duration(milliseconds: 1500));
+      if (!mounted) return;
+
+      context.pushReplacement(
+        accessToken == null ? AppRoute.onboarding.path : AppRoute.home.path,
+      );
+    } catch (e, stack) {
+      debugPrint('[Splash] init 실패: $e\n$stack');
+    } finally {
       FlutterNativeSplash.remove();
     }
   }

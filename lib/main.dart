@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
@@ -35,12 +37,39 @@ import 'package:widyu/core/network/token_manager.dart';
 import 'package:widyu/core/ui/theme/theme.dart';
 import 'package:widyu/core/utils/app_service_controller.dart';
 
-void main() async {
+void main() {
+  runZonedGuarded(_bootstrap, (error, stack) {
+    debugPrint('[main] 처리되지 않은 예외: $error\n$stack');
+  });
+}
+
+Future<void> _bootstrap() async {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
-  await dotenv.load(fileName: ".env");
-  await initializeService();
-  await initializeDateFormatting('ko_KR');
+
+  FlutterError.onError = (details) {
+    FlutterError.presentError(details);
+    debugPrint('[main] FlutterError: ${details.exception}\n${details.stack}');
+  };
+
+  // 초기화 단계 중 하나가 실패하더라도 나머지 단계와 runApp 은 반드시 수행한다.
+  try {
+    await dotenv.load(fileName: ".env");
+  } catch (e, stack) {
+    debugPrint('[main] dotenv.load 실패: $e\n$stack');
+  }
+
+  try {
+    await initializeService();
+  } catch (e, stack) {
+    debugPrint('[main] initializeService 실패: $e\n$stack');
+  }
+
+  try {
+    await initializeDateFormatting('ko_KR');
+  } catch (e, stack) {
+    debugPrint('[main] initializeDateFormatting 실패: $e\n$stack');
+  }
 
   runApp(
     MultiProvider(
