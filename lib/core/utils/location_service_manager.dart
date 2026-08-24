@@ -8,7 +8,7 @@ class LocationServiceManager {
 
   static final _controller = StreamController<LocationServiceState>.broadcast();
 
-  /// 상태가 '변할 때'만 흘리는 스트림이라 늦게 구독하면 다음 변화까지 아무것도 받지 못한다.
+  /// 상태가 '변할 때'만 흘리는 스트림이기 때문에 구독 시점이 늦으면 다음 변화까지 아무것도 받지 못한다.
   /// 구독 시점의 마지막 상태를 한 번 먼저 흘려준다.
   static Stream<LocationServiceState> get locationServiceState async* {
     final cached = _currentState;
