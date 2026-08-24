@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:go_router/go_router.dart';
 import 'package:widyu/app/routes/app_route.dart';
+import 'package:widyu/app/routes/custom_router.dart';
 import 'package:widyu/core/storage/secure_storage.dart';
 import 'package:widyu/core/storage/storage_key.dart';
 
@@ -22,6 +23,8 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> init() async {
+    final fromDeepLink = CustomRouter.consumeDeepLinkLaunch();
+
     try {
       String? accessToken;
       try {
@@ -36,8 +39,13 @@ class _SplashScreenState extends State<SplashScreen> {
       await Future.delayed(const Duration(milliseconds: 1500));
       if (!mounted) return;
 
+      // 딥링크로 진입한 경우 온보딩을 건너뛰고 로그인 화면으로 보낸다.
       context.pushReplacement(
-        accessToken == null ? AppRoute.onboarding.path : AppRoute.home.path,
+        accessToken != null
+            ? AppRoute.home.path
+            : fromDeepLink
+                ? AppRoute.login.path
+                : AppRoute.onboarding.path,
       );
     } catch (e, stack) {
       debugPrint('[Splash] init 실패: $e\n$stack');

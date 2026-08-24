@@ -15,8 +15,31 @@ import 'package:widyu/feature/profile/profile_screen.dart';
 import 'package:widyu/feature/splash_screen.dart';
 
 class CustomRouter {
+  static bool _initialRedirectHandled = false;
+
+  static bool _launchedFromDeepLink = false;
+
+  static bool consumeDeepLinkLaunch() {
+    final launchedFromDeepLink = _launchedFromDeepLink;
+    _launchedFromDeepLink = false;
+    return launchedFromDeepLink;
+  }
+
   static final router = GoRouter(
     initialLocation: AppRoute.splash.path,
+    redirect: (context, state) {
+      if (_initialRedirectHandled) return null;
+      _initialRedirectHandled = true;
+
+      if (state.uri.path == AppRoute.splash.path) return null;
+
+      _launchedFromDeepLink = true;
+      return AppRoute.splash.path;
+    },
+    onException: (context, state, router) {
+      debugPrint('[Router] 매칭되는 경로 없음: ${state.uri}');
+      router.go(AppRoute.splash.path);
+    },
     routes: [
       CustomGoRoute.fadeRoute(
         route: AppRoute.splash,
