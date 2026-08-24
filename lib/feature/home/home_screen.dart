@@ -92,6 +92,7 @@ class HomeScreen extends StatelessWidget {
           stream: viewModel.uiEvent,
           onEvent: (event) => _handleEvent(context, event),
           child: Scaffold(
+            backgroundColor: MyColor.grey100,
             extendBodyBehindAppBar: true,
             appBar: const _HomeAppBar(),
             body: Stack(
