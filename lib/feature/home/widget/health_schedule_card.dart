@@ -1,7 +1,9 @@
 part of '../home_screen.dart';
 
 class _HealthScheduleCard extends StatelessWidget {
-  const _HealthScheduleCard();
+  final bool isCentered;
+
+  const _HealthScheduleCard({required this.isCentered});
 
   /// 좌측 상단 모서리에서 카드 중심을 향해 타원형으로 늘어선 3개의 blob 궤도
   static const _healthScheduleBlobSpecs = <_BlobSpec>[
@@ -70,13 +72,16 @@ class _HealthScheduleCard extends StatelessWidget {
       content: Stack(
         fit: StackFit.expand,
         children: [
-          FractionalTranslation(
-            translation: const Offset(0.12, 0),
-            child: Transform.scale(
-              scale: 1.1,
-              child: Image.asset(
-                'assets/images/img_calendar.png',
-                fit: BoxFit.contain,
+          _SpringBounce(
+            isActive: isCentered,
+            child: FractionalTranslation(
+              translation: const Offset(0.12, 0),
+              child: Transform.scale(
+                scale: 1.1,
+                child: Image.asset(
+                  'assets/images/img_calendar.png',
+                  fit: BoxFit.contain,
+                ),
               ),
             ),
           ),

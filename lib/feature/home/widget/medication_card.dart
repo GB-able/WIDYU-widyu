@@ -3,10 +3,12 @@ part of '../home_screen.dart';
 class _MedicationCard extends StatelessWidget {
   final MedicationStatus medicationStatus;
   final VoidCallback onCameraTap;
+  final bool isCentered;
 
   const _MedicationCard({
     required this.medicationStatus,
     required this.onCameraTap,
+    required this.isCentered,
   });
 
   static const _medicationBlobSpecs = <_BlobSpec>[
@@ -94,13 +96,16 @@ class _MedicationCard extends StatelessWidget {
 
   Widget get _pillImage => Padding(
         padding: const EdgeInsets.all(20),
-        child: FractionalTranslation(
-          translation: const Offset(0.05, 0.05),
-          child: Transform.scale(
-            scale: 1.1,
-            child: Image.asset(
-              'assets/images/img_medicine.png',
-              fit: BoxFit.contain,
+        child: _SpringBounce(
+          isActive: isCentered,
+          child: FractionalTranslation(
+            translation: const Offset(0.05, 0.05),
+            child: Transform.scale(
+              scale: 1.1,
+              child: Image.asset(
+                'assets/images/img_medicine.png',
+                fit: BoxFit.contain,
+              ),
             ),
           ),
         ),

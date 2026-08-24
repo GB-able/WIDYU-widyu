@@ -33,7 +33,25 @@ class _CarouselMenuState extends State<_CarouselMenu> {
   // 인디케이터 영역 높이 (카드와의 간격 20 + 인디케이터 크기 6 + 하단 여백 16)
   static const _carouselIndicatorArea = 42.0;
 
-  int _currentIndex = _carouselInitialPage % _cardsLength;
+  /// 현재 중앙에 있는 페이지
+  int _currentPage = _carouselInitialPage;
+
+  int get _currentIndex => _currentPage % _cardsLength;
+
+  /// [page] 위치에 놓일 카드. 중앙 카드에만 아이콘 바운스를 켠다.
+  Widget _cardAt(int page) {
+    final isCentered = page == _currentPage;
+    return switch (page % _cardsLength) {
+      0 => _MedicationCard(
+          medicationStatus: widget.medicationStatus,
+          onCameraTap: widget.onCameraTap,
+          isCentered: isCentered,
+        ),
+      1 => _HealthScheduleCard(isCentered: isCentered),
+      2 => _WalkingCard(stepProgress: widget.stepProgress),
+      _ => _AlbumCard(thumbnails: widget.thumbanils),
+    };
+  }
 
   @override
   void didChangeDependencies() {
@@ -57,15 +75,6 @@ class _CarouselMenuState extends State<_CarouselMenu> {
   @override
   Widget build(BuildContext context) {
     final controller = _controller!;
-    final cards = <Widget>[
-      _MedicationCard(
-        medicationStatus: widget.medicationStatus,
-        onCameraTap: widget.onCameraTap,
-      ),
-      const _HealthScheduleCard(),
-      _WalkingCard(stepProgress: widget.stepProgress),
-      _AlbumCard(thumbnails: widget.thumbanils),
-    ];
 
     return Container(
       width: double.infinity,
@@ -95,7 +104,7 @@ class _CarouselMenuState extends State<_CarouselMenu> {
                   controller: controller,
                   clipBehavior: Clip.none,
                   onPageChanged: (index) =>
-                      setState(() => _currentIndex = index % cards.length),
+                      setState(() => _currentPage = index),
                   itemBuilder: (context, index) {
                     return AnimatedBuilder(
                       animation: controller,
@@ -126,7 +135,7 @@ class _CarouselMenuState extends State<_CarouselMenu> {
                               duration: const Duration(milliseconds: 300),
                               curve: Curves.easeOut,
                             ),
-                            child: cards[index % cards.length],
+                            child: _cardAt(index),
                           ),
                         ),
                       ),
@@ -136,7 +145,7 @@ class _CarouselMenuState extends State<_CarouselMenu> {
               ),
               const SizedBox(height: 20),
               _CarouselIndicator(
-                count: cards.length,
+                count: _cardsLength,
                 currentIndex: _currentIndex,
               ),
               const SizedBox(height: 16),
