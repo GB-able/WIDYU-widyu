@@ -74,6 +74,8 @@ abstract class HealthSchedule with _$HealthSchedule {
     required int? dday,
     required DateTime? scheduledAt,
     required String? placeAddress,
+    required double? latitude,
+    required double? longitude,
   }) = _HealthSchedule;
 
   factory HealthSchedule.fromJson(Map<String, dynamic> json) =>

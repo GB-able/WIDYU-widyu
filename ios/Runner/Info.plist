@@ -77,6 +77,7 @@
         <key>LSApplicationQueriesSchemes</key>
         <array>
             <string>sms</string>
+            <string>kakaomap</string>
         </array>
 	</dict>
 </plist>

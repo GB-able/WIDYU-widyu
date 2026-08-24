@@ -14,6 +14,7 @@ import 'package:watch_connectivity/watch_connectivity.dart';
 import 'package:widyu/app/routes/app_route.dart';
 import 'package:widyu/core/data/repository/heartRate/heart_rate_repository.dart';
 import 'package:widyu/core/data/repository/home/home_repository.dart';
+import 'package:widyu/core/data/repository/location/location_repository.dart';
 import 'package:widyu/core/data/repository/myPage/my_page_repository.dart';
 import 'package:widyu/core/data/repository/notification/notification_repository.dart';
 import 'package:widyu/core/model/heartRate/heart_rate_status.dart';
@@ -62,6 +63,10 @@ class HomeScreen extends StatelessWidget {
         AppSettings.openAppSettings();
       case OpenCameraFailure():
         showToast('카메라를 실행할 수 없어요. 잠시 후 다시 시도해 주세요.');
+      case HealthSchedulePlaceUnavailable():
+        showToast('일정 장소 정보가 없어요.');
+      case OpenKakaoMapFailure():
+        showToast('카카오맵을 실행할 수 없어요.');
       case FetchHeartRateFailure():
       case FetchNotificationFailure():
       case FetchUserFailure():
@@ -80,6 +85,7 @@ class HomeScreen extends StatelessWidget {
           myPageRepository: context.read<MyPageRepository>(),
           notificationRepository: context.read<NotificationRepository>(),
           heartRateRepository: context.read<HeartRateRepository>(),
+          locationRepository: context.read<LocationRepository>(),
           isPaired: watch.isPaired,
         );
       },
@@ -116,6 +122,8 @@ class HomeScreen extends StatelessWidget {
                     medicationStatus: uiState.medicationStatus,
                     stepProgress: uiState.stepProgress,
                     onCameraTap: viewModel.takeMedicationPhoto,
+                    canOpenRoute: uiState.canOpenHealthScheduleRoute,
+                    onRouteTap: viewModel.openHealthScheduleRoute,
                   ),
                 ),
                 Padding(

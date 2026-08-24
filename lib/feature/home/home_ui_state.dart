@@ -6,6 +6,8 @@ part 'home_ui_state.freezed.dart';
 
 @freezed
 abstract class HomeUiState with _$HomeUiState {
+  const HomeUiState._();
+
   const factory HomeUiState({
     required bool isUserLoading,
     required bool isHeartRateLoading,
@@ -19,7 +21,14 @@ abstract class HomeUiState with _$HomeUiState {
     required List<String> thumbnails,
     required MedicationStatus medicationStatus,
     required double stepProgress,
+    required String? healthSchedulePlace,
+    required double? healthScheduleLatitude,
+    required double? healthScheduleLongitude,
   }) = _HomeUiState;
+
+  /// 좌표가 있어야 카카오맵 길찾기를 열 수 있다.
+  bool get canOpenHealthScheduleRoute =>
+      healthScheduleLatitude != null && healthScheduleLongitude != null;
 
   factory HomeUiState.init() => HomeUiState(
         isUserLoading: false,
@@ -34,5 +43,8 @@ abstract class HomeUiState with _$HomeUiState {
         thumbnails: [],
         medicationStatus: const MedicationStatus.unknown(),
         stepProgress: 0.0,
+        healthSchedulePlace: null,
+        healthScheduleLatitude: null,
+        healthScheduleLongitude: null,
       );
 }

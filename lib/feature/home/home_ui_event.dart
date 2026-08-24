@@ -33,3 +33,13 @@ class OpenCameraFailure extends HomeUiEvent {
 class TakeMedicationPhotoSuccess extends HomeUiEvent {
   const TakeMedicationPhotoSuccess();
 }
+
+/// 일정 장소 좌표가 없어 길찾기를 열 수 없는 경우
+class HealthSchedulePlaceUnavailable extends HomeUiEvent {
+  const HealthSchedulePlaceUnavailable();
+}
+
+/// 카카오맵 앱과 웹 모두 실행에 실패한 경우
+class OpenKakaoMapFailure extends HomeUiEvent {
+  const OpenKakaoMapFailure();
+}

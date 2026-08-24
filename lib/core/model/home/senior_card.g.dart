@@ -106,6 +106,8 @@ _HealthSchedule _$HealthScheduleFromJson(Map<String, dynamic> json) =>
           ? null
           : DateTime.parse(json['scheduledAt'] as String),
       placeAddress: json['placeAddress'] as String?,
+      latitude: (json['latitude'] as num?)?.toDouble(),
+      longitude: (json['longitude'] as num?)?.toDouble(),
     );
 
 Map<String, dynamic> _$HealthScheduleToJson(_HealthSchedule instance) =>
@@ -114,6 +116,8 @@ Map<String, dynamic> _$HealthScheduleToJson(_HealthSchedule instance) =>
       'dday': instance.dday,
       'scheduledAt': instance.scheduledAt?.toIso8601String(),
       'placeAddress': instance.placeAddress,
+      'latitude': instance.latitude,
+      'longitude': instance.longitude,
     };
 
 _StepProgress _$StepProgressFromJson(Map<String, dynamic> json) =>

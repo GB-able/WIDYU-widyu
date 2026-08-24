@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/widgets.dart';
 import 'package:widyu/core/data/repository/heartRate/heart_rate_repository.dart';
 import 'package:widyu/core/data/repository/home/home_repository.dart';
+import 'package:widyu/core/data/repository/location/location_repository.dart';
 import 'package:widyu/core/data/repository/myPage/my_page_repository.dart';
 import 'package:widyu/core/data/repository/notification/notification_repository.dart';
 import 'package:widyu/core/model/api/api_result.dart';
@@ -11,8 +12,10 @@ import 'package:widyu/core/model/heartRate/heart_rate_response.dart';
 import 'package:widyu/core/model/heartRate/heart_rate_status.dart';
 import 'package:widyu/core/model/home/medication_status.dart';
 import 'package:widyu/core/model/home/senior_card.dart';
+import 'package:widyu/core/model/location/user_location.dart';
 import 'package:widyu/core/model/myPage/user/user.dart';
 import 'package:widyu/core/utils/camera_manager.dart';
+import 'package:widyu/core/utils/kakao_map_launcher.dart';
 import 'package:widyu/feature/home/home_ui_event.dart';
 import 'package:widyu/feature/home/home_ui_state.dart';
 
@@ -21,6 +24,7 @@ class HomeViewModel with ChangeNotifier {
   final MyPageRepository _myPageRepository;
   final NotificationRepository _notificationRepository;
   final HeartRateRepository _heartRateRepository;
+  final LocationRepository _locationRepository;
 
   HomeUiState _uiState = HomeUiState.init();
   HomeUiState get uiState => _uiState;
@@ -34,16 +38,21 @@ class HomeViewModel with ChangeNotifier {
   Timer? _medicationTicker;
   MedicationSummary? _medicine;
 
+  // 중복 탭으로 카카오맵이 두 번 열리는 것을 막는다
+  bool _isOpeningRoute = false;
+
   HomeViewModel({
     required HomeRepository homeRepository,
     required MyPageRepository myPageRepository,
     required NotificationRepository notificationRepository,
     required HeartRateRepository heartRateRepository,
+    required LocationRepository locationRepository,
     required Future<bool> isPaired,
   })  : _homeRepository = homeRepository,
         _heartRateRepository = heartRateRepository,
         _notificationRepository = notificationRepository,
-        _myPageRepository = myPageRepository {
+        _myPageRepository = myPageRepository,
+        _locationRepository = locationRepository {
     unawaited(_fetchUser());
     unawaited(_observeWatchConnection(isPaired));
     unawaited(fetchHeartRate());
@@ -70,6 +79,35 @@ class HomeViewModel with ChangeNotifier {
         _uiEvent.add(const RequestCameraPermissionPermanentlyFailure());
       case CameraCaptureFailure():
         _uiEvent.add(const OpenCameraFailure());
+    }
+  }
+
+  /// 건강 일정 장소로 향하는 카카오맵 길찾기를 연다.
+  /// 현재 위치를 못 얻어도 목적지만으로 길찾기를 열 수 있으므로 위치 실패는 막지 않는다.
+  Future<void> openHealthScheduleRoute() async {
+    if (_isOpeningRoute) return;
+
+    final latitude = _uiState.healthScheduleLatitude;
+    final longitude = _uiState.healthScheduleLongitude;
+    if (latitude == null || longitude == null) {
+      _uiEvent.add(const HealthSchedulePlaceUnavailable());
+      return;
+    }
+
+    _isOpeningRoute = true;
+    try {
+      final current = await _locationRepository.getCurrentLocation();
+      final isOpened = await KakaoMapLauncher.openRoute(
+        destination: UserLocation(latitude: latitude, longitude: longitude),
+        start: current,
+        destinationName: _uiState.healthSchedulePlace,
+        routeType: KakaoMapRouteType.publicTransit,
+      );
+      if (!isOpened) {
+        _uiEvent.add(const OpenKakaoMapFailure());
+      }
+    } finally {
+      _isOpeningRoute = false;
     }
   }
 
@@ -117,6 +155,7 @@ class HomeViewModel with ChangeNotifier {
       final albums = data.albums;
       final goal = data.walk?.goal ?? 0;
       final actual = data.walk?.actual ?? 0;
+      final schedule = data.healthSchedule;
       _medicine = data.medicine;
       _uiState = _uiState.copyWith(
         thumbnails: albums
@@ -125,6 +164,9 @@ class HomeViewModel with ChangeNotifier {
             .where((url) => url.isNotEmpty)
             .toList(),
         stepProgress: goal == 0 ? 0.0 : (actual / goal) * 100,
+        healthSchedulePlace: schedule?.placeAddress,
+        healthScheduleLatitude: schedule?.latitude,
+        healthScheduleLongitude: schedule?.longitude,
       );
       _applyMedicationStatus();
     } else {

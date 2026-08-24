@@ -13,6 +13,8 @@ import 'package:widyu/core/data/repository/heartRate/heart_rate_repository.dart'
 import 'package:widyu/core/data/repository/heartRate/heart_rate_repository_impl.dart';
 import 'package:widyu/core/data/repository/home/home_repository.dart';
 import 'package:widyu/core/data/repository/home/home_repository_impl.dart';
+import 'package:widyu/core/data/repository/location/location_repository.dart';
+import 'package:widyu/core/data/repository/location/location_repository_impl.dart';
 import 'package:widyu/core/data/repository/myPage/my_page_repository.dart';
 import 'package:widyu/core/data/repository/myPage/my_page_repository_impl.dart';
 import 'package:widyu/core/data/repository/notification/notification_repository.dart';
@@ -27,6 +29,10 @@ import 'package:widyu/core/data/source/heartRate/heart_rate_remote_data_source.d
 import 'package:widyu/core/data/source/heartRate/heart_rate_remote_data_source_impl.dart';
 import 'package:widyu/core/data/source/home/home_remote_data_source.dart';
 import 'package:widyu/core/data/source/home/home_remote_data_source_impl.dart';
+import 'package:widyu/core/data/source/location/location_local_data_source.dart';
+import 'package:widyu/core/data/source/location/location_local_data_source_impl.dart';
+import 'package:widyu/core/data/source/location/location_remote_data_source.dart';
+import 'package:widyu/core/data/source/location/location_remote_data_source_impl.dart';
 import 'package:widyu/core/data/source/myPage/my_page_remote_data_source.dart';
 import 'package:widyu/core/data/source/myPage/my_page_remote_data_source_impl.dart';
 import 'package:widyu/core/data/source/notification/notification_remote_data_source.dart';
@@ -98,6 +104,13 @@ Future<void> _bootstrap() async {
         Provider<HeartRateLocalDataSource>(
           create: (_) => HeartRateLocalDataSourceImpl(),
         ),
+        Provider<LocationLocalDataSource>(
+          create: (_) => LocationLocalDataSourceImpl(),
+        ),
+        ProxyProvider<SocketClient, LocationRemoteDataSource>(
+          update: (_, socketClient, __) =>
+              LocationRemoteDataSourceImpl(socketClient: socketClient),
+        ),
         ProxyProvider2<SocketClient, ApiClient, HeartRateRemoteDataSource>(
           update: (_, socketClient, apiClient, __) =>
               HeartRateRemoteDataSourceImpl(
@@ -127,6 +140,13 @@ Future<void> _bootstrap() async {
         ProxyProvider2<HeartRateLocalDataSource, HeartRateRemoteDataSource,
             HeartRateRepository>(
           update: (_, local, remote, __) => HeartRateRepositoryImpl(
+            localDataSource: local,
+            remoteDataSource: remote,
+          ),
+        ),
+        ProxyProvider2<LocationLocalDataSource, LocationRemoteDataSource,
+            LocationRepository>(
+          update: (_, local, remote, __) => LocationRepositoryImpl(
             localDataSource: local,
             remoteDataSource: remote,
           ),

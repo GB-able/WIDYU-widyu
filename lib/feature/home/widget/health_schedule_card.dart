@@ -2,8 +2,14 @@ part of '../home_screen.dart';
 
 class _HealthScheduleCard extends StatelessWidget {
   final bool isCentered;
+  final bool canOpenRoute;
+  final VoidCallback onRouteTap;
 
-  const _HealthScheduleCard({required this.isCentered});
+  const _HealthScheduleCard({
+    required this.isCentered,
+    required this.canOpenRoute,
+    required this.onRouteTap,
+  });
 
   /// 좌측 상단 모서리에서 카드 중심을 향해 타원형으로 늘어선 3개의 blob 궤도
   static const _healthScheduleBlobSpecs = <_BlobSpec>[
@@ -90,9 +96,9 @@ class _HealthScheduleCard extends StatelessWidget {
             child: Material(
               type: MaterialType.transparency,
               child: TextBtn(
-                onTap: () {},
+                onTap: onRouteTap,
                 text: '길 찾기',
-                enable: true,
+                enable: canOpenRoute,
               ),
             ),
           ),

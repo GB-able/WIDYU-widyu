@@ -2018,6 +2018,8 @@ mixin _$HealthSchedule {
   int? get dday;
   DateTime? get scheduledAt;
   String? get placeAddress;
+  double? get latitude;
+  double? get longitude;
 
   /// Create a copy of HealthSchedule
   /// with the given fields replaced by the non-null parameter values.
@@ -2041,17 +2043,21 @@ mixin _$HealthSchedule {
             (identical(other.scheduledAt, scheduledAt) ||
                 other.scheduledAt == scheduledAt) &&
             (identical(other.placeAddress, placeAddress) ||
-                other.placeAddress == placeAddress));
+                other.placeAddress == placeAddress) &&
+            (identical(other.latitude, latitude) ||
+                other.latitude == latitude) &&
+            (identical(other.longitude, longitude) ||
+                other.longitude == longitude));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, scheduleName, dday, scheduledAt, placeAddress);
+  int get hashCode => Object.hash(runtimeType, scheduleName, dday, scheduledAt,
+      placeAddress, latitude, longitude);
 
   @override
   String toString() {
-    return 'HealthSchedule(scheduleName: $scheduleName, dday: $dday, scheduledAt: $scheduledAt, placeAddress: $placeAddress)';
+    return 'HealthSchedule(scheduleName: $scheduleName, dday: $dday, scheduledAt: $scheduledAt, placeAddress: $placeAddress, latitude: $latitude, longitude: $longitude)';
   }
 }
 
@@ -2065,7 +2071,9 @@ abstract mixin class $HealthScheduleCopyWith<$Res> {
       {String? scheduleName,
       int? dday,
       DateTime? scheduledAt,
-      String? placeAddress});
+      String? placeAddress,
+      double? latitude,
+      double? longitude});
 }
 
 /// @nodoc
@@ -2085,6 +2093,8 @@ class _$HealthScheduleCopyWithImpl<$Res>
     Object? dday = freezed,
     Object? scheduledAt = freezed,
     Object? placeAddress = freezed,
+    Object? latitude = freezed,
+    Object? longitude = freezed,
   }) {
     return _then(_self.copyWith(
       scheduleName: freezed == scheduleName
@@ -2103,6 +2113,14 @@ class _$HealthScheduleCopyWithImpl<$Res>
           ? _self.placeAddress
           : placeAddress // ignore: cast_nullable_to_non_nullable
               as String?,
+      latitude: freezed == latitude
+          ? _self.latitude
+          : latitude // ignore: cast_nullable_to_non_nullable
+              as double?,
+      longitude: freezed == longitude
+          ? _self.longitude
+          : longitude // ignore: cast_nullable_to_non_nullable
+              as double?,
     ));
   }
 }
@@ -2201,7 +2219,7 @@ extension HealthSchedulePatterns on HealthSchedule {
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>(
     TResult Function(String? scheduleName, int? dday, DateTime? scheduledAt,
-            String? placeAddress)?
+            String? placeAddress, double? latitude, double? longitude)?
         $default, {
     required TResult orElse(),
   }) {
@@ -2209,7 +2227,7 @@ extension HealthSchedulePatterns on HealthSchedule {
     switch (_that) {
       case _HealthSchedule() when $default != null:
         return $default(_that.scheduleName, _that.dday, _that.scheduledAt,
-            _that.placeAddress);
+            _that.placeAddress, _that.latitude, _that.longitude);
       case _:
         return orElse();
     }
@@ -2231,14 +2249,14 @@ extension HealthSchedulePatterns on HealthSchedule {
   @optionalTypeArgs
   TResult when<TResult extends Object?>(
     TResult Function(String? scheduleName, int? dday, DateTime? scheduledAt,
-            String? placeAddress)
+            String? placeAddress, double? latitude, double? longitude)
         $default,
   ) {
     final _that = this;
     switch (_that) {
       case _HealthSchedule():
         return $default(_that.scheduleName, _that.dday, _that.scheduledAt,
-            _that.placeAddress);
+            _that.placeAddress, _that.latitude, _that.longitude);
       case _:
         throw StateError('Unexpected subclass');
     }
@@ -2259,14 +2277,14 @@ extension HealthSchedulePatterns on HealthSchedule {
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>(
     TResult? Function(String? scheduleName, int? dday, DateTime? scheduledAt,
-            String? placeAddress)?
+            String? placeAddress, double? latitude, double? longitude)?
         $default,
   ) {
     final _that = this;
     switch (_that) {
       case _HealthSchedule() when $default != null:
         return $default(_that.scheduleName, _that.dday, _that.scheduledAt,
-            _that.placeAddress);
+            _that.placeAddress, _that.latitude, _that.longitude);
       case _:
         return null;
     }
@@ -2280,7 +2298,9 @@ class _HealthSchedule implements HealthSchedule {
       {required this.scheduleName,
       required this.dday,
       required this.scheduledAt,
-      required this.placeAddress});
+      required this.placeAddress,
+      required this.latitude,
+      required this.longitude});
   factory _HealthSchedule.fromJson(Map<String, dynamic> json) =>
       _$HealthScheduleFromJson(json);
 
@@ -2292,6 +2312,10 @@ class _HealthSchedule implements HealthSchedule {
   final DateTime? scheduledAt;
   @override
   final String? placeAddress;
+  @override
+  final double? latitude;
+  @override
+  final double? longitude;
 
   /// Create a copy of HealthSchedule
   /// with the given fields replaced by the non-null parameter values.
@@ -2319,17 +2343,21 @@ class _HealthSchedule implements HealthSchedule {
             (identical(other.scheduledAt, scheduledAt) ||
                 other.scheduledAt == scheduledAt) &&
             (identical(other.placeAddress, placeAddress) ||
-                other.placeAddress == placeAddress));
+                other.placeAddress == placeAddress) &&
+            (identical(other.latitude, latitude) ||
+                other.latitude == latitude) &&
+            (identical(other.longitude, longitude) ||
+                other.longitude == longitude));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, scheduleName, dday, scheduledAt, placeAddress);
+  int get hashCode => Object.hash(runtimeType, scheduleName, dday, scheduledAt,
+      placeAddress, latitude, longitude);
 
   @override
   String toString() {
-    return 'HealthSchedule(scheduleName: $scheduleName, dday: $dday, scheduledAt: $scheduledAt, placeAddress: $placeAddress)';
+    return 'HealthSchedule(scheduleName: $scheduleName, dday: $dday, scheduledAt: $scheduledAt, placeAddress: $placeAddress, latitude: $latitude, longitude: $longitude)';
   }
 }
 
@@ -2345,7 +2373,9 @@ abstract mixin class _$HealthScheduleCopyWith<$Res>
       {String? scheduleName,
       int? dday,
       DateTime? scheduledAt,
-      String? placeAddress});
+      String? placeAddress,
+      double? latitude,
+      double? longitude});
 }
 
 /// @nodoc
@@ -2365,6 +2395,8 @@ class __$HealthScheduleCopyWithImpl<$Res>
     Object? dday = freezed,
     Object? scheduledAt = freezed,
     Object? placeAddress = freezed,
+    Object? latitude = freezed,
+    Object? longitude = freezed,
   }) {
     return _then(_HealthSchedule(
       scheduleName: freezed == scheduleName
@@ -2383,6 +2415,14 @@ class __$HealthScheduleCopyWithImpl<$Res>
           ? _self.placeAddress
           : placeAddress // ignore: cast_nullable_to_non_nullable
               as String?,
+      latitude: freezed == latitude
+          ? _self.latitude
+          : latitude // ignore: cast_nullable_to_non_nullable
+              as double?,
+      longitude: freezed == longitude
+          ? _self.longitude
+          : longitude // ignore: cast_nullable_to_non_nullable
+              as double?,
     ));
   }
 }
