@@ -111,6 +111,7 @@ class HomeScreen extends StatelessWidget {
                   left: 0,
                   right: 0,
                   child: _CarouselMenu(
+                    isLoading: uiState.isSeniorCardLoading,
                     thumbanils: uiState.thumbnails,
                     medicationStatus: uiState.medicationStatus,
                     stepProgress: uiState.stepProgress,

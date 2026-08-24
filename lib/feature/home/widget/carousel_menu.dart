@@ -1,12 +1,14 @@
 part of '../home_screen.dart';
 
 class _CarouselMenu extends StatefulWidget {
+  final bool isLoading;
   final List<String> thumbanils;
   final MedicationStatus medicationStatus;
   final double stepProgress;
   final VoidCallback onCameraTap;
 
   const _CarouselMenu({
+    required this.isLoading,
     required this.thumbanils,
     required this.medicationStatus,
     required this.stepProgress,
@@ -93,6 +95,15 @@ class _CarouselMenuState extends State<_CarouselMenu> {
         builder: (context, constraints) {
           final cardHeight = (constraints.maxHeight - _carouselIndicatorArea)
               .clamp(0.0, _carouselCardMaxHeight);
+
+          // 데이터 조회 중에는 카드 대신 로딩 인디케이터만 노출한다.
+          // (조회 전 기본값이 잠깐 실제 데이터처럼 보이는 것을 막는다)
+          if (widget.isLoading) {
+            return SizedBox(
+              height: cardHeight + _carouselIndicatorArea,
+              child: const Center(child: CircularProgressIndicator()),
+            );
+          }
 
           return Column(
             mainAxisSize: MainAxisSize.min,
