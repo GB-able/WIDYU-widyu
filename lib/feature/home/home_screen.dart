@@ -53,7 +53,7 @@ class HomeScreen extends StatelessWidget {
         // 추후 서버 연결 필요
         showDialog(
           context: context,
-          builder: (_) => const _RewardDialog(point: 100),
+          builder: (_) => const _RewardDialog(point: 100, totalPoint: 600),
         );
       case RequestCameraPermissionFailure():
         showToast('카메라 권한이 필요해요.');
