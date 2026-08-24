@@ -18,9 +18,10 @@ import 'package:widyu/core/data/source/location/location_remote_data_source_impl
 import 'package:widyu/core/model/api/api_result.dart';
 import 'package:widyu/core/network/api_client.dart';
 import 'package:widyu/core/network/socket_client.dart';
+import 'package:widyu/core/network/token_manager.dart';
 import 'package:widyu/core/utils/location_service_manager.dart';
 
-Future<void> initializeService() async {
+Future<void> initializeService({bool autoStartOnBoot = false}) async {
   final service = FlutterBackgroundService();
   await service.configure(
     iosConfiguration: IosConfiguration(
@@ -31,7 +32,7 @@ Future<void> initializeService() async {
     androidConfiguration: AndroidConfiguration(
       onStart: onStart,
       autoStart: false,
-      autoStartOnBoot: true,
+      autoStartOnBoot: autoStartOnBoot,
       isForegroundMode: true,
       initialNotificationTitle: '알림',
       initialNotificationContent: '위듀에서 사용자의 위치를 추적중입니다.',
@@ -45,24 +46,13 @@ Future<bool> onIosBackground(ServiceInstance service) async {
   return true;
 }
 
-Future<
-    ({
-      SocketClient socketClient,
-      HeartRateRepository heartRateRepository,
-      LocationRepository locationRepository,
-    })> createDependencies() async {
+({
+  SocketClient socketClient,
+  HeartRateRepository heartRateRepository,
+  LocationRepository locationRepository,
+}) createDependencies() {
   final apiClient = ApiClient();
   final socketClient = SocketClient();
-  final authRepository = AuthRepositoryImpl(
-    remoteDatasource: AuthRemoteDataSourceImpl(apiClient: apiClient),
-    localDataSource: AuthLocalDataSourceImpl(),
-  );
-
-  final result = await authRepository.fetchSocketToken();
-  if (result is Success) {
-    final socketToken = (result as Success<String>).data;
-    await socketClient.connect(socketToken);
-  }
 
   return (
     socketClient: socketClient,
@@ -81,23 +71,39 @@ Future<
   );
 }
 
+Future<void> connectSocket(SocketClient socketClient) async {
+  final authRepository = AuthRepositoryImpl(
+    remoteDatasource: AuthRemoteDataSourceImpl(apiClient: ApiClient()),
+    localDataSource: AuthLocalDataSourceImpl(),
+  );
+
+  final result = await authRepository.fetchSocketToken();
+  if (result is Success) {
+    final socketToken = (result as Success<String>).data;
+    await socketClient.connect(socketToken);
+  }
+}
+
 @pragma('vm:entry-point')
 void onStart(ServiceInstance service) async {
   WidgetsFlutterBinding.ensureInitialized();
   DartPluginRegistrant.ensureInitialized();
   await dotenv.load(fileName: ".env");
 
-  late final StreamSubscription locationServiceState;
-  LocationServiceManager.startMonitoring();
+  if (!await TokenManager().hasToken() ||
+      !await LocationServiceManager.checkLocationPermission()) {
+    await service.stopSelf();
+    return;
+  }
 
   final (
     socketClient: socketClient,
     heartRateRepository: heartRateRepository,
     locationRepository: locationRepository,
-  ) = await createDependencies();
+  ) = createDependencies();
 
-  heartRateRepository.observeHeartRate();
-
+  late final StreamSubscription locationServiceState;
+  LocationServiceManager.startMonitoring();
   locationServiceState =
       LocationServiceManager.locationServiceState.listen((state) {
     if (state.isAvailable) {
@@ -106,6 +112,10 @@ void onStart(ServiceInstance service) async {
       locationRepository.stopLocationUpload();
     }
   });
+
+  heartRateRepository.observeHeartRate();
+
+  unawaited(connectSocket(socketClient));
 
   if (service is AndroidServiceInstance) {
     service.on('setAsForeground').listen((event) {
@@ -126,7 +136,13 @@ void onStart(ServiceInstance service) async {
   });
 }
 
+Future<void> setAutoStartOnBoot(bool value) =>
+    initializeService(autoStartOnBoot: value);
+
 Future<void> startBackgroundService() async {
+  if (!await TokenManager().hasToken()) return;
+  if (!await LocationServiceManager.checkLocationPermission()) return;
+
   final service = FlutterBackgroundService();
   if (await service.isRunning()) return;
   await service.startService();

@@ -8,8 +8,13 @@ class LocationServiceManager {
 
   static final _controller = StreamController<LocationServiceState>.broadcast();
 
-  static Stream<LocationServiceState> get locationServiceState =>
-      _controller.stream;
+  /// 상태가 '변할 때'만 흘리는 스트림이라 늦게 구독하면 다음 변화까지 아무것도 받지 못한다.
+  /// 구독 시점의 마지막 상태를 한 번 먼저 흘려준다.
+  static Stream<LocationServiceState> get locationServiceState async* {
+    final cached = _currentState;
+    if (cached != null) yield cached;
+    yield* _controller.stream;
+  }
 
   static Timer? _timer;
   static LocationServiceState? _currentState;
@@ -29,19 +34,24 @@ class LocationServiceManager {
 
   static void startMonitoring(
       {Duration interval = const Duration(seconds: 3)}) {
-    _timer ??= Timer.periodic(interval, (_) async {
-      final state = await _checkState();
-      if (_currentState == null || _currentState != state) {
-        _currentState = state;
-        _controller.add(state);
-      }
-    });
+    if (_timer != null) return;
+    // 첫 확인은 interval 을 기다리지 않는다.
+    _emitState();
+    _timer = Timer.periodic(interval, (_) => _emitState());
   }
 
   static void stopMonitoring() {
     _timer?.cancel();
     _timer = null;
     _currentState = null;
+  }
+
+  static Future<void> _emitState() async {
+    final state = await _checkState();
+    if (_currentState == null || _currentState != state) {
+      _currentState = state;
+      _controller.add(state);
+    }
   }
 
   static Future<LocationServiceState> _checkState() async {

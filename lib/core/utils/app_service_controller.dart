@@ -22,9 +22,11 @@ class AppServiceController {
       final message = state.message;
       if (message != null) {
         showToast(message);
+        await setAutoStartOnBoot(false);
         await stopBackgroundService();
         return;
       }
+      await setAutoStartOnBoot(true);
       await startBackgroundService();
     });
   }
@@ -33,6 +35,7 @@ class AppServiceController {
     await _locationSubscription?.cancel();
     _locationSubscription = null;
     LocationServiceManager.stopMonitoring();
+    await setAutoStartOnBoot(false);
     await stopBackgroundService();
   }
 }
