@@ -31,7 +31,7 @@ class _PointHistoryView extends StatelessWidget {
               ),
               const Spacer(),
               Text(
-                '${history.isEarningPoint ? '+' : ''}${history.amount}P',
+                '${history.isEarningPoint ? '+' : '-'} ${history.amount}P',
                 style: MyTypo.subTitle5.copyWith(
                     color: history.isEarningPoint
                         ? MyColor.blue500
