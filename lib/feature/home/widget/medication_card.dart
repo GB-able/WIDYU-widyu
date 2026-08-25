@@ -79,7 +79,8 @@ class _MedicationCard extends StatelessWidget {
   bool get _isDimmed => _badgeLabel != null;
 
   bool get _showCameraButton => switch (medicationStatus) {
-        MedicationAvailable() || MedicationUpcoming() => true,
+        MedicationAvailable() => true,
+        MedicationUpcoming() ||
         MedicationCompleted() ||
         MedicationMissed() ||
         MedicationNone() ||
