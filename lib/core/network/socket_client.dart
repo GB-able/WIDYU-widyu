@@ -27,7 +27,10 @@ class SocketClient {
   static const String _heartRateDestination = '/app/heart-rate/send';
 
   Future<void> connect(String token) async {
-    if (_isConnected) return;
+    // `_isConnected` 는 activate() 직후부터 onConnect 사이 구간에서 false 이므로,
+    // 그 사이에 다시 불리면 두 번째 클라이언트가 만들어지고 첫 번째는 참조를 잃은 채
+    // reconnectDelay(기본 5초) 마다 재연결을 계속 시도한다. 인스턴스 유무로 막는다.
+    if (_stompClient != null) return;
 
     final memberId = await _tokenManager.memberId;
     _stompClient = StompClient(

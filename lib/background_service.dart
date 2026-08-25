@@ -77,10 +77,14 @@ Future<void> connectSocket(SocketClient socketClient) async {
     localDataSource: AuthLocalDataSourceImpl(),
   );
 
-  final result = await authRepository.fetchSocketToken();
-  if (result is Success) {
-    final socketToken = (result as Success<String>).data;
-    await socketClient.connect(socketToken);
+  try {
+    final result = await authRepository.fetchSocketToken();
+    if (result is Success) {
+      final socketToken = (result as Success<String>).data;
+      await socketClient.connect(socketToken);
+    }
+  } catch (e, stack) {
+    debugPrint('[background_service] 소켓 연결 실패: $e\n$stack');
   }
 }
 
@@ -102,6 +106,8 @@ void onStart(ServiceInstance service) async {
     locationRepository: locationRepository,
   ) = createDependencies();
 
+  unawaited(connectSocket(socketClient));
+
   late final StreamSubscription locationServiceState;
   LocationServiceManager.startMonitoring();
   locationServiceState =
@@ -114,8 +120,6 @@ void onStart(ServiceInstance service) async {
   });
 
   heartRateRepository.observeHeartRate();
-
-  unawaited(connectSocket(socketClient));
 
   if (service is AndroidServiceInstance) {
     service.on('setAsForeground').listen((event) {
