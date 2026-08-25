@@ -42,6 +42,7 @@ import 'package:widyu/core/network/socket_client.dart';
 import 'package:widyu/core/network/token_manager.dart';
 import 'package:widyu/core/ui/theme/theme.dart';
 import 'package:widyu/core/utils/app_service_controller.dart';
+import 'package:widyu/core/utils/local_notification_manager.dart';
 
 void main() {
   runZonedGuarded(_bootstrap, (error, stack) {
@@ -69,6 +70,12 @@ Future<void> _bootstrap() async {
     await initializeService();
   } catch (e, stack) {
     debugPrint('[main] initializeService 실패: $e\n$stack');
+  }
+
+  try {
+    await LocalNotificationManager.initialize();
+  } catch (e, stack) {
+    debugPrint('[main] LocalNotificationManager.initialize 실패: $e\n$stack');
   }
 
   try {
