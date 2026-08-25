@@ -3,7 +3,7 @@
 // ignore_for_file: type=lint
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
-part of 'notification_ui_model.dart';
+part of 'notification_setting_ui_model.dart';
 
 // **************************************************************************
 // FreezedGenerator
@@ -13,24 +13,25 @@ part of 'notification_ui_model.dart';
 T _$identity<T>(T value) => value;
 
 /// @nodoc
-mixin _$NotificationUiModel {
+mixin _$NotificationSettingUiModel {
   NotificationGroup get group;
   bool get enabled;
   bool get isUpdating;
 
-  /// Create a copy of NotificationUiModel
+  /// Create a copy of NotificationSettingUiModel
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
   @pragma('vm:prefer-inline')
-  $NotificationUiModelCopyWith<NotificationUiModel> get copyWith =>
-      _$NotificationUiModelCopyWithImpl<NotificationUiModel>(
-          this as NotificationUiModel, _$identity);
+  $NotificationSettingUiModelCopyWith<NotificationSettingUiModel>
+      get copyWith =>
+          _$NotificationSettingUiModelCopyWithImpl<NotificationSettingUiModel>(
+              this as NotificationSettingUiModel, _$identity);
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is NotificationUiModel &&
+            other is NotificationSettingUiModel &&
             (identical(other.group, group) || other.group == group) &&
             (identical(other.enabled, enabled) || other.enabled == enabled) &&
             (identical(other.isUpdating, isUpdating) ||
@@ -42,28 +43,28 @@ mixin _$NotificationUiModel {
 
   @override
   String toString() {
-    return 'NotificationUiModel(group: $group, enabled: $enabled, isUpdating: $isUpdating)';
+    return 'NotificationSettingUiModel(group: $group, enabled: $enabled, isUpdating: $isUpdating)';
   }
 }
 
 /// @nodoc
-abstract mixin class $NotificationUiModelCopyWith<$Res> {
-  factory $NotificationUiModelCopyWith(
-          NotificationUiModel value, $Res Function(NotificationUiModel) _then) =
-      _$NotificationUiModelCopyWithImpl;
+abstract mixin class $NotificationSettingUiModelCopyWith<$Res> {
+  factory $NotificationSettingUiModelCopyWith(NotificationSettingUiModel value,
+          $Res Function(NotificationSettingUiModel) _then) =
+      _$NotificationSettingUiModelCopyWithImpl;
   @useResult
   $Res call({NotificationGroup group, bool enabled, bool isUpdating});
 }
 
 /// @nodoc
-class _$NotificationUiModelCopyWithImpl<$Res>
-    implements $NotificationUiModelCopyWith<$Res> {
-  _$NotificationUiModelCopyWithImpl(this._self, this._then);
+class _$NotificationSettingUiModelCopyWithImpl<$Res>
+    implements $NotificationSettingUiModelCopyWith<$Res> {
+  _$NotificationSettingUiModelCopyWithImpl(this._self, this._then);
 
-  final NotificationUiModel _self;
-  final $Res Function(NotificationUiModel) _then;
+  final NotificationSettingUiModel _self;
+  final $Res Function(NotificationSettingUiModel) _then;
 
-  /// Create a copy of NotificationUiModel
+  /// Create a copy of NotificationSettingUiModel
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
@@ -89,8 +90,8 @@ class _$NotificationUiModelCopyWithImpl<$Res>
   }
 }
 
-/// Adds pattern-matching-related methods to [NotificationUiModel].
-extension NotificationUiModelPatterns on NotificationUiModel {
+/// Adds pattern-matching-related methods to [NotificationSettingUiModel].
+extension NotificationSettingUiModelPatterns on NotificationSettingUiModel {
   /// A variant of `map` that fallback to returning `orElse`.
   ///
   /// It is equivalent to doing:
@@ -105,12 +106,12 @@ extension NotificationUiModelPatterns on NotificationUiModel {
 
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>(
-    TResult Function(_NotificationUiModel value)? $default, {
+    TResult Function(_NotificationSettingUiModel value)? $default, {
     required TResult orElse(),
   }) {
     final _that = this;
     switch (_that) {
-      case _NotificationUiModel() when $default != null:
+      case _NotificationSettingUiModel() when $default != null:
         return $default(_that);
       case _:
         return orElse();
@@ -132,11 +133,11 @@ extension NotificationUiModelPatterns on NotificationUiModel {
 
   @optionalTypeArgs
   TResult map<TResult extends Object?>(
-    TResult Function(_NotificationUiModel value) $default,
+    TResult Function(_NotificationSettingUiModel value) $default,
   ) {
     final _that = this;
     switch (_that) {
-      case _NotificationUiModel():
+      case _NotificationSettingUiModel():
         return $default(_that);
       case _:
         throw StateError('Unexpected subclass');
@@ -157,11 +158,11 @@ extension NotificationUiModelPatterns on NotificationUiModel {
 
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>(
-    TResult? Function(_NotificationUiModel value)? $default,
+    TResult? Function(_NotificationSettingUiModel value)? $default,
   ) {
     final _that = this;
     switch (_that) {
-      case _NotificationUiModel() when $default != null:
+      case _NotificationSettingUiModel() when $default != null:
         return $default(_that);
       case _:
         return null;
@@ -188,7 +189,7 @@ extension NotificationUiModelPatterns on NotificationUiModel {
   }) {
     final _that = this;
     switch (_that) {
-      case _NotificationUiModel() when $default != null:
+      case _NotificationSettingUiModel() when $default != null:
         return $default(_that.group, _that.enabled, _that.isUpdating);
       case _:
         return orElse();
@@ -215,7 +216,7 @@ extension NotificationUiModelPatterns on NotificationUiModel {
   ) {
     final _that = this;
     switch (_that) {
-      case _NotificationUiModel():
+      case _NotificationSettingUiModel():
         return $default(_that.group, _that.enabled, _that.isUpdating);
       case _:
         throw StateError('Unexpected subclass');
@@ -241,7 +242,7 @@ extension NotificationUiModelPatterns on NotificationUiModel {
   ) {
     final _that = this;
     switch (_that) {
-      case _NotificationUiModel() when $default != null:
+      case _NotificationSettingUiModel() when $default != null:
         return $default(_that.group, _that.enabled, _that.isUpdating);
       case _:
         return null;
@@ -251,8 +252,8 @@ extension NotificationUiModelPatterns on NotificationUiModel {
 
 /// @nodoc
 
-class _NotificationUiModel implements NotificationUiModel {
-  const _NotificationUiModel(
+class _NotificationSettingUiModel implements NotificationSettingUiModel {
+  const _NotificationSettingUiModel(
       {required this.group, required this.enabled, this.isUpdating = false});
 
   @override
@@ -263,20 +264,20 @@ class _NotificationUiModel implements NotificationUiModel {
   @JsonKey()
   final bool isUpdating;
 
-  /// Create a copy of NotificationUiModel
+  /// Create a copy of NotificationSettingUiModel
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
   @pragma('vm:prefer-inline')
-  _$NotificationUiModelCopyWith<_NotificationUiModel> get copyWith =>
-      __$NotificationUiModelCopyWithImpl<_NotificationUiModel>(
-          this, _$identity);
+  _$NotificationSettingUiModelCopyWith<_NotificationSettingUiModel>
+      get copyWith => __$NotificationSettingUiModelCopyWithImpl<
+          _NotificationSettingUiModel>(this, _$identity);
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _NotificationUiModel &&
+            other is _NotificationSettingUiModel &&
             (identical(other.group, group) || other.group == group) &&
             (identical(other.enabled, enabled) || other.enabled == enabled) &&
             (identical(other.isUpdating, isUpdating) ||
@@ -288,30 +289,31 @@ class _NotificationUiModel implements NotificationUiModel {
 
   @override
   String toString() {
-    return 'NotificationUiModel(group: $group, enabled: $enabled, isUpdating: $isUpdating)';
+    return 'NotificationSettingUiModel(group: $group, enabled: $enabled, isUpdating: $isUpdating)';
   }
 }
 
 /// @nodoc
-abstract mixin class _$NotificationUiModelCopyWith<$Res>
-    implements $NotificationUiModelCopyWith<$Res> {
-  factory _$NotificationUiModelCopyWith(_NotificationUiModel value,
-          $Res Function(_NotificationUiModel) _then) =
-      __$NotificationUiModelCopyWithImpl;
+abstract mixin class _$NotificationSettingUiModelCopyWith<$Res>
+    implements $NotificationSettingUiModelCopyWith<$Res> {
+  factory _$NotificationSettingUiModelCopyWith(
+          _NotificationSettingUiModel value,
+          $Res Function(_NotificationSettingUiModel) _then) =
+      __$NotificationSettingUiModelCopyWithImpl;
   @override
   @useResult
   $Res call({NotificationGroup group, bool enabled, bool isUpdating});
 }
 
 /// @nodoc
-class __$NotificationUiModelCopyWithImpl<$Res>
-    implements _$NotificationUiModelCopyWith<$Res> {
-  __$NotificationUiModelCopyWithImpl(this._self, this._then);
+class __$NotificationSettingUiModelCopyWithImpl<$Res>
+    implements _$NotificationSettingUiModelCopyWith<$Res> {
+  __$NotificationSettingUiModelCopyWithImpl(this._self, this._then);
 
-  final _NotificationUiModel _self;
-  final $Res Function(_NotificationUiModel) _then;
+  final _NotificationSettingUiModel _self;
+  final $Res Function(_NotificationSettingUiModel) _then;
 
-  /// Create a copy of NotificationUiModel
+  /// Create a copy of NotificationSettingUiModel
   /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
@@ -320,7 +322,7 @@ class __$NotificationUiModelCopyWithImpl<$Res>
     Object? enabled = null,
     Object? isUpdating = null,
   }) {
-    return _then(_NotificationUiModel(
+    return _then(_NotificationSettingUiModel(
       group: null == group
           ? _self.group
           : group // ignore: cast_nullable_to_non_nullable

@@ -2,15 +2,15 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:widyu/core/model/notification/notification_group.dart';
 import 'package:widyu/core/model/notification/notification_setting.dart';
 
-part 'notification_ui_model.freezed.dart';
+part 'notification_setting_ui_model.freezed.dart';
 
 @freezed
-abstract class NotificationUiModel with _$NotificationUiModel {
-  const factory NotificationUiModel({
+abstract class NotificationSettingUiModel with _$NotificationSettingUiModel {
+  const factory NotificationSettingUiModel({
     required NotificationGroup group,
     required bool enabled,
     @Default(false) bool isUpdating,
-  }) = _NotificationUiModel;
+  }) = _NotificationSettingUiModel;
 }
 
 extension NotificationGroupOrder on NotificationGroup {
@@ -37,11 +37,11 @@ extension NotificationGroupOrder on NotificationGroup {
 }
 
 extension NotificationSettingsMapper on List<NotificationSetting> {
-  List<NotificationUiModel> toUiModel() {
+  List<NotificationSettingUiModel> toUiModel() {
     final sorted = [...this]
       ..sort((a, b) => a.group.displayOrder.compareTo(b.group.displayOrder));
     return sorted.map((setting) {
-      return NotificationUiModel(
+      return NotificationSettingUiModel(
         group: setting.group,
         enabled: setting.enabled,
       );
@@ -49,7 +49,7 @@ extension NotificationSettingsMapper on List<NotificationSetting> {
   }
 }
 
-extension NotificationUiModelMapper on NotificationUiModel {
+extension NotificationSettingUiModelMapper on NotificationSettingUiModel {
   NotificationSetting toDomain() => NotificationSetting(
         group: group,
         groupName: group.name,

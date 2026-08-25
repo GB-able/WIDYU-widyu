@@ -1,8 +1,8 @@
-part of '../notification_screen.dart';
+part of '../notification_setting_screen.dart';
 
 class _NotificationSettingView extends StatelessWidget {
-  final List<NotificationUiModel> notifications;
-  final ValueChanged<NotificationUiModel> onToggle;
+  final List<NotificationSettingUiModel> notifications;
+  final ValueChanged<NotificationSettingUiModel> onToggle;
 
   const _NotificationSettingView({
     required this.notifications,
@@ -24,7 +24,7 @@ class _NotificationSettingView extends StatelessWidget {
             notifications.length,
             (index) => Padding(
               padding: const EdgeInsets.only(bottom: 16),
-              child: _NotificationToggle(
+              child: _NotificationSettingToggle(
                 notification: notifications[index],
                 onToggle: onToggle,
               ),

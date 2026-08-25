@@ -1,10 +1,10 @@
-part of '../notification_screen.dart';
+part of '../notification_setting_screen.dart';
 
-class _NotificationToggle extends StatelessWidget {
-  final NotificationUiModel notification;
-  final ValueChanged<NotificationUiModel> onToggle;
+class _NotificationSettingToggle extends StatelessWidget {
+  final NotificationSettingUiModel notification;
+  final ValueChanged<NotificationSettingUiModel> onToggle;
 
-  const _NotificationToggle({
+  const _NotificationSettingToggle({
     required this.notification,
     required this.onToggle,
   });

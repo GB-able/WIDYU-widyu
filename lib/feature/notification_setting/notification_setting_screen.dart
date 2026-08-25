@@ -7,23 +7,23 @@ import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
 import 'package:widyu/core/ui/widgets/ui_event_listener.dart';
 import 'package:widyu/core/utils/show_toast.dart';
-import 'package:widyu/feature/notification/notification_ui_event.dart';
-import 'package:widyu/feature/notification/notification_ui_model.dart';
-import 'package:widyu/feature/notification/notification_ui_state.dart';
-import 'package:widyu/feature/notification/notification_view_model.dart';
+import 'package:widyu/feature/notification_setting/notification_setting_ui_event.dart';
+import 'package:widyu/feature/notification_setting/notification_setting_ui_model.dart';
+import 'package:widyu/feature/notification_setting/notification_setting_ui_state.dart';
+import 'package:widyu/feature/notification_setting/notification_setting_view_model.dart';
 
-part 'widget/notification_app_bar.dart';
+part 'widget/notification_setting_app_bar.dart';
 part 'widget/notification_setting_view.dart';
-part 'widget/notification_toggle.dart';
+part 'widget/notification_setting_toggle.dart';
 
-class NotificationScreen extends StatelessWidget {
-  const NotificationScreen({super.key});
+class NotificationSettingScreen extends StatelessWidget {
+  const NotificationSettingScreen({super.key});
 
-  void _handleEvent(NotificationUiEvent event) {
+  void _handleEvent(NotificationSettingUiEvent event) {
     switch (event) {
-      case FetchNotificationFailure():
+      case FetchNotificationSettingFailure():
         showToast('알림 설정 조회에 실패했습니다.');
-      case UpdateNotificationFailure():
+      case UpdateNotificationSettingFailure():
         showToast('알림 설정 변경에 실패했습니다.');
     }
   }
@@ -31,20 +31,20 @@ class NotificationScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (context) => NotificationViewModel(
+      create: (context) => NotificationSettingViewModel(
         repository: context.read<NotificationRepository>(),
       ),
       builder: (context, _) {
         final uiState =
-            context.select<NotificationViewModel, NotificationUiState>(
+            context.select<NotificationSettingViewModel, NotificationSettingUiState>(
                 (vm) => vm.uiState);
-        final viewModel = context.read<NotificationViewModel>();
+        final viewModel = context.read<NotificationSettingViewModel>();
 
         return UiEventListener(
           stream: viewModel.uiEvent,
           onEvent: _handleEvent,
           child: Scaffold(
-            appBar: const _NotificationAppBar(),
+            appBar: const _NotificationSettingAppBar(),
             body: uiState.isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : Padding(

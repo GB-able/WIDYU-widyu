@@ -1,8 +1,8 @@
-part of '../notification_screen.dart';
+part of '../notification_setting_screen.dart';
 
-class _NotificationAppBar extends StatelessWidget
+class _NotificationSettingAppBar extends StatelessWidget
     implements PreferredSizeWidget {
-  const _NotificationAppBar();
+  const _NotificationSettingAppBar();
 
   @override
   Size get preferredSize => AppBar().preferredSize;

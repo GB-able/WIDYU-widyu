@@ -4,26 +4,26 @@ import 'package:flutter/material.dart';
 import 'package:widyu/core/data/repository/notification/notification_repository.dart';
 import 'package:widyu/core/model/api/api_result.dart';
 import 'package:widyu/core/model/notification/notification_setting.dart';
-import 'package:widyu/feature/notification/notification_ui_event.dart';
-import 'package:widyu/feature/notification/notification_ui_model.dart';
-import 'package:widyu/feature/notification/notification_ui_state.dart';
+import 'package:widyu/feature/notification_setting/notification_setting_ui_event.dart';
+import 'package:widyu/feature/notification_setting/notification_setting_ui_model.dart';
+import 'package:widyu/feature/notification_setting/notification_setting_ui_state.dart';
 
-class NotificationViewModel with ChangeNotifier {
+class NotificationSettingViewModel with ChangeNotifier {
   final NotificationRepository _repository;
 
-  NotificationUiState _uiState = const NotificationUiState();
-  NotificationUiState get uiState => _uiState;
+  NotificationSettingUiState _uiState = const NotificationSettingUiState();
+  NotificationSettingUiState get uiState => _uiState;
 
-  final _uiEvent = StreamController<NotificationUiEvent>.broadcast();
-  Stream<NotificationUiEvent> get uiEvent => _uiEvent.stream;
+  final _uiEvent = StreamController<NotificationSettingUiEvent>.broadcast();
+  Stream<NotificationSettingUiEvent> get uiEvent => _uiEvent.stream;
 
-  NotificationViewModel({required NotificationRepository repository})
+  NotificationSettingViewModel({required NotificationRepository repository})
       : _repository = repository {
     _fetchNotificationSettings();
   }
 
   Future<void> updateNotificationSetting(
-      NotificationUiModel notification) async {
+      NotificationSettingUiModel notification) async {
     final oldNotifications = _uiState.notifications;
     final targetIndex =
         oldNotifications.indexWhere((item) => item.group == notification.group);
@@ -50,9 +50,9 @@ class NotificationViewModel with ChangeNotifier {
     }
   }
 
-  void _rollback(List<NotificationUiModel> notifications) {
+  void _rollback(List<NotificationSettingUiModel> notifications) {
     _uiState = _uiState.copyWith(notifications: notifications);
-    _uiEvent.add(const UpdateNotificationFailure());
+    _uiEvent.add(const UpdateNotificationSettingFailure());
     notifyListeners();
   }
 
@@ -65,7 +65,7 @@ class NotificationViewModel with ChangeNotifier {
       final data = (result as Success<List<NotificationSetting>>).data;
       _uiState = _uiState.copyWith(notifications: data.toUiModel());
     } else {
-      _uiEvent.add(const FetchNotificationFailure());
+      _uiEvent.add(const FetchNotificationSettingFailure());
     }
     _uiState = _uiState.copyWith(isLoading: false);
     notifyListeners();
