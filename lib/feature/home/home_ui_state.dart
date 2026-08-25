@@ -1,6 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:widyu/core/model/heartRate/heart_rate_status.dart';
 import 'package:widyu/core/model/home/medication_status.dart';
+import 'package:widyu/feature/home/notification_ui_model.dart';
 
 part 'home_ui_state.freezed.dart';
 
@@ -13,6 +14,7 @@ abstract class HomeUiState with _$HomeUiState {
     required bool isHeartRateLoading,
     required bool isNotificationLoading,
     required bool isSeniorCardLoading,
+    required List<NotificationUiModel> notifications,
     required String name,
     required bool isWearing,
     required int heartRate,
@@ -26,15 +28,18 @@ abstract class HomeUiState with _$HomeUiState {
     required double? healthScheduleLongitude,
   }) = _HomeUiState;
 
-  /// 좌표가 있어야 카카오맵 길찾기를 열 수 있다.
   bool get canOpenHealthScheduleRoute =>
       healthScheduleLatitude != null && healthScheduleLongitude != null;
+
+  NotificationUiModel? get notification =>
+      notifications.isEmpty ? null : notifications.first;
 
   factory HomeUiState.init() => HomeUiState(
         isUserLoading: false,
         isHeartRateLoading: false,
         isNotificationLoading: false,
         isSeniorCardLoading: false,
+        notifications: [],
         name: '',
         isWearing: false,
         heartRate: 0,

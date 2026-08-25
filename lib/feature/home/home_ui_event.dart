@@ -10,6 +10,11 @@ class FetchNotificationFailure extends HomeUiEvent {
   const FetchNotificationFailure();
 }
 
+/// 알림 읽음 처리에 실패해 목록을 원래대로 되돌린 경우
+class MarkNotificationAsReadFailure extends HomeUiEvent {
+  const MarkNotificationAsReadFailure();
+}
+
 class FetchUserFailure extends HomeUiEvent {
   const FetchUserFailure();
 }

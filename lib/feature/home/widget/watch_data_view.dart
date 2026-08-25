@@ -79,12 +79,12 @@ class _WatchDataView extends StatelessWidget {
             child: Stack(
               clipBehavior: Clip.none,
               children: [
-                Positioned(
+                const Positioned(
                   top: -108,
                   right: -16,
                   child: IgnorePointer(
                     child: RepaintBoundary(
-                      child: Image.asset('assets/images/img_mascot.png'),
+                      child: WidyuAssetImage(name: 'img_mascot.png'),
                     ),
                   ),
                 ),

@@ -25,8 +25,8 @@ class _RewardDialog extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 const SizedBox(height: 24),
-                Image.asset(
-                  'assets/images/img_125_check.png',
+                const WidyuAssetImage(
+                  name: 'img_125_check.png',
                   width: 125,
                   height: 125,
                 ),

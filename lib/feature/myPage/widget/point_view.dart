@@ -17,8 +17,8 @@ class _PointView extends StatelessWidget {
           width: 28,
           height: 28,
           decoration: const BoxDecoration(shape: BoxShape.circle),
-          child: Image.asset(
-            'assets/icons/ic_28_point.png',
+          child: const WidyuAssetImage(
+            name: 'img_28_point.png',
             width: 28,
             height: 28,
           ),

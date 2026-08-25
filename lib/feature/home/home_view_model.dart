@@ -14,10 +14,12 @@ import 'package:widyu/core/model/home/medication_status.dart';
 import 'package:widyu/core/model/home/senior_card.dart';
 import 'package:widyu/core/model/location/user_location.dart';
 import 'package:widyu/core/model/myPage/user/user.dart';
+import 'package:widyu/core/model/notification/notification_page.dart';
 import 'package:widyu/core/utils/camera_manager.dart';
 import 'package:widyu/core/utils/kakao_map_launcher.dart';
 import 'package:widyu/feature/home/home_ui_event.dart';
 import 'package:widyu/feature/home/home_ui_state.dart';
+import 'package:widyu/feature/home/notification_ui_model.dart';
 
 class HomeViewModel with ChangeNotifier {
   final HomeRepository _homeRepository;
@@ -53,6 +55,7 @@ class HomeViewModel with ChangeNotifier {
         _notificationRepository = notificationRepository,
         _myPageRepository = myPageRepository,
         _locationRepository = locationRepository {
+    unawaited(_fetchNotification());
     unawaited(_fetchUser());
     unawaited(_observeWatchConnection(isPaired));
     unawaited(fetchHeartRate());
@@ -65,7 +68,28 @@ class HomeViewModel with ChangeNotifier {
 
   Future<void> refreshSeniorCard() => _fetchSeniorCard();
 
-  /// 시스템 기본 카메라 앱으로 약 복용 인증 사진을 촬영한다.
+  Future<void> markNotificationAsRead(int notificationId) async {
+    final previous = _uiState.notifications;
+    final index =
+        previous.indexWhere((it) => it.notificationId == notificationId);
+    if (index == -1) return;
+
+    final removed = previous[index];
+    _uiState = _uiState.copyWith(
+      notifications: [...previous]..removeAt(index),
+    );
+    notifyListeners();
+
+    final result = await _notificationRepository.markAsRead(notificationId);
+    if (result is Success) return;
+
+    final current = [..._uiState.notifications];
+    current.insert(index.clamp(0, current.length), removed);
+    _uiEvent.add(const MarkNotificationAsReadFailure());
+    _uiState = _uiState.copyWith(notifications: current);
+    notifyListeners();
+  }
+
   Future<void> takeMedicationPhoto() async {
     final result = await CameraManager.takePhoto();
     switch (result) {
@@ -142,6 +166,22 @@ class HomeViewModel with ChangeNotifier {
       _uiEvent.add(const FetchUserFailure());
     }
     _uiState = _uiState.copyWith(isUserLoading: false);
+    notifyListeners();
+  }
+
+  Future<void> _fetchNotification() async {
+    _uiState = _uiState.copyWith(isNotificationLoading: true);
+    notifyListeners();
+
+    final result = await _notificationRepository.fetchNotificationPage(null);
+    if (result is Success) {
+      final data = (result as Success<NotificationPage>).data;
+      final notifications = data.notifications;
+      _uiState = _uiState.copyWith(notifications: notifications.toUiModel());
+    } else {
+      _uiEvent.add(const FetchNotificationFailure());
+    }
+    _uiState = _uiState.copyWith(isNotificationLoading: false);
     notifyListeners();
   }
 

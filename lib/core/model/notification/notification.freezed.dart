@@ -16,6 +16,7 @@ T _$identity<T>(T value) => value;
 mixin _$Notification {
   int get notificationId;
   String get image;
+  NotificationCategory get category;
   String get title;
   String get content;
   String get createdAt;
@@ -40,6 +41,8 @@ mixin _$Notification {
             (identical(other.notificationId, notificationId) ||
                 other.notificationId == notificationId) &&
             (identical(other.image, image) || other.image == image) &&
+            (identical(other.category, category) ||
+                other.category == category) &&
             (identical(other.title, title) || other.title == title) &&
             (identical(other.content, content) || other.content == content) &&
             (identical(other.createdAt, createdAt) ||
@@ -49,12 +52,12 @@ mixin _$Notification {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType, notificationId, image, title, content, createdAt, scheme);
+  int get hashCode => Object.hash(runtimeType, notificationId, image, category,
+      title, content, createdAt, scheme);
 
   @override
   String toString() {
-    return 'Notification(notificationId: $notificationId, image: $image, title: $title, content: $content, createdAt: $createdAt, scheme: $scheme)';
+    return 'Notification(notificationId: $notificationId, image: $image, category: $category, title: $title, content: $content, createdAt: $createdAt, scheme: $scheme)';
   }
 }
 
@@ -67,6 +70,7 @@ abstract mixin class $NotificationCopyWith<$Res> {
   $Res call(
       {int notificationId,
       String image,
+      NotificationCategory category,
       String title,
       String content,
       String createdAt,
@@ -87,6 +91,7 @@ class _$NotificationCopyWithImpl<$Res> implements $NotificationCopyWith<$Res> {
   $Res call({
     Object? notificationId = null,
     Object? image = null,
+    Object? category = null,
     Object? title = null,
     Object? content = null,
     Object? createdAt = null,
@@ -101,6 +106,10 @@ class _$NotificationCopyWithImpl<$Res> implements $NotificationCopyWith<$Res> {
           ? _self.image
           : image // ignore: cast_nullable_to_non_nullable
               as String,
+      category: null == category
+          ? _self.category
+          : category // ignore: cast_nullable_to_non_nullable
+              as NotificationCategory,
       title: null == title
           ? _self.title
           : title // ignore: cast_nullable_to_non_nullable
@@ -214,16 +223,22 @@ extension NotificationPatterns on Notification {
 
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>(
-    TResult Function(int notificationId, String image, String title,
-            String content, String createdAt, String scheme)?
+    TResult Function(
+            int notificationId,
+            String image,
+            NotificationCategory category,
+            String title,
+            String content,
+            String createdAt,
+            String scheme)?
         $default, {
     required TResult orElse(),
   }) {
     final _that = this;
     switch (_that) {
       case _Notification() when $default != null:
-        return $default(_that.notificationId, _that.image, _that.title,
-            _that.content, _that.createdAt, _that.scheme);
+        return $default(_that.notificationId, _that.image, _that.category,
+            _that.title, _that.content, _that.createdAt, _that.scheme);
       case _:
         return orElse();
     }
@@ -244,15 +259,21 @@ extension NotificationPatterns on Notification {
 
   @optionalTypeArgs
   TResult when<TResult extends Object?>(
-    TResult Function(int notificationId, String image, String title,
-            String content, String createdAt, String scheme)
+    TResult Function(
+            int notificationId,
+            String image,
+            NotificationCategory category,
+            String title,
+            String content,
+            String createdAt,
+            String scheme)
         $default,
   ) {
     final _that = this;
     switch (_that) {
       case _Notification():
-        return $default(_that.notificationId, _that.image, _that.title,
-            _that.content, _that.createdAt, _that.scheme);
+        return $default(_that.notificationId, _that.image, _that.category,
+            _that.title, _that.content, _that.createdAt, _that.scheme);
       case _:
         throw StateError('Unexpected subclass');
     }
@@ -272,15 +293,21 @@ extension NotificationPatterns on Notification {
 
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>(
-    TResult? Function(int notificationId, String image, String title,
-            String content, String createdAt, String scheme)?
+    TResult? Function(
+            int notificationId,
+            String image,
+            NotificationCategory category,
+            String title,
+            String content,
+            String createdAt,
+            String scheme)?
         $default,
   ) {
     final _that = this;
     switch (_that) {
       case _Notification() when $default != null:
-        return $default(_that.notificationId, _that.image, _that.title,
-            _that.content, _that.createdAt, _that.scheme);
+        return $default(_that.notificationId, _that.image, _that.category,
+            _that.title, _that.content, _that.createdAt, _that.scheme);
       case _:
         return null;
     }
@@ -293,6 +320,7 @@ class _Notification implements Notification {
   const _Notification(
       {required this.notificationId,
       required this.image,
+      required this.category,
       required this.title,
       required this.content,
       required this.createdAt,
@@ -304,6 +332,8 @@ class _Notification implements Notification {
   final int notificationId;
   @override
   final String image;
+  @override
+  final NotificationCategory category;
   @override
   final String title;
   @override
@@ -336,6 +366,8 @@ class _Notification implements Notification {
             (identical(other.notificationId, notificationId) ||
                 other.notificationId == notificationId) &&
             (identical(other.image, image) || other.image == image) &&
+            (identical(other.category, category) ||
+                other.category == category) &&
             (identical(other.title, title) || other.title == title) &&
             (identical(other.content, content) || other.content == content) &&
             (identical(other.createdAt, createdAt) ||
@@ -345,12 +377,12 @@ class _Notification implements Notification {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType, notificationId, image, title, content, createdAt, scheme);
+  int get hashCode => Object.hash(runtimeType, notificationId, image, category,
+      title, content, createdAt, scheme);
 
   @override
   String toString() {
-    return 'Notification(notificationId: $notificationId, image: $image, title: $title, content: $content, createdAt: $createdAt, scheme: $scheme)';
+    return 'Notification(notificationId: $notificationId, image: $image, category: $category, title: $title, content: $content, createdAt: $createdAt, scheme: $scheme)';
   }
 }
 
@@ -365,6 +397,7 @@ abstract mixin class _$NotificationCopyWith<$Res>
   $Res call(
       {int notificationId,
       String image,
+      NotificationCategory category,
       String title,
       String content,
       String createdAt,
@@ -386,6 +419,7 @@ class __$NotificationCopyWithImpl<$Res>
   $Res call({
     Object? notificationId = null,
     Object? image = null,
+    Object? category = null,
     Object? title = null,
     Object? content = null,
     Object? createdAt = null,
@@ -400,6 +434,10 @@ class __$NotificationCopyWithImpl<$Res>
           ? _self.image
           : image // ignore: cast_nullable_to_non_nullable
               as String,
+      category: null == category
+          ? _self.category
+          : category // ignore: cast_nullable_to_non_nullable
+              as NotificationCategory,
       title: null == title
           ? _self.title
           : title // ignore: cast_nullable_to_non_nullable

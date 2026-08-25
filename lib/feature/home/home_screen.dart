@@ -23,6 +23,7 @@ import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
 import 'package:widyu/core/ui/widgets/text_btn.dart';
 import 'package:widyu/core/ui/widgets/ui_event_listener.dart';
+import 'package:widyu/core/ui/widgets/widyu_asset_image.dart';
 import 'package:widyu/core/ui/widgets/widyu_icon.dart';
 import 'package:widyu/core/utils/show_toast.dart';
 import 'package:widyu/feature/home/home_ui_event.dart';
@@ -67,11 +68,16 @@ class HomeScreen extends StatelessWidget {
         showToast('일정 장소 정보가 없어요.');
       case OpenKakaoMapFailure():
         showToast('카카오맵을 실행할 수 없어요.');
+      case MarkNotificationAsReadFailure():
+        showToast('알림을 읽음 처리하지 못했어요.');
       case FetchHeartRateFailure():
+        showToast('심박수를 불러오지 못했어요.');
       case FetchNotificationFailure():
+        showToast('알림 목록을 불러오지 못했어요.');
       case FetchUserFailure():
+        showToast('사용자 정보를 불러오지 못했어요.');
       case FetchSeniorCardFailure():
-        break;
+        showToast('카드를 불러오지 못했어요.');
     }
   }
 
@@ -93,6 +99,7 @@ class HomeScreen extends StatelessWidget {
         final viewModel = context.read<HomeViewModel>();
         final uiState =
             context.select<HomeViewModel, HomeUiState>((vm) => vm.uiState);
+        final notification = uiState.notification;
 
         return UiEventListener(
           stream: viewModel.uiEvent,
@@ -103,12 +110,12 @@ class HomeScreen extends StatelessWidget {
             appBar: const _HomeAppBar(),
             body: Stack(
               children: [
-                Positioned(
+                const Positioned(
                   top: 0,
                   left: 0,
                   right: 0,
-                  child: Image.asset(
-                    'assets/images/img_home_background.png',
+                  child: WidyuAssetImage(
+                    name: 'img_home_background.png',
                     fit: BoxFit.fitWidth,
                   ),
                 ),
@@ -138,8 +145,17 @@ class HomeScreen extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const SizedBox(height: 28),
-                            // const SizedBox(height: 12),
+                            if (notification == null)
+                              const SizedBox(height: 28)
+                            else ...[
+                              _NotificationView(
+                                id: notification.notificationId,
+                                icon: notification.icon,
+                                description: notification.description,
+                                onTap: viewModel.markNotificationAsRead,
+                              ),
+                              const SizedBox(height: 10),
+                            ],
                             _HomeGreetingView(
                               isLoading: uiState.isUserLoading,
                               name: uiState.name,

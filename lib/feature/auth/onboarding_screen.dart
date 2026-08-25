@@ -5,6 +5,7 @@ import 'package:widyu/app/routes/app_route.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
 import 'package:widyu/core/ui/widgets/text_btn.dart';
+import 'package:widyu/core/ui/widgets/widyu_asset_image.dart';
 
 import '../../core/utils/location_service_manager.dart';
 
@@ -90,11 +91,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   return Column(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      Expanded(
+                      const Expanded(
                         child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20),
-                          child: Image.asset(
-                            "assets/images/img_300_onboarding_1.png",
+                          padding: EdgeInsets.symmetric(horizontal: 20),
+                          child: WidyuAssetImage(
+                            name: 'img_300_onboarding_1.png',
                             height: double.infinity,
                             fit: BoxFit.scaleDown,
                           ),
