@@ -203,7 +203,8 @@ class HomeViewModel with ChangeNotifier {
             .whereType<String>()
             .where((url) => url.isNotEmpty)
             .toList(),
-        stepProgress: goal == 0 ? 0.0 : (actual / goal) * 100,
+        stepCount: actual,
+        stepGoal: goal,
         healthSchedulePlace: schedule?.placeAddress,
         healthScheduleLatitude: schedule?.latitude,
         healthScheduleLongitude: schedule?.longitude,

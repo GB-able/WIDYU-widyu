@@ -26,7 +26,8 @@ mixin _$HomeUiState {
   DateTime get measuredAt;
   List<String> get thumbnails;
   MedicationStatus get medicationStatus;
-  double get stepProgress;
+  int get stepCount;
+  int get stepGoal;
   String? get healthSchedulePlace;
   double? get healthScheduleLatitude;
   double? get healthScheduleLongitude;
@@ -66,8 +67,10 @@ mixin _$HomeUiState {
                 .equals(other.thumbnails, thumbnails) &&
             (identical(other.medicationStatus, medicationStatus) ||
                 other.medicationStatus == medicationStatus) &&
-            (identical(other.stepProgress, stepProgress) ||
-                other.stepProgress == stepProgress) &&
+            (identical(other.stepCount, stepCount) ||
+                other.stepCount == stepCount) &&
+            (identical(other.stepGoal, stepGoal) ||
+                other.stepGoal == stepGoal) &&
             (identical(other.healthSchedulePlace, healthSchedulePlace) ||
                 other.healthSchedulePlace == healthSchedulePlace) &&
             (identical(other.healthScheduleLatitude, healthScheduleLatitude) ||
@@ -92,14 +95,15 @@ mixin _$HomeUiState {
       measuredAt,
       const DeepCollectionEquality().hash(thumbnails),
       medicationStatus,
-      stepProgress,
+      stepCount,
+      stepGoal,
       healthSchedulePlace,
       healthScheduleLatitude,
       healthScheduleLongitude);
 
   @override
   String toString() {
-    return 'HomeUiState(isUserLoading: $isUserLoading, isHeartRateLoading: $isHeartRateLoading, isNotificationLoading: $isNotificationLoading, isSeniorCardLoading: $isSeniorCardLoading, notifications: $notifications, name: $name, isWearing: $isWearing, heartRate: $heartRate, heartRateStatus: $heartRateStatus, measuredAt: $measuredAt, thumbnails: $thumbnails, medicationStatus: $medicationStatus, stepProgress: $stepProgress, healthSchedulePlace: $healthSchedulePlace, healthScheduleLatitude: $healthScheduleLatitude, healthScheduleLongitude: $healthScheduleLongitude)';
+    return 'HomeUiState(isUserLoading: $isUserLoading, isHeartRateLoading: $isHeartRateLoading, isNotificationLoading: $isNotificationLoading, isSeniorCardLoading: $isSeniorCardLoading, notifications: $notifications, name: $name, isWearing: $isWearing, heartRate: $heartRate, heartRateStatus: $heartRateStatus, measuredAt: $measuredAt, thumbnails: $thumbnails, medicationStatus: $medicationStatus, stepCount: $stepCount, stepGoal: $stepGoal, healthSchedulePlace: $healthSchedulePlace, healthScheduleLatitude: $healthScheduleLatitude, healthScheduleLongitude: $healthScheduleLongitude)';
   }
 }
 
@@ -122,7 +126,8 @@ abstract mixin class $HomeUiStateCopyWith<$Res> {
       DateTime measuredAt,
       List<String> thumbnails,
       MedicationStatus medicationStatus,
-      double stepProgress,
+      int stepCount,
+      int stepGoal,
       String? healthSchedulePlace,
       double? healthScheduleLatitude,
       double? healthScheduleLongitude});
@@ -154,7 +159,8 @@ class _$HomeUiStateCopyWithImpl<$Res> implements $HomeUiStateCopyWith<$Res> {
     Object? measuredAt = null,
     Object? thumbnails = null,
     Object? medicationStatus = null,
-    Object? stepProgress = null,
+    Object? stepCount = null,
+    Object? stepGoal = null,
     Object? healthSchedulePlace = freezed,
     Object? healthScheduleLatitude = freezed,
     Object? healthScheduleLongitude = freezed,
@@ -208,10 +214,14 @@ class _$HomeUiStateCopyWithImpl<$Res> implements $HomeUiStateCopyWith<$Res> {
           ? _self.medicationStatus
           : medicationStatus // ignore: cast_nullable_to_non_nullable
               as MedicationStatus,
-      stepProgress: null == stepProgress
-          ? _self.stepProgress
-          : stepProgress // ignore: cast_nullable_to_non_nullable
-              as double,
+      stepCount: null == stepCount
+          ? _self.stepCount
+          : stepCount // ignore: cast_nullable_to_non_nullable
+              as int,
+      stepGoal: null == stepGoal
+          ? _self.stepGoal
+          : stepGoal // ignore: cast_nullable_to_non_nullable
+              as int,
       healthSchedulePlace: freezed == healthSchedulePlace
           ? _self.healthSchedulePlace
           : healthSchedulePlace // ignore: cast_nullable_to_non_nullable
@@ -344,7 +354,8 @@ extension HomeUiStatePatterns on HomeUiState {
             DateTime measuredAt,
             List<String> thumbnails,
             MedicationStatus medicationStatus,
-            double stepProgress,
+            int stepCount,
+            int stepGoal,
             String? healthSchedulePlace,
             double? healthScheduleLatitude,
             double? healthScheduleLongitude)?
@@ -367,7 +378,8 @@ extension HomeUiStatePatterns on HomeUiState {
             _that.measuredAt,
             _that.thumbnails,
             _that.medicationStatus,
-            _that.stepProgress,
+            _that.stepCount,
+            _that.stepGoal,
             _that.healthSchedulePlace,
             _that.healthScheduleLatitude,
             _that.healthScheduleLongitude);
@@ -404,7 +416,8 @@ extension HomeUiStatePatterns on HomeUiState {
             DateTime measuredAt,
             List<String> thumbnails,
             MedicationStatus medicationStatus,
-            double stepProgress,
+            int stepCount,
+            int stepGoal,
             String? healthSchedulePlace,
             double? healthScheduleLatitude,
             double? healthScheduleLongitude)
@@ -426,7 +439,8 @@ extension HomeUiStatePatterns on HomeUiState {
             _that.measuredAt,
             _that.thumbnails,
             _that.medicationStatus,
-            _that.stepProgress,
+            _that.stepCount,
+            _that.stepGoal,
             _that.healthSchedulePlace,
             _that.healthScheduleLatitude,
             _that.healthScheduleLongitude);
@@ -462,7 +476,8 @@ extension HomeUiStatePatterns on HomeUiState {
             DateTime measuredAt,
             List<String> thumbnails,
             MedicationStatus medicationStatus,
-            double stepProgress,
+            int stepCount,
+            int stepGoal,
             String? healthSchedulePlace,
             double? healthScheduleLatitude,
             double? healthScheduleLongitude)?
@@ -484,7 +499,8 @@ extension HomeUiStatePatterns on HomeUiState {
             _that.measuredAt,
             _that.thumbnails,
             _that.medicationStatus,
-            _that.stepProgress,
+            _that.stepCount,
+            _that.stepGoal,
             _that.healthSchedulePlace,
             _that.healthScheduleLatitude,
             _that.healthScheduleLongitude);
@@ -510,7 +526,8 @@ class _HomeUiState extends HomeUiState {
       required this.measuredAt,
       required final List<String> thumbnails,
       required this.medicationStatus,
-      required this.stepProgress,
+      required this.stepCount,
+      required this.stepGoal,
       required this.healthSchedulePlace,
       required this.healthScheduleLatitude,
       required this.healthScheduleLongitude})
@@ -555,7 +572,9 @@ class _HomeUiState extends HomeUiState {
   @override
   final MedicationStatus medicationStatus;
   @override
-  final double stepProgress;
+  final int stepCount;
+  @override
+  final int stepGoal;
   @override
   final String? healthSchedulePlace;
   @override
@@ -599,8 +618,10 @@ class _HomeUiState extends HomeUiState {
                 .equals(other._thumbnails, _thumbnails) &&
             (identical(other.medicationStatus, medicationStatus) ||
                 other.medicationStatus == medicationStatus) &&
-            (identical(other.stepProgress, stepProgress) ||
-                other.stepProgress == stepProgress) &&
+            (identical(other.stepCount, stepCount) ||
+                other.stepCount == stepCount) &&
+            (identical(other.stepGoal, stepGoal) ||
+                other.stepGoal == stepGoal) &&
             (identical(other.healthSchedulePlace, healthSchedulePlace) ||
                 other.healthSchedulePlace == healthSchedulePlace) &&
             (identical(other.healthScheduleLatitude, healthScheduleLatitude) ||
@@ -625,14 +646,15 @@ class _HomeUiState extends HomeUiState {
       measuredAt,
       const DeepCollectionEquality().hash(_thumbnails),
       medicationStatus,
-      stepProgress,
+      stepCount,
+      stepGoal,
       healthSchedulePlace,
       healthScheduleLatitude,
       healthScheduleLongitude);
 
   @override
   String toString() {
-    return 'HomeUiState(isUserLoading: $isUserLoading, isHeartRateLoading: $isHeartRateLoading, isNotificationLoading: $isNotificationLoading, isSeniorCardLoading: $isSeniorCardLoading, notifications: $notifications, name: $name, isWearing: $isWearing, heartRate: $heartRate, heartRateStatus: $heartRateStatus, measuredAt: $measuredAt, thumbnails: $thumbnails, medicationStatus: $medicationStatus, stepProgress: $stepProgress, healthSchedulePlace: $healthSchedulePlace, healthScheduleLatitude: $healthScheduleLatitude, healthScheduleLongitude: $healthScheduleLongitude)';
+    return 'HomeUiState(isUserLoading: $isUserLoading, isHeartRateLoading: $isHeartRateLoading, isNotificationLoading: $isNotificationLoading, isSeniorCardLoading: $isSeniorCardLoading, notifications: $notifications, name: $name, isWearing: $isWearing, heartRate: $heartRate, heartRateStatus: $heartRateStatus, measuredAt: $measuredAt, thumbnails: $thumbnails, medicationStatus: $medicationStatus, stepCount: $stepCount, stepGoal: $stepGoal, healthSchedulePlace: $healthSchedulePlace, healthScheduleLatitude: $healthScheduleLatitude, healthScheduleLongitude: $healthScheduleLongitude)';
   }
 }
 
@@ -657,7 +679,8 @@ abstract mixin class _$HomeUiStateCopyWith<$Res>
       DateTime measuredAt,
       List<String> thumbnails,
       MedicationStatus medicationStatus,
-      double stepProgress,
+      int stepCount,
+      int stepGoal,
       String? healthSchedulePlace,
       double? healthScheduleLatitude,
       double? healthScheduleLongitude});
@@ -690,7 +713,8 @@ class __$HomeUiStateCopyWithImpl<$Res> implements _$HomeUiStateCopyWith<$Res> {
     Object? measuredAt = null,
     Object? thumbnails = null,
     Object? medicationStatus = null,
-    Object? stepProgress = null,
+    Object? stepCount = null,
+    Object? stepGoal = null,
     Object? healthSchedulePlace = freezed,
     Object? healthScheduleLatitude = freezed,
     Object? healthScheduleLongitude = freezed,
@@ -744,10 +768,14 @@ class __$HomeUiStateCopyWithImpl<$Res> implements _$HomeUiStateCopyWith<$Res> {
           ? _self.medicationStatus
           : medicationStatus // ignore: cast_nullable_to_non_nullable
               as MedicationStatus,
-      stepProgress: null == stepProgress
-          ? _self.stepProgress
-          : stepProgress // ignore: cast_nullable_to_non_nullable
-              as double,
+      stepCount: null == stepCount
+          ? _self.stepCount
+          : stepCount // ignore: cast_nullable_to_non_nullable
+              as int,
+      stepGoal: null == stepGoal
+          ? _self.stepGoal
+          : stepGoal // ignore: cast_nullable_to_non_nullable
+              as int,
       healthSchedulePlace: freezed == healthSchedulePlace
           ? _self.healthSchedulePlace
           : healthSchedulePlace // ignore: cast_nullable_to_non_nullable

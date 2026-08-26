@@ -127,6 +127,7 @@ class HomeScreen extends StatelessWidget {
                     isLoading: uiState.isSeniorCardLoading,
                     thumbanils: uiState.thumbnails,
                     medicationStatus: uiState.medicationStatus,
+                    hasStepGoal: uiState.hasStepGoal,
                     stepProgress: uiState.stepProgress,
                     onCameraTap: viewModel.takeMedicationPhoto,
                     onRouteTap: viewModel.openHealthScheduleRoute,

@@ -22,15 +22,20 @@ abstract class HomeUiState with _$HomeUiState {
     required DateTime measuredAt,
     required List<String> thumbnails,
     required MedicationStatus medicationStatus,
-    required double stepProgress,
+    required int stepCount,
+    required int stepGoal,
     required String? healthSchedulePlace,
     required double? healthScheduleLatitude,
     required double? healthScheduleLongitude,
   }) = _HomeUiState;
 
-  bool get canOpenHealthScheduleRoute =>
-      healthScheduleLatitude != null && healthScheduleLongitude != null;
+  /// 걷기 목표 설정 여부
+  bool get hasStepGoal => stepGoal > 0;
 
+  /// 목표 대비 진행률(%)
+  double get stepProgress => hasStepGoal ? (stepCount / stepGoal) * 100 : 0.0;
+
+  /// 최상단에 나타날 알림
   NotificationUiModel? get notification =>
       notifications.isEmpty ? null : notifications.first;
 
@@ -47,7 +52,8 @@ abstract class HomeUiState with _$HomeUiState {
         measuredAt: DateTime.now(),
         thumbnails: [],
         medicationStatus: const MedicationStatus.unknown(),
-        stepProgress: 0.0,
+        stepCount: 0,
+        stepGoal: 0,
         healthSchedulePlace: null,
         healthScheduleLatitude: null,
         healthScheduleLongitude: null,

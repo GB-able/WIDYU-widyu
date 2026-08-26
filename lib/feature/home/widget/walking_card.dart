@@ -1,12 +1,18 @@
 part of '../home_screen.dart';
 
 class _WalkingCard extends StatelessWidget {
+  final bool hasStepGoal;
   final double stepProgress;
 
-  const _WalkingCard({required this.stepProgress});
+  const _WalkingCard({
+    required this.hasStepGoal,
+    required this.stepProgress,
+  });
 
   @override
   Widget build(BuildContext context) {
+    if (!hasStepGoal) return const _WalkingGoalEmpty();
+
     return _CarouselCardShell(
       title: '걷기',
       background: Stack(
@@ -72,6 +78,52 @@ class _WalkingCard extends StatelessWidget {
               ),
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// 걷기 목표가 설정되지 않았을 때의 카드
+class _WalkingGoalEmpty extends StatelessWidget {
+  const _WalkingGoalEmpty();
+
+  @override
+  Widget build(BuildContext context) {
+    return _CarouselCardShell(
+      title: '걷기',
+      background: Stack(
+        fit: StackFit.expand,
+        children: [
+          const ColoredBox(color: MyColor.white),
+          Transform.translate(
+            offset: const Offset(0, 24),
+            child: const Center(
+              child: WidyuAssetImage(
+                name: 'img_178_walk.png',
+                fit: BoxFit.contain,
+              ),
+            ),
+          ),
+          ColoredBox(color: MyColor.white.withValues(alpha: 0.6)),
+          DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  MyColor.black.withValues(alpha: 0.7),
+                  MyColor.black.withValues(alpha: 0.0),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+      content: Center(
+        child: Text(
+          '걷기 목표가 없어요',
+          style: MyTypo.subTitle5.copyWith(color: MyColor.grey300),
         ),
       ),
     );
