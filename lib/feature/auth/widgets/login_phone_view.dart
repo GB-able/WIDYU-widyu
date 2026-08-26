@@ -6,7 +6,7 @@ import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
 import 'package:widyu/core/utils/phone_formatter.dart';
 import 'package:widyu/core/ui/widgets/custom_text_field.dart';
-import 'package:widyu/core/ui/widgets/text_btn.dart';
+import 'package:widyu/core/ui/widgets/widyu_text_button.dart';
 import 'package:widyu/feature/auth/login_ui_state.dart';
 import 'package:widyu/feature/auth/login_view_model.dart';
 import 'package:widyu/feature/auth/widgets/login_base_view.dart';
@@ -24,7 +24,7 @@ class LoginPhoneView extends StatelessWidget {
           viewModel.resetPhone();
           context.pop();
         },
-        btn: TextBtn(
+        btn: WidyuTextButton(
             onTap: () {
               viewModel.setPhoneNumber(viewModel.phoneController.text);
               viewModel.changeState(const LoginCodeState());

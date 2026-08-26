@@ -5,8 +5,9 @@ import 'package:provider/provider.dart';
 import 'package:widyu/app/routes/app_route.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
+import 'package:widyu/core/utils/app_service_controller.dart';
 import 'package:widyu/core/utils/show_toast.dart';
-import 'package:widyu/core/ui/widgets/text_btn.dart';
+import 'package:widyu/core/ui/widgets/widyu_text_button.dart';
 import 'package:widyu/feature/auth/login_ui_state.dart';
 import 'package:widyu/feature/auth/login_view_model.dart';
 import 'package:widyu/feature/auth/widgets/login_base_view.dart';
@@ -29,10 +30,11 @@ class LoginCodeView extends StatelessWidget {
             viewModel.changeState(const LoginPhoneState());
           }
         },
-        btn: TextBtn(
+        btn: WidyuTextButton(
           onTap: () {
             viewModel.login(
               onSuccess: () {
+                context.read<AppServiceController>().start();
                 context.go(AppRoute.home.path);
               },
               onFailure: (error) {

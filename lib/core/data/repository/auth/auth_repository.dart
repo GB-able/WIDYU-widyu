@@ -4,4 +4,6 @@ abstract class AuthRepository {
   Future<ApiResult<void>> login(String inviteCode, String phoneNumber);
 
   Future<ApiResult<void>> logout();
+
+  Future<ApiResult<String>> fetchSocketToken();
 }

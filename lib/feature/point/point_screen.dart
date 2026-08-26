@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:widyu/core/ui/widgets/widyu_asset_image.dart';
 import 'package:widyu/core/ui/widgets/widyu_icon.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -52,7 +53,10 @@ class PointScreen extends StatelessWidget {
                         const SizedBox(height: 16),
                         _TotalPointView(amount: uiState.currentPoints),
                         const SizedBox(height: 16),
-                        _PointHistoryView(histories: uiState.histories),
+                        Expanded(
+                          child:
+                              _PointHistoryView(histories: uiState.histories),
+                        ),
                       ],
                     ),
                   ),

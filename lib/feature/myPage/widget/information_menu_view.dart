@@ -28,7 +28,7 @@ class _InformationMenuView extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.fromLTRB(0, 14, 16, 14),
             child: GestureDetector(
-              onTap: () => {},
+              onTap: () => context.read<MyPageViewModel>().logout(),
               child: SizedBox(
                 width: double.infinity,
                 child: Text(

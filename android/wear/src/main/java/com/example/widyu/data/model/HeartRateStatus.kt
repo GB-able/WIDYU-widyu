@@ -10,7 +10,7 @@ enum class HeartRateStatus {
         fun from(value: String): HeartRateStatus =
             when (value) {
                 "NORMAL" -> STABLE
-                "ANOMALY" -> CAUTION
+                "EMERGENCY" -> CAUTION
                 else -> UNKNOWN
             }
     }

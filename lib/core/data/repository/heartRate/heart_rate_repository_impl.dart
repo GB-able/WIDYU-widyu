@@ -15,10 +15,10 @@ class HeartRateRepositoryImpl implements HeartRateRepository {
   final HeartRateRemoteDataSource _remoteDataSource;
   StreamSubscription? _heartRates;
 
-  HeartRateRepositoryImpl(
-      {required HeartRateLocalDataSource localDataSource,
-      required HeartRateRemoteDataSource remoteDataSource})
-      : _localDataSource = localDataSource,
+  HeartRateRepositoryImpl({
+    required HeartRateLocalDataSource localDataSource,
+    required HeartRateRemoteDataSource remoteDataSource,
+  })  : _localDataSource = localDataSource,
         _remoteDataSource = remoteDataSource;
 
   @override
@@ -28,10 +28,13 @@ class HeartRateRepositoryImpl implements HeartRateRepository {
         .getHeartRates()
         .bufferCount(15)
         .map((heartRates) => HeartRateRequest(heartRates: heartRates))
-        .listen((request) async {
-      _remoteDataSource.sendHeartRates(request);
-      await _sendHeartRateStatus();
-    }, onError: (e) => log("Stream Error: $e"));
+        .listen(
+      (request) async {
+        _remoteDataSource.sendHeartRates(request);
+        await _sendHeartRateStatus();
+      },
+      onError: (e) => log("Stream Error: $e"),
+    );
   }
 
   @override
@@ -40,6 +43,10 @@ class HeartRateRepositoryImpl implements HeartRateRepository {
     _heartRates = null;
   }
 
+  @override
+  Future<ApiResult<HeartRateResponse>> fetchHeartRate() async =>
+      await _remoteDataSource.fetchHeartRateStatus().toApiResult();
+
   Future<void> _sendHeartRateStatus() async {
     final result = await _remoteDataSource.fetchHeartRateStatus().toApiResult();
     if (result is Success) {
@@ -47,4 +54,7 @@ class HeartRateRepositoryImpl implements HeartRateRepository {
       await _localDataSource.sendHeartRateStatus(data.heartRateStatus);
     }
   }
+
+  @override
+  Stream<bool> observeConnection() => _localDataSource.observeConnection();
 }

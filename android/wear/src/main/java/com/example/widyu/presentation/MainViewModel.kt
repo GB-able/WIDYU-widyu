@@ -9,12 +9,14 @@ import com.example.widyu.data.model.MeasureResult
 import com.example.widyu.data.repository.HeartRateRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -23,10 +25,33 @@ import javax.inject.Inject
 class MainViewModel @Inject constructor(
     private val repository: HeartRateRepository,
 ) : ViewModel() {
-    private val _uiState: MutableStateFlow<UiState> = MutableStateFlow(UiState.Loading)
-    val uiState: StateFlow<UiState> = _uiState.asStateFlow()
+    private val measureState: MutableStateFlow<MeasureState> = MutableStateFlow(MeasureState.Loading)
+    private val heartRate: MutableStateFlow<Int> = MutableStateFlow(0)
+    private val heartRateStatus: MutableStateFlow<HeartRateStatus> = MutableStateFlow(HeartRateStatus.STABLE)
 
-    private var currentHeartRate: Int = 0
+    val uiState: StateFlow<UiState> =
+        combine(measureState, heartRate, heartRateStatus) { measure, hr, status ->
+            when (measure) {
+                MeasureState.Loading -> {
+                    UiState.Loading
+                }
+
+                MeasureState.Disconnected -> {
+                    UiState.WatchDisconnect
+                }
+
+                MeasureState.Measuring -> {
+                    when (status) {
+                        HeartRateStatus.CAUTION -> UiState.Caution(hr)
+                        else -> UiState.Stable(hr)
+                    }
+                }
+            }
+        }.stateIn(
+            viewModelScope,
+            SharingStarted.Eagerly,
+            UiState.Loading,
+        )
 
     init {
         observeServerResponse()
@@ -41,10 +66,10 @@ class MainViewModel @Inject constructor(
                         fetchMeasureResult()
                         return@launch
                     }
-                    updateState { UiState.WatchDisconnect }
+                    measureState.value = MeasureState.Disconnected
                 }.onFailure {
                     Log.i("Widyu", "Error", it)
-                    updateState { UiState.WatchDisconnect }
+                    measureState.value = MeasureState.Disconnected
                 }
         }
     }
@@ -54,19 +79,21 @@ class MainViewModel @Inject constructor(
             .getHeartRate()
             .catch {
                 Log.i("Widyu", "Error", it)
-                updateState { UiState.WatchDisconnect }
+                measureState.value = MeasureState.Disconnected
             }.onEach { measureResult ->
                 when (measureResult) {
                     is MeasureResult.Availability -> {
-                        if (measureResult.isAvailable.not()) updateState { UiState.WatchDisconnect }
+                        if (measureResult.isAvailable.not()) measureState.value = MeasureState.Disconnected
                     }
 
                     is MeasureResult.HeartRate -> {
-                        currentHeartRate = measureResult.value
-                        updateState { UiState.Stable(measureResult.value) }
+                        heartRate.value = measureResult.value
+                        measureState.value = MeasureState.Measuring
                     }
 
-                    is MeasureResult.SessionSuperseded -> updateState { UiState.WatchDisconnect }
+                    is MeasureResult.SessionSuperseded -> {
+                        measureState.value = MeasureState.Disconnected
+                    }
                 }
             }.launchIn(viewModelScope)
     }
@@ -74,18 +101,16 @@ class MainViewModel @Inject constructor(
     private fun observeServerResponse() {
         repository
             .getHeartRateStatus()
-            .onEach { response ->
-                updateState {
-                    when (response) {
-                        HeartRateStatus.STABLE -> UiState.Stable(currentHeartRate)
-                        HeartRateStatus.CAUTION -> UiState.Caution(currentHeartRate)
-                        HeartRateStatus.UNKNOWN -> this
-                    }
-                }
-            }.launchIn(viewModelScope)
+            .filter { response -> response != HeartRateStatus.UNKNOWN }
+            .onEach { response -> heartRateStatus.value = response }
+            .launchIn(viewModelScope)
     }
 
-    private fun updateState(reducer: UiState.() -> UiState) {
-        _uiState.update { state -> state.reducer() }
+    private sealed interface MeasureState {
+        object Loading : MeasureState
+
+        object Measuring : MeasureState
+
+        object Disconnected : MeasureState
     }
 }
