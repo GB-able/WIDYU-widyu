@@ -4,8 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:widyu/app/routes/app_route.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
-import 'package:widyu/core/ui/widgets/text_btn.dart';
 import 'package:widyu/core/ui/widgets/widyu_asset_image.dart';
+import 'package:widyu/core/ui/widgets/widyu_text_button.dart';
 
 import '../../core/utils/local_notification_manager.dart';
 import '../../core/utils/location_service_manager.dart';
@@ -142,7 +142,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             ),
             Padding(
               padding: const EdgeInsets.all(16),
-              child: TextBtn(
+              child: WidyuTextButton(
                 onTap: () {
                   context.push(AppRoute.login.path);
                 },

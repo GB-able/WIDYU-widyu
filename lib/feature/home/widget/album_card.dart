@@ -43,7 +43,7 @@ class _AlbumCard extends StatelessWidget {
         alignment: Alignment.bottomCenter,
         child: Material(
           type: MaterialType.transparency,
-          child: TextBtn(
+          child: WidyuTextButton(
             onTap: () => context.go(AppRoute.album.path),
             text: '앨범 보러 가기',
             enable: true,

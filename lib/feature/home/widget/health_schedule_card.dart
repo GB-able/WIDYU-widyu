@@ -93,7 +93,7 @@ class _HealthScheduleCard extends StatelessWidget {
             alignment: Alignment.bottomCenter,
             child: Material(
               type: MaterialType.transparency,
-              child: TextBtn(
+              child: WidyuTextButton(
                 onTap: onRouteTap,
                 text: '길 찾기',
                 enable: true,

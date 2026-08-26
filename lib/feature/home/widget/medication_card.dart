@@ -160,7 +160,7 @@ class _MedicationCard extends StatelessWidget {
                 if (_showCameraButton)
                   Material(
                     type: MaterialType.transparency,
-                    child: TextBtn(
+                    child: WidyuTextButton(
                       onTap: onCameraTap,
                       text: '카메라',
                       enable: true,

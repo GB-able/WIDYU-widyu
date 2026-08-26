@@ -2,6 +2,7 @@ part of '../home_screen.dart';
 
 class _CarouselMenu extends StatefulWidget {
   final bool isLoading;
+  final bool hasGoal;
   final List<String> thumbanils;
   final MedicationStatus medicationStatus;
   final bool hasStepGoal;
@@ -11,6 +12,7 @@ class _CarouselMenu extends StatefulWidget {
 
   const _CarouselMenu({
     required this.isLoading,
+    required this.hasGoal,
     required this.thumbanils,
     required this.medicationStatus,
     required this.hasStepGoal,
@@ -106,14 +108,16 @@ class _CarouselMenuState extends State<_CarouselMenu> {
           final cardHeight = (constraints.maxHeight - _carouselIndicatorArea)
               .clamp(0.0, _carouselCardMaxHeight);
 
-          // 데이터 조회 중에는 카드 대신 로딩 인디케이터만 노출한다.
-          // (조회 전 기본값이 잠깐 실제 데이터처럼 보이는 것을 막는다)
+          // 로딩
           if (widget.isLoading) {
             return SizedBox(
               height: cardHeight + _carouselIndicatorArea,
               child: const Center(child: CircularProgressIndicator()),
             );
           }
+
+          // 목표가 존재하지 않음
+          if (!widget.hasGoal) return const _CarouselEmptyView();
 
           return Column(
             mainAxisSize: MainAxisSize.min,
@@ -173,6 +177,49 @@ class _CarouselMenuState extends State<_CarouselMenu> {
             ],
           );
         },
+      ),
+    );
+  }
+}
+
+class _CarouselEmptyView extends StatelessWidget {
+  const _CarouselEmptyView();
+
+  static const _characterWidth = 144.0;
+  static const _characterHeight = 186.0;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const WidyuAssetImage(
+            name: 'img_card_character.png',
+            width: _characterWidth,
+            height: _characterHeight,
+            fit: BoxFit.contain,
+          ),
+          const SizedBox(height: 16),
+          Text(
+            '목표가 없어요!',
+            style: MyTypo.title2.copyWith(color: MyColor.grey700),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '목표를 추가하고 건강을 위해 실천해 보세요.',
+            style: MyTypo.body2.copyWith(color: MyColor.grey500),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 20),
+          WidyuTextButton(
+            onTap: () => context.go(AppRoute.goal.path),
+            text: '+   목표 추가하기',
+            backgroundColor: MyColor.white,
+            textColor: MyColor.primary,
+          ),
+        ],
       ),
     );
   }

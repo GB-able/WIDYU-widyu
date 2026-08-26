@@ -21,10 +21,10 @@ import 'package:widyu/core/model/heartRate/heart_rate_status.dart';
 import 'package:widyu/core/model/home/medication_status.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
-import 'package:widyu/core/ui/widgets/text_btn.dart';
 import 'package:widyu/core/ui/widgets/ui_event_listener.dart';
 import 'package:widyu/core/ui/widgets/widyu_asset_image.dart';
 import 'package:widyu/core/ui/widgets/widyu_icon.dart';
+import 'package:widyu/core/ui/widgets/widyu_text_button.dart';
 import 'package:widyu/core/utils/show_toast.dart';
 import 'package:widyu/feature/home/home_ui_event.dart';
 import 'package:widyu/feature/home/home_ui_state.dart';
@@ -125,6 +125,7 @@ class HomeScreen extends StatelessWidget {
                   right: 0,
                   child: _CarouselMenu(
                     isLoading: uiState.isSeniorCardLoading,
+                    hasGoal: uiState.hasGoal,
                     thumbanils: uiState.thumbnails,
                     medicationStatus: uiState.medicationStatus,
                     hasStepGoal: uiState.hasStepGoal,

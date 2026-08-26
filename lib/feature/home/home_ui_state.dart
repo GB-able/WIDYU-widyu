@@ -29,6 +29,12 @@ abstract class HomeUiState with _$HomeUiState {
     required double? healthScheduleLongitude,
   }) = _HomeUiState;
 
+  /// 목표 유무
+  bool get hasGoal =>
+      medicationStatus != const MedicationStatus.unknown() ||
+      hasStepGoal ||
+      (healthSchedulePlace?.isNotEmpty ?? false);
+
   /// 걷기 목표 설정 여부
   bool get hasStepGoal => stepGoal > 0;
 

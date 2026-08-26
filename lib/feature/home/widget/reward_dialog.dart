@@ -68,7 +68,7 @@ class _RewardDialog extends StatelessWidget {
                 const SizedBox(height: 24),
                 Material(
                   type: MaterialType.transparency,
-                  child: TextBtn(
+                  child: WidyuTextButton(
                     onTap: () => context.pop(),
                     text: '목표로 이동하기',
                     enable: true,
