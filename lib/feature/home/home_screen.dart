@@ -129,7 +129,6 @@ class HomeScreen extends StatelessWidget {
                     medicationStatus: uiState.medicationStatus,
                     stepProgress: uiState.stepProgress,
                     onCameraTap: viewModel.takeMedicationPhoto,
-                    canOpenRoute: uiState.canOpenHealthScheduleRoute,
                     onRouteTap: viewModel.openHealthScheduleRoute,
                   ),
                 ),

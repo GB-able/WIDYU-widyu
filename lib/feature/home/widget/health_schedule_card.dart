@@ -2,12 +2,10 @@ part of '../home_screen.dart';
 
 class _HealthScheduleCard extends StatelessWidget {
   final bool isCentered;
-  final bool canOpenRoute;
   final VoidCallback onRouteTap;
 
   const _HealthScheduleCard({
     required this.isCentered,
-    required this.canOpenRoute,
     required this.onRouteTap,
   });
 
@@ -98,7 +96,7 @@ class _HealthScheduleCard extends StatelessWidget {
               child: TextBtn(
                 onTap: onRouteTap,
                 text: '길 찾기',
-                enable: canOpenRoute,
+                enable: true,
               ),
             ),
           ),

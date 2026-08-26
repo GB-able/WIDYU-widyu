@@ -6,7 +6,6 @@ class _CarouselMenu extends StatefulWidget {
   final MedicationStatus medicationStatus;
   final double stepProgress;
   final VoidCallback onCameraTap;
-  final bool canOpenRoute;
   final VoidCallback onRouteTap;
 
   const _CarouselMenu({
@@ -15,7 +14,6 @@ class _CarouselMenu extends StatefulWidget {
     required this.medicationStatus,
     required this.stepProgress,
     required this.onCameraTap,
-    required this.canOpenRoute,
     required this.onRouteTap,
   });
 
@@ -55,7 +53,6 @@ class _CarouselMenuState extends State<_CarouselMenu> {
         ),
       1 => _HealthScheduleCard(
           isCentered: isCentered,
-          canOpenRoute: widget.canOpenRoute,
           onRouteTap: widget.onRouteTap,
         ),
       2 => _WalkingCard(stepProgress: widget.stepProgress),
