@@ -10,6 +10,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
   cupertino_icons: ^1.0.8
   flutter_svg: ^2.2.0
   carousel_slider: ^5.1.1
@@ -35,6 +37,8 @@ dependencies:
   get_phone_number: ^3.0.13
   freezed_annotation: ^3.1.0
   geolocator: ^13.0.4
+  pedometer: ^4.2.0
+  shared_preferences: ^2.5.3
   flutter_background_service: ^5.1.0
   heart_rate:
     path: ./packages/heart_rate
@@ -47,6 +51,7 @@ dependencies:
   app_settings: ^7.0.0
   watch_connectivity: ^0.2.4
   flutter_local_notifications: ^20.1.0
+  cached_network_image: ^3.4.1
 
 dev_dependencies:
   flutter_test:

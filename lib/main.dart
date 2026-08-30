@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:provider/provider.dart';
@@ -187,6 +188,8 @@ class _AppState extends State<App> {
       title: '위듀',
       theme: MyTheme.myTheme,
       routerConfig: CustomRouter.router,
+      locale: const Locale('ko', 'KR'),
+      localizationsDelegates: GlobalMaterialLocalizations.delegates,
     );
   }
 }
