@@ -1,16 +1,14 @@
 part of '../my_page_screen.dart';
 
 class _PointView extends StatelessWidget {
-  final bool isLoading;
-  final int? points;
-
-  const _PointView({
-    this.isLoading = false,
-    this.points,
-  });
+  const _PointView();
 
   @override
   Widget build(BuildContext context) {
+    final store = context.watch<PointProvider>();
+    final point = store.point;
+    final isLoading = point == null && store.isLoading;
+
     return Row(
       children: [
         Container(
@@ -29,7 +27,7 @@ class _PointView extends StatelessWidget {
         Skeletonizer(
           enabled: isLoading,
           child: Text(
-            isLoading ? '999P' : "${points ?? "- "}P",
+            isLoading ? '999P' : "${point ?? "- "}P",
             style: MyTypo.title4.copyWith(color: MyColor.white),
           ),
         ),

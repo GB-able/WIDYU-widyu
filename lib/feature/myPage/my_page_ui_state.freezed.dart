@@ -17,7 +17,6 @@ mixin _$MyPageUiState {
   bool get isLoading;
   String? get profileImage;
   String? get name;
-  int? get points;
 
   /// Create a copy of MyPageUiState
   /// with the given fields replaced by the non-null parameter values.
@@ -36,17 +35,15 @@ mixin _$MyPageUiState {
                 other.isLoading == isLoading) &&
             (identical(other.profileImage, profileImage) ||
                 other.profileImage == profileImage) &&
-            (identical(other.name, name) || other.name == name) &&
-            (identical(other.points, points) || other.points == points));
+            (identical(other.name, name) || other.name == name));
   }
 
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, isLoading, profileImage, name, points);
+  int get hashCode => Object.hash(runtimeType, isLoading, profileImage, name);
 
   @override
   String toString() {
-    return 'MyPageUiState(isLoading: $isLoading, profileImage: $profileImage, name: $name, points: $points)';
+    return 'MyPageUiState(isLoading: $isLoading, profileImage: $profileImage, name: $name)';
   }
 }
 
@@ -56,7 +53,7 @@ abstract mixin class $MyPageUiStateCopyWith<$Res> {
           MyPageUiState value, $Res Function(MyPageUiState) _then) =
       _$MyPageUiStateCopyWithImpl;
   @useResult
-  $Res call({bool isLoading, String? profileImage, String? name, int? points});
+  $Res call({bool isLoading, String? profileImage, String? name});
 }
 
 /// @nodoc
@@ -75,7 +72,6 @@ class _$MyPageUiStateCopyWithImpl<$Res>
     Object? isLoading = null,
     Object? profileImage = freezed,
     Object? name = freezed,
-    Object? points = freezed,
   }) {
     return _then(_self.copyWith(
       isLoading: null == isLoading
@@ -90,10 +86,6 @@ class _$MyPageUiStateCopyWithImpl<$Res>
           ? _self.name
           : name // ignore: cast_nullable_to_non_nullable
               as String?,
-      points: freezed == points
-          ? _self.points
-          : points // ignore: cast_nullable_to_non_nullable
-              as int?,
     ));
   }
 }
@@ -191,16 +183,14 @@ extension MyPageUiStatePatterns on MyPageUiState {
 
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>(
-    TResult Function(
-            bool isLoading, String? profileImage, String? name, int? points)?
+    TResult Function(bool isLoading, String? profileImage, String? name)?
         $default, {
     required TResult orElse(),
   }) {
     final _that = this;
     switch (_that) {
       case _MyPageUiState() when $default != null:
-        return $default(
-            _that.isLoading, _that.profileImage, _that.name, _that.points);
+        return $default(_that.isLoading, _that.profileImage, _that.name);
       case _:
         return orElse();
     }
@@ -221,15 +211,13 @@ extension MyPageUiStatePatterns on MyPageUiState {
 
   @optionalTypeArgs
   TResult when<TResult extends Object?>(
-    TResult Function(
-            bool isLoading, String? profileImage, String? name, int? points)
+    TResult Function(bool isLoading, String? profileImage, String? name)
         $default,
   ) {
     final _that = this;
     switch (_that) {
       case _MyPageUiState():
-        return $default(
-            _that.isLoading, _that.profileImage, _that.name, _that.points);
+        return $default(_that.isLoading, _that.profileImage, _that.name);
       case _:
         throw StateError('Unexpected subclass');
     }
@@ -249,15 +237,13 @@ extension MyPageUiStatePatterns on MyPageUiState {
 
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>(
-    TResult? Function(
-            bool isLoading, String? profileImage, String? name, int? points)?
+    TResult? Function(bool isLoading, String? profileImage, String? name)?
         $default,
   ) {
     final _that = this;
     switch (_that) {
       case _MyPageUiState() when $default != null:
-        return $default(
-            _that.isLoading, _that.profileImage, _that.name, _that.points);
+        return $default(_that.isLoading, _that.profileImage, _that.name);
       case _:
         return null;
     }
@@ -268,10 +254,7 @@ extension MyPageUiStatePatterns on MyPageUiState {
 
 class _MyPageUiState implements MyPageUiState {
   const _MyPageUiState(
-      {this.isLoading = false,
-      this.profileImage = null,
-      this.name = null,
-      this.points = null});
+      {this.isLoading = false, this.profileImage = null, this.name = null});
 
   @override
   @JsonKey()
@@ -282,9 +265,6 @@ class _MyPageUiState implements MyPageUiState {
   @override
   @JsonKey()
   final String? name;
-  @override
-  @JsonKey()
-  final int? points;
 
   /// Create a copy of MyPageUiState
   /// with the given fields replaced by the non-null parameter values.
@@ -303,17 +283,15 @@ class _MyPageUiState implements MyPageUiState {
                 other.isLoading == isLoading) &&
             (identical(other.profileImage, profileImage) ||
                 other.profileImage == profileImage) &&
-            (identical(other.name, name) || other.name == name) &&
-            (identical(other.points, points) || other.points == points));
+            (identical(other.name, name) || other.name == name));
   }
 
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, isLoading, profileImage, name, points);
+  int get hashCode => Object.hash(runtimeType, isLoading, profileImage, name);
 
   @override
   String toString() {
-    return 'MyPageUiState(isLoading: $isLoading, profileImage: $profileImage, name: $name, points: $points)';
+    return 'MyPageUiState(isLoading: $isLoading, profileImage: $profileImage, name: $name)';
   }
 }
 
@@ -325,7 +303,7 @@ abstract mixin class _$MyPageUiStateCopyWith<$Res>
       __$MyPageUiStateCopyWithImpl;
   @override
   @useResult
-  $Res call({bool isLoading, String? profileImage, String? name, int? points});
+  $Res call({bool isLoading, String? profileImage, String? name});
 }
 
 /// @nodoc
@@ -344,7 +322,6 @@ class __$MyPageUiStateCopyWithImpl<$Res>
     Object? isLoading = null,
     Object? profileImage = freezed,
     Object? name = freezed,
-    Object? points = freezed,
   }) {
     return _then(_MyPageUiState(
       isLoading: null == isLoading
@@ -359,10 +336,6 @@ class __$MyPageUiStateCopyWithImpl<$Res>
           ? _self.name
           : name // ignore: cast_nullable_to_non_nullable
               as String?,
-      points: freezed == points
-          ? _self.points
-          : points // ignore: cast_nullable_to_non_nullable
-              as int?,
     ));
   }
 }

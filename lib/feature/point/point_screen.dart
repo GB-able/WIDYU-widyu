@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:widyu/core/ui/widgets/widyu_asset_image.dart';
-import 'package:widyu/core/ui/widgets/widyu_icon.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:widyu/core/data/provider/point_provider.dart';
 import 'package:widyu/core/data/repository/myPage/my_page_repository.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
 import 'package:widyu/core/ui/widgets/ui_event_listener.dart';
+import 'package:widyu/core/ui/widgets/widyu_asset_image.dart';
+import 'package:widyu/core/ui/widgets/widyu_icon.dart';
 import 'package:widyu/core/utils/show_toast.dart';
 import 'package:widyu/feature/point/point_ui_event.dart';
 import 'package:widyu/feature/point/point_ui_model.dart';
@@ -15,8 +16,8 @@ import 'package:widyu/feature/point/point_ui_state.dart';
 import 'package:widyu/feature/point/point_view_model.dart';
 
 part 'widget/point_app_bar.dart';
-part 'widget/total_point_view.dart';
 part 'widget/point_history_view.dart';
+part 'widget/total_point_view.dart';
 
 class PointScreen extends StatelessWidget {
   const PointScreen({super.key});
@@ -33,6 +34,7 @@ class PointScreen extends StatelessWidget {
     return ChangeNotifierProvider(
       create: (context) => PointViewModel(
         repository: context.read<MyPageRepository>(),
+        pointProvider: context.read<PointProvider>(),
       ),
       builder: (context, child) {
         final uiEvent = context.read<PointViewModel>().uiEvent;
@@ -51,7 +53,7 @@ class PointScreen extends StatelessWidget {
                     child: Column(
                       children: [
                         const SizedBox(height: 16),
-                        _TotalPointView(amount: uiState.currentPoints),
+                        const _TotalPointView(),
                         const SizedBox(height: 16),
                         Expanded(
                           child:

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:widyu/app/routes/app_route.dart';
+import 'package:widyu/core/data/provider/point_provider.dart';
 import 'package:widyu/core/data/repository/auth/auth_repository.dart';
 import 'package:widyu/core/data/repository/myPage/my_page_repository.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
@@ -49,6 +50,7 @@ class MyPageScreen extends StatelessWidget {
       create: (context) => MyPageViewModel(
         repository: context.read<MyPageRepository>(),
         authRepository: context.read<AuthRepository>(),
+        pointProvider: context.read<PointProvider>(),
       ),
       builder: (context, child) {
         final uiEvent = context.read<MyPageViewModel>().uiEvent;
@@ -76,7 +78,6 @@ class MyPageScreen extends StatelessWidget {
                 _MyPageHeader(
                   profileImage: uiState.profileImage,
                   name: uiState.name,
-                  points: uiState.points,
                   isLoading: uiState.isLoading,
                 ),
                 Expanded(

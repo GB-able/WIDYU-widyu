@@ -1,12 +1,12 @@
 part of '../point_screen.dart';
 
 class _TotalPointView extends StatelessWidget {
-  final int amount;
-
-  const _TotalPointView({required this.amount});
+  const _TotalPointView();
 
   @override
   Widget build(BuildContext context) {
+    final point = context.select<PointProvider, int?>((store) => store.point);
+
     return Container(
       decoration: const BoxDecoration(
         color: MyColor.primaryLight,
@@ -30,7 +30,7 @@ class _TotalPointView extends StatelessWidget {
           ),
           const Spacer(),
           Text(
-            '${amount}P',
+            '${point ?? "-"}P',
             style: MyTypo.title4.copyWith(color: MyColor.primary),
           ),
         ],
