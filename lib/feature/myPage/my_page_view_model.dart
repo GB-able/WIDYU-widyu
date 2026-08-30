@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/widgets.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:widyu/core/data/repository/auth/auth_repository.dart';
 import 'package:widyu/core/data/repository/myPage/my_page_repository.dart';
 import 'package:widyu/core/model/api/api_result.dart';
 import 'package:widyu/core/model/myPage/user/user.dart';
@@ -10,6 +11,7 @@ import 'package:widyu/feature/myPage/my_page_ui_state.dart';
 
 class MyPageViewModel with ChangeNotifier {
   final MyPageRepository _repository;
+  final AuthRepository _authRepository;
 
   MyPageUiState _uiState = const MyPageUiState();
   MyPageUiState get uiState => _uiState;
@@ -20,8 +22,11 @@ class MyPageViewModel with ChangeNotifier {
   String _appVersion = '';
   String get appVersion => _appVersion;
 
-  MyPageViewModel({required MyPageRepository repository})
-      : _repository = repository {
+  MyPageViewModel({
+    required MyPageRepository repository,
+    required AuthRepository authRepository,
+  })  : _repository = repository,
+        _authRepository = authRepository {
     fetchUser();
     _fetchAppVersion();
   }
@@ -43,6 +48,14 @@ class MyPageViewModel with ChangeNotifier {
     }
     _uiState = _uiState.copyWith(isLoading: false);
     notifyListeners();
+  }
+
+  Future<void> logout() async {
+    if (await _authRepository.logout() is Success) {
+      _uiEvent.add(const LogoutSuccess());
+    } else {
+      _uiEvent.add(const LogoutFailure());
+    }
   }
 
   Future<void> _fetchAppVersion() async {

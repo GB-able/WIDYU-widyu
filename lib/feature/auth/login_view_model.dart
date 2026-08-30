@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get_phone_number/get_phone_number.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:widyu/core/data/repository/auth/auth_repository.dart';
 import 'package:widyu/core/model/api/api_result.dart';
 import 'package:widyu/feature/auth/login_ui_state.dart';
@@ -76,7 +77,12 @@ class LoginViewModel with ChangeNotifier {
 
   void getPhoneNumber() async {
     try {
-      final phoneNumber = await GetPhoneNumber().get();
+      final status = await Permission.phone.request();
+      if (!status.isGranted) {
+        throw Exception('전화번호 권한이 없습니다');
+      }
+
+      final phoneNumber = await GetPhoneNumber().getPhoneNumber();
       debugPrint('전화번호: $phoneNumber');
       final formattedPhone = _formatPhoneNumber(phoneNumber);
       if (formattedPhone.isNotEmpty) {

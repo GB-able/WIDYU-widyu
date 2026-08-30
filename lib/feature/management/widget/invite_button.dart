@@ -70,7 +70,7 @@ class _InviteButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TextBtn(
+    return WidyuTextButton(
       onTap: () => _showInviteDialog(context),
       text: '새로운 가족 멤버 초대하기',
       enable: true,

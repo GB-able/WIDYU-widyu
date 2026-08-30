@@ -36,6 +36,10 @@ class LocationRepositoryImpl implements LocationRepository {
   }
 
   @override
+  Future<UserLocation?> getCurrentLocation() =>
+      _localDataSource.getCurrentLocation();
+
+  @override
   void stopLocationUpload() {
     _locationSubscription?.cancel();
     _locationSubscription = null;

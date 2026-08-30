@@ -27,12 +27,23 @@ object PermissionManager {
             }
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA) {
                 add(HealthPermissions.READ_HEART_RATE)
-                add(HealthPermissions.READ_HEALTH_DATA_IN_BACKGROUND)
                 return@buildList
             }
             add(Manifest.permission.BODY_SENSORS)
         }.toTypedArray()
     }
+
+    val backgroundPermission: String? by lazy {
+        when {
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA -> HealthPermissions.READ_HEALTH_DATA_IN_BACKGROUND
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU -> Manifest.permission.BODY_SENSORS_BACKGROUND
+            else -> null
+        }
+    }
+
+    // Android 16(BAKLAVA)+ 부터 백그라운드 헬스 권한은 포그라운드 승인 이후 별도의 런타임 프롬프트로 요청할 수 있다.
+    // Android 15 이하의 `BODY_SENSORS_BACKGROUND`(항상 허용)는 런타임 프롬프트로 받을 수 없어 설정 화면 유도가 필요하다.
+    fun canRequestBackgroundAtRuntime(): Boolean = Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA
 
     fun hasBackgroundPermission(context: Context): Boolean {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA) {
@@ -68,6 +79,15 @@ object PermissionManager {
                 )
         }
 
+    // Android 16(BAKLAVA)+ 에서 백그라운드 헬스 권한이 영구 거부되어 더 이상 런타임 프롬프트를 띄울 수 없는 상태인지 판단한다.
+    // 이 경우 사용자를 설정 화면으로 유도해야 한다.
+    fun isBackgroundPermanentlyDenied(activity: Activity): Boolean {
+        val permission = backgroundPermission ?: return false
+        if (!canRequestBackgroundAtRuntime()) return false
+        return ContextCompat.checkSelfPermission(activity, permission) != PackageManager.PERMISSION_GRANTED &&
+            !activity.shouldShowRequestPermissionRationale(permission)
+    }
+
     fun openAppSettings(context: Context) {
         val intent =
             Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
@@ -100,9 +120,29 @@ fun rememberPermissionLauncher(
                 }
             }
 
-            isPermanentlyDenied(activity) -> onRequireRuntimePermission()
+            isPermanentlyDenied(activity) -> {
+                onRequireRuntimePermission()
+            }
 
-            else -> onDenied()
+            else -> {
+                onDenied()
+            }
+        }
+    }
+}
+
+@Composable
+fun rememberBackgroundPermissionLauncher(
+    onGranted: () -> Unit,
+    onDenied: () -> Unit,
+): ManagedActivityResultLauncher<Array<String>, Map<String, Boolean>> {
+    val context = LocalContext.current
+
+    return rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
+        if (hasBackgroundPermission(context)) {
+            onGranted()
+        } else {
+            onDenied()
         }
     }
 }

@@ -9,10 +9,18 @@ class MyTypo {
     color: MyColor.black,
   );
 
+  static const kccGanpanBase = TextStyle(
+    fontFamily: 'KCCGanpan',
+    overflow: TextOverflow.ellipsis,
+    leadingDistribution: TextLeadingDistribution.even,
+    color: MyColor.black,
+  );
+
   static final mediumBase = typoBase.copyWith(fontWeight: FontWeight.w500);
   static final semiboldBase = typoBase.copyWith(fontWeight: FontWeight.w600);
   static final boldBase = typoBase.copyWith(fontWeight: FontWeight.w700);
   static final blackBase = typoBase.copyWith(fontWeight: FontWeight.w900);
+  static final kccBase = kccGanpanBase.copyWith(fontWeight: FontWeight.w400);
 
   static final largeTitle = blackBase.copyWith(height: 1.6, fontSize: 40);
   static final percentage = blackBase.copyWith(height: 1.5, fontSize: 20);
@@ -21,6 +29,7 @@ class MyTypo {
   static final title2 = boldBase.copyWith(height: 1.5, fontSize: 20);
   static final title3 = semiboldBase.copyWith(height: 1.5, fontSize: 18);
   static final title4 = boldBase.copyWith(height: 1.5, fontSize: 18);
+  static final kccTitle = kccGanpanBase.copyWith(height: 1.5, fontSize: 24);
 
   static final subTitle1 = boldBase.copyWith(height: 1.5, fontSize: 16);
   static final subTitle2 = semiboldBase.copyWith(height: 1.5, fontSize: 14);

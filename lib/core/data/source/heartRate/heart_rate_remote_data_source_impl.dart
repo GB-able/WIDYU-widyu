@@ -10,9 +10,10 @@ class HeartRateRemoteDataSourceImpl implements HeartRateRemoteDataSource {
   final SocketClient _socketClient;
   final ApiClient _apiClient;
 
-  HeartRateRemoteDataSourceImpl(
-      {required SocketClient socketClient, required ApiClient apiClient})
-      : _socketClient = socketClient,
+  HeartRateRemoteDataSourceImpl({
+    required SocketClient socketClient,
+    required ApiClient apiClient,
+  })  : _socketClient = socketClient,
         _apiClient = apiClient;
 
   static const _path = "/heart-rate/status";
@@ -28,7 +29,7 @@ class HeartRateRemoteDataSourceImpl implements HeartRateRemoteDataSource {
       final response = await _apiClient.req(
         path: _path,
         method: HttpMethod.get,
-        body: {'memberId': ''},
+        query: {'memberId': ''},
       );
       return response.toApiResponse(HeartRateResponse.fromJson);
     } catch (e) {
