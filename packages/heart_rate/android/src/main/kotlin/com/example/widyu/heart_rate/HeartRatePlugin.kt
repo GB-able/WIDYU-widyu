@@ -10,6 +10,7 @@ import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
+import java.util.concurrent.CopyOnWriteArraySet
 
 class HeartRatePlugin :
     FlutterPlugin,
@@ -19,6 +20,11 @@ class HeartRatePlugin :
     private var eventChannel: EventChannel? = null
     private lateinit var nodeClient: NodeClient
     private lateinit var messageClient: MessageClient
+
+    // eventSinks 는 메인 엔진과 백그라운드 서비스 엔진이 공유하지만
+    // StreamHandler 는 엔진마다 별도 인스턴스이므로,
+    // 자신이 등록한 sink 만 정확히 회수할 수 있도록 따로 들고 있는다.
+    private var eventSink: EventChannel.EventSink? = null
 
     override fun onAttachedToEngine(binding: FlutterPlugin.FlutterPluginBinding) {
         nodeClient = Wearable.getNodeClient(binding.applicationContext)
@@ -38,6 +44,7 @@ class HeartRatePlugin :
     }
 
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
+        releaseEventSink()
         eventChannel?.setStreamHandler(null)
         methodChannel?.setMethodCallHandler(null)
     }
@@ -61,11 +68,19 @@ class HeartRatePlugin :
         arguments: Any?,
         events: EventChannel.EventSink?,
     ) {
+        eventSink = events
         events?.let { eventSinks.add(it) }
     }
 
+    // 다른 엔진이 등록한 sink 까지 지우면 그 엔진의 심박수 수신이 영구히 끊기므로
+    // 반드시 자신의 sink 만 제거한다.
     override fun onCancel(arguments: Any?) {
-        eventSinks.clear()
+        releaseEventSink()
+    }
+
+    private fun releaseEventSink() {
+        eventSink?.let { eventSinks.remove(it) }
+        eventSink = null
     }
 
     private fun sendHeartRateStatus(status: String) {
@@ -87,7 +102,9 @@ class HeartRatePlugin :
         private const val HEART_RATE_STATUS_KEY = "heartRateStatus"
         private const val HEART_RATE_STATUS_PATH = "/heart_rate_status"
 
-        private val eventSinks = mutableSetOf<EventChannel.EventSink>()
+        // Data Layer 콜백 스레드에서 등록·해제되고 메인 스레드에서 순회되므로
+        // 동시 접근에 안전한 컬렉션을 사용한다.
+        private val eventSinks = CopyOnWriteArraySet<EventChannel.EventSink>()
 
         fun sendHeartRate(
             heartRate: Int,
@@ -103,6 +120,7 @@ class HeartRatePlugin :
                     try {
                         sink.success(data)
                     } catch (e: Exception) {
+                        eventSinks.remove(sink)
                         Log.e("HeartRatePlugin", "Error sending heart rate to sink", e)
                     }
                 }
