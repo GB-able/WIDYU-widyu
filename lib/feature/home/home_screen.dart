@@ -115,7 +115,7 @@ class HomeScreen extends StatelessWidget {
                   left: 0,
                   right: 0,
                   child: WidyuAssetImage(
-                    name: 'img_home_background.png',
+                    name: 'img_375_home_background.png',
                     fit: BoxFit.fitWidth,
                   ),
                 ),

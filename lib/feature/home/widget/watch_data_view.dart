@@ -84,7 +84,8 @@ class _WatchDataView extends StatelessWidget {
                   right: -16,
                   child: IgnorePointer(
                     child: RepaintBoundary(
-                      child: WidyuAssetImage(name: 'img_mascot.png'),
+                      child: WidyuAssetImage(
+                          name: 'img_111_mascot.png', width: 111),
                     ),
                   ),
                 ),
