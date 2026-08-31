@@ -49,6 +49,21 @@ part 'widget/reward_dialog.dart';
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
+  static const _backgroundRatio = 427 / 375;
+  static const _backgroundOverlap = 65.0;
+
+  double _carouselTop(BuildContext context) {
+    final size = MediaQuery.sizeOf(context);
+    final required = _CarouselMenu.minHeight +
+        BotNav.height +
+        MediaQuery.paddingOf(context).bottom;
+
+    return min(
+      size.width * _backgroundRatio - _backgroundOverlap,
+      size.height - required,
+    );
+  }
+
   void _handleEvent(BuildContext context, HomeUiEvent event) {
     switch (event) {
       case TakeMedicationPhotoSuccess():
@@ -120,9 +135,10 @@ class HomeScreen extends StatelessWidget {
                   ),
                 ),
                 Positioned(
-                  bottom: 90,
+                  top: _carouselTop(context),
                   left: 0,
                   right: 0,
+                  bottom: 0,
                   child: _CarouselMenu(
                     isLoading: uiState.isSeniorCardLoading,
                     hasGoal: uiState.hasGoal,
