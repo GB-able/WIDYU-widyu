@@ -62,6 +62,7 @@ class MyPageScreen extends StatelessWidget {
           onEvent: (event) => _handleEvent(context, event),
           child: Scaffold(
             appBar: AppBar(
+              toolbarHeight: 52,
               backgroundColor: MyColor.orange400,
               systemOverlayStyle: const SystemUiOverlayStyle(
                 statusBarColor: Colors.transparent,

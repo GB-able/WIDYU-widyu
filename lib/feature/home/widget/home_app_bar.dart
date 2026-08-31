@@ -4,11 +4,12 @@ class _HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
   const _HomeAppBar();
 
   @override
-  Size get preferredSize => AppBar().preferredSize;
+  Size get preferredSize => const Size.fromHeight(52);
 
   @override
   Widget build(BuildContext context) {
     return AppBar(
+      toolbarHeight: 52,
       backgroundColor: MyColor.transparent,
       titleSpacing: 16,
       title: Text(
