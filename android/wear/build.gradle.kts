@@ -27,6 +27,10 @@ android {
     buildTypes {
         release {
             isMinifyEnabled = false
+            // Data Layer 는 패키지명과 서명 인증서가 모두 같아야 앱 사이를 라우팅한다.
+            // 폰 앱(app/build.gradle)이 debug 키로 서명되므로 워치도 동일하게 맞춘다.
+            // 스토어 배포 시에는 양쪽 모듈을 같은 릴리즈 키스토어로 교체해야 한다.
+            signingConfig = signingConfigs.getByName("debug")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
