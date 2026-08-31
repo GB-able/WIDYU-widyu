@@ -81,7 +81,7 @@ Future<void> connectSocket(SocketClient socketClient) async {
     final result = await authRepository.fetchSocketToken();
     if (result is Success) {
       final socketToken = (result as Success<String>).data;
-      await socketClient.connect(socketToken);
+      socketClient.connect(socketToken);
     }
   } catch (e, stack) {
     debugPrint('[background_service] 소켓 연결 실패: $e\n$stack');
