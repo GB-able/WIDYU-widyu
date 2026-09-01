@@ -19,10 +19,11 @@ class _HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
       actions: [
         GestureDetector(
           onTap: () => {},
-          child: const WidyuIcon(
-            icon: 'ic_24_notification.svg',
-            width: 24,
-            height: 24,
+          child: const IconWidget(
+            icon: 'notification',
+            width: 22,
+            height: 22,
+            color: MyColor.black,
           ),
         ),
         const SizedBox(width: 16),
