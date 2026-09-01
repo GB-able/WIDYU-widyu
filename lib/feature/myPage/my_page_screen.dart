@@ -23,7 +23,6 @@ part 'widget/header_content.dart';
 part 'widget/profile_view.dart';
 part 'widget/point_view.dart';
 part 'widget/management_menu_view.dart';
-part 'widget/management_menu_content.dart';
 part 'widget/setting_menu_view.dart';
 part 'widget/text_menu.dart';
 part 'widget/information_menu_view.dart';
