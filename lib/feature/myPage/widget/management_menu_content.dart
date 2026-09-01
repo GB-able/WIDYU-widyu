@@ -14,18 +14,11 @@ class _ManagementMenuContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        children: [
-          WidyuIcon(icon: asset, width: 24, height: 24),
-          const SizedBox(width: 8),
-          Expanded(
-            child: _TextMenu(
-              title: title,
-              onClick: onClick,
-            ),
-          ),
-        ],
+      padding: const EdgeInsets.symmetric(vertical: 0),
+      child: _TextMenu(
+        asset: asset,
+        title: title,
+        onClick: onClick,
       ),
     );
   }

@@ -6,7 +6,7 @@ class _ManagementMenuView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(16, 16, 0, 16),
+      padding: const EdgeInsets.symmetric(vertical: 16),
       decoration: const BoxDecoration(color: MyColor.white),
       child: Column(
         children: [
