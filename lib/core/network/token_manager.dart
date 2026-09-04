@@ -16,19 +16,19 @@ class TokenManager {
       _secureStorage.storage.read(key: StorageKey.memberId.name);
 
   Future<String?> get accessToken async =>
-      _secureStorage.storage.read(key: StorageKey.accessToken.name);
+      _secureStorage.storage.read(key: StorageKey.widyuAccessToken.name);
 
   Future<String?> get refreshToken async =>
-      _secureStorage.storage.read(key: StorageKey.refreshToken.name);
+      _secureStorage.storage.read(key: StorageKey.widyuRefreshToken.name);
 
   Future<String?> get tempToken async =>
       _secureStorage.storage.read(key: StorageKey.tempToken.name);
 
   Future<bool> hasToken() async {
-    final accessToken =
-        await _secureStorage.storage.read(key: StorageKey.accessToken.name);
-    final refreshToken =
-        await _secureStorage.storage.read(key: StorageKey.refreshToken.name);
+    final accessToken = await _secureStorage.storage
+        .read(key: StorageKey.widyuAccessToken.name);
+    final refreshToken = await _secureStorage.storage
+        .read(key: StorageKey.widyuRefreshToken.name);
     return accessToken != null && refreshToken != null;
   }
 
@@ -45,16 +45,16 @@ class TokenManager {
   Future<void> setToken(String accessToken, String refreshToken) async {
     await Future.wait([
       _secureStorage.storage
-          .write(key: StorageKey.accessToken.name, value: accessToken),
+          .write(key: StorageKey.widyuAccessToken.name, value: accessToken),
       _secureStorage.storage
-          .write(key: StorageKey.refreshToken.name, value: refreshToken),
+          .write(key: StorageKey.widyuRefreshToken.name, value: refreshToken),
     ]);
   }
 
   Future<void> removeToken() async {
     await Future.wait([
-      _secureStorage.storage.delete(key: StorageKey.accessToken.name),
-      _secureStorage.storage.delete(key: StorageKey.refreshToken.name),
+      _secureStorage.storage.delete(key: StorageKey.widyuAccessToken.name),
+      _secureStorage.storage.delete(key: StorageKey.widyuRefreshToken.name),
     ]);
   }
 

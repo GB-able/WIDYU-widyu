@@ -29,7 +29,7 @@ class _SplashScreenState extends State<SplashScreen> {
       String? accessToken;
       try {
         accessToken = await _secureStorage.storage
-            .read(key: StorageKey.accessToken.name)
+            .read(key: StorageKey.widyuAccessToken.name)
             .timeout(const Duration(seconds: 3), onTimeout: () => null);
       } catch (e, stack) {
         debugPrint('[Splash] 토큰 읽기 실패, 온보딩으로 폴백: $e\n$stack');
