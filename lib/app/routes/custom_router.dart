@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:widyu/app/routes/app_route.dart';
 import 'package:widyu/app/routes/custom_page.dart';
+import 'package:widyu/app/routes/tab_reloader.dart';
 import 'package:widyu/core/ui/widgets/bot_nav.dart';
 import 'package:widyu/feature/auth/login_screen.dart';
 import 'package:widyu/feature/auth/onboarding_screen.dart';
@@ -50,25 +51,29 @@ class CustomRouter {
           StatefulShellBranch(routes: [
             CustomGoRoute.staticRoute(
               route: AppRoute.home,
-              builder: (context, state) => const HomeScreen(),
+              builder: (context, state) =>
+                  TabReloader.wrap(index: 0, child: const HomeScreen()),
             ),
           ]),
           StatefulShellBranch(routes: [
             CustomGoRoute.staticRoute(
               route: AppRoute.goal,
-              builder: (context, state) => const Placeholder(),
+              builder: (context, state) =>
+                  TabReloader.wrap(index: 1, child: const Placeholder()),
             ),
           ]),
           StatefulShellBranch(routes: [
             CustomGoRoute.staticRoute(
               route: AppRoute.album,
-              builder: (context, state) => const Placeholder(),
+              builder: (context, state) =>
+                  TabReloader.wrap(index: 2, child: const Placeholder()),
             ),
           ]),
           StatefulShellBranch(routes: [
             CustomGoRoute.staticRoute(
               route: AppRoute.my,
-              builder: (context, state) => const MyPageScreen(),
+              builder: (context, state) =>
+                  TabReloader.wrap(index: 3, child: const MyPageScreen()),
             ),
           ]),
         ],
