@@ -10,8 +10,9 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:skeletonizer/skeletonizer.dart';
-import 'package:watch_connectivity/watch_connectivity.dart';
 import 'package:widyu/app/routes/app_route.dart';
+import 'package:widyu/core/data/provider/point_provider.dart';
+import 'package:widyu/core/data/repository/goal/goal_repository.dart';
 import 'package:widyu/core/data/repository/heartRate/heart_rate_repository.dart';
 import 'package:widyu/core/data/repository/home/home_repository.dart';
 import 'package:widyu/core/data/repository/location/location_repository.dart';
@@ -21,6 +22,8 @@ import 'package:widyu/core/model/heartRate/heart_rate_status.dart';
 import 'package:widyu/core/model/home/medication_status.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
+import 'package:widyu/core/ui/widgets/bot_nav.dart';
+import 'package:widyu/core/ui/widgets/icon_widget.dart';
 import 'package:widyu/core/ui/widgets/ui_event_listener.dart';
 import 'package:widyu/core/ui/widgets/widyu_asset_image.dart';
 import 'package:widyu/core/ui/widgets/widyu_icon.dart';
@@ -30,21 +33,21 @@ import 'package:widyu/feature/home/home_ui_event.dart';
 import 'package:widyu/feature/home/home_ui_state.dart';
 import 'package:widyu/feature/home/home_view_model.dart';
 
-part 'widget/home_app_bar.dart';
-part 'widget/mesh_gradient_background.dart';
-part 'widget/notification_view.dart';
-part 'widget/home_greeting_view.dart';
-part 'widget/watch_data_view.dart';
-part 'widget/carousel_menu.dart';
+part 'widget/album_card.dart';
 part 'widget/carousel_card_shell.dart';
-part 'widget/spring_bounce.dart';
 part 'widget/carousel_indicator.dart';
-part 'widget/medication_card.dart';
+part 'widget/carousel_menu.dart';
 part 'widget/dose_countdown.dart';
 part 'widget/health_schedule_card.dart';
-part 'widget/walking_card.dart';
-part 'widget/album_card.dart';
+part 'widget/home_app_bar.dart';
+part 'widget/home_greeting_view.dart';
+part 'widget/medication_card.dart';
+part 'widget/mesh_gradient_background.dart';
+part 'widget/notification_view.dart';
 part 'widget/reward_dialog.dart';
+part 'widget/spring_bounce.dart';
+part 'widget/walking_card.dart';
+part 'widget/watch_data_view.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -66,12 +69,14 @@ class HomeScreen extends StatelessWidget {
 
   void _handleEvent(BuildContext context, HomeUiEvent event) {
     switch (event) {
-      case TakeMedicationPhotoSuccess():
-        // 추후 서버 연결 필요
+      case VerifyMedicationSuccess(:final earnedPoint, :final totalPoint):
         showDialog(
           context: context,
-          builder: (_) => const _RewardDialog(point: 100, totalPoint: 600),
+          builder: (_) =>
+              _RewardDialog(point: earnedPoint, totalPoint: totalPoint),
         );
+      case VerifyMedicationFailure(:final message):
+        showToast(message);
       case RequestCameraPermissionFailure():
         showToast('카메라 권한이 필요해요.');
       case RequestCameraPermissionPermanentlyFailure():
@@ -100,14 +105,14 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (context) {
-        final watch = WatchConnectivity();
         return HomeViewModel(
           homeRepository: context.read<HomeRepository>(),
           myPageRepository: context.read<MyPageRepository>(),
           notificationRepository: context.read<NotificationRepository>(),
           heartRateRepository: context.read<HeartRateRepository>(),
           locationRepository: context.read<LocationRepository>(),
-          isPaired: watch.isPaired,
+          goalRepository: context.read<GoalRepository>(),
+          pointProvider: context.read<PointProvider>(),
         );
       },
       builder: (context, child) {
@@ -146,6 +151,7 @@ class HomeScreen extends StatelessWidget {
                     medicationStatus: uiState.medicationStatus,
                     hasStepGoal: uiState.hasStepGoal,
                     stepProgress: uiState.stepProgress,
+                    hasHealthSchedule: uiState.hasHealthSchedule,
                     onCameraTap: viewModel.takeMedicationPhoto,
                     onRouteTap: viewModel.openHealthScheduleRoute,
                   ),

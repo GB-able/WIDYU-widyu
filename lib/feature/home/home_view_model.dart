@@ -1,6 +1,9 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/widgets.dart';
+import 'package:widyu/core/data/provider/point_provider.dart';
+import 'package:widyu/core/data/repository/goal/goal_repository.dart';
 import 'package:widyu/core/data/repository/heartRate/heart_rate_repository.dart';
 import 'package:widyu/core/data/repository/home/home_repository.dart';
 import 'package:widyu/core/data/repository/location/location_repository.dart';
@@ -8,6 +11,7 @@ import 'package:widyu/core/data/repository/myPage/my_page_repository.dart';
 import 'package:widyu/core/data/repository/notification/notification_repository.dart';
 import 'package:widyu/core/model/api/api_result.dart';
 import 'package:widyu/core/model/camera/camera_capture_result.dart';
+import 'package:widyu/core/model/goal/medicine/medicine_point_result.dart';
 import 'package:widyu/core/model/heartRate/heart_rate_response.dart';
 import 'package:widyu/core/model/heartRate/heart_rate_status.dart';
 import 'package:widyu/core/model/home/medication_status.dart';
@@ -27,6 +31,8 @@ class HomeViewModel with ChangeNotifier {
   final NotificationRepository _notificationRepository;
   final HeartRateRepository _heartRateRepository;
   final LocationRepository _locationRepository;
+  final GoalRepository _goalRepository;
+  final PointProvider _pointProvider;
 
   HomeUiState _uiState = HomeUiState.init();
   HomeUiState get uiState => _uiState;
@@ -43,21 +49,27 @@ class HomeViewModel with ChangeNotifier {
   // 중복 탭으로 카카오맵이 두 번 열리는 것을 막는다
   bool _isOpeningRoute = false;
 
+  // 인증 요청이 끝나기 전에 카메라가 다시 열리는 것을 막는다
+  bool _isVerifyingMedication = false;
+
   HomeViewModel({
     required HomeRepository homeRepository,
     required MyPageRepository myPageRepository,
     required NotificationRepository notificationRepository,
     required HeartRateRepository heartRateRepository,
     required LocationRepository locationRepository,
-    required Future<bool> isPaired,
+    required GoalRepository goalRepository,
+    required PointProvider pointProvider,
   })  : _homeRepository = homeRepository,
         _heartRateRepository = heartRateRepository,
         _notificationRepository = notificationRepository,
         _myPageRepository = myPageRepository,
-        _locationRepository = locationRepository {
+        _locationRepository = locationRepository,
+        _goalRepository = goalRepository,
+        _pointProvider = pointProvider {
     unawaited(_fetchNotification());
     unawaited(_fetchUser());
-    unawaited(_observeWatchConnection(isPaired));
+    unawaited(_observeWatchConnection());
     unawaited(fetchHeartRate());
     unawaited(_fetchSeniorCard());
     _medicationTicker = Timer.periodic(
@@ -91,10 +103,12 @@ class HomeViewModel with ChangeNotifier {
   }
 
   Future<void> takeMedicationPhoto() async {
+    if (_isVerifyingMedication) return;
+
     final result = await CameraManager.takePhoto();
     switch (result) {
-      case CameraCaptureSuccess():
-        _uiEvent.add(const TakeMedicationPhotoSuccess());
+      case CameraCaptureSuccess(:final filePath):
+        await _verifyMedication(File(filePath));
       case CameraCaptureCanceled():
         break;
       case CameraPermissionDenied():
@@ -103,6 +117,40 @@ class HomeViewModel with ChangeNotifier {
         _uiEvent.add(const RequestCameraPermissionPermanentlyFailure());
       case CameraCaptureFailure():
         _uiEvent.add(const OpenCameraFailure());
+    }
+  }
+
+  /// 촬영한 사진으로 복용을 인증하고 카드와 포인트를 갱신한다.
+  Future<void> _verifyMedication(File proofImage) async {
+    final scheduleId = _medicine?.medicineScheduleId;
+    if (scheduleId == null) {
+      _uiEvent.add(const VerifyMedicationFailure('복용 일정 정보가 없어요.'));
+      return;
+    }
+
+    _isVerifyingMedication = true;
+    try {
+      final result = await _goalRepository.verifyMedication(
+        scheduleId: scheduleId,
+        proofImage: proofImage,
+      );
+
+      switch (result) {
+        case Success<MedicinePointResult>():
+          final earned = result.data.earnedPoints;
+          final total = result.data.currentPoints + earned;
+          _pointProvider.sync(total);
+          _uiEvent.add(
+            VerifyMedicationSuccess(earnedPoint: earned, totalPoint: total),
+          );
+          // 복용 횟수와 다음 회차가 바뀌므로 카드를 다시 읽는다.
+          // 리워드 다이얼로그 뒤에서 캐러셀이 로딩으로 깜빡이지 않게 한다.
+          await _fetchSeniorCard(showLoading: false);
+        case Failure<MedicinePointResult>():
+          _uiEvent.add(VerifyMedicationFailure(result.message));
+      }
+    } finally {
+      _isVerifyingMedication = false;
     }
   }
 
@@ -185,9 +233,11 @@ class HomeViewModel with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> _fetchSeniorCard() async {
-    _uiState = _uiState.copyWith(isSeniorCardLoading: true);
-    notifyListeners();
+  Future<void> _fetchSeniorCard({bool showLoading = true}) async {
+    if (showLoading) {
+      _uiState = _uiState.copyWith(isSeniorCardLoading: true);
+      notifyListeners();
+    }
 
     final result = await _homeRepository.fetchSeniorCard();
     if (result is Success) {
@@ -213,7 +263,9 @@ class HomeViewModel with ChangeNotifier {
     } else {
       _uiEvent.add(const FetchSeniorCardFailure());
     }
-    _uiState = _uiState.copyWith(isSeniorCardLoading: false);
+    if (showLoading) {
+      _uiState = _uiState.copyWith(isSeniorCardLoading: false);
+    }
     notifyListeners();
   }
 
@@ -225,11 +277,7 @@ class HomeViewModel with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> _observeWatchConnection(Future<bool> isPaired) async {
-    final isWearing = await isPaired;
-    _uiState = _uiState.copyWith(isWearing: isWearing);
-    notifyListeners();
-
+  Future<void> _observeWatchConnection() async {
     _watchConnection =
         _heartRateRepository.observeConnection().listen((isWearing) {
       _uiState = _uiState.copyWith(isWearing: isWearing);

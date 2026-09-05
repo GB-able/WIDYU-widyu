@@ -33,10 +33,13 @@ abstract class HomeUiState with _$HomeUiState {
   bool get hasGoal =>
       medicationStatus != const MedicationStatus.unknown() ||
       hasStepGoal ||
-      (healthSchedulePlace?.isNotEmpty ?? false);
+      hasHealthSchedule;
 
   /// 걷기 목표 설정 여부
   bool get hasStepGoal => stepGoal > 0;
+
+  /// 건강 일정 등록 여부
+  bool get hasHealthSchedule => healthSchedulePlace?.isNotEmpty ?? false;
 
   /// 목표 대비 진행률(%)
   double get stepProgress => hasStepGoal ? (stepCount / stepGoal) * 100 : 0.0;

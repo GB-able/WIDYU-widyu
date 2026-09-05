@@ -35,8 +35,21 @@ class OpenCameraFailure extends HomeUiEvent {
   const OpenCameraFailure();
 }
 
-class TakeMedicationPhotoSuccess extends HomeUiEvent {
-  const TakeMedicationPhotoSuccess();
+/// 복용 인증에 성공해 포인트를 받은 경우
+class VerifyMedicationSuccess extends HomeUiEvent {
+  final int earnedPoint;
+  final int totalPoint;
+
+  const VerifyMedicationSuccess({
+    required this.earnedPoint,
+    required this.totalPoint,
+  });
+}
+
+class VerifyMedicationFailure extends HomeUiEvent {
+  final String message;
+
+  const VerifyMedicationFailure(this.message);
 }
 
 /// 일정 장소 좌표가 없어 길찾기를 열 수 없는 경우

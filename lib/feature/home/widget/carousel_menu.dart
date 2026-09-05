@@ -1,12 +1,19 @@
 part of '../home_screen.dart';
 
+enum _CarouselCard { medication, healthSchedule, walking, album }
+
 class _CarouselMenu extends StatefulWidget {
+  static const minHeight = _CarouselMenuState._carouselTopPadding +
+      _CarouselMenuState._carouselCardMinHeight +
+      _CarouselMenuState._carouselIndicatorArea;
+
   final bool isLoading;
   final bool hasGoal;
   final List<String> thumbanils;
   final MedicationStatus medicationStatus;
   final bool hasStepGoal;
   final double stepProgress;
+  final bool hasHealthSchedule;
   final VoidCallback onCameraTap;
   final VoidCallback onRouteTap;
 
@@ -17,6 +24,7 @@ class _CarouselMenu extends StatefulWidget {
     required this.medicationStatus,
     required this.hasStepGoal,
     required this.stepProgress,
+    required this.hasHealthSchedule,
     required this.onCameraTap,
     required this.onRouteTap,
   });
@@ -29,41 +37,53 @@ class _CarouselMenuState extends State<_CarouselMenu> {
   PageController? _controller;
 
   // 무한 순환을 위해 양방향으로 충분한 여유를 둔 시작 페이지
-  // 첫 인디케이터가 0을 가리키려면 [_carouselCards] 길이의 배수여야 한다
+  // 인덱스는 이 페이지를 0으로 두고 계산하므로 카드 수가 몇 개든 첫 인디케이터가 0을 가리킨다
   static const _carouselInitialPage = 4000;
-  static const _cardsLength = 4;
+  static const _carouselTopPadding = 32.0;
   static const _carouselArcOffset = 40.0;
   static const _carouselMaxAngle = 0.12;
   static const _carouselCardGap = 52.0;
   static const _carouselCardWidth = 220.0;
   static const _carouselCardMaxHeight = 278.0;
 
-  // 인디케이터 영역 높이 (카드와의 간격 20 + 인디케이터 크기 6 + 하단 여백 16)
-  static const _carouselIndicatorArea = 42.0;
+  static const _carouselIndicatorGap = 20.0;
+  static const _carouselIndicatorSize = 6.0;
+  static const _carouselBottomPadding = 16.0;
+  static const _carouselIndicatorArea =
+      _carouselIndicatorGap + _carouselIndicatorSize + _carouselBottomPadding;
+  static const _carouselCardMinHeight = 200.0;
 
   /// 현재 중앙에 있는 페이지
   int _currentPage = _carouselInitialPage;
 
-  int get _currentIndex => _currentPage % _cardsLength;
+  /// 데이터가 있는 카드만 순환 대상에 넣는다.
+  List<_CarouselCard> get _cards => [
+        _CarouselCard.medication,
+        if (widget.hasHealthSchedule) _CarouselCard.healthSchedule,
+        _CarouselCard.walking,
+        _CarouselCard.album,
+      ];
+
+  int _indexAt(int page, int length) => (page - _carouselInitialPage) % length;
 
   /// [page] 위치에 놓일 카드. 중앙 카드에만 아이콘 바운스를 켠다.
-  Widget _cardAt(int page) {
+  Widget _cardAt(int page, List<_CarouselCard> cards) {
     final isCentered = page == _currentPage;
-    return switch (page % _cardsLength) {
-      0 => _MedicationCard(
+    return switch (cards[_indexAt(page, cards.length)]) {
+      _CarouselCard.medication => _MedicationCard(
           medicationStatus: widget.medicationStatus,
           onCameraTap: widget.onCameraTap,
           isCentered: isCentered,
         ),
-      1 => _HealthScheduleCard(
+      _CarouselCard.healthSchedule => _HealthScheduleCard(
           isCentered: isCentered,
           onRouteTap: widget.onRouteTap,
         ),
-      2 => _WalkingCard(
+      _CarouselCard.walking => _WalkingCard(
           hasStepGoal: widget.hasStepGoal,
           stepProgress: widget.stepProgress,
         ),
-      _ => _AlbumCard(thumbnails: widget.thumbanils),
+      _CarouselCard.album => _AlbumCard(thumbnails: widget.thumbanils),
     };
   }
 
@@ -89,12 +109,14 @@ class _CarouselMenuState extends State<_CarouselMenu> {
   @override
   Widget build(BuildContext context) {
     final controller = _controller!;
+    final cards = _cards;
 
     return Container(
       width: double.infinity,
+      clipBehavior: Clip.antiAlias,
       padding: EdgeInsets.only(
-        top: 32,
-        bottom: MediaQuery.paddingOf(context).bottom,
+        top: _carouselTopPadding,
+        bottom: BotNav.height + MediaQuery.paddingOf(context).bottom,
       ),
       decoration: const BoxDecoration(
         color: MyColor.grey100,
@@ -103,81 +125,94 @@ class _CarouselMenuState extends State<_CarouselMenu> {
           topRight: Radius.circular(40),
         ),
       ),
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final cardHeight = (constraints.maxHeight - _carouselIndicatorArea)
-              .clamp(0.0, _carouselCardMaxHeight);
+      child: _content(controller, cards),
+    );
+  }
 
-          // 로딩
-          if (widget.isLoading) {
-            return SizedBox(
-              height: cardHeight + _carouselIndicatorArea,
-              child: const Center(child: CircularProgressIndicator()),
-            );
-          }
+  Widget _content(PageController controller, List<_CarouselCard> cards) {
+    // 로딩
+    if (widget.isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
 
-          // 목표가 존재하지 않음
-          if (!widget.hasGoal) return const _CarouselEmptyView();
+    // 목표가 존재하지 않음
+    if (!widget.hasGoal) return const Center(child: _CarouselEmptyView());
 
-          return Column(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              SizedBox(
-                height: cardHeight,
-                child: PageView.builder(
-                  controller: controller,
-                  clipBehavior: Clip.none,
-                  onPageChanged: (index) =>
-                      setState(() => _currentPage = index),
-                  itemBuilder: (context, index) {
-                    return AnimatedBuilder(
-                      animation: controller,
-                      builder: (context, child) {
-                        final page =
-                            controller.hasClients && controller.page != null
-                                ? controller.page!
-                                : controller.initialPage.toDouble();
-                        final delta = (page - index).clamp(-1.0, 1.0);
+    return Column(
+      children: [
+        Expanded(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final cardHeight = (constraints.maxHeight -
+                      _carouselIndicatorGap -
+                      _carouselIndicatorSize)
+                  .clamp(0.0, _carouselCardMaxHeight);
 
-                        return Transform.translate(
-                          offset: Offset(0, delta * delta * _carouselArcOffset),
-                          child: Transform.rotate(
-                            angle: -delta * _carouselMaxAngle,
+              return Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SizedBox(
+                    height: cardHeight,
+                    child: PageView.builder(
+                      controller: controller,
+                      clipBehavior: Clip.none,
+                      onPageChanged: (index) =>
+                          setState(() => _currentPage = index),
+                      itemBuilder: (context, index) {
+                        return AnimatedBuilder(
+                          animation: controller,
+                          builder: (context, child) {
+                            final page =
+                                controller.hasClients && controller.page != null
+                                    ? controller.page!
+                                    : controller.initialPage.toDouble();
+                            final delta = (page - index).clamp(-1.0, 1.0);
+
+                            return Transform.translate(
+                              offset: Offset(
+                                0,
+                                delta * delta * _carouselArcOffset,
+                              ),
+                              child: Transform.rotate(
+                                angle: -delta * _carouselMaxAngle,
+                                alignment: Alignment.topCenter,
+                                child: child,
+                              ),
+                            );
+                          },
+                          child: Align(
                             alignment: Alignment.topCenter,
-                            child: child,
+                            child: SizedBox(
+                              width: _carouselCardWidth,
+                              height: cardHeight,
+                              child: GestureDetector(
+                                onTap: () => controller.animateToPage(
+                                  index,
+                                  duration: const Duration(
+                                    milliseconds: 300,
+                                  ),
+                                  curve: Curves.easeOut,
+                                ),
+                                child: _cardAt(index, cards),
+                              ),
+                            ),
                           ),
                         );
                       },
-                      child: Align(
-                        alignment: Alignment.topCenter,
-                        child: SizedBox(
-                          width: _carouselCardWidth,
-                          height: cardHeight,
-                          child: GestureDetector(
-                            onTap: () => controller.animateToPage(
-                              index,
-                              duration: const Duration(milliseconds: 300),
-                              curve: Curves.easeOut,
-                            ),
-                            child: _cardAt(index),
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-              const SizedBox(height: 20),
-              _CarouselIndicator(
-                count: _cardsLength,
-                currentIndex: _currentIndex,
-              ),
-              const SizedBox(height: 16),
-            ],
-          );
-        },
-      ),
+                    ),
+                  ),
+                  const SizedBox(height: _carouselIndicatorGap),
+                  _CarouselIndicator(
+                    count: cards.length,
+                    currentIndex: _indexAt(_currentPage, cards.length),
+                  ),
+                ],
+              );
+            },
+          ),
+        ),
+        const SizedBox(height: _carouselBottomPadding),
+      ],
     );
   }
 }
