@@ -9,13 +9,16 @@ class _InformationMenuView extends StatelessWidget {
         context.select<MyPageViewModel, String>((vm) => vm.appVersion);
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 16, 0, 16),
+      padding: const EdgeInsets.symmetric(vertical: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            '이용정보',
-            style: MyTypo.body2.copyWith(color: MyColor.grey500),
+          Padding(
+            padding: const EdgeInsets.only(left: 16),
+            child: Text(
+              '이용정보',
+              style: MyTypo.body2.copyWith(color: MyColor.grey500),
+            ),
           ),
           _TextMenu(
             title: '약관 및 정책',
@@ -25,21 +28,24 @@ class _InformationMenuView extends StatelessWidget {
             title: '고객지원',
             onClick: () => {},
           ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(0, 14, 16, 14),
-            child: GestureDetector(
+          Material(
+            color: Colors.transparent,
+            child: InkWell(
               onTap: () => context.read<MyPageViewModel>().logout(),
-              child: SizedBox(
-                width: double.infinity,
-                child: Text(
-                  '로그아웃',
-                  style: MyTypo.body1.copyWith(color: MyColor.black),
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: Text(
+                    '로그아웃',
+                    style: MyTypo.body1.copyWith(color: MyColor.black),
+                  ),
                 ),
               ),
             ),
           ),
           Padding(
-            padding: const EdgeInsets.fromLTRB(0, 14, 16, 14),
+            padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
             child: Row(
               children: [
                 Text(
