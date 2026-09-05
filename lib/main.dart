@@ -8,8 +8,14 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:provider/provider.dart';
 import 'package:widyu/app/routes/custom_router.dart';
 import 'package:widyu/background_service.dart';
+import 'package:widyu/core/data/provider/point_provider.dart';
+import 'package:widyu/core/data/provider/step_provider.dart';
 import 'package:widyu/core/data/repository/auth/auth_repository.dart';
 import 'package:widyu/core/data/repository/auth/auth_repository_impl.dart';
+import 'package:widyu/core/data/repository/goal/goal_repository.dart';
+import 'package:widyu/core/data/repository/goal/goal_repository_impl.dart';
+import 'package:widyu/core/data/repository/goal/walk_repository.dart';
+import 'package:widyu/core/data/repository/goal/walk_repository_impl.dart';
 import 'package:widyu/core/data/repository/heartRate/heart_rate_repository.dart';
 import 'package:widyu/core/data/repository/heartRate/heart_rate_repository_impl.dart';
 import 'package:widyu/core/data/repository/home/home_repository.dart';
@@ -20,10 +26,20 @@ import 'package:widyu/core/data/repository/myPage/my_page_repository.dart';
 import 'package:widyu/core/data/repository/myPage/my_page_repository_impl.dart';
 import 'package:widyu/core/data/repository/notification/notification_repository.dart';
 import 'package:widyu/core/data/repository/notification/notification_repository_impl.dart';
+import 'package:widyu/core/data/repository/point/point_repository.dart';
+import 'package:widyu/core/data/repository/point/point_repository_impl.dart';
 import 'package:widyu/core/data/source/auth/auth_local_data_source.dart';
 import 'package:widyu/core/data/source/auth/auth_local_data_source_impl.dart';
 import 'package:widyu/core/data/source/auth/auth_remote_data_source.dart';
 import 'package:widyu/core/data/source/auth/auth_remote_data_source_impl.dart';
+import 'package:widyu/core/data/source/goal/goal_remote_data_source.dart';
+import 'package:widyu/core/data/source/goal/goal_remote_data_source_impl.dart';
+import 'package:widyu/core/data/source/goal/medicine_remote_data_source.dart';
+import 'package:widyu/core/data/source/goal/medicine_remote_data_source_impl.dart';
+import 'package:widyu/core/data/source/goal/walk_local_data_source.dart';
+import 'package:widyu/core/data/source/goal/walk_local_data_source_impl.dart';
+import 'package:widyu/core/data/source/goal/walk_remote_data_source.dart';
+import 'package:widyu/core/data/source/goal/walk_remote_data_source_impl.dart';
 import 'package:widyu/core/data/source/heartRate/heart_rate_local_data_source.dart';
 import 'package:widyu/core/data/source/heartRate/heart_rate_local_data_source_impl.dart';
 import 'package:widyu/core/data/source/heartRate/heart_rate_remote_data_source.dart';
@@ -38,6 +54,8 @@ import 'package:widyu/core/data/source/myPage/my_page_remote_data_source.dart';
 import 'package:widyu/core/data/source/myPage/my_page_remote_data_source_impl.dart';
 import 'package:widyu/core/data/source/notification/notification_remote_data_source.dart';
 import 'package:widyu/core/data/source/notification/notification_remote_data_source_impl.dart';
+import 'package:widyu/core/data/source/point/point_remote_data_source.dart';
+import 'package:widyu/core/data/source/point/point_remote_data_source_impl.dart';
 import 'package:widyu/core/network/api_client.dart';
 import 'package:widyu/core/network/socket_client.dart';
 import 'package:widyu/core/network/token_manager.dart';
@@ -92,6 +110,33 @@ Future<void> _bootstrap() async {
         Provider<AppServiceController>(create: (_) => AppServiceController()),
         Provider<ApiClient>(create: (_) => ApiClient()),
         Provider<SocketClient>(create: (_) => SocketClient()),
+        ProxyProvider<ApiClient, MedicineRemoteDataSource>(
+          update: (_, apiClient, __) =>
+              MedicineRemoteDataSourceImpl(apiClient: apiClient),
+        ),
+        ProxyProvider<ApiClient, WalkRemoteDataSource>(
+          update: (_, apiClient, __) =>
+              WalkRemoteDataSourceImpl(apiClient: apiClient),
+        ),
+        ProxyProvider<ApiClient, GoalRemoteDataSource>(
+          update: (_, apiClient, __) =>
+              GoalRemoteDataSourceImpl(apiClient: apiClient),
+        ),
+        Provider<WalkLocalDataSource>(create: (_) => WalkLocalDataSourceImpl()),
+        ProxyProvider2<WalkLocalDataSource, WalkRemoteDataSource,
+            WalkRepository>(
+          update: (_, local, remote, __) => WalkRepositoryImpl(
+            localDataSource: local,
+            remoteDataSource: remote,
+          ),
+        ),
+        ProxyProvider2<GoalRemoteDataSource, MedicineRemoteDataSource,
+            GoalRepository>(
+          update: (_, goal, medicine, __) => GoalRepositoryImpl(
+            goalRemoteDataSource: goal,
+            medicineRemoteDataSource: medicine,
+          ),
+        ),
         ProxyProvider<ApiClient, AuthRemoteDataSource>(
           update: (_, apiClient, __) =>
               AuthRemoteDataSourceImpl(apiClient: apiClient),
@@ -126,6 +171,9 @@ Future<void> _bootstrap() async {
             apiClient: apiClient,
           ),
         ),
+        ProxyProvider<ApiClient, PointRemoteDataSource>(
+            update: (_, apiClient, __) =>
+                PointRemoteDataSourceImpl(apiClient: apiClient)),
         ProxyProvider2<AuthRemoteDataSource, AuthLocalDataSource,
             AuthRepository>(
           update: (_, remote, local, __) => AuthRepositoryImpl(
@@ -157,6 +205,20 @@ Future<void> _bootstrap() async {
           update: (_, local, remote, __) => LocationRepositoryImpl(
             localDataSource: local,
             remoteDataSource: remote,
+          ),
+        ),
+        ProxyProvider<PointRemoteDataSource, PointRepository>(
+            update: (_, remote, __) =>
+                PointRepositoryImpl(remoteDataSource: remote)),
+        ChangeNotifierProvider<PointProvider>(
+          create: (context) => PointProvider(
+            repository: context.read<PointRepository>(),
+          ),
+        ),
+        ChangeNotifierProvider<StepProvider>(
+          create: (context) => StepProvider(
+            repository: context.read<WalkRepository>(),
+            pointProvider: context.read<PointProvider>(),
           ),
         ),
       ],

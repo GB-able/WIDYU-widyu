@@ -6,30 +6,42 @@ class CustomNetworkImage extends StatelessWidget {
   const CustomNetworkImage({
     super.key,
     required this.url,
-    required this.width,
-    required this.height,
+    this.width,
+    this.height,
+    this.fit = BoxFit.cover,
+    this.errorIconSize = 48,
   });
 
   final String? url;
-  final double width;
-  final double height;
+  final double? width;
+  final double? height;
+  final BoxFit fit;
+  final double errorIconSize;
 
   @override
   Widget build(BuildContext context) {
+    if (url == null || url!.isEmpty) return _error();
+
     return CachedNetworkImage(
-      imageUrl: url ?? "",
+      imageUrl: url!,
       width: width,
       height: height,
-      fit: BoxFit.cover,
-      fadeInDuration: const Duration(milliseconds: 0),
-      placeholder: (context, url) =>
-          Container(width: width, height: height, color: MyColor.grey100),
-      errorWidget: (context, url, error) => Container(
-        width: width,
-        height: height,
-        color: MyColor.grey100,
-        child: const Icon(Icons.image, color: MyColor.grey300, size: 48),
-      ),
+      fit: fit,
+      fadeInDuration: Duration.zero,
+      fadeOutDuration: Duration.zero,
+      placeholder: (context, url) => _placeholder(),
+      errorWidget: (context, url, error) => _error(),
     );
   }
+
+  Widget _placeholder() =>
+      Container(width: width, height: height, color: MyColor.grey100);
+
+  Widget _error() => Container(
+        width: width,
+        height: height,
+        alignment: Alignment.center,
+        color: MyColor.grey100,
+        child: Icon(Icons.image, color: MyColor.grey300, size: errorIconSize),
+      );
 }
