@@ -1,5 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:widyu/core/model/home/senior_card.dart';
+import 'package:widyu/core/utils/extensions/medicine_extension.dart';
+import 'package:widyu/core/utils/extensions/string_extension.dart';
 
 part 'medication_status.freezed.dart';
 
@@ -38,8 +40,6 @@ sealed class MedicationStatus with _$MedicationStatus {
   const factory MedicationStatus.unknown() = MedicationUnknown;
 }
 
-const _doseWindow = Duration(minutes: 30);
-
 MedicationStatus resolveMedicationStatus({
   required MedicationSummary? medicine,
   required DateTime now,
@@ -54,7 +54,7 @@ MedicationStatus resolveMedicationStatus({
   // 1순위: 회차별 스케줄 중 미복용분
   final pending = medicine.scheduleStatuses
       .where((s) => !s.taken)
-      .map((s) => _anchorToday(s.doseTime, now))
+      .map((s) => s.doseTime?.toAlarmAt(now))
       .whereType<DateTime>()
       .toList()
     ..sort();
@@ -62,9 +62,7 @@ MedicationStatus resolveMedicationStatus({
   // 폴백: scheduleStatuses 가 비어 있으면 nextAlarmTime 단일 값
   final candidates = pending.isNotEmpty
       ? pending
-      : [_anchorToday(medicine.nextAlarmTime, now)]
-          .whereType<DateTime>()
-          .toList();
+      : [medicine.nextAlarmTime?.toAlarmAt(now)].whereType<DateTime>().toList();
 
   if (candidates.isEmpty) {
     return MedicationStatus.missed(takenCount: taken, totalCount: total);
@@ -72,13 +70,10 @@ MedicationStatus resolveMedicationStatus({
 
   // 가능한 복용 시간 중 가장 빠른 시간
   for (final doseAt in candidates) {
-    final opensAt = doseAt.subtract(_doseWindow);
-    final closesAt = doseAt.add(_doseWindow);
-    if (!now.isBefore(opensAt) && !now.isAfter(closesAt)) {
-      // 양끝 포함
+    if (doseAt.isWithinVerifyWindow(now)) {
       return MedicationStatus.available(
         doseAt: doseAt,
-        closesAt: closesAt,
+        closesAt: doseAt.windowClosesAt,
         takenCount: taken,
         totalCount: total,
       );
@@ -87,7 +82,7 @@ MedicationStatus resolveMedicationStatus({
 
   // 가장 빠른 시간
   for (final doseAt in candidates) {
-    final opensAt = doseAt.subtract(_doseWindow);
+    final opensAt = doseAt.windowOpensAt;
     if (now.isBefore(opensAt)) {
       return MedicationStatus.upcoming(
         doseAt: doseAt,
@@ -99,14 +94,4 @@ MedicationStatus resolveMedicationStatus({
   }
 
   return MedicationStatus.missed(takenCount: taken, totalCount: total);
-}
-
-DateTime? _anchorToday(String? hhmm, DateTime now) {
-  if (hhmm == null || hhmm.isEmpty) return null;
-  final parts = hhmm.split(':');
-  if (parts.length < 2) return null;
-  final h = int.tryParse(parts[0]);
-  final m = int.tryParse(parts[1]);
-  if (h == null || m == null || h < 0 || h > 23 || m < 0 || m > 59) return null;
-  return DateTime(now.year, now.month, now.day, h, m);
 }
