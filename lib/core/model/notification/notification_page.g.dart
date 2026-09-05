@@ -12,7 +12,7 @@ _NotificationPage _$NotificationPageFromJson(Map<String, dynamic> json) =>
           .map((e) => Notification.fromJson(e as Map<String, dynamic>))
           .toList(),
       hasNext: json['hasNext'] as bool,
-      nextCursor: (json['nextCursor'] as num).toInt(),
+      nextCursor: (json['nextCursor'] as num?)?.toInt(),
     );
 
 Map<String, dynamic> _$NotificationPageToJson(_NotificationPage instance) =>
