@@ -21,7 +21,6 @@ import 'package:widyu/feature/myPage/my_page_view_model.dart';
 
 part 'widget/header_content.dart';
 part 'widget/information_menu_view.dart';
-part 'widget/management_menu_content.dart';
 part 'widget/management_menu_view.dart';
 part 'widget/my_page_header.dart';
 part 'widget/point_view.dart';
