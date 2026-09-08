@@ -17,6 +17,7 @@ dependencies:
   provider: ^6.1.5+1
   dio: ^5.9.0
   flutter_secure_storage: ^9.2.4
+  shared_preferences: ^2.5.3
   flutter_dotenv: ^6.0.0
   step_progress: ^2.6.1
   daum_postcode_search: ^0.0.4
