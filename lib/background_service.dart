@@ -16,6 +16,7 @@ import 'package:widyu/core/data/source/heartRate/heart_rate_remote_data_source_i
 import 'package:widyu/core/data/source/location/location_local_data_source_impl.dart';
 import 'package:widyu/core/data/source/location/location_remote_data_source_impl.dart';
 import 'package:widyu/core/model/api/api_result.dart';
+import 'package:widyu/core/model/location/location_service_state.dart';
 import 'package:widyu/core/network/api_client.dart';
 import 'package:widyu/core/network/socket_client.dart';
 import 'package:widyu/core/network/token_manager.dart';
@@ -94,9 +95,20 @@ void onStart(ServiceInstance service) async {
   DartPluginRegistrant.ensureInitialized();
   await dotenv.load(fileName: ".env");
 
-  if (!await TokenManager().hasToken() ||
-      !await LocationServiceManager.checkLocationPermission()) {
-    await service.stopSelf();
+  final locationState = await LocationServiceManager.refresh();
+  if (!await TokenManager().hasToken() || !locationState.isAvailable) {
+    try {
+      if (service is AndroidServiceInstance) {
+        await service.setAutoStartOnBootMode(false);
+      }
+    } catch (error, stack) {
+      debugPrint('[background_service] 초기 자동 시작 해제 실패: $error\n$stack');
+    }
+    try {
+      await service.stopSelf();
+    } catch (error, stack) {
+      debugPrint('[background_service] 초기 종료 실패: $error\n$stack');
+    }
     return;
   }
 
@@ -108,14 +120,37 @@ void onStart(ServiceInstance service) async {
 
   unawaited(connectSocket(socketClient));
 
-  late final StreamSubscription locationServiceState;
+  StreamSubscription<LocationServiceState>? locationServiceState;
+  var isShuttingDown = false;
+  Future<void> shutdown() async {
+    if (isShuttingDown) return;
+    isShuttingDown = true;
+    try {
+      if (service is AndroidServiceInstance) {
+        await service.setAutoStartOnBootMode(false);
+      }
+    } catch (error, stack) {
+      debugPrint('[background_service] 자동 시작 해제 실패: $error\n$stack');
+    }
+    try {
+      await locationServiceState?.cancel();
+      LocationServiceManager.stopMonitoring();
+      heartRateRepository.stopObserveHeartRate();
+      locationRepository.stopLocationUpload();
+      socketClient.disconnect();
+      await service.stopSelf();
+    } catch (error, stack) {
+      debugPrint('[background_service] 종료 실패: $error\n$stack');
+    }
+  }
+
   LocationServiceManager.startMonitoring();
   locationServiceState =
       LocationServiceManager.locationServiceState.listen((state) {
     if (state.isAvailable) {
       locationRepository.startLocationUpload();
     } else {
-      locationRepository.stopLocationUpload();
+      unawaited(shutdown());
     }
   });
 
@@ -131,29 +166,66 @@ void onStart(ServiceInstance service) async {
   }
 
   service.on('stopService').listen((event) async {
-    await locationServiceState.cancel();
-    LocationServiceManager.stopMonitoring();
-    heartRateRepository.stopObserveHeartRate();
-    locationRepository.stopLocationUpload();
-    socketClient.disconnect();
-    service.stopSelf();
+    await shutdown();
   });
 }
 
 Future<void> setAutoStartOnBoot(bool value) =>
     initializeService(autoStartOnBoot: value);
 
-Future<void> startBackgroundService() async {
-  if (!await TokenManager().hasToken()) return;
-  if (!await LocationServiceManager.checkLocationPermission()) return;
+Future<void> _backgroundServiceQueue = Future.value();
+bool _stopTimedOut = false;
 
-  final service = FlutterBackgroundService();
-  if (await service.isRunning()) return;
-  await service.startService();
+Future<void> _enqueueBackgroundService(Future<void> Function() operation) {
+  final next = _backgroundServiceQueue.then(
+    (_) => operation(),
+    onError: (_) => operation(),
+  );
+  _backgroundServiceQueue = next.catchError((error, stack) {
+    debugPrint('[background_service] 서비스 제어 실패: $error\n$stack');
+  });
+  return next;
 }
 
-Future<void> stopBackgroundService() async {
+Future<void> startBackgroundService() =>
+    _enqueueBackgroundService(_startBackgroundService);
+
+Future<void> _startBackgroundService() async {
+  if (!await TokenManager().hasToken()) return;
+  if (!(await LocationServiceManager.refresh()).isAvailable) return;
+
   final service = FlutterBackgroundService();
-  if (!await service.isRunning()) return;
+  if (await service.isRunning()) {
+    if (_stopTimedOut) {
+      throw StateError('이전 백그라운드 서비스 종료를 아직 확인하지 못했습니다.');
+    }
+    return;
+  }
+  _stopTimedOut = false;
+  if (!await service.startService()) {
+    throw StateError('백그라운드 서비스를 시작하지 못했습니다.');
+  }
+}
+
+Future<void> stopBackgroundService() =>
+    _enqueueBackgroundService(_stopBackgroundService);
+
+Future<void> _stopBackgroundService() async {
+  final service = FlutterBackgroundService();
+  if (!await service.isRunning()) {
+    _stopTimedOut = false;
+    return;
+  }
   service.invoke('stopService');
+  // stopService는 isolate에 이벤트만 전달한다. 빠른 off→on에서 이전 종료가
+  // 다음 시작을 가로막지 않도록 짧게 종료를 확인하되 무한히 기다리지는 않는다.
+  for (var attempt = 0; attempt < 10; attempt++) {
+    await Future<void>.delayed(const Duration(milliseconds: 100));
+    if (!await service.isRunning()) {
+      _stopTimedOut = false;
+      return;
+    }
+  }
+  _stopTimedOut = true;
+  throw StateError('백그라운드 서비스 종료를 제한 시간 안에 확인하지 못했습니다.');
 }

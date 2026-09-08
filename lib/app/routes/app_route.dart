@@ -3,6 +3,7 @@ enum AppRoute {
   permission("/permission"),
   onboarding("/onboarding"),
   login("/login"),
+  locationSetup('/location-setup'),
 
   home("/home"),
   goal("/goal"),

@@ -28,6 +28,8 @@ import 'package:widyu/core/ui/widgets/widyu_text_button.dart';
 import 'package:widyu/core/ui/widgets/permission_recovery_dialog.dart';
 import 'package:widyu/core/model/permission/permission_recovery_prompt.dart';
 import 'package:widyu/core/model/permission/permission_type.dart';
+import 'package:widyu/core/model/location/location_service_state.dart';
+import 'package:widyu/core/utils/app_service_controller.dart';
 import 'package:widyu/feature/permission/permission_ui_model.dart';
 import 'package:widyu/core/utils/show_toast.dart';
 import 'package:widyu/feature/home/home_ui_event.dart';
@@ -49,6 +51,7 @@ part 'widget/health_schedule_card.dart';
 part 'widget/walking_card.dart';
 part 'widget/album_card.dart';
 part 'widget/reward_dialog.dart';
+part 'widget/location_sharing_banner.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -113,6 +116,13 @@ class HomeScreen extends StatelessWidget {
         final uiState =
             context.select<HomeViewModel, HomeUiState>((vm) => vm.uiState);
         final notification = uiState.notification;
+        final locationServiceState =
+            context.select<AppServiceController, LocationServiceState?>(
+          (controller) => controller.state,
+        );
+        final hasServiceError = context.select<AppServiceController, bool>(
+          (controller) => controller.hasServiceError,
+        );
 
         return UiEventListener(
           stream: viewModel.uiEvent,
@@ -132,67 +142,94 @@ class HomeScreen extends StatelessWidget {
                     fit: BoxFit.fitWidth,
                   ),
                 ),
-                Positioned(
-                  bottom: 90,
-                  left: 0,
-                  right: 0,
-                  child: _CarouselMenu(
-                    isLoading: uiState.isSeniorCardLoading,
-                    hasGoal: uiState.hasGoal,
-                    thumbanils: uiState.thumbnails,
-                    medicationStatus: uiState.medicationStatus,
-                    hasStepGoal: uiState.hasStepGoal,
-                    stepProgress: uiState.stepProgress,
-                    onCameraTap: () => viewModel.takeMedicationPhoto(
-                      showPrompt: (type, mode) =>
-                          _showPrompt(context, type, mode),
-                    ),
-                    onRouteTap: () => viewModel.openHealthScheduleRoute(
-                      showPrompt: (type, mode) =>
-                          _showPrompt(context, type, mode),
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: EdgeInsets.only(
-                    top: MediaQuery.of(context).padding.top + kToolbarHeight,
-                  ),
-                  child: Column(
-                    spacing: 24,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                LayoutBuilder(
+                  builder: (context, constraints) => SingleChildScrollView(
+                    child: ConstrainedBox(
+                      constraints:
+                          BoxConstraints(minHeight: constraints.maxHeight),
+                      child: Padding(
+                        padding: EdgeInsets.only(
+                          top: MediaQuery.of(context).padding.top +
+                              kToolbarHeight,
+                          bottom: 90,
+                        ),
                         child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            if (notification == null)
-                              const SizedBox(height: 28)
-                            else ...[
-                              _NotificationView(
-                                id: notification.notificationId,
-                                icon: notification.icon,
-                                description: notification.description,
-                                onTap: viewModel.markNotificationAsRead,
+                            Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 16),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  if (notification == null)
+                                    const SizedBox(height: 28)
+                                  else ...[
+                                    _NotificationView(
+                                      id: notification.notificationId,
+                                      icon: notification.icon,
+                                      description: notification.description,
+                                      onTap: viewModel.markNotificationAsRead,
+                                    ),
+                                    const SizedBox(height: 10),
+                                  ],
+                                  _HomeGreetingView(
+                                    isLoading: uiState.isUserLoading,
+                                    name: uiState.name,
+                                  ),
+                                  const SizedBox(height: 26),
+                                  _WatchDataView(
+                                    isLoading: uiState.isHeartRateLoading,
+                                    isWearing: uiState.isWearing,
+                                    heartRate: uiState.heartRate,
+                                    status: uiState.heartRateStatus,
+                                    measuredAt: uiState.measuredAt,
+                                    onHeartRateClick: viewModel.fetchHeartRate,
+                                  ),
+                                  if (locationServiceState != null &&
+                                      (!locationServiceState.isAvailable ||
+                                          hasServiceError)) ...[
+                                    const SizedBox(height: 12),
+                                    _LocationSharingBanner(
+                                      hasBackgroundLocation:
+                                          locationServiceState
+                                              .permissionGranted,
+                                      isLocationServiceEnabled:
+                                          locationServiceState.serviceEnabled,
+                                      hasServiceError: hasServiceError,
+                                      onSetup: () => context.push(
+                                        AppRoute.locationSetup.path,
+                                      ),
+                                    ),
+                                  ],
+                                ],
                               ),
-                              const SizedBox(height: 10),
-                            ],
-                            _HomeGreetingView(
-                              isLoading: uiState.isUserLoading,
-                              name: uiState.name,
                             ),
-                            const SizedBox(height: 26),
-                            _WatchDataView(
-                              isLoading: uiState.isHeartRateLoading,
-                              isWearing: uiState.isWearing,
-                              heartRate: uiState.heartRate,
-                              status: uiState.heartRateStatus,
-                              measuredAt: uiState.measuredAt,
-                              onHeartRateClick: viewModel.fetchHeartRate,
+                            Padding(
+                              padding: const EdgeInsets.only(top: 24),
+                              child: _CarouselMenu(
+                                isLoading: uiState.isSeniorCardLoading,
+                                hasGoal: uiState.hasGoal,
+                                thumbanils: uiState.thumbnails,
+                                medicationStatus: uiState.medicationStatus,
+                                hasStepGoal: uiState.hasStepGoal,
+                                stepProgress: uiState.stepProgress,
+                                onCameraTap: () =>
+                                    viewModel.takeMedicationPhoto(
+                                  showPrompt: (type, mode) =>
+                                      _showPrompt(context, type, mode),
+                                ),
+                                onRouteTap: () =>
+                                    viewModel.openHealthScheduleRoute(
+                                  showPrompt: (type, mode) =>
+                                      _showPrompt(context, type, mode),
+                                ),
+                              ),
                             ),
                           ],
                         ),
                       ),
-                    ],
+                    ),
                   ),
                 ),
               ],

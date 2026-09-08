@@ -11,6 +11,7 @@ import 'package:widyu/feature/management/management_screen.dart';
 import 'package:widyu/feature/myPage/my_page_screen.dart';
 import 'package:widyu/feature/notification_setting/notification_setting_screen.dart';
 import 'package:widyu/feature/permission/permission_screen.dart';
+import 'package:widyu/feature/locationSetup/location_setup_screen.dart';
 import 'package:widyu/feature/point/point_screen.dart';
 import 'package:widyu/feature/profile/profile_screen.dart';
 import 'package:widyu/feature/splash_screen.dart';
@@ -95,6 +96,10 @@ class CustomRouter {
       CustomGoRoute.slideRoute(
         route: AppRoute.login,
         builder: (context, state) => const LoginScreen(),
+      ),
+      CustomGoRoute.slideRoute(
+        route: AppRoute.locationSetup,
+        builder: (context, state) => const LocationSetupScreen(),
       ),
       CustomGoRoute.slideRoute(
         route: AppRoute.profile,
