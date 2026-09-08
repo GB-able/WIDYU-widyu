@@ -15,8 +15,12 @@ import 'package:widyu/core/model/home/senior_card.dart';
 import 'package:widyu/core/model/location/user_location.dart';
 import 'package:widyu/core/model/myPage/user/user.dart';
 import 'package:widyu/core/model/notification/notification_page.dart';
+import 'package:widyu/core/model/permission/permission_type.dart';
+import 'package:widyu/core/model/permission/permission_recovery_prompt.dart';
 import 'package:widyu/core/utils/camera_manager.dart';
 import 'package:widyu/core/utils/kakao_map_launcher.dart';
+import 'package:widyu/core/utils/permission_manager.dart';
+import 'package:widyu/core/utils/permission_recovery_controller.dart';
 import 'package:widyu/feature/home/home_ui_event.dart';
 import 'package:widyu/feature/home/home_ui_state.dart';
 import 'package:widyu/feature/home/notification_ui_model.dart';
@@ -27,6 +31,7 @@ class HomeViewModel with ChangeNotifier {
   final NotificationRepository _notificationRepository;
   final HeartRateRepository _heartRateRepository;
   final LocationRepository _locationRepository;
+  final PermissionRecoveryController _permissionRecoveryController;
 
   HomeUiState _uiState = HomeUiState.init();
   HomeUiState get uiState => _uiState;
@@ -42,6 +47,8 @@ class HomeViewModel with ChangeNotifier {
 
   // 중복 탭으로 카카오맵이 두 번 열리는 것을 막는다
   bool _isOpeningRoute = false;
+  bool _isTakingMedicationPhoto = false;
+  bool _isDisposed = false;
 
   HomeViewModel({
     required HomeRepository homeRepository,
@@ -50,11 +57,14 @@ class HomeViewModel with ChangeNotifier {
     required HeartRateRepository heartRateRepository,
     required LocationRepository locationRepository,
     required Future<bool> isPaired,
+    PermissionRecoveryController? permissionRecoveryController,
   })  : _homeRepository = homeRepository,
         _heartRateRepository = heartRateRepository,
         _notificationRepository = notificationRepository,
         _myPageRepository = myPageRepository,
-        _locationRepository = locationRepository {
+        _locationRepository = locationRepository,
+        _permissionRecoveryController =
+            permissionRecoveryController ?? PermissionRecoveryController() {
     unawaited(_fetchNotification());
     unawaited(_fetchUser());
     unawaited(_observeWatchConnection(isPaired));
@@ -90,26 +100,65 @@ class HomeViewModel with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> takeMedicationPhoto() async {
-    final result = await CameraManager.takePhoto();
-    switch (result) {
-      case CameraCaptureSuccess():
-        _uiEvent.add(const TakeMedicationPhotoSuccess());
-      case CameraCaptureCanceled():
-        break;
-      case CameraPermissionDenied():
-        _uiEvent.add(const RequestCameraPermissionFailure());
-      case CameraPermissionPermanentlyDenied():
-        _uiEvent.add(const RequestCameraPermissionPermanentlyFailure());
-      case CameraCaptureFailure():
-        _uiEvent.add(const OpenCameraFailure());
+  Future<void> takeMedicationPhoto({PermissionRecoveryPrompt? showPrompt}) async {
+    if (_isDisposed || _isTakingMedicationPhoto) return;
+    _isTakingMedicationPhoto = true;
+    var openedSettings = false;
+    final prompt = showPrompt ?? _cancelPermissionPrompt;
+    try {
+      final permission = await _permissionRecoveryController.ensurePermission(
+        PermissionType.camera,
+        showPrompt: (type, mode) async {
+          final action = await prompt(type, mode);
+          if (mode == PermissionRecoveryMode.settings &&
+              action == PermissionRecoveryAction.openSettings) {
+            openedSettings = true;
+          }
+          return action;
+        },
+      );
+      if (_isDisposed) return;
+      if (permission == PermissionRequestResult.canceled) return;
+      if (permission == PermissionRequestResult.settingsLaunchFailed) {
+        _uiEvent.add(const CameraPermissionSettingsLaunchFailure());
+        return;
+      }
+      if (permission == PermissionRequestResult.denied ||
+          permission == PermissionRequestResult.restricted ||
+          permission == PermissionRequestResult.permanentlyDenied ||
+          permission == PermissionRequestResult.unsupported) {
+        _uiEvent.add(openedSettings
+            ? const CameraPermissionSettingsDenied()
+            : const RequestCameraPermissionFailure());
+        return;
+      }
+      if (openedSettings) {
+        _uiEvent.add(const CameraPermissionSettingsGranted());
+        return;
+      }
+      final result = await CameraManager.takePhoto();
+      if (_isDisposed) return;
+      switch (result) {
+        case CameraCaptureSuccess():
+          _uiEvent.add(const TakeMedicationPhotoSuccess());
+        case CameraCaptureCanceled():
+          break;
+        case CameraPermissionDenied():
+          _uiEvent.add(const RequestCameraPermissionFailure());
+        case CameraPermissionPermanentlyDenied():
+          _uiEvent.add(const RequestCameraPermissionPermanentlyFailure());
+        case CameraCaptureFailure():
+          _uiEvent.add(const OpenCameraFailure());
+      }
+    } finally {
+      _isTakingMedicationPhoto = false;
     }
   }
 
   /// 건강 일정 장소로 향하는 카카오맵 길찾기를 연다.
   /// 현재 위치를 못 얻어도 목적지만으로 길찾기를 열 수 있으므로 위치 실패는 막지 않는다.
-  Future<void> openHealthScheduleRoute() async {
-    if (_isOpeningRoute) return;
+  Future<void> openHealthScheduleRoute({PermissionRecoveryPrompt? showPrompt}) async {
+    if (_isOpeningRoute || _isDisposed) return;
 
     final latitude = _uiState.healthScheduleLatitude;
     final longitude = _uiState.healthScheduleLongitude;
@@ -120,13 +169,30 @@ class HomeViewModel with ChangeNotifier {
 
     _isOpeningRoute = true;
     try {
-      final current = await _locationRepository.getCurrentLocation();
+      final permission = await _permissionRecoveryController.ensurePermission(
+        PermissionType.location,
+        showPrompt: showPrompt ?? _cancelPermissionPrompt,
+      );
+      if (_isDisposed) return;
+      UserLocation? current;
+      if (permission == PermissionRequestResult.granted) {
+        current = await _locationRepository.getCurrentLocation();
+        if (_isDisposed) return;
+      } else if (permission == PermissionRequestResult.settingsLaunchFailed) {
+        _uiEvent.add(const LocationPermissionSettingsLaunchFailure());
+      } else if (permission == PermissionRequestResult.denied ||
+          permission == PermissionRequestResult.permanentlyDenied ||
+          permission == PermissionRequestResult.restricted ||
+          permission == PermissionRequestResult.unsupported) {
+        _uiEvent.add(const LocationPermissionUnavailable());
+      }
       final isOpened = await KakaoMapLauncher.openRoute(
         destination: UserLocation(latitude: latitude, longitude: longitude),
         start: current,
         destinationName: _uiState.healthSchedulePlace,
         routeType: KakaoMapRouteType.publicTransit,
       );
+      if (_isDisposed) return;
       if (!isOpened) {
         _uiEvent.add(const OpenKakaoMapFailure());
       }
@@ -134,6 +200,11 @@ class HomeViewModel with ChangeNotifier {
       _isOpeningRoute = false;
     }
   }
+
+  static Future<PermissionRecoveryAction> _cancelPermissionPrompt(
+    PermissionType _,
+    PermissionRecoveryMode __,
+  ) async => PermissionRecoveryAction.cancel;
 
   Future<void> fetchHeartRate() async {
     _uiState = _uiState.copyWith(isHeartRateLoading: true);
@@ -250,6 +321,8 @@ class HomeViewModel with ChangeNotifier {
 
   @override
   void dispose() {
+    _isDisposed = true;
+    _permissionRecoveryController.dispose();
     _watchConnection?.cancel();
     _medicationTicker?.cancel();
     _uiEvent.close();

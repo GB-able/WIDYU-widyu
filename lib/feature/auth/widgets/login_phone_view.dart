@@ -12,7 +12,9 @@ import 'package:widyu/feature/auth/login_view_model.dart';
 import 'package:widyu/feature/auth/widgets/login_base_view.dart';
 
 class LoginPhoneView extends StatelessWidget {
-  const LoginPhoneView({super.key});
+  final VoidCallback onAutoFill;
+
+  const LoginPhoneView({super.key, required this.onAutoFill});
 
   @override
   Widget build(BuildContext context) {
@@ -35,6 +37,13 @@ class LoginPhoneView extends StatelessWidget {
         child: Column(
           children: [
             const SizedBox(height: 27),
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton(
+                onPressed: onAutoFill,
+                child: const Text('전화번호 자동으로 불러오기'),
+              ),
+            ),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               spacing: 4,

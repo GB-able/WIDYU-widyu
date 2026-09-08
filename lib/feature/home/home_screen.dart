@@ -25,6 +25,10 @@ import 'package:widyu/core/ui/widgets/ui_event_listener.dart';
 import 'package:widyu/core/ui/widgets/widyu_asset_image.dart';
 import 'package:widyu/core/ui/widgets/widyu_icon.dart';
 import 'package:widyu/core/ui/widgets/widyu_text_button.dart';
+import 'package:widyu/core/ui/widgets/permission_recovery_dialog.dart';
+import 'package:widyu/core/model/permission/permission_recovery_prompt.dart';
+import 'package:widyu/core/model/permission/permission_type.dart';
+import 'package:widyu/feature/permission/permission_ui_model.dart';
 import 'package:widyu/core/utils/show_toast.dart';
 import 'package:widyu/feature/home/home_ui_event.dart';
 import 'package:widyu/feature/home/home_ui_state.dart';
@@ -61,13 +65,22 @@ class HomeScreen extends StatelessWidget {
         showToast('카메라 권한이 필요해요.');
       case RequestCameraPermissionPermanentlyFailure():
         showToast('설정에서 카메라 권한을 허용해 주세요.');
-        AppSettings.openAppSettings();
+      case CameraPermissionSettingsGranted():
+        showToast('카메라 권한이 허용되었어요. 다시 촬영해 주세요.');
+      case CameraPermissionSettingsDenied():
+        showToast('카메라 권한이 아직 필요해요.');
+      case CameraPermissionSettingsLaunchFailure():
+        showToast('설정 화면을 열지 못했어요.');
       case OpenCameraFailure():
         showToast('카메라를 실행할 수 없어요. 잠시 후 다시 시도해 주세요.');
       case HealthSchedulePlaceUnavailable():
         showToast('일정 장소 정보가 없어요.');
       case OpenKakaoMapFailure():
         showToast('카카오맵을 실행할 수 없어요.');
+      case LocationPermissionUnavailable():
+        showToast('현재 위치 없이 길찾기를 열어요.');
+      case LocationPermissionSettingsLaunchFailure():
+        showToast('설정 화면을 열지 못해 현재 위치 없이 길찾기를 열어요.');
       case MarkNotificationAsReadFailure():
         showToast('알림을 읽음 처리하지 못했어요.');
       case FetchHeartRateFailure():
@@ -130,8 +143,14 @@ class HomeScreen extends StatelessWidget {
                     medicationStatus: uiState.medicationStatus,
                     hasStepGoal: uiState.hasStepGoal,
                     stepProgress: uiState.stepProgress,
-                    onCameraTap: viewModel.takeMedicationPhoto,
-                    onRouteTap: viewModel.openHealthScheduleRoute,
+                    onCameraTap: () => viewModel.takeMedicationPhoto(
+                      showPrompt: (type, mode) =>
+                          _showPrompt(context, type, mode),
+                    ),
+                    onRouteTap: () => viewModel.openHealthScheduleRoute(
+                      showPrompt: (type, mode) =>
+                          _showPrompt(context, type, mode),
+                    ),
                   ),
                 ),
                 Padding(
@@ -184,3 +203,15 @@ class HomeScreen extends StatelessWidget {
     );
   }
 }
+
+Future<PermissionRecoveryAction> _showPrompt(
+  BuildContext context,
+  PermissionType type,
+  PermissionRecoveryMode mode,
+) =>
+    PermissionRecoveryDialog.show(
+      context,
+      permissionName: type.title,
+      description: type.description,
+      mode: mode,
+    );

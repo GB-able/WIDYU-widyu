@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:get_phone_number/get_phone_number.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:widyu/core/data/repository/auth/auth_repository.dart';
 import 'package:widyu/core/model/api/api_result.dart';
+import 'package:widyu/core/model/permission/permission_type.dart';
+import 'package:widyu/core/utils/permission_manager.dart';
 import 'package:widyu/feature/auth/login_ui_state.dart';
 
 class LoginViewModel with ChangeNotifier {
@@ -10,6 +13,8 @@ class LoginViewModel with ChangeNotifier {
   static const int inviteCodeLength = 7;
 
   bool _canGetPhoneNumber = false;
+  bool _isDisposed = false;
+  bool _isGettingPhoneNumber = false;
   final List<TextEditingController> codeControllers =
       List.generate(inviteCodeLength, (_) => TextEditingController());
   final List<FocusNode> codeFocusNodes =
@@ -26,8 +31,9 @@ class LoginViewModel with ChangeNotifier {
 
   String? get phoneNumber => _phoneNumber;
 
-  LoginViewModel({required AuthRepository authRepository})
-      : _authRepository = authRepository {
+  LoginViewModel({
+    required AuthRepository authRepository,
+  }) : _authRepository = authRepository {
     for (int i = 0; i < codeControllers.length; i++) {
       final index = i;
       codeControllers[index].addListener(() {
@@ -56,11 +62,12 @@ class LoginViewModel with ChangeNotifier {
       notifyListeners();
     });
 
-    getPhoneNumber();
+    unawaited(getPhoneNumber());
   }
 
   @override
   void dispose() {
+    _isDisposed = true;
     for (var controller in codeControllers) {
       controller.dispose();
     }
@@ -75,15 +82,25 @@ class LoginViewModel with ChangeNotifier {
     return phoneNumber.replaceAll(RegExp(r'[^\d]'), '');
   }
 
-  void getPhoneNumber() async {
+  /// 자동 입력 버튼에서만 시스템 권한을 요청한다.
+  /// 거절되면 별도 안내나 설정 이동 없이 수동 입력을 유지한다.
+  Future<void> getPhoneNumber({bool requestPermission = false}) async {
+    if (_isDisposed || _isGettingPhoneNumber) return;
+    _isGettingPhoneNumber = true;
     try {
-      final status = await Permission.phone.request();
-      if (!status.isGranted) {
-        throw Exception('전화번호 권한이 없습니다');
+      final result = requestPermission
+          ? await PermissionManager.request(PermissionType.phone)
+          : await PermissionManager.status(PermissionType.phone);
+      if (_isDisposed) return;
+      if (result != PermissionRequestResult.granted) {
+        _state = const LoginPhoneState();
+        _canGetPhoneNumber = false;
+        notifyListeners();
+        return;
       }
 
       final phoneNumber = await GetPhoneNumber().getPhoneNumber();
-      debugPrint('전화번호: $phoneNumber');
+      if (_isDisposed) return;
       final formattedPhone = _formatPhoneNumber(phoneNumber);
       if (formattedPhone.isNotEmpty) {
         setPhoneNumber(formattedPhone);
@@ -92,11 +109,14 @@ class LoginViewModel with ChangeNotifier {
       } else {
         throw Exception('전화번호를 가져오지 못했습니다');
       }
-    } catch (e) {
+    } catch (_) {
+      if (_isDisposed) return;
       _state = const LoginPhoneState();
       _canGetPhoneNumber = false;
+    } finally {
+      _isGettingPhoneNumber = false;
     }
-    notifyListeners();
+    if (!_isDisposed) notifyListeners();
   }
 
   void setPhoneNumber(String phoneNumber) {

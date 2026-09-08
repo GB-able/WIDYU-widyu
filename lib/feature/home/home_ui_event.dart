@@ -31,6 +31,18 @@ class RequestCameraPermissionPermanentlyFailure extends HomeUiEvent {
   const RequestCameraPermissionPermanentlyFailure();
 }
 
+class CameraPermissionSettingsGranted extends HomeUiEvent {
+  const CameraPermissionSettingsGranted();
+}
+
+class CameraPermissionSettingsDenied extends HomeUiEvent {
+  const CameraPermissionSettingsDenied();
+}
+
+class CameraPermissionSettingsLaunchFailure extends HomeUiEvent {
+  const CameraPermissionSettingsLaunchFailure();
+}
+
 class OpenCameraFailure extends HomeUiEvent {
   const OpenCameraFailure();
 }
@@ -47,4 +59,12 @@ class HealthSchedulePlaceUnavailable extends HomeUiEvent {
 /// 카카오맵 앱과 웹 모두 실행에 실패한 경우
 class OpenKakaoMapFailure extends HomeUiEvent {
   const OpenKakaoMapFailure();
+}
+
+class LocationPermissionUnavailable extends HomeUiEvent {
+  const LocationPermissionUnavailable();
+}
+
+class LocationPermissionSettingsLaunchFailure extends HomeUiEvent {
+  const LocationPermissionSettingsLaunchFailure();
 }
