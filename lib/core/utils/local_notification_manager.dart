@@ -77,6 +77,8 @@ class LocalNotificationManager {
 
   /// 알림 권한 보유 여부. Android 13+ 는 이 권한이 없으면 포그라운드 서비스 알림까지
   /// 상태바에서 가려지므로, 온보딩에서 위치 권한과 함께 상태를 확인한다.
+  /// iOS 도 UNUserNotificationCenter 의 실제 권한 상태를 조회한다.
+  /// 상태를 알 수 없으면(null) false 를 반환해 요청을 시도하도록 한다.
   static Future<bool> hasPermission() async {
     if (Platform.isAndroid) {
       final enabled = await _plugin
@@ -84,6 +86,14 @@ class LocalNotificationManager {
               AndroidFlutterLocalNotificationsPlugin>()
           ?.areNotificationsEnabled();
       return enabled ?? false;
+    }
+
+    if (Platform.isIOS) {
+      final options = await _plugin
+          .resolvePlatformSpecificImplementation<
+              IOSFlutterLocalNotificationsPlugin>()
+          ?.checkPermissions();
+      return options?.isEnabled ?? false;
     }
 
     return true;
