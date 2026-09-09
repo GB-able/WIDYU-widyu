@@ -25,6 +25,15 @@ import 'package:widyu/feature/home/home_ui_event.dart';
 import 'package:widyu/feature/home/home_ui_state.dart';
 import 'package:widyu/feature/home/notification_ui_model.dart';
 
+enum _CameraPermissionOutcome {
+  ready,
+  settingsGranted,
+  denied,
+  settingsDenied,
+  canceled,
+  settingsLaunchFailed,
+}
+
 class HomeViewModel with ChangeNotifier {
   final HomeRepository _homeRepository;
   final MyPageRepository _myPageRepository;
@@ -32,6 +41,13 @@ class HomeViewModel with ChangeNotifier {
   final HeartRateRepository _heartRateRepository;
   final LocationRepository _locationRepository;
   final PermissionRecoveryController _permissionRecoveryController;
+  final Future<CameraCaptureResult> Function() _takePhoto;
+  final Future<bool> Function({
+    required UserLocation destination,
+    UserLocation? start,
+    String? destinationName,
+    required KakaoMapRouteType routeType,
+  }) _openRoute;
 
   HomeUiState _uiState = HomeUiState.init();
   HomeUiState get uiState => _uiState;
@@ -58,13 +74,22 @@ class HomeViewModel with ChangeNotifier {
     required LocationRepository locationRepository,
     required Future<bool> isPaired,
     PermissionRecoveryController? permissionRecoveryController,
+    Future<CameraCaptureResult> Function()? takePhoto,
+    Future<bool> Function({
+      required UserLocation destination,
+      UserLocation? start,
+      String? destinationName,
+      required KakaoMapRouteType routeType,
+    })? openRoute,
   })  : _homeRepository = homeRepository,
         _heartRateRepository = heartRateRepository,
         _notificationRepository = notificationRepository,
         _myPageRepository = myPageRepository,
         _locationRepository = locationRepository,
         _permissionRecoveryController =
-            permissionRecoveryController ?? PermissionRecoveryController() {
+            permissionRecoveryController ?? PermissionRecoveryController(),
+        _takePhoto = takePhoto ?? CameraManager.takePhoto,
+        _openRoute = openRoute ?? KakaoMapLauncher.openRoute {
     unawaited(_fetchNotification());
     unawaited(_fetchUser());
     unawaited(_observeWatchConnection(isPaired));
@@ -100,64 +125,88 @@ class HomeViewModel with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> takeMedicationPhoto({PermissionRecoveryPrompt? showPrompt}) async {
+  Future<void> takeMedicationPhoto(
+      {PermissionRecoveryPrompt? showPrompt}) async {
     if (_isDisposed || _isTakingMedicationPhoto) return;
     _isTakingMedicationPhoto = true;
-    var openedSettings = false;
-    final prompt = showPrompt ?? _cancelPermissionPrompt;
     try {
-      final permission = await _permissionRecoveryController.ensurePermission(
-        PermissionType.camera,
-        showPrompt: (type, mode) async {
-          final action = await prompt(type, mode);
-          if (mode == PermissionRecoveryMode.settings &&
-              action == PermissionRecoveryAction.openSettings) {
-            openedSettings = true;
-          }
-          return action;
-        },
+      final outcome = await _resolveCameraPermission(
+        showPrompt ?? _cancelPermissionPrompt,
       );
       if (_isDisposed) return;
-      if (permission == PermissionRequestResult.canceled) return;
-      if (permission == PermissionRequestResult.settingsLaunchFailed) {
-        _uiEvent.add(const CameraPermissionSettingsLaunchFailure());
-        return;
-      }
-      if (permission == PermissionRequestResult.denied ||
-          permission == PermissionRequestResult.restricted ||
-          permission == PermissionRequestResult.permanentlyDenied ||
-          permission == PermissionRequestResult.unsupported) {
-        _uiEvent.add(openedSettings
-            ? const CameraPermissionSettingsDenied()
-            : const RequestCameraPermissionFailure());
-        return;
-      }
-      if (openedSettings) {
-        _uiEvent.add(const CameraPermissionSettingsGranted());
-        return;
-      }
-      final result = await CameraManager.takePhoto();
-      if (_isDisposed) return;
-      switch (result) {
-        case CameraCaptureSuccess():
-          _uiEvent.add(const TakeMedicationPhotoSuccess());
-        case CameraCaptureCanceled():
-          break;
-        case CameraPermissionDenied():
+      switch (outcome) {
+        case _CameraPermissionOutcome.ready:
+          await _captureMedicationPhoto();
+        case _CameraPermissionOutcome.settingsGranted:
+          _uiEvent.add(const CameraPermissionSettingsGranted());
+        case _CameraPermissionOutcome.denied:
           _uiEvent.add(const RequestCameraPermissionFailure());
-        case CameraPermissionPermanentlyDenied():
-          _uiEvent.add(const RequestCameraPermissionPermanentlyFailure());
-        case CameraCaptureFailure():
-          _uiEvent.add(const OpenCameraFailure());
+        case _CameraPermissionOutcome.settingsDenied:
+          _uiEvent.add(const CameraPermissionSettingsDenied());
+        case _CameraPermissionOutcome.settingsLaunchFailed:
+          _uiEvent.add(const CameraPermissionSettingsLaunchFailure());
+        case _CameraPermissionOutcome.canceled:
+          break;
       }
     } finally {
       _isTakingMedicationPhoto = false;
     }
   }
 
+  Future<_CameraPermissionOutcome> _resolveCameraPermission(
+    PermissionRecoveryPrompt showPrompt,
+  ) async {
+    var openedSettings = false;
+    final permission = await _permissionRecoveryController.ensurePermission(
+      PermissionType.camera,
+      showPrompt: (type, mode) async {
+        final action = await showPrompt(type, mode);
+        if (mode == PermissionRecoveryMode.settings &&
+            action == PermissionRecoveryAction.openSettings) {
+          openedSettings = true;
+        }
+        return action;
+      },
+    );
+
+    return switch (permission) {
+      PermissionRequestResult.granted => openedSettings
+          ? _CameraPermissionOutcome.settingsGranted
+          : _CameraPermissionOutcome.ready,
+      PermissionRequestResult.denied ||
+      PermissionRequestResult.permanentlyDenied ||
+      PermissionRequestResult.restricted ||
+      PermissionRequestResult.unsupported =>
+        openedSettings
+            ? _CameraPermissionOutcome.settingsDenied
+            : _CameraPermissionOutcome.denied,
+      PermissionRequestResult.settingsLaunchFailed =>
+        _CameraPermissionOutcome.settingsLaunchFailed,
+      PermissionRequestResult.canceled => _CameraPermissionOutcome.canceled,
+    };
+  }
+
+  Future<void> _captureMedicationPhoto() async {
+    final result = await _takePhoto();
+    if (_isDisposed) return;
+    switch (result) {
+      case CameraCaptureSuccess():
+        _uiEvent.add(const TakeMedicationPhotoSuccess());
+      case CameraCaptureCanceled():
+        break;
+      case CameraPermissionDenied():
+        _uiEvent.add(const RequestCameraPermissionFailure());
+      case CameraPermissionPermanentlyDenied():
+        _uiEvent.add(const RequestCameraPermissionPermanentlyFailure());
+      case CameraCaptureFailure():
+        _uiEvent.add(const OpenCameraFailure());
+    }
+  }
+
   /// 건강 일정 장소로 향하는 카카오맵 길찾기를 연다.
   /// 현재 위치를 못 얻어도 목적지만으로 길찾기를 열 수 있으므로 위치 실패는 막지 않는다.
-  Future<void> openHealthScheduleRoute({PermissionRecoveryPrompt? showPrompt}) async {
+  Future<void> openHealthScheduleRoute(
+      {PermissionRecoveryPrompt? showPrompt}) async {
     if (_isOpeningRoute || _isDisposed) return;
 
     final latitude = _uiState.healthScheduleLatitude;
@@ -169,24 +218,11 @@ class HomeViewModel with ChangeNotifier {
 
     _isOpeningRoute = true;
     try {
-      final permission = await _permissionRecoveryController.ensurePermission(
-        PermissionType.location,
-        showPrompt: showPrompt ?? _cancelPermissionPrompt,
+      final current = await _resolveRouteStart(
+        showPrompt ?? _cancelPermissionPrompt,
       );
       if (_isDisposed) return;
-      UserLocation? current;
-      if (permission == PermissionRequestResult.granted) {
-        current = await _locationRepository.getCurrentLocation();
-        if (_isDisposed) return;
-      } else if (permission == PermissionRequestResult.settingsLaunchFailed) {
-        _uiEvent.add(const LocationPermissionSettingsLaunchFailure());
-      } else if (permission == PermissionRequestResult.denied ||
-          permission == PermissionRequestResult.permanentlyDenied ||
-          permission == PermissionRequestResult.restricted ||
-          permission == PermissionRequestResult.unsupported) {
-        _uiEvent.add(const LocationPermissionUnavailable());
-      }
-      final isOpened = await KakaoMapLauncher.openRoute(
+      final isOpened = await _openRoute(
         destination: UserLocation(latitude: latitude, longitude: longitude),
         start: current,
         destinationName: _uiState.healthSchedulePlace,
@@ -201,10 +237,36 @@ class HomeViewModel with ChangeNotifier {
     }
   }
 
+  Future<UserLocation?> _resolveRouteStart(
+    PermissionRecoveryPrompt showPrompt,
+  ) async {
+    final permission = await _permissionRecoveryController.ensurePermission(
+      PermissionType.location,
+      showPrompt: showPrompt,
+    );
+    if (_isDisposed) return null;
+
+    switch (permission) {
+      case PermissionRequestResult.granted:
+        return _locationRepository.getCurrentLocation();
+      case PermissionRequestResult.settingsLaunchFailed:
+        _uiEvent.add(const LocationPermissionSettingsLaunchFailure());
+      case PermissionRequestResult.denied:
+      case PermissionRequestResult.permanentlyDenied:
+      case PermissionRequestResult.restricted:
+      case PermissionRequestResult.unsupported:
+        _uiEvent.add(const LocationPermissionUnavailable());
+      case PermissionRequestResult.canceled:
+        break;
+    }
+    return null;
+  }
+
   static Future<PermissionRecoveryAction> _cancelPermissionPrompt(
     PermissionType _,
     PermissionRecoveryMode __,
-  ) async => PermissionRecoveryAction.cancel;
+  ) async =>
+      PermissionRecoveryAction.cancel;
 
   Future<void> fetchHeartRate() async {
     _uiState = _uiState.copyWith(isHeartRateLoading: true);
