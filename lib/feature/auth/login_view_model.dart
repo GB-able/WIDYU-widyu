@@ -82,15 +82,12 @@ class LoginViewModel with ChangeNotifier {
     return phoneNumber.replaceAll(RegExp(r'[^\d]'), '');
   }
 
-  /// 자동 입력 버튼에서만 시스템 권한을 요청한다.
-  /// 거절되면 별도 안내나 설정 이동 없이 수동 입력을 유지한다.
-  Future<void> getPhoneNumber({bool requestPermission = false}) async {
+  /// 이미 전화 권한이 허용된 경우에만 자동 입력하고, 그 외에는 수동 입력을 유지한다.
+  Future<void> getPhoneNumber() async {
     if (_isDisposed || _isGettingPhoneNumber) return;
     _isGettingPhoneNumber = true;
     try {
-      final result = requestPermission
-          ? await PermissionManager.request(PermissionType.phone)
-          : await PermissionManager.status(PermissionType.phone);
+      final result = await PermissionManager.status(PermissionType.phone);
       if (_isDisposed) return;
       if (result != PermissionRequestResult.granted) {
         _state = const LoginPhoneState();

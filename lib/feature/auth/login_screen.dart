@@ -18,11 +18,7 @@ class LoginScreen extends StatelessWidget {
       child: Consumer<LoginViewModel>(builder: (context, viewModel, child) {
         final state = viewModel.state;
         return switch (state) {
-          LoginPhoneState() => LoginPhoneView(
-              onAutoFill: () => viewModel.getPhoneNumber(
-                requestPermission: true,
-              ),
-            ),
+          LoginPhoneState() => const LoginPhoneView(),
           LoginCodeState() => const LoginCodeView(),
         };
       }),
