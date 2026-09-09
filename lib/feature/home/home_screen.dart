@@ -28,8 +28,10 @@ import 'package:widyu/core/ui/widgets/widyu_text_button.dart';
 import 'package:widyu/core/ui/widgets/permission_recovery_dialog.dart';
 import 'package:widyu/core/model/permission/permission_recovery_prompt.dart';
 import 'package:widyu/core/model/permission/permission_type.dart';
-import 'package:widyu/core/model/location/location_service_state.dart';
 import 'package:widyu/core/utils/app_service_controller.dart';
+import 'package:widyu/core/utils/background_location_notice_controller.dart';
+import 'package:widyu/core/utils/permission_manager.dart';
+import 'package:widyu/core/ui/widgets/background_location_notice_dialog.dart';
 import 'package:widyu/feature/permission/permission_ui_model.dart';
 import 'package:widyu/core/utils/show_toast.dart';
 import 'package:widyu/feature/home/home_ui_event.dart';
@@ -51,10 +53,39 @@ part 'widget/health_schedule_card.dart';
 part 'widget/walking_card.dart';
 part 'widget/album_card.dart';
 part 'widget/reward_dialog.dart';
-part 'widget/location_sharing_banner.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
+
+  void _showBackgroundLocationNotice(
+    BuildContext context,
+    BackgroundLocationNoticeController noticeController,
+    AppServiceController serviceController,
+  ) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!context.mounted || !_isCurrentRoute(context)) return;
+      final shouldShow = await noticeController.claimNoticeIfNeeded();
+      if (!context.mounted || !_isCurrentRoute(context) || !shouldShow) return;
+
+      final openSettings = await BackgroundLocationNoticeDialog.show(context);
+      if (!openSettings || !context.mounted || !_isCurrentRoute(context)) {
+        return;
+      }
+
+      final result = await noticeController.openSettingsAndRecheck();
+      if (result == PermissionSettingsResult.granted ||
+          result == PermissionSettingsResult.denied) {
+        unawaited(serviceController.refresh());
+      } else if (result == PermissionSettingsResult.launchFailed &&
+          context.mounted &&
+          _isCurrentRoute(context)) {
+        showToast('설정 화면을 열지 못했어요.');
+      }
+    });
+  }
+
+  bool _isCurrentRoute(BuildContext context) =>
+      ModalRoute.of(context)?.isCurrent ?? true;
 
   void _handleEvent(BuildContext context, HomeUiEvent event) {
     switch (event) {
@@ -116,12 +147,12 @@ class HomeScreen extends StatelessWidget {
         final uiState =
             context.select<HomeViewModel, HomeUiState>((vm) => vm.uiState);
         final notification = uiState.notification;
-        final locationServiceState =
-            context.select<AppServiceController, LocationServiceState?>(
-          (controller) => controller.state,
-        );
-        final hasServiceError = context.select<AppServiceController, bool>(
-          (controller) => controller.hasServiceError,
+        final noticeController = context.read<BackgroundLocationNoticeController>();
+        final serviceController = context.read<AppServiceController>();
+        _showBackgroundLocationNotice(
+          context,
+          noticeController,
+          serviceController,
         );
 
         return UiEventListener(
@@ -186,22 +217,6 @@ class HomeScreen extends StatelessWidget {
                                     measuredAt: uiState.measuredAt,
                                     onHeartRateClick: viewModel.fetchHeartRate,
                                   ),
-                                  if (locationServiceState != null &&
-                                      (!locationServiceState.isAvailable ||
-                                          hasServiceError)) ...[
-                                    const SizedBox(height: 12),
-                                    _LocationSharingBanner(
-                                      hasBackgroundLocation:
-                                          locationServiceState
-                                              .permissionGranted,
-                                      isLocationServiceEnabled:
-                                          locationServiceState.serviceEnabled,
-                                      hasServiceError: hasServiceError,
-                                      onSetup: () => context.push(
-                                        AppRoute.locationSetup.path,
-                                      ),
-                                    ),
-                                  ],
                                 ],
                               ),
                             ),
