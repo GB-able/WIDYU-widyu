@@ -31,7 +31,7 @@ import 'package:widyu/core/model/permission/permission_type.dart';
 import 'package:widyu/core/utils/app_service_controller.dart';
 import 'package:widyu/core/utils/background_location_notice_controller.dart';
 import 'package:widyu/core/utils/permission_manager.dart';
-import 'package:widyu/core/ui/widgets/background_location_notice_dialog.dart';
+import 'package:widyu/core/ui/widgets/widyu_permission_dialog.dart';
 import 'package:widyu/feature/permission/permission_ui_model.dart';
 import 'package:widyu/core/utils/show_toast.dart';
 import 'package:widyu/feature/home/home_ui_event.dart';
@@ -67,7 +67,11 @@ class HomeScreen extends StatelessWidget {
       final shouldShow = await noticeController.claimNoticeIfNeeded();
       if (!context.mounted || !_isCurrentRoute(context) || !shouldShow) return;
 
-      final openSettings = await BackgroundLocationNoticeDialog.show(context);
+      final openSettings = await WidyuPermissionDialog.show(
+        context,
+        description:
+            '앱을 사용하지 않는 동안에 보호자에게 내 위치를\n공유하려면 설정>권한에서 위치 권한을\n 항상 허용으로 설정해 주세요.',
+      );
       if (!openSettings || !context.mounted || !_isCurrentRoute(context)) {
         return;
       }
@@ -147,7 +151,8 @@ class HomeScreen extends StatelessWidget {
         final uiState =
             context.select<HomeViewModel, HomeUiState>((vm) => vm.uiState);
         final notification = uiState.notification;
-        final noticeController = context.read<BackgroundLocationNoticeController>();
+        final noticeController =
+            context.read<BackgroundLocationNoticeController>();
         final serviceController = context.read<AppServiceController>();
         _showBackgroundLocationNotice(
           context,
