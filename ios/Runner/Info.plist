@@ -73,9 +73,12 @@
         <key>BGTaskSchedulerPermittedIdentifiers</key>
         <array>
             <string>com.example.widyu.refresh</string>
+            <string>com.example.widyu.steps.refresh</string>
         </array>
         <key>NSMotionUsageDescription</key>
         <string>걸음 수를 세기 위해 동작 및 피트니스 데이터를 사용합니다.</string>
+        <key>NSHealthShareUsageDescription</key>
+        <string>걸음수를 읽어 매일 걷기 목표와 보호자 화면에 반영합니다.</string>
         <key>LSApplicationQueriesSchemes</key>
         <array>
             <string>sms</string>

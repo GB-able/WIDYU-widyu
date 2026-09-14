@@ -1,7 +1,11 @@
 import 'package:widyu/core/model/api/api_response.dart';
+import 'package:widyu/core/model/goal/walk/walk_sync_response.dart';
 
 abstract class WalkRemoteDataSource {
-  Future<ApiResponse<bool>> syncSteps(int steps);
-  Future<ApiResponse<void>> setGoal({required int steps, int? memberId});
-  Future<ApiResponse<int>> fetchGoal({int? memberId});
+  Future<ApiResponse<WalkSyncResponse>> sync({
+    required int steps,
+    required String date,
+  });
+  Future<ApiResponse<void>> setGoal(int steps);
+  Future<ApiResponse<int>> fetchGoal();
 }

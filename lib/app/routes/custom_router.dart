@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:widyu/app/routes/user_session_scope.dart';
 import 'package:widyu/app/routes/app_route.dart';
 import 'package:widyu/app/routes/custom_page.dart';
 import 'package:widyu/app/routes/tab_reloader.dart';
+import 'package:widyu/core/network/token_manager.dart';
 import 'package:widyu/core/ui/widgets/bot_nav.dart';
 import 'package:widyu/feature/auth/login_screen.dart';
 import 'package:widyu/feature/auth/onboarding_screen.dart';
@@ -29,14 +31,24 @@ class CustomRouter {
 
   static final router = GoRouter(
     initialLocation: AppRoute.splash.path,
-    redirect: (context, state) {
-      if (_initialRedirectHandled) return null;
-      _initialRedirectHandled = true;
+    redirect: (context, state) async {
+      if (!_initialRedirectHandled) {
+        _initialRedirectHandled = true;
+        if (state.uri.path != AppRoute.splash.path) {
+          _launchedFromDeepLink = true;
+          return AppRoute.splash.path;
+        }
+      }
 
-      if (state.uri.path == AppRoute.splash.path) return null;
-
-      _launchedFromDeepLink = true;
-      return AppRoute.splash.path;
+      final isPublic = {
+        AppRoute.splash.path,
+        AppRoute.onboarding.path,
+        AppRoute.login.path,
+      }.contains(state.uri.path);
+      if (!isPublic && !await TokenManager().hasToken()) {
+        return AppRoute.onboarding.path;
+      }
+      return null;
     },
     onException: (context, state, router) {
       debugPrint('[Router] 매칭되는 경로 없음: ${state.uri}');
@@ -47,45 +59,6 @@ class CustomRouter {
         route: AppRoute.splash,
         builder: (context, state) => const SplashScreen(),
       ),
-      StatefulShellRoute.indexedStack(
-        branches: [
-          StatefulShellBranch(routes: [
-            CustomGoRoute.staticRoute(
-              route: AppRoute.home,
-              builder: (context, state) =>
-                  TabReloader.wrap(index: 0, child: const HomeScreen()),
-            ),
-          ]),
-          StatefulShellBranch(routes: [
-            CustomGoRoute.staticRoute(
-              route: AppRoute.goal,
-              builder: (context, state) =>
-                  TabReloader.wrap(index: 1, child: const GoalScreen()),
-            ),
-          ]),
-          StatefulShellBranch(routes: [
-            CustomGoRoute.staticRoute(
-              route: AppRoute.album,
-              builder: (context, state) =>
-                  TabReloader.wrap(index: 2, child: const Placeholder()),
-            ),
-          ]),
-          StatefulShellBranch(routes: [
-            CustomGoRoute.staticRoute(
-              route: AppRoute.my,
-              builder: (context, state) =>
-                  TabReloader.wrap(index: 3, child: const MyPageScreen()),
-            ),
-          ]),
-        ],
-        builder: (context, state, navigationShell) => Stack(
-          alignment: Alignment.bottomCenter,
-          children: [
-            navigationShell,
-            BotNav(navigationShell: navigationShell),
-          ],
-        ),
-      ),
       CustomGoRoute.slideRoute(
         route: AppRoute.onboarding,
         builder: (context, state) => const OnboardingScreen(),
@@ -94,25 +67,77 @@ class CustomRouter {
         route: AppRoute.login,
         builder: (context, state) => const LoginScreen(),
       ),
-      CustomGoRoute.slideRoute(
-        route: AppRoute.profile,
-        builder: (_, __) => const ProfileScreen(),
-      ),
-      CustomGoRoute.slideRoute(
-        route: AppRoute.point,
-        builder: (_, __) => const PointScreen(),
-      ),
-      CustomGoRoute.slideRoute(
-        route: AppRoute.contact,
-        builder: (_, __) => const ContactScreen(),
-      ),
-      CustomGoRoute.slideRoute(
-        route: AppRoute.management,
-        builder: (_, __) => const ManagementScreen(),
-      ),
-      CustomGoRoute.slideRoute(
-        route: AppRoute.notification,
-        builder: (_, __) => const NotificationSettingScreen(),
+      ShellRoute(
+        builder: (context, state, child) => UserSessionScope(child: child),
+        routes: [
+          StatefulShellRoute.indexedStack(
+            branches: [
+              StatefulShellBranch(
+                routes: [
+                  CustomGoRoute.staticRoute(
+                    route: AppRoute.home,
+                    builder: (context, state) =>
+                        TabReloader.wrap(index: 0, child: const HomeScreen()),
+                  ),
+                ],
+              ),
+              StatefulShellBranch(
+                routes: [
+                  CustomGoRoute.staticRoute(
+                    route: AppRoute.goal,
+                    builder: (context, state) =>
+                        TabReloader.wrap(index: 1, child: const GoalScreen()),
+                  ),
+                ],
+              ),
+              StatefulShellBranch(
+                routes: [
+                  CustomGoRoute.staticRoute(
+                    route: AppRoute.album,
+                    builder: (context, state) =>
+                        TabReloader.wrap(index: 2, child: const Placeholder()),
+                  ),
+                ],
+              ),
+              StatefulShellBranch(
+                routes: [
+                  CustomGoRoute.staticRoute(
+                    route: AppRoute.my,
+                    builder: (context, state) =>
+                        TabReloader.wrap(index: 3, child: const MyPageScreen()),
+                  ),
+                ],
+              ),
+            ],
+            builder: (context, state, navigationShell) => Stack(
+              alignment: Alignment.bottomCenter,
+              children: [
+                navigationShell,
+                BotNav(navigationShell: navigationShell),
+              ],
+            ),
+          ),
+          CustomGoRoute.slideRoute(
+            route: AppRoute.profile,
+            builder: (_, __) => const ProfileScreen(),
+          ),
+          CustomGoRoute.slideRoute(
+            route: AppRoute.point,
+            builder: (_, __) => const PointScreen(),
+          ),
+          CustomGoRoute.slideRoute(
+            route: AppRoute.contact,
+            builder: (_, __) => const ContactScreen(),
+          ),
+          CustomGoRoute.slideRoute(
+            route: AppRoute.management,
+            builder: (_, __) => const ManagementScreen(),
+          ),
+          CustomGoRoute.slideRoute(
+            route: AppRoute.notification,
+            builder: (_, __) => const NotificationSettingScreen(),
+          ),
+        ],
       ),
     ],
   );

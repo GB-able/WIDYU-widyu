@@ -1,116 +1,148 @@
 import 'dart:async';
 
 import 'package:flutter/widgets.dart';
-import 'package:widyu/core/data/provider/point_provider.dart';
 import 'package:widyu/core/data/repository/goal/walk_repository.dart';
-import 'package:widyu/core/model/api/api_result.dart';
-import 'package:widyu/core/utils/extensions/date_extension.dart';
+import 'package:widyu/core/network/token_manager.dart';
+import 'package:widyu/core/utils/extensions/walk_extension.dart';
+import 'package:widyu/walk_background_service.dart';
 
-// [TODO] 추후 로직 변경. 현재는 포그라운드에서만 동작하고 자체 센서로 구현함. 추후 위치 기반 카운팅 방식으로 변경
 class StepProvider with ChangeNotifier, WidgetsBindingObserver {
-  final WalkRepository _repository;
-  final PointProvider _pointProvider;
-
   StepProvider({
     required WalkRepository repository,
-    required PointProvider pointProvider,
-  })  : _repository = repository,
-        _pointProvider = pointProvider;
+  }) : _repository = repository;
 
-  // [NOTICE] 서버에 올리는 최소 증가분
-  static const _syncThreshold = 100;
+  final WalkRepository _repository;
+  Timer? _timer;
+  Future<void>? _starting;
+  Future<void>? _refreshing;
+  String? _memberId;
+  String? _date;
+  int? _steps;
+  bool _hasHealthSteps = false;
+  bool _disposed = false;
+  bool _observing = false;
+  bool _tracking = false;
+  int _syncRevision = 0;
 
-  StreamSubscription<int>? _subscription;
+  String get today => DateTime.now().walkDate;
+  int get steps => _date == today ? _steps ?? 0 : 0;
+  bool get hasTodaySteps => _date == today && _steps != null;
+  bool get isTracking => !_disposed && _tracking;
+  int get syncRevision => _syncRevision;
 
-  int _steps = 0;
-  int _syncedSteps = 0;
-  DateTime? _countedDate;
-  bool _isSyncing = false;
-  bool _isAchieved = false;
-
-  int get steps => _steps;
-  bool get isTracking => _subscription != null;
-
-  Future<void> start() async {
-    if (_subscription != null) return;
-    if (!await _repository.ensurePermission()) return;
-    if (_subscription != null) return;
-
-    _subscription = _repository.observeStepDelta().listen(
-      _onStepDelta,
-      onError: (Object error) {
-        debugPrint('[StepProvider] 걸음 수 센서 오류: $error');
-      },
-    );
-    WidgetsBinding.instance.addObserver(this);
-    notifyListeners();
+  Future<void> start() {
+    if (_disposed || _tracking) return Future.value();
+    return _starting ??= _start().whenComplete(() => _starting = null);
   }
 
-  // [NOTICE] 백그라운드 전환 시 걸음 수 동기화
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.paused ||
-        state == AppLifecycleState.hidden) {
-      unawaited(_sync(threshold: 1));
+  Future<void> _start() async {
+    try {
+      if (!await TokenManager().hasToken()) return;
+      _memberId = await TokenManager().memberId;
+      if (_disposed || _memberId == null) return;
+      if (!_observing) {
+        WidgetsBinding.instance.addObserver(this);
+        _observing = true;
+      }
+      final permitted = await _repository.ensurePermission();
+      if (_disposed) return;
+      _tracking = permitted;
+      if (permitted) {
+        try {
+          await startWalkBackgroundService();
+        } catch (error) {
+          debugPrint('[StepProvider] 백그라운드 등록이 보류되었습니다: ${error.runtimeType}');
+        }
+        if (_disposed) return;
+      }
+      _startTimer();
+      await refresh(full: true);
+    } catch (error) {
+      debugPrint('[StepProvider] 걸음수 연동을 시작하지 못했습니다: ${error.runtimeType}');
+    }
+    if (!_disposed) notifyListeners();
+  }
+
+  void _startTimer() {
+    _timer?.cancel();
+    if (_disposed || _memberId == null) return;
+    final lifecycle = WidgetsBinding.instance.lifecycleState;
+    if (lifecycle != null && lifecycle != AppLifecycleState.resumed) return;
+    _timer = Timer.periodic(
+      const Duration(minutes: 1),
+      (_) => unawaited(refresh()),
+    );
+  }
+
+  Future<void> refresh({bool full = false}) {
+    if (_disposed || _memberId == null) return Future.value();
+    return _refreshing ??= _refresh(
+      full: full,
+    ).whenComplete(() => _refreshing = null);
+  }
+
+  Future<void> _refresh({required bool full}) async {
+    if (_date != today) {
+      _date = today;
+      _steps = null;
+      _hasHealthSteps = false;
+      notifyListeners();
+    }
+    try {
+      final result = await _repository.sync(
+        memberId: _memberId!,
+        full: full,
+        isCancelled: () => _disposed,
+      );
+      if (_disposed) return;
+      if (result.unauthorized) {
+        _timer?.cancel();
+        _tracking = false;
+        _memberId = null;
+        await stopWalkBackgroundService();
+        if (_disposed) return;
+      }
+      if (result.date == today && result.steps != null) {
+        _date = result.date;
+        _steps = result.steps;
+        _hasHealthSteps = true;
+      }
+      if (result.uploaded > 0) _syncRevision++;
+      notifyListeners();
+    } catch (error) {
+      debugPrint('[StepProvider] 걸음수 동기화가 보류되었습니다: ${error.runtimeType}');
     }
   }
 
-  void applyServerSteps(int serverSteps) {
-    _resetIfDateChanged();
-    if (serverSteps <= _steps) return;
-
+  void applyServerSteps(int serverSteps, {required String date}) {
+    if (_disposed ||
+        date != today ||
+        serverSteps < 0 ||
+        (_date == today && _hasHealthSteps)) {
+      return;
+    }
+    _date = date;
     _steps = serverSteps;
-    _syncedSteps = serverSteps;
     notifyListeners();
   }
 
-  void _onStepDelta(int delta) {
-    _resetIfDateChanged();
-    if (delta <= 0) return;
-
-    _steps += delta;
-    notifyListeners();
-    unawaited(_syncIfNeeded());
-  }
-
-  /// [NOTICE] 날짜 변경 시 걸음수 초기화
-  void _resetIfDateChanged() {
-    final today = DateTime.now().onlyDateTime;
-    if (_countedDate == today) return;
-
-    _countedDate = today;
-    _steps = 0;
-    _syncedSteps = 0;
-    _isAchieved = false;
-  }
-
-  Future<void> _syncIfNeeded() => _sync(threshold: _syncThreshold);
-
-  Future<void> _sync({required int threshold}) async {
-    if (_isSyncing || _steps - _syncedSteps < threshold) return;
-
-    _isSyncing = true;
-    // [NOTICE] 요청 중에도 걸음은 계속 늘어나므로 실제로 보낸 값을 따로 저장
-    final sending = _steps;
-    final result = await _repository.syncSteps(sending);
-    _isSyncing = false;
-
-    switch (result) {
-      case Success<bool>(:final data):
-        _syncedSteps = sending;
-        if (data && !_isAchieved) {
-          _isAchieved = true;
-          unawaited(_pointProvider.refresh());
-        }
-      case Failure<bool>(:final message):
-        debugPrint('[StepProvider] 걸음 수 연동 실패: $message');
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (_disposed) return;
+    if (state == AppLifecycleState.resumed) {
+      _startTimer();
+    } else if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.hidden) {
+      _timer?.cancel();
     }
   }
 
   @override
   void dispose() {
-    if (_subscription != null) WidgetsBinding.instance.removeObserver(this);
-    _subscription?.cancel();
+    _disposed = true;
+    _tracking = false;
+    _timer?.cancel();
+    if (_observing) WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 }

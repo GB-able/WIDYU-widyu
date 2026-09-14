@@ -1,36 +1,37 @@
 import 'package:widyu/core/data/source/goal/walk_remote_data_source.dart';
 import 'package:widyu/core/model/api/api_response.dart';
+import 'package:widyu/core/model/goal/walk/walk_sync_response.dart';
 import 'package:widyu/core/network/api_client.dart';
 import 'package:widyu/core/utils/extensions/api_response_extension.dart';
 
 class WalkRemoteDataSourceImpl extends WalkRemoteDataSource {
-  final ApiClient _apiClient;
+  WalkRemoteDataSourceImpl({
+    required ApiClient apiClient,
+  }) : _apiClient = apiClient;
 
-  WalkRemoteDataSourceImpl({required ApiClient apiClient})
-      : _apiClient = apiClient;
+  final ApiClient _apiClient;
 
   static const String _path = '/goals/walks';
 
   @override
-  Future<ApiResponse<bool>> syncSteps(int steps) async {
+  Future<ApiResponse<WalkSyncResponse>> sync({
+    required int steps,
+    required String date,
+  }) async {
     try {
       final response = await _apiClient.req(
         path: '$_path/sync',
         method: HttpMethod.post,
-        body: {'steps': steps},
+        body: {'date': date, 'steps': steps},
       );
-      return response
-          .toApiResponse<bool>((json) => json['achieved'] as bool? ?? false);
+      return response.toApiResponse(WalkSyncResponse.fromJson);
     } catch (e) {
-      throw Exception("걸음 수 연동에 실패했습니다: $e");
+      throw Exception("걸음 수 동기화에 실패했습니다: $e");
     }
   }
 
   @override
-  Future<ApiResponse<void>> setGoal({
-    required int steps,
-    int? memberId,
-  }) async {
+  Future<ApiResponse<void>> setGoal(int steps) async {
     try {
       final response = await _apiClient.req(
         path: '$_path/goal',
@@ -44,7 +45,7 @@ class WalkRemoteDataSourceImpl extends WalkRemoteDataSource {
   }
 
   @override
-  Future<ApiResponse<int>> fetchGoal({int? memberId}) async {
+  Future<ApiResponse<int>> fetchGoal() async {
     try {
       final response = await _apiClient.req(
         path: '$_path/upcoming-goal',
