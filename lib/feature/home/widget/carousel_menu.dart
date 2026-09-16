@@ -21,6 +21,17 @@ class _CarouselMenu extends StatefulWidget {
     required this.onRouteTap,
   });
 
+  /// 시트 위 모서리 반지름. 배경 이미지가 모서리 영역까지 덮도록 홈 화면 레이아웃 계산에 쓴다.
+  static const sheetRadius = _CarouselMenuState._sheetRadius;
+
+  /// 카드 상태 기준 시트 높이. 홈 화면에서 배경 이미지 높이를 계산할 때 쓴다.
+  static double sheetHeightOf(BuildContext context) =>
+      _CarouselMenuState._sheetTopPadding +
+      _CarouselMenuState._carouselCardMaxHeight +
+      _CarouselMenuState._carouselIndicatorArea +
+      BotNav.height +
+      MediaQuery.paddingOf(context).bottom;
+
   @override
   State<_CarouselMenu> createState() => _CarouselMenuState();
 }
@@ -37,6 +48,8 @@ class _CarouselMenuState extends State<_CarouselMenu> {
   static const _carouselCardGap = 52.0;
   static const _carouselCardWidth = 220.0;
   static const _carouselCardMaxHeight = 278.0;
+  static const _sheetTopPadding = 32.0;
+  static const _sheetRadius = 40.0;
 
   // 인디케이터 영역 높이 (카드와의 간격 20 + 인디케이터 크기 6 + 하단 여백 16)
   static const _carouselIndicatorArea = 42.0;
@@ -88,96 +101,92 @@ class _CarouselMenuState extends State<_CarouselMenu> {
 
   @override
   Widget build(BuildContext context) {
-    final controller = _controller!;
-
     return Container(
       width: double.infinity,
       padding: EdgeInsets.only(
-        top: 32,
-        bottom: MediaQuery.paddingOf(context).bottom,
+        top: _sheetTopPadding,
+        bottom: BotNav.height + MediaQuery.paddingOf(context).bottom + 16,
       ),
       decoration: const BoxDecoration(
         color: MyColor.grey100,
         borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(40),
-          topRight: Radius.circular(40),
+          topLeft: Radius.circular(_sheetRadius),
+          topRight: Radius.circular(_sheetRadius),
         ),
       ),
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final cardHeight = (constraints.maxHeight - _carouselIndicatorArea)
-              .clamp(0.0, _carouselCardMaxHeight);
+      child: _buildContent(),
+    );
+  }
 
-          // 로딩
-          if (widget.isLoading) {
-            return SizedBox(
-              height: cardHeight + _carouselIndicatorArea,
-              child: const Center(child: CircularProgressIndicator()),
-            );
-          }
+  Widget _buildContent() {
+    final controller = _controller!;
+    const cardHeight = _carouselCardMaxHeight;
 
-          // 목표가 존재하지 않음
-          if (!widget.hasGoal) return const _CarouselEmptyView();
+    // 로딩
+    if (widget.isLoading) {
+      return const SizedBox(
+        height: cardHeight + _carouselIndicatorArea,
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
 
-          return Column(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              SizedBox(
-                height: cardHeight,
-                child: PageView.builder(
-                  controller: controller,
-                  clipBehavior: Clip.none,
-                  onPageChanged: (index) =>
-                      setState(() => _currentPage = index),
-                  itemBuilder: (context, index) {
-                    return AnimatedBuilder(
-                      animation: controller,
-                      builder: (context, child) {
-                        final page =
-                            controller.hasClients && controller.page != null
-                                ? controller.page!
-                                : controller.initialPage.toDouble();
-                        final delta = (page - index).clamp(-1.0, 1.0);
+    // 목표가 존재하지 않음
+    if (!widget.hasGoal) return const _CarouselEmptyView();
 
-                        return Transform.translate(
-                          offset: Offset(0, delta * delta * _carouselArcOffset),
-                          child: Transform.rotate(
-                            angle: -delta * _carouselMaxAngle,
-                            alignment: Alignment.topCenter,
-                            child: child,
-                          ),
-                        );
-                      },
-                      child: Align(
-                        alignment: Alignment.topCenter,
-                        child: SizedBox(
-                          width: _carouselCardWidth,
-                          height: cardHeight,
-                          child: GestureDetector(
-                            onTap: () => controller.animateToPage(
-                              index,
-                              duration: const Duration(milliseconds: 300),
-                              curve: Curves.easeOut,
-                            ),
-                            child: _cardAt(index),
-                          ),
-                        ),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: [
+        SizedBox(
+          height: cardHeight,
+          child: PageView.builder(
+            controller: controller,
+            clipBehavior: Clip.none,
+            onPageChanged: (index) => setState(() => _currentPage = index),
+            itemBuilder: (context, index) {
+              return AnimatedBuilder(
+                animation: controller,
+                builder: (context, child) {
+                  final page = controller.hasClients && controller.page != null
+                      ? controller.page!
+                      : controller.initialPage.toDouble();
+                  final delta = (page - index).clamp(-1.0, 1.0);
+
+                  return Transform.translate(
+                    offset: Offset(0, delta * delta * _carouselArcOffset),
+                    child: Transform.rotate(
+                      angle: -delta * _carouselMaxAngle,
+                      alignment: Alignment.topCenter,
+                      child: child,
+                    ),
+                  );
+                },
+                child: Align(
+                  alignment: Alignment.topCenter,
+                  child: SizedBox(
+                    width: _carouselCardWidth,
+                    height: cardHeight,
+                    child: GestureDetector(
+                      onTap: () => controller.animateToPage(
+                        index,
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeOut,
                       ),
-                    );
-                  },
+                      child: _cardAt(index),
+                    ),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 20),
-              _CarouselIndicator(
-                count: _cardsLength,
-                currentIndex: _currentIndex,
-              ),
-              const SizedBox(height: 16),
-            ],
-          );
-        },
-      ),
+              );
+            },
+          ),
+        ),
+        const SizedBox(height: 20),
+        _CarouselIndicator(
+          count: _cardsLength,
+          currentIndex: _currentIndex,
+        ),
+        const SizedBox(height: 16),
+      ],
     );
   }
 }
