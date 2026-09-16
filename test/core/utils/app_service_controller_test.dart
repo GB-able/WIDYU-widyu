@@ -156,7 +156,6 @@ void main() {
 
     await sut.start();
     expect(calls, ['monitor:start', 'auto:false', 'background:stop']);
-    expect(sut.hasServiceError, isTrue);
     await states.close();
     sut.dispose();
     await Future<void>.delayed(Duration.zero);
@@ -252,7 +251,6 @@ void main() {
     await sut.refresh();
     expect(calls.where((call) => call == 'auto:true'), hasLength(2));
     expect(calls, contains('background:start'));
-    expect(sut.hasServiceError, isFalse);
     await states.close();
     sut.dispose();
   });

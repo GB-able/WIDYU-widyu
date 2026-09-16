@@ -72,6 +72,33 @@ void main() {
     errorController.dispose();
   });
 
+  test('이탈하지 않으면 timeout 후 launchFailed로 끝낸다', () async {
+    const timeout = Duration(milliseconds: 10);
+    final stuck = SettingsReturnController(
+      launcher: () async => true,
+      leaveTimeout: timeout,
+    );
+    expect(await stuck.open(), SettingsReturnResult.launchFailed);
+    stuck.dispose();
+
+    // 설정 화면에 오래 머무는 건 정상이므로 이탈 후에는 timeout 을 적용하지 않는다.
+    final left = SettingsReturnController(
+      launcher: () async => true,
+      leaveTimeout: timeout,
+    );
+    final result = left.open();
+    var completed = false;
+    unawaited(result.then((_) => completed = true));
+    await Future<void>.delayed(Duration.zero);
+    binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+    await Future<void>.delayed(timeout * 5);
+    expect(completed, isFalse);
+
+    binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+    expect(await result, SettingsReturnResult.returned);
+    left.dispose();
+  });
+
   test('동시에 열면 launcher를 한 번만 호출한다', () async {
     final launch = Completer<bool>();
     var launchCount = 0;

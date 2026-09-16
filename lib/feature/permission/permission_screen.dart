@@ -7,12 +7,9 @@ import 'package:widyu/core/ui/theme/typos.dart';
 import 'package:widyu/core/ui/widgets/ui_event_listener.dart';
 import 'package:widyu/core/ui/widgets/widyu_icon.dart';
 import 'package:widyu/core/ui/widgets/widyu_text_button.dart';
-import 'package:widyu/core/ui/widgets/permission_recovery_dialog.dart';
-import 'package:widyu/core/model/permission/permission_recovery_prompt.dart';
 import 'package:widyu/core/utils/show_toast.dart';
 import 'package:widyu/feature/permission/permission_ui_event.dart';
 import 'package:widyu/feature/permission/permission_ui_model.dart';
-import 'package:widyu/feature/permission/permission_ui_state.dart';
 import 'package:widyu/feature/permission/permission_view_model.dart';
 
 part 'widget/permission_header.dart';
@@ -42,8 +39,8 @@ class PermissionScreen extends StatelessWidget {
     return ChangeNotifierProvider(
       create: (context) => PermissionViewModel(),
       builder: (context, _) {
-        final uiState = context
-            .select<PermissionViewModel, PermissionUiState>((vm) => vm.uiState);
+        final isRequesting =
+            context.select<PermissionViewModel, bool>((vm) => vm.isRequesting);
         final viewModel = context.read<PermissionViewModel>();
 
         return UiEventListener(
@@ -62,16 +59,18 @@ class PermissionScreen extends StatelessWidget {
                     Expanded(
                       child: SingleChildScrollView(
                         child: _PermissionList(
-                          requiredPermissions: uiState.requiredPermissions,
-                          optionalPermissions: uiState.optionalPermissions,
+                          requiredPermissions: viewModel.requiredPermissions,
+                          optionalPermissions: viewModel.optionalPermissions,
                         ),
                       ),
                     ),
                     WidyuTextButton(
                       onTap: () => viewModel.requestPermissions(
-                        showPrompt: (type, mode) => _showPrompt(context, type, mode),
+                        showPrompt: (type, mode) =>
+                            showPermissionRecoveryPrompt(context, type, mode),
                       ),
                       text: '확인',
+                      enable: !isRequesting,
                     ),
                   ],
                 ),
@@ -83,13 +82,3 @@ class PermissionScreen extends StatelessWidget {
     );
   }
 }
-  Future<PermissionRecoveryAction> _showPrompt(
-    BuildContext context,
-    PermissionType type,
-    PermissionRecoveryMode mode,
-  ) => PermissionRecoveryDialog.show(
-    context,
-    permissionName: type.title,
-    description: type.description,
-    mode: mode,
-  );

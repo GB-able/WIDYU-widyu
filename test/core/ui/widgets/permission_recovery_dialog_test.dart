@@ -1,8 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
+import 'package:widyu/core/ui/widgets/widyu_dialog.dart';
 
 import 'package:widyu/core/model/permission/permission_recovery_prompt.dart';
 import 'package:widyu/core/ui/widgets/permission_recovery_dialog.dart';
+
+Widget _routerApp(Widget home) {
+  final router = GoRouter(routes: [
+    GoRoute(path: '/', builder: (_, __) => home),
+  ]);
+  addTearDown(router.dispose);
+  return MaterialApp.router(routerConfig: router);
+}
 
 void main() {
   Future<void> pumpHost(
@@ -11,8 +21,8 @@ void main() {
     required void Function(Future<PermissionRecoveryAction> result) onResult,
   }) async {
     await tester.pumpWidget(
-      MaterialApp(
-        home: Builder(
+      _routerApp(
+        Builder(
           builder: (context) => Scaffold(
             body: Center(
               child: ElevatedButton(
@@ -33,7 +43,8 @@ void main() {
     );
   }
 
-  testWidgets('rationale mode returns retry when 계속 is selected', (tester) async {
+  testWidgets('rationale mode returns retry when 계속 is selected',
+      (tester) async {
     late Future<PermissionRecoveryAction> result;
     await pumpHost(
       tester,
@@ -44,19 +55,20 @@ void main() {
     await tester.tap(find.text('열기'));
     await tester.pumpAndSettle();
     expect(find.text('알림 권한이 필요해요'), findsOneWidget);
+    expect(find.byType(WidyuDialog), findsOneWidget);
 
     await tester.tap(find.text('계속'));
     await tester.pumpAndSettle();
     expect(await result, PermissionRecoveryAction.retry);
-    expect(find.byType(AlertDialog), findsNothing);
+    expect(find.byType(WidyuDialog), findsNothing);
   });
 
   testWidgets('settings mode returns openSettings when 설정으로 이동 is selected',
       (tester) async {
     late Future<PermissionRecoveryAction> result;
     await tester.pumpWidget(
-      MaterialApp(
-        home: Builder(
+      _routerApp(
+        Builder(
           builder: (context) => Scaffold(
             body: ElevatedButton(
               onPressed: () {
@@ -81,7 +93,7 @@ void main() {
     await tester.tap(find.text('설정으로 이동'));
     await tester.pumpAndSettle();
     expect(await result, PermissionRecoveryAction.openSettings);
-    expect(find.byType(AlertDialog), findsNothing);
+    expect(find.byType(WidyuDialog), findsNothing);
   });
 
   testWidgets('취소, 바깥 누르기, 뒤로가기는 모두 dialog를 닫는다', (tester) async {
@@ -97,20 +109,20 @@ void main() {
     await tester.tap(find.text('취소'));
     await tester.pumpAndSettle();
     expect(await result, PermissionRecoveryAction.cancel);
-    expect(find.byType(AlertDialog), findsNothing);
+    expect(find.byType(WidyuDialog), findsNothing);
 
     await tester.tap(find.text('열기'));
     await tester.pumpAndSettle();
     await tester.tapAt(const Offset(10, 10));
     await tester.pumpAndSettle();
     expect(await result, PermissionRecoveryAction.cancel);
-    expect(find.byType(AlertDialog), findsNothing);
+    expect(find.byType(WidyuDialog), findsNothing);
 
     await tester.tap(find.text('열기'));
     await tester.pumpAndSettle();
     await tester.binding.handlePopRoute();
     await tester.pumpAndSettle();
     expect(await result, PermissionRecoveryAction.cancel);
-    expect(find.byType(AlertDialog), findsNothing);
+    expect(find.byType(WidyuDialog), findsNothing);
   });
 }

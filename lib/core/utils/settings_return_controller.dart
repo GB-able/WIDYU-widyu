@@ -12,10 +12,15 @@ typedef SettingsLauncher = Future<bool> Function();
 /// launcher 가 성공했고 앱이 inactive/paused/hidden 상태를 거쳐 resumed 로
 /// 돌아온 경우에만 [SettingsReturnResult.returned] 를 완료한다.
 class SettingsReturnController with WidgetsBindingObserver {
-  SettingsReturnController({required SettingsLauncher launcher})
-      : _launcher = launcher;
+  SettingsReturnController({
+    required SettingsLauncher launcher,
+    Duration leaveTimeout = const Duration(seconds: 5),
+  })  : _launcher = launcher,
+        _leaveTimeout = leaveTimeout;
 
   final SettingsLauncher _launcher;
+  final Duration _leaveTimeout;
+  Timer? _leaveTimer;
   Completer<SettingsReturnResult>? _pending;
   bool _leftApp = false;
   bool _resumedAfterLeaving = false;
@@ -31,6 +36,8 @@ class SettingsReturnController with WidgetsBindingObserver {
 
     final completer = Completer<SettingsReturnResult>();
     _pending = completer;
+    _leaveTimer?.cancel();
+    _leaveTimer = null;
     _leftApp = false;
     _resumedAfterLeaving = false;
     _launchSucceeded = false;
@@ -48,6 +55,13 @@ class SettingsReturnController with WidgetsBindingObserver {
         return;
       }
       _launchSucceeded = true;
+      // launch 는 성공했는데 앱이 실제로 이탈하지 않으면(설정 화면이 안 뜬 경우)
+      // resumed 가 영원히 오지 않아 호출자가 계속 잠기므로 이탈 여부만 제한한다.
+      _leaveTimer?.cancel();
+      _leaveTimer = Timer(_leaveTimeout, () {
+        if (_disposed || _pending != completer || _leftApp) return;
+        _complete(completer, SettingsReturnResult.launchFailed);
+      });
       _completeIfReturned(completer);
     } catch (_) {
       if (!_disposed && _pending == completer) {
@@ -86,6 +100,8 @@ class SettingsReturnController with WidgetsBindingObserver {
   ) {
     if (_pending != completer) return;
     _pending = null;
+    _leaveTimer?.cancel();
+    _leaveTimer = null;
     WidgetsBinding.instance.removeObserver(this);
     if (!completer.isCompleted) completer.complete(result);
   }
@@ -93,6 +109,8 @@ class SettingsReturnController with WidgetsBindingObserver {
   void dispose() {
     if (_disposed) return;
     _disposed = true;
+    _leaveTimer?.cancel();
+    _leaveTimer = null;
     final pending = _pending;
     if (pending != null) _complete(pending, SettingsReturnResult.canceled);
   }

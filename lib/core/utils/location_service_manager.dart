@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:widyu/core/model/location/location_service_state.dart';
-import 'package:widyu/core/model/permission/permission_type.dart';
 import 'package:widyu/core/utils/permission_manager.dart';
 
 class LocationServiceManager {
@@ -20,16 +19,6 @@ class LocationServiceManager {
     final cached = _currentState;
     if (cached != null) yield cached;
     yield* _controller.stream;
-  }
-
-  /// 포그라운드 위치를 먼저 요청하고, 허용된 경우에만 '항상 허용' 까지 이어서 요청한다.
-  static Future<void> requestLocationPermission() async {
-    if (await checkLocationPermission()) return;
-
-    final result = await PermissionManager.request(PermissionType.location);
-    if (result == PermissionRequestResult.granted) {
-      await PermissionManager.requestBackgroundLocation();
-    }
   }
 
   /// 백그라운드 위치 업로드가 가능한 상태인지 여부.

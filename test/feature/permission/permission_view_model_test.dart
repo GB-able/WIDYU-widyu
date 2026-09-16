@@ -55,7 +55,10 @@ void main() {
     await viewModel.requestPermissions(showPrompt: cancelPrompt);
     await Future<void>.delayed(Duration.zero);
 
-    expect(viewModel.uiState.permissions, PermissionType.values);
+    expect(
+      {...viewModel.requiredPermissions, ...viewModel.optionalPermissions},
+      PermissionType.values.toSet(),
+    );
     expect(requested, [PermissionType.notification, PermissionType.location]);
     expect(statuses, [PermissionType.notification, PermissionType.location]);
     expect(events.whereType<NavigateToNext>(), hasLength(1));

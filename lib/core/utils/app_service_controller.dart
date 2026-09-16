@@ -59,7 +59,6 @@ class AppServiceController extends ChangeNotifier {
   bool _hasServiceError = false;
 
   LocationServiceState? get state => _state;
-  bool get hasServiceError => _hasServiceError;
 
   Future<void> start() {
     if (_disposed) return Future.value();

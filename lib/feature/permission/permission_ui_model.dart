@@ -1,4 +1,7 @@
+import 'package:flutter/material.dart';
+import 'package:widyu/core/model/permission/permission_recovery_prompt.dart';
 import 'package:widyu/core/model/permission/permission_type.dart';
+import 'package:widyu/core/ui/widgets/permission_recovery_dialog.dart';
 
 extension PermissionTypeDisplay on PermissionType {
   String get title => switch (this) {
@@ -42,3 +45,17 @@ extension PermissionTypeDisplay on PermissionType {
         PermissionType.camera => false,
       };
 }
+
+/// 권한 재요청/설정 이동 안내 dialog 를 띄우고 사용자의 선택을 돌려준다.
+/// 권한 화면과 홈 화면이 공용으로 쓰는 `PermissionRecoveryPrompt` 구현이다.
+Future<PermissionRecoveryAction> showPermissionRecoveryPrompt(
+  BuildContext context,
+  PermissionType type,
+  PermissionRecoveryMode mode,
+) =>
+    PermissionRecoveryDialog.show(
+      context,
+      permissionName: type.title,
+      description: type.description,
+      mode: mode,
+    );

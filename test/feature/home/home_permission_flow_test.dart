@@ -14,6 +14,7 @@ import 'package:widyu/core/model/location/user_location.dart';
 import 'package:widyu/core/model/myPage/user/user.dart';
 import 'package:widyu/core/model/notification/notification_page.dart';
 import 'package:widyu/core/model/permission/permission_recovery_prompt.dart';
+import 'package:widyu/core/utils/background_location_notice_controller.dart';
 import 'package:widyu/core/utils/kakao_map_launcher.dart';
 import 'package:widyu/core/utils/permission_manager.dart';
 import 'package:widyu/core/utils/permission_recovery_controller.dart';
@@ -85,6 +86,7 @@ class _Harness {
     PermissionSettingsResult settings = PermissionSettingsResult.granted,
     Future<PermissionRequestResult> Function()? readPermission,
     Future<CameraCaptureResult> Function()? capture,
+    BackgroundLocationNoticeController? noticeController,
   }) async {
     vm = HomeViewModel(
       homeRepository: _Home(),
@@ -99,6 +101,10 @@ class _Harness {
         rationaleReader: (_) async => false,
         settingsRechecker: (_, __) async => settings,
       ),
+      noticeController: noticeController ??
+          BackgroundLocationNoticeController(
+            foregroundPermissionReader: () async => false,
+          ),
       takePhoto: () {
         photos++;
         return capture?.call() ?? Future.value(const CameraCaptureSuccess('x'));
@@ -262,6 +268,34 @@ void main() {
     await first;
     expect(h.starts, isEmpty);
   });
+
+  for (final entry in {
+    PermissionSettingsResult.launchFailed: 1,
+    PermissionSettingsResult.granted: 0,
+    PermissionSettingsResult.denied: 0,
+  }.entries) {
+    test('위치 항상 허용 안내를 한 번 알리고 설정 결과 ${entry.key.name}를 구분한다', () async {
+      final h = _Harness();
+      final gate = Completer<bool>();
+      await h.initialize(
+        noticeController: BackgroundLocationNoticeController(
+          foregroundPermissionReader: () async => true,
+          permissionReader: () => gate.future,
+          settingsRechecker: (_) async => entry.key,
+        ),
+      );
+      gate.complete(false);
+      await Future<void>.delayed(Duration.zero);
+      expect(h.events, [isA<ShowBackgroundLocationNotice>()]);
+
+      await h.vm.openBackgroundLocationSettings();
+      await Future<void>.delayed(Duration.zero);
+      expect(
+        h.events.whereType<BackgroundLocationSettingsLaunchFailure>().length,
+        entry.value,
+      );
+    });
+  }
 
   test('권한 확인 중 화면이 종료되면 카메라를 열지 않는다', () async {
     final h = _Harness();

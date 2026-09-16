@@ -1,4 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:widyu/core/ui/theme/colors.dart';
+import 'package:widyu/core/ui/theme/typos.dart';
+import 'package:widyu/core/ui/widgets/widyu_asset_image.dart';
+import 'package:widyu/core/ui/widgets/widyu_dialog.dart';
+import 'package:widyu/core/ui/widgets/widyu_text_button.dart';
 
 import 'package:widyu/core/model/permission/permission_recovery_prompt.dart';
 
@@ -36,39 +42,73 @@ class PermissionRecoveryDialog extends StatelessWidget {
     return result ?? PermissionRecoveryAction.cancel;
   }
 
-  void _close(BuildContext context, PermissionRecoveryAction action) {
-    Navigator.of(context).pop(action);
+  void _close(
+    BuildContext context,
+    PermissionRecoveryAction action,
+  ) {
+    context.pop(action);
   }
 
   @override
   Widget build(BuildContext context) {
     final isSettingsMode = mode == PermissionRecoveryMode.settings;
 
-    // TODO: Replace this basic dialog with the product-specific permission design.
-    return AlertDialog(
-      title: Text(
-        isSettingsMode ? '$permissionName 권한 설정' : '$permissionName 권한이 필요해요',
-      ),
-      content: Text(
-        isSettingsMode
-            ? '$description\n\n이 권한은 앱 설정에서 허용할 수 있어요.'
-            : description,
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => _close(context, PermissionRecoveryAction.cancel),
-          child: const Text('취소'),
+    return WidyuDialog(
+      contentPadding: const EdgeInsets.fromLTRB(16, 28, 16, 16),
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const WidyuAssetImage(
+              name: 'img_94_warning.png',
+              width: 94,
+              height: 94,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              isSettingsMode
+                  ? '$permissionName 권한 설정'
+                  : '$permissionName 권한이 필요해요',
+              style: MyTypo.title1,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              isSettingsMode
+                  ? '$description\n\n이 권한은 앱 설정에서 허용할 수 있어요.'
+                  : description,
+              style: MyTypo.body1.copyWith(color: MyColor.grey600),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 16),
+            Row(
+              spacing: 8,
+              children: [
+                Expanded(
+                  child: WidyuTextButton(
+                    onTap: () =>
+                        _close(context, PermissionRecoveryAction.cancel),
+                    text: '취소',
+                    backgroundColor: MyColor.grey100,
+                    textColor: MyColor.grey800,
+                  ),
+                ),
+                Expanded(
+                  child: WidyuTextButton(
+                    onTap: () => _close(
+                      context,
+                      isSettingsMode
+                          ? PermissionRecoveryAction.openSettings
+                          : PermissionRecoveryAction.retry,
+                    ),
+                    text: isSettingsMode ? '설정으로 이동' : '계속',
+                  ),
+                ),
+              ],
+            ),
+          ],
         ),
-        TextButton(
-          onPressed: () => _close(
-            context,
-            isSettingsMode
-                ? PermissionRecoveryAction.openSettings
-                : PermissionRecoveryAction.retry,
-          ),
-          child: Text(isSettingsMode ? '설정으로 이동' : '계속'),
-        ),
-      ],
+      ),
     );
   }
 }

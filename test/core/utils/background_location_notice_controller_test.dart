@@ -8,13 +8,17 @@ import 'package:widyu/core/utils/settings_return_controller.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
+  // 실제 PermissionManager 는 플랫폼 채널을 타므로 포그라운드 기본값은 허용으로 둔다.
   BackgroundLocationNoticeController controller({
     BackgroundLocationPermissionReader? permissionReader,
+    BackgroundLocationPermissionReader? foregroundPermissionReader,
     SettingsReturnController? settingsController,
     BackgroundLocationSettingsRechecker? settingsRechecker,
   }) =>
       BackgroundLocationNoticeController(
         permissionReader: permissionReader,
+        foregroundPermissionReader:
+            foregroundPermissionReader ?? () async => true,
         settingsController: settingsController,
         settingsRechecker: settingsRechecker,
       );
@@ -29,12 +33,46 @@ void main() {
 
     final first = sut.claimNoticeIfNeeded();
     final second = sut.claimNoticeIfNeeded();
-    expect(reads, 1);
     expect(await second, isFalse);
+    expect(reads, 1);
 
     permission.complete(false);
     expect(await first, isTrue);
     expect(await sut.claimNoticeIfNeeded(), isFalse);
+    sut.dispose();
+  });
+
+  test('포그라운드 위치가 허용되기 전에는 안내하지 않고 재평가한다', () async {
+    var foregroundGranted = false;
+    var reads = 0;
+    final sut = controller(
+      permissionReader: () async {
+        reads++;
+        return false;
+      },
+      foregroundPermissionReader: () async => foregroundGranted,
+    );
+
+    expect(await sut.claimNoticeIfNeeded(), isFalse);
+    expect(reads, 0);
+
+    foregroundGranted = true;
+    expect(await sut.claimNoticeIfNeeded(), isTrue);
+    expect(reads, 1);
+    sut.dispose();
+  });
+
+  test('포그라운드 위치 조회 실패도 1회 노출 권한을 소비하지 않는다', () async {
+    var failing = true;
+    final sut = controller(
+      permissionReader: () async => false,
+      foregroundPermissionReader: () =>
+          failing ? Future<bool>.error(StateError('failed')) : Future.value(true),
+    );
+
+    expect(await sut.claimNoticeIfNeeded(), isFalse);
+    failing = false;
+    expect(await sut.claimNoticeIfNeeded(), isTrue);
     sut.dispose();
   });
 

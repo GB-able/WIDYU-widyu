@@ -8,7 +8,7 @@ import 'package:widyu/core/utils/permission_manager.dart';
 import 'package:widyu/core/utils/permission_recovery_controller.dart';
 import 'package:widyu/core/model/permission/permission_recovery_prompt.dart';
 import 'package:widyu/feature/permission/permission_ui_event.dart';
-import 'package:widyu/feature/permission/permission_ui_state.dart';
+import 'package:widyu/feature/permission/permission_ui_model.dart';
 
 class PermissionViewModel with ChangeNotifier {
   final _appPreference = AppPreference();
@@ -19,8 +19,14 @@ class PermissionViewModel with ChangeNotifier {
   PermissionViewModel({PermissionRecoveryController? recoveryController})
       : _recoveryController = recoveryController ?? PermissionRecoveryController();
 
-  PermissionUiState _uiState = const PermissionUiState();
-  PermissionUiState get uiState => _uiState;
+  bool _isRequesting = false;
+  bool get isRequesting => _isRequesting;
+
+  List<PermissionType> get requiredPermissions =>
+      PermissionType.values.where((type) => type.isRequired).toList();
+
+  List<PermissionType> get optionalPermissions =>
+      PermissionType.values.where((type) => !type.isRequired).toList();
 
   final _uiEvent = StreamController<PermissionUiEvent>.broadcast();
   Stream<PermissionUiEvent> get uiEvent => _uiEvent.stream;
@@ -33,9 +39,9 @@ class PermissionViewModel with ChangeNotifier {
   ];
 
   Future<void> requestPermissions({required PermissionRecoveryPrompt showPrompt}) async {
-    if (_isDisposed || _isFinished || _uiState.isRequesting) return;
+    if (_isDisposed || _isFinished || _isRequesting) return;
 
-    _uiState = _uiState.copyWith(isRequesting: true);
+    _isRequesting = true;
     notifyListeners();
 
     try {
@@ -64,7 +70,7 @@ class PermissionViewModel with ChangeNotifier {
       debugPrint('[Permission] 권한 요청 실패: $e\n$stack');
     } finally {
       if (!_isDisposed) {
-        _uiState = _uiState.copyWith(isRequesting: false);
+        _isRequesting = false;
         notifyListeners();
       }
     }
@@ -100,12 +106,6 @@ class PermissionViewModel with ChangeNotifier {
           break;
       }
     }
-  }
-
-  /// '나중에 하기'. 권한을 요청하지 않고 다음 화면으로 넘어간다.
-  void skip() {
-    if (_uiState.isRequesting) return;
-    unawaited(_finish());
   }
 
   /// 권한 플로우를 마무리하고 다음 화면으로 이동시킨다.

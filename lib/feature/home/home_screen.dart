@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:math';
 import 'dart:ui';
 
@@ -25,12 +26,8 @@ import 'package:widyu/core/ui/widgets/ui_event_listener.dart';
 import 'package:widyu/core/ui/widgets/widyu_asset_image.dart';
 import 'package:widyu/core/ui/widgets/widyu_icon.dart';
 import 'package:widyu/core/ui/widgets/widyu_text_button.dart';
-import 'package:widyu/core/ui/widgets/permission_recovery_dialog.dart';
-import 'package:widyu/core/model/permission/permission_recovery_prompt.dart';
-import 'package:widyu/core/model/permission/permission_type.dart';
-import 'package:widyu/core/utils/app_service_controller.dart';
+import 'package:widyu/core/ui/widgets/widyu_dialog.dart';
 import 'package:widyu/core/utils/background_location_notice_controller.dart';
-import 'package:widyu/core/utils/permission_manager.dart';
 import 'package:widyu/core/ui/widgets/widyu_permission_dialog.dart';
 import 'package:widyu/feature/permission/permission_ui_model.dart';
 import 'package:widyu/core/utils/show_toast.dart';
@@ -57,35 +54,19 @@ part 'widget/reward_dialog.dart';
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
-  void _showBackgroundLocationNotice(
-    BuildContext context,
-    BackgroundLocationNoticeController noticeController,
-    AppServiceController serviceController,
-  ) {
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      if (!context.mounted || !_isCurrentRoute(context)) return;
-      final shouldShow = await noticeController.claimNoticeIfNeeded();
-      if (!context.mounted || !_isCurrentRoute(context) || !shouldShow) return;
+  static String get _backgroundLocationNoticeDescription => Platform.isIOS
+      ? '앱을 사용하지 않는 동안에 보호자에게 내 위치를\n공유하려면 설정>위치에서 \'항상\'으로 설정해 주세요.'
+      : '앱을 사용하지 않는 동안에 보호자에게 내 위치를\n공유하려면 설정>권한에서 위치 권한을\n 항상 허용으로 설정해 주세요.';
 
-      final openSettings = await WidyuPermissionDialog.show(
-        context,
-        description:
-            '앱을 사용하지 않는 동안에 보호자에게 내 위치를\n공유하려면 설정>권한에서 위치 권한을\n 항상 허용으로 설정해 주세요.',
-      );
-      if (!openSettings || !context.mounted || !_isCurrentRoute(context)) {
-        return;
-      }
-
-      final result = await noticeController.openSettingsAndRecheck();
-      if (result == PermissionSettingsResult.granted ||
-          result == PermissionSettingsResult.denied) {
-        unawaited(serviceController.refresh());
-      } else if (result == PermissionSettingsResult.launchFailed &&
-          context.mounted &&
-          _isCurrentRoute(context)) {
-        showToast('설정 화면을 열지 못했어요.');
-      }
-    });
+  Future<void> _showBackgroundLocationNotice(BuildContext context) async {
+    if (!_isCurrentRoute(context)) return;
+    final viewModel = context.read<HomeViewModel>();
+    final openSettings = await WidyuPermissionDialog.show(
+      context,
+      description: _backgroundLocationNoticeDescription,
+    );
+    if (!openSettings || !context.mounted || !_isCurrentRoute(context)) return;
+    await viewModel.openBackgroundLocationSettings();
   }
 
   bool _isCurrentRoute(BuildContext context) =>
@@ -101,8 +82,6 @@ class HomeScreen extends StatelessWidget {
         );
       case RequestCameraPermissionFailure():
         showToast('카메라 권한이 필요해요.');
-      case RequestCameraPermissionPermanentlyFailure():
-        showToast('설정에서 카메라 권한을 허용해 주세요.');
       case CameraPermissionSettingsGranted():
         showToast('카메라 권한이 허용되었어요. 다시 촬영해 주세요.');
       case CameraPermissionSettingsDenied():
@@ -119,6 +98,10 @@ class HomeScreen extends StatelessWidget {
         showToast('현재 위치 없이 길찾기를 열어요.');
       case LocationPermissionSettingsLaunchFailure():
         showToast('설정 화면을 열지 못해 현재 위치 없이 길찾기를 열어요.');
+      case ShowBackgroundLocationNotice():
+        unawaited(_showBackgroundLocationNotice(context));
+      case BackgroundLocationSettingsLaunchFailure():
+        showToast('설정 화면을 열지 못했어요.');
       case MarkNotificationAsReadFailure():
         showToast('알림을 읽음 처리하지 못했어요.');
       case FetchHeartRateFailure():
@@ -144,6 +127,7 @@ class HomeScreen extends StatelessWidget {
           heartRateRepository: context.read<HeartRateRepository>(),
           locationRepository: context.read<LocationRepository>(),
           isPaired: watch.isPaired,
+          noticeController: context.read<BackgroundLocationNoticeController>(),
         );
       },
       builder: (context, child) {
@@ -151,14 +135,6 @@ class HomeScreen extends StatelessWidget {
         final uiState =
             context.select<HomeViewModel, HomeUiState>((vm) => vm.uiState);
         final notification = uiState.notification;
-        final noticeController =
-            context.read<BackgroundLocationNoticeController>();
-        final serviceController = context.read<AppServiceController>();
-        _showBackgroundLocationNotice(
-          context,
-          noticeController,
-          serviceController,
-        );
 
         return UiEventListener(
           stream: viewModel.uiEvent,
@@ -237,12 +213,14 @@ class HomeScreen extends StatelessWidget {
                                 onCameraTap: () =>
                                     viewModel.takeMedicationPhoto(
                                   showPrompt: (type, mode) =>
-                                      _showPrompt(context, type, mode),
+                                      showPermissionRecoveryPrompt(
+                                          context, type, mode),
                                 ),
                                 onRouteTap: () =>
                                     viewModel.openHealthScheduleRoute(
                                   showPrompt: (type, mode) =>
-                                      _showPrompt(context, type, mode),
+                                      showPermissionRecoveryPrompt(
+                                          context, type, mode),
                                 ),
                               ),
                             ),
@@ -260,15 +238,3 @@ class HomeScreen extends StatelessWidget {
     );
   }
 }
-
-Future<PermissionRecoveryAction> _showPrompt(
-  BuildContext context,
-  PermissionType type,
-  PermissionRecoveryMode mode,
-) =>
-    PermissionRecoveryDialog.show(
-      context,
-      permissionName: type.title,
-      description: type.description,
-      mode: mode,
-    );

@@ -17,6 +17,7 @@ import 'package:widyu/core/model/myPage/user/user.dart';
 import 'package:widyu/core/model/notification/notification_page.dart';
 import 'package:widyu/core/model/permission/permission_type.dart';
 import 'package:widyu/core/model/permission/permission_recovery_prompt.dart';
+import 'package:widyu/core/utils/background_location_notice_controller.dart';
 import 'package:widyu/core/utils/camera_manager.dart';
 import 'package:widyu/core/utils/kakao_map_launcher.dart';
 import 'package:widyu/core/utils/permission_manager.dart';
@@ -41,6 +42,9 @@ class HomeViewModel with ChangeNotifier {
   final HeartRateRepository _heartRateRepository;
   final LocationRepository _locationRepository;
   final PermissionRecoveryController _permissionRecoveryController;
+
+  /// 소유권은 main.dart 의 Provider 에 있으므로 여기서 dispose 하지 않는다.
+  final BackgroundLocationNoticeController _noticeController;
   final Future<CameraCaptureResult> Function() _takePhoto;
   final Future<bool> Function({
     required UserLocation destination,
@@ -74,6 +78,7 @@ class HomeViewModel with ChangeNotifier {
     required LocationRepository locationRepository,
     required Future<bool> isPaired,
     PermissionRecoveryController? permissionRecoveryController,
+    BackgroundLocationNoticeController? noticeController,
     Future<CameraCaptureResult> Function()? takePhoto,
     Future<bool> Function({
       required UserLocation destination,
@@ -88,6 +93,8 @@ class HomeViewModel with ChangeNotifier {
         _locationRepository = locationRepository,
         _permissionRecoveryController =
             permissionRecoveryController ?? PermissionRecoveryController(),
+        _noticeController =
+            noticeController ?? BackgroundLocationNoticeController(),
         _takePhoto = takePhoto ?? CameraManager.takePhoto,
         _openRoute = openRoute ?? KakaoMapLauncher.openRoute {
     unawaited(_fetchNotification());
@@ -95,6 +102,7 @@ class HomeViewModel with ChangeNotifier {
     unawaited(_observeWatchConnection(isPaired));
     unawaited(fetchHeartRate());
     unawaited(_fetchSeniorCard());
+    unawaited(_evaluateBackgroundLocationNotice());
     _medicationTicker = Timer.periodic(
       const Duration(seconds: 30),
       (_) => _applyMedicationStatus(),
@@ -102,6 +110,20 @@ class HomeViewModel with ChangeNotifier {
   }
 
   Future<void> refreshSeniorCard() => _fetchSeniorCard();
+
+  Future<void> _evaluateBackgroundLocationNotice() async {
+    final shouldShow = await _noticeController.claimNoticeIfNeeded();
+    if (_isDisposed || !shouldShow) return;
+    _uiEvent.add(const ShowBackgroundLocationNotice());
+  }
+
+  Future<void> openBackgroundLocationSettings() async {
+    final result = await _noticeController.openSettingsAndRecheck();
+    if (_isDisposed) return;
+    if (result == PermissionSettingsResult.launchFailed) {
+      _uiEvent.add(const BackgroundLocationSettingsLaunchFailure());
+    }
+  }
 
   Future<void> markNotificationAsRead(int notificationId) async {
     final previous = _uiState.notifications;
@@ -194,10 +216,6 @@ class HomeViewModel with ChangeNotifier {
         _uiEvent.add(const TakeMedicationPhotoSuccess());
       case CameraCaptureCanceled():
         break;
-      case CameraPermissionDenied():
-        _uiEvent.add(const RequestCameraPermissionFailure());
-      case CameraPermissionPermanentlyDenied():
-        _uiEvent.add(const RequestCameraPermissionPermanentlyFailure());
       case CameraCaptureFailure():
         _uiEvent.add(const OpenCameraFailure());
     }
