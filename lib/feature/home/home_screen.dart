@@ -161,8 +161,7 @@ class HomeScreen extends StatelessWidget {
                           BoxConstraints(minHeight: constraints.maxHeight),
                       child: Padding(
                         padding: EdgeInsets.only(
-                          top: MediaQuery.of(context).padding.top +
-                              kToolbarHeight,
+                          top: Scaffold.of(context).appBarMaxHeight!,
                           bottom: 90,
                         ),
                         child: Column(
