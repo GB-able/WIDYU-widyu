@@ -13,7 +13,9 @@ typedef LocationMonitor = Future<void> Function();
 typedef AutoStartSetter = Future<void> Function(bool value);
 typedef BackgroundServiceAction = Future<void> Function();
 
-/// 로그인 토큰과 위치 공유 준비 상태를 배경 서비스에 반영한다.
+/// 로그인 토큰 보유 여부를 배경 서비스에 반영한다.
+/// 심박수는 위치와 무관하게 전송되어야 하므로 서비스 실행 조건은 토큰뿐이고,
+/// 위치 상태는 UI 표시와 배경 isolate의 위치 업로드 on/off 용으로만 추적한다.
 class AppServiceController extends ChangeNotifier {
   AppServiceController({
     HasToken? hasToken,
@@ -136,7 +138,7 @@ class AppServiceController extends ChangeNotifier {
       _state = next;
       notifyListeners();
     }
-    final canRun = tokenAvailable && next?.isAvailable == true;
+    final canRun = tokenAvailable;
     var failed = false;
     try {
       if (_autoStartEnabled != canRun || _hasServiceError) {

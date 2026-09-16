@@ -17,13 +17,24 @@ import 'package:widyu/core/data/source/location/location_local_data_source_impl.
 import 'package:widyu/core/data/source/location/location_remote_data_source_impl.dart';
 import 'package:widyu/core/model/api/api_result.dart';
 import 'package:widyu/core/model/location/location_service_state.dart';
+import 'package:widyu/core/model/permission/permission_type.dart';
 import 'package:widyu/core/network/api_client.dart';
 import 'package:widyu/core/network/socket_client.dart';
 import 'package:widyu/core/network/token_manager.dart';
 import 'package:widyu/core/utils/location_service_manager.dart';
+import 'package:widyu/core/utils/permission_manager.dart';
 
 Future<void> initializeService({bool autoStartOnBoot = false}) async {
   final service = FlutterBackgroundService();
+  // Android 14+는 foreground 위치 권한 없이 location 타입으로 startForeground 하면
+  // SecurityException이 나고, 플러그인이 이를 삼켜 서비스가 foreground가 되지 못한 채
+  // 시스템에 종료된다. 권한이 있을 때만 location 타입을 얹는다.
+  final foregroundServiceTypes = [
+    if (await PermissionManager.isGranted(PermissionType.location))
+      AndroidForegroundType.location,
+    AndroidForegroundType.connectedDevice,
+  ];
+
   await service.configure(
     iosConfiguration: IosConfiguration(
       autoStart: false,
@@ -36,7 +47,8 @@ Future<void> initializeService({bool autoStartOnBoot = false}) async {
       autoStartOnBoot: autoStartOnBoot,
       isForegroundMode: true,
       initialNotificationTitle: '알림',
-      initialNotificationContent: '위듀에서 사용자의 위치를 추적중입니다.',
+      initialNotificationContent: '위듀에서 사용자의 위치와 심박수를 전송하고 있습니다.',
+      foregroundServiceTypes: foregroundServiceTypes,
     ),
   );
 }
@@ -95,8 +107,7 @@ void onStart(ServiceInstance service) async {
   DartPluginRegistrant.ensureInitialized();
   await dotenv.load(fileName: ".env");
 
-  final locationState = await LocationServiceManager.refresh();
-  if (!await TokenManager().hasToken() || !locationState.isAvailable) {
+  if (!await TokenManager().hasToken()) {
     try {
       if (service is AndroidServiceInstance) {
         await service.setAutoStartOnBootMode(false);
@@ -147,10 +158,11 @@ void onStart(ServiceInstance service) async {
   LocationServiceManager.startMonitoring();
   locationServiceState =
       LocationServiceManager.locationServiceState.listen((state) {
+    // 위치를 못 쓰더라도 심박수 전송은 계속해야 하므로 업로드만 끈다.
     if (state.isAvailable) {
       locationRepository.startLocationUpload();
     } else {
-      unawaited(shutdown());
+      locationRepository.stopLocationUpload();
     }
   });
 
@@ -192,7 +204,6 @@ Future<void> startBackgroundService() =>
 
 Future<void> _startBackgroundService() async {
   if (!await TokenManager().hasToken()) return;
-  if (!(await LocationServiceManager.refresh()).isAvailable) return;
 
   final service = FlutterBackgroundService();
   if (await service.isRunning()) {

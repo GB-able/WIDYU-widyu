@@ -100,7 +100,7 @@ void main() {
     sut.dispose();
   });
 
-  test('항상 허용과 GPS가 모두 준비되면 자동시작과 서비스를 켠다', () async {
+  test('토큰이 있으면 자동시작과 서비스를 켠다', () async {
     final calls = <String>[];
     final states = StreamController<LocationServiceState>.broadcast();
     final ready = state(gps: true, alwaysAllowed: true);
@@ -118,7 +118,7 @@ void main() {
     sut.dispose();
   });
 
-  test('GPS 또는 항상 허용 중 하나라도 없으면 서비스를 중지한다', () async {
+  test('위치를 쓸 수 없어도 토큰이 있으면 서비스는 켠다', () async {
     for (final unavailable in [
       state(gps: false, alwaysAllowed: false),
       state(gps: false, alwaysAllowed: true),
@@ -134,18 +134,19 @@ void main() {
       );
 
       await sut.start();
-      expect(calls, ['monitor:start', 'auto:false', 'background:stop']);
+      expect(sut.state, unavailable);
+      expect(calls, ['monitor:start', 'auto:true', 'background:start']);
       await states.close();
       sut.dispose();
     }
   });
 
-  test('자동 시작 해제 실패에도 준비 불가 서비스 중지는 시도한다', () async {
+  test('토큰이 없으면 자동 시작 해제가 실패해도 서비스 중지는 시도한다', () async {
     final calls = <String>[];
     final states = StreamController<LocationServiceState>.broadcast();
     final sut = controller(
-      hasToken: () async => true,
-      refresh: () async => state(gps: false, alwaysAllowed: false),
+      hasToken: () async => false,
+      refresh: () async => state(gps: true, alwaysAllowed: true),
       states: states.stream,
       calls: calls,
       setAutoStart: (_) async {
@@ -155,7 +156,7 @@ void main() {
     );
 
     await sut.start();
-    expect(calls, ['monitor:start', 'auto:false', 'background:stop']);
+    expect(calls, ['auto:false', 'background:stop']);
     await states.close();
     sut.dispose();
     await Future<void>.delayed(Duration.zero);
@@ -163,7 +164,7 @@ void main() {
     expect(calls.where((call) => call == 'background:stop'), hasLength(2));
   });
 
-  test('권한 철회와 resumed refresh는 최신 상태로 서비스를 중지한다', () async {
+  test('권한 철회는 state에 반영되지만 서비스는 계속 켜 둔다', () async {
     final calls = <String>[];
     final states = StreamController<LocationServiceState>.broadcast();
     var current = state(gps: true, alwaysAllowed: true);
@@ -183,8 +184,8 @@ void main() {
       'monitor:start',
       'auto:true',
       'background:start',
-      'auto:false',
-      'background:stop',
+      'auto:true',
+      'background:start',
     ]);
     await states.close();
     sut.dispose();
