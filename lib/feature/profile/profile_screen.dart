@@ -15,6 +15,7 @@ import 'package:widyu/feature/profile/profile_ui_event.dart';
 import 'package:widyu/feature/profile/profile_ui_state.dart';
 import 'package:widyu/feature/profile/profile_view_model.dart';
 
+part 'widget/profile_app_bar.dart';
 part 'widget/profile_edit_view.dart';
 part 'widget/profile_image_view.dart';
 part 'widget/profile_name_view.dart';
@@ -49,22 +50,7 @@ class ProfileScreen extends StatelessWidget {
           stream: viewModel.uiEvent,
           onEvent: _handleEvent,
           child: Scaffold(
-            appBar: AppBar(
-              backgroundColor: MyColor.white,
-              title: Text(
-                '프로필 설정',
-                style: MyTypo.title4.copyWith(color: MyColor.grey800),
-              ),
-              centerTitle: true,
-              leading: IconButton(
-                onPressed: () => context.pop(),
-                icon: const WidyuIcon(
-                  icon: 'ic_22_arrow_left_bold.svg',
-                  width: 22,
-                  height: 22,
-                ),
-              ),
-            ),
+            appBar: const _ProfileAppBar(),
             body: uiState.isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : SingleChildScrollView(
