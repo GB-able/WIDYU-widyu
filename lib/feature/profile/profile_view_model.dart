@@ -57,7 +57,7 @@ class ProfileViewModel with ChangeNotifier {
       _uiState = _uiState.copyWith(
         profileImage: user.profileImage ?? '',
         name: user.name,
-        birthDate: user.birthDate,
+        birthDate: user.birthDate.replaceAll('-', '.'),
         phoneNumber: user.phoneNumber,
         address: user.address,
         inviteCode: user.inviteCode,
