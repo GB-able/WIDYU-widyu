@@ -130,8 +130,13 @@ class _CarouselMenuState extends State<_CarouselMenu> {
       );
     }
 
-    // 목표가 존재하지 않음
-    if (!widget.hasGoal) return const _CarouselEmptyView();
+    // 목표가 존재하지 않음. 카드 상태와 같은 높이를 유지해 시트 높이가 상태와 무관하게 고정되도록 한다.
+    if (!widget.hasGoal) {
+      return const SizedBox(
+        height: cardHeight + _carouselIndicatorArea,
+        child: _CarouselEmptyView(),
+      );
+    }
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -194,21 +199,22 @@ class _CarouselMenuState extends State<_CarouselMenu> {
 class _CarouselEmptyView extends StatelessWidget {
   const _CarouselEmptyView();
 
-  static const _characterWidth = 144.0;
-  static const _characterHeight = 186.0;
+  static const _characterMaxWidth = 144.0;
+  static const _characterMaxHeight = 186.0;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
       child: Column(
-        mainAxisSize: MainAxisSize.min,
         children: [
-          const WidyuAssetImage(
-            name: 'img_card_character.png',
-            width: _characterWidth,
-            height: _characterHeight,
-            fit: BoxFit.contain,
+          const Expanded(
+            child: WidyuAssetImage(
+              name: 'img_card_character.png',
+              width: _characterMaxWidth,
+              height: _characterMaxHeight,
+              fit: BoxFit.contain,
+            ),
           ),
           const SizedBox(height: 16),
           Text(
