@@ -76,7 +76,6 @@ class HomeViewModel with ChangeNotifier {
     required NotificationRepository notificationRepository,
     required HeartRateRepository heartRateRepository,
     required LocationRepository locationRepository,
-    required Future<bool> isPaired,
     PermissionRecoveryController? permissionRecoveryController,
     BackgroundLocationNoticeController? noticeController,
     Future<CameraCaptureResult> Function()? takePhoto,
@@ -99,7 +98,7 @@ class HomeViewModel with ChangeNotifier {
         _openRoute = openRoute ?? KakaoMapLauncher.openRoute {
     unawaited(_fetchNotification());
     unawaited(_fetchUser());
-    unawaited(_observeWatchConnection(isPaired));
+    _observeWatchConnection();
     unawaited(fetchHeartRate());
     unawaited(_fetchSeniorCard());
     unawaited(_evaluateBackgroundLocationNotice());
@@ -376,11 +375,7 @@ class HomeViewModel with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> _observeWatchConnection(Future<bool> isPaired) async {
-    final isWearing = await isPaired;
-    _uiState = _uiState.copyWith(isWearing: isWearing);
-    notifyListeners();
-
+  void _observeWatchConnection() {
     _watchConnection =
         _heartRateRepository.observeConnection().listen((isWearing) {
       _uiState = _uiState.copyWith(isWearing: isWearing);

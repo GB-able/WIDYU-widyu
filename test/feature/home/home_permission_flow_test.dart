@@ -94,7 +94,6 @@ class _Harness {
       notificationRepository: _Notification(),
       heartRateRepository: _HeartRate(),
       locationRepository: location,
-      isPaired: Future.value(false),
       permissionRecoveryController: PermissionRecoveryController(
         statusReader: (_) => readPermission?.call() ?? Future.value(permission),
         requester: (_) async => permission,

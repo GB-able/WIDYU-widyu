@@ -11,7 +11,6 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:skeletonizer/skeletonizer.dart';
-import 'package:watch_connectivity/watch_connectivity.dart';
 import 'package:widyu/app/routes/app_route.dart';
 import 'package:widyu/core/data/repository/heartRate/heart_rate_repository.dart';
 import 'package:widyu/core/data/repository/home/home_repository.dart';
@@ -120,14 +119,12 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (context) {
-        final watch = WatchConnectivity();
         return HomeViewModel(
           homeRepository: context.read<HomeRepository>(),
           myPageRepository: context.read<MyPageRepository>(),
           notificationRepository: context.read<NotificationRepository>(),
           heartRateRepository: context.read<HeartRateRepository>(),
           locationRepository: context.read<LocationRepository>(),
-          isPaired: watch.isPaired,
           noticeController: context.read<BackgroundLocationNoticeController>(),
         );
       },
