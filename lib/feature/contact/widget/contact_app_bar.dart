@@ -18,9 +18,9 @@ class _ContactAppBar extends StatelessWidget implements PreferredSizeWidget {
       leading: IconButton(
         onPressed: () => context.pop(),
         icon: const WidyuIcon(
-          icon: 'ic_22_arrow_left_bold.svg',
-          width: 22,
-          height: 22,
+          icon: 'ic_24_arrow_left_bold.svg',
+          width: 24,
+          height: 24,
         ),
       ),
     );
