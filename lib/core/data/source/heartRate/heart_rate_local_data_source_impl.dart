@@ -5,9 +5,9 @@ import 'package:widyu/core/data/source/heartRate/heart_rate_local_data_source.da
 import 'package:widyu/core/model/heartRate/heart_rate.dart';
 
 class HeartRateLocalDataSourceImpl implements HeartRateLocalDataSource {
-  static const _eventChannel = EventChannel("com.example.widyu/heart_rate");
+  static const _eventChannel = EventChannel("com.gbable.widu/heart_rate");
   static const _methodChannel =
-      MethodChannel("com.example.widyu/heart_rate_status");
+      MethodChannel("com.gbable.widu/heart_rate_status");
 
   late final Stream<HeartRate> _heartRateStream =
       _eventChannel.receiveBroadcastStream().map(

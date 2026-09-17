@@ -74,7 +74,7 @@
         </array>
         <key>BGTaskSchedulerPermittedIdentifiers</key>
         <array>
-            <string>com.example.widyu.refresh</string>
+            <string>com.gbable.widu.refresh</string>
         </array>
         <key>LSApplicationQueriesSchemes</key>
         <array>
