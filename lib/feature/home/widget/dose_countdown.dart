@@ -1,9 +1,13 @@
 part of '../home_screen.dart';
 
 class _DoseCountdown extends StatefulWidget {
-  final DateTime closesAt;
+  final DateTime deadline;
+  final bool showHours;
 
-  const _DoseCountdown({required this.closesAt});
+  const _DoseCountdown({
+    required this.deadline,
+    required this.showHours,
+  });
 
   @override
   State<_DoseCountdown> createState() => _DoseCountdownState();
@@ -26,7 +30,7 @@ class _DoseCountdownState extends State<_DoseCountdown> {
   @override
   void didUpdateWidget(covariant _DoseCountdown oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.closesAt != widget.closesAt) _updateRemaining();
+    if (oldWidget.deadline != widget.deadline) _updateRemaining();
   }
 
   @override
@@ -37,7 +41,7 @@ class _DoseCountdownState extends State<_DoseCountdown> {
   }
 
   Duration _calculateRemaining() {
-    final diff = widget.closesAt.difference(DateTime.now());
+    final diff = widget.deadline.difference(DateTime.now());
     return diff.isNegative ? Duration.zero : Duration(seconds: diff.inSeconds);
   }
 
@@ -49,11 +53,12 @@ class _DoseCountdownState extends State<_DoseCountdown> {
 
   @override
   Widget build(BuildContext context) {
-    final minutes = _remaining.inMinutes.toString().padLeft(2, '0');
+    final hours = _remaining.inHours.toString().padLeft(2, '0');
+    final minutes = (_remaining.inMinutes % 60).toString().padLeft(2, '0');
     final seconds = (_remaining.inSeconds % 60).toString().padLeft(2, '0');
 
     return Text(
-      '$minutes:$seconds',
+      widget.showHours ? '$hours:$minutes:$seconds' : '$minutes:$seconds',
       style: MyTypo.title3.copyWith(color: MyColor.white),
     );
   }

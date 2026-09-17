@@ -61,8 +61,10 @@ class _MedicationCard extends StatelessWidget {
         MedicationMissed() || MedicationNone() || MedicationUnknown() => null,
       };
 
-  DateTime? get _closesAt => switch (medicationStatus) {
-        MedicationAvailable(:final closesAt) => closesAt,
+  /// 카운트다운 목표 시각과 시간 자리 표시 여부
+  (DateTime, bool)? get _countdown => switch (medicationStatus) {
+        MedicationAvailable(:final closesAt) => (closesAt, false),
+        MedicationUpcoming(:final opensAt) => (opensAt, true),
         _ => null,
       };
 
@@ -140,7 +142,7 @@ class _MedicationCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final progress = _progress;
-    final closesAt = _closesAt;
+    final countdown = _countdown;
     final badgeLabel = _badgeLabel;
 
     return _CarouselCardShell(
@@ -156,7 +158,11 @@ class _MedicationCard extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               spacing: 2,
               children: [
-                if (closesAt != null) _DoseCountdown(closesAt: closesAt),
+                if (countdown != null)
+                  _DoseCountdown(
+                    deadline: countdown.$1,
+                    showHours: countdown.$2,
+                  ),
                 if (_showCameraButton)
                   Material(
                     type: MaterialType.transparency,
