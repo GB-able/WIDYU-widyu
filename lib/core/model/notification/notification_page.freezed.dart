@@ -16,7 +16,7 @@ T _$identity<T>(T value) => value;
 mixin _$NotificationPage {
   List<Notification> get notifications;
   bool get hasNext;
-  int get nextCursor;
+  int? get nextCursor;
 
   /// Create a copy of NotificationPage
   /// with the given fields replaced by the non-null parameter values.
@@ -58,7 +58,7 @@ abstract mixin class $NotificationPageCopyWith<$Res> {
           NotificationPage value, $Res Function(NotificationPage) _then) =
       _$NotificationPageCopyWithImpl;
   @useResult
-  $Res call({List<Notification> notifications, bool hasNext, int nextCursor});
+  $Res call({List<Notification> notifications, bool hasNext, int? nextCursor});
 }
 
 /// @nodoc
@@ -76,7 +76,7 @@ class _$NotificationPageCopyWithImpl<$Res>
   $Res call({
     Object? notifications = null,
     Object? hasNext = null,
-    Object? nextCursor = null,
+    Object? nextCursor = freezed,
   }) {
     return _then(_self.copyWith(
       notifications: null == notifications
@@ -87,10 +87,10 @@ class _$NotificationPageCopyWithImpl<$Res>
           ? _self.hasNext
           : hasNext // ignore: cast_nullable_to_non_nullable
               as bool,
-      nextCursor: null == nextCursor
+      nextCursor: freezed == nextCursor
           ? _self.nextCursor
           : nextCursor // ignore: cast_nullable_to_non_nullable
-              as int,
+              as int?,
     ));
   }
 }
@@ -189,7 +189,7 @@ extension NotificationPagePatterns on NotificationPage {
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>(
     TResult Function(
-            List<Notification> notifications, bool hasNext, int nextCursor)?
+            List<Notification> notifications, bool hasNext, int? nextCursor)?
         $default, {
     required TResult orElse(),
   }) {
@@ -218,7 +218,7 @@ extension NotificationPagePatterns on NotificationPage {
   @optionalTypeArgs
   TResult when<TResult extends Object?>(
     TResult Function(
-            List<Notification> notifications, bool hasNext, int nextCursor)
+            List<Notification> notifications, bool hasNext, int? nextCursor)
         $default,
   ) {
     final _that = this;
@@ -245,7 +245,7 @@ extension NotificationPagePatterns on NotificationPage {
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>(
     TResult? Function(
-            List<Notification> notifications, bool hasNext, int nextCursor)?
+            List<Notification> notifications, bool hasNext, int? nextCursor)?
         $default,
   ) {
     final _that = this;
@@ -264,7 +264,7 @@ class _NotificationPage implements NotificationPage {
   const _NotificationPage(
       {required final List<Notification> notifications,
       required this.hasNext,
-      required this.nextCursor})
+      this.nextCursor})
       : _notifications = notifications;
   factory _NotificationPage.fromJson(Map<String, dynamic> json) =>
       _$NotificationPageFromJson(json);
@@ -280,7 +280,7 @@ class _NotificationPage implements NotificationPage {
   @override
   final bool hasNext;
   @override
-  final int nextCursor;
+  final int? nextCursor;
 
   /// Create a copy of NotificationPage
   /// with the given fields replaced by the non-null parameter values.
@@ -328,7 +328,7 @@ abstract mixin class _$NotificationPageCopyWith<$Res>
       __$NotificationPageCopyWithImpl;
   @override
   @useResult
-  $Res call({List<Notification> notifications, bool hasNext, int nextCursor});
+  $Res call({List<Notification> notifications, bool hasNext, int? nextCursor});
 }
 
 /// @nodoc
@@ -346,7 +346,7 @@ class __$NotificationPageCopyWithImpl<$Res>
   $Res call({
     Object? notifications = null,
     Object? hasNext = null,
-    Object? nextCursor = null,
+    Object? nextCursor = freezed,
   }) {
     return _then(_NotificationPage(
       notifications: null == notifications
@@ -357,10 +357,10 @@ class __$NotificationPageCopyWithImpl<$Res>
           ? _self.hasNext
           : hasNext // ignore: cast_nullable_to_non_nullable
               as bool,
-      nextCursor: null == nextCursor
+      nextCursor: freezed == nextCursor
           ? _self.nextCursor
           : nextCursor // ignore: cast_nullable_to_non_nullable
-              as int,
+              as int?,
     ));
   }
 }
