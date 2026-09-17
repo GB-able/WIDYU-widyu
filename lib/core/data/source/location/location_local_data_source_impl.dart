@@ -46,10 +46,7 @@ class LocationLocalDataSourceImpl extends LocationLocalDataSource {
     try {
       if (!await Geolocator.isLocationServiceEnabled()) return null;
 
-      var permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
-      }
+      final permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied ||
           permission == LocationPermission.deniedForever) {
         return null;

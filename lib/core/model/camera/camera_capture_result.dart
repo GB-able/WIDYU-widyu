@@ -12,14 +12,6 @@ class CameraCaptureCanceled extends CameraCaptureResult {
   const CameraCaptureCanceled();
 }
 
-class CameraPermissionDenied extends CameraCaptureResult {
-  const CameraPermissionDenied();
-}
-
-class CameraPermissionPermanentlyDenied extends CameraCaptureResult {
-  const CameraPermissionPermanentlyDenied();
-}
-
 class CameraCaptureFailure extends CameraCaptureResult {
   const CameraCaptureFailure();
 }

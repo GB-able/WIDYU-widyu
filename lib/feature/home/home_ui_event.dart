@@ -27,8 +27,16 @@ class RequestCameraPermissionFailure extends HomeUiEvent {
   const RequestCameraPermissionFailure();
 }
 
-class RequestCameraPermissionPermanentlyFailure extends HomeUiEvent {
-  const RequestCameraPermissionPermanentlyFailure();
+class CameraPermissionSettingsGranted extends HomeUiEvent {
+  const CameraPermissionSettingsGranted();
+}
+
+class CameraPermissionSettingsDenied extends HomeUiEvent {
+  const CameraPermissionSettingsDenied();
+}
+
+class CameraPermissionSettingsLaunchFailure extends HomeUiEvent {
+  const CameraPermissionSettingsLaunchFailure();
 }
 
 class OpenCameraFailure extends HomeUiEvent {
@@ -47,4 +55,22 @@ class HealthSchedulePlaceUnavailable extends HomeUiEvent {
 /// 카카오맵 앱과 웹 모두 실행에 실패한 경우
 class OpenKakaoMapFailure extends HomeUiEvent {
   const OpenKakaoMapFailure();
+}
+
+class LocationPermissionUnavailable extends HomeUiEvent {
+  const LocationPermissionUnavailable();
+}
+
+class LocationPermissionSettingsLaunchFailure extends HomeUiEvent {
+  const LocationPermissionSettingsLaunchFailure();
+}
+
+/// 위치 '항상 허용' 안내를 노출해야 하는 경우
+class ShowBackgroundLocationNotice extends HomeUiEvent {
+  const ShowBackgroundLocationNotice();
+}
+
+/// 위치 '항상 허용' 안내에서 설정 화면을 열지 못한 경우
+class BackgroundLocationSettingsLaunchFailure extends HomeUiEvent {
+  const BackgroundLocationSettingsLaunchFailure();
 }

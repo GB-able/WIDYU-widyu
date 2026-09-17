@@ -10,6 +10,7 @@ import 'package:widyu/feature/home/home_screen.dart';
 import 'package:widyu/feature/management/management_screen.dart';
 import 'package:widyu/feature/myPage/my_page_screen.dart';
 import 'package:widyu/feature/notification_setting/notification_setting_screen.dart';
+import 'package:widyu/feature/permission/permission_screen.dart';
 import 'package:widyu/feature/point/point_screen.dart';
 import 'package:widyu/feature/profile/profile_screen.dart';
 import 'package:widyu/feature/splash_screen.dart';
@@ -44,6 +45,13 @@ class CustomRouter {
       CustomGoRoute.fadeRoute(
         route: AppRoute.splash,
         builder: (context, state) => const SplashScreen(),
+      ),
+      CustomGoRoute.fadeRoute(
+        route: AppRoute.permission,
+        builder: (context, state) => PermissionScreen(
+          nextPath:
+              state.uri.queryParameters['next'] ?? AppRoute.onboarding.path,
+        ),
       ),
       StatefulShellRoute.indexedStack(
         branches: [

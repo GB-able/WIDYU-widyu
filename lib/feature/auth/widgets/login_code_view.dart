@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
@@ -34,7 +36,7 @@ class LoginCodeView extends StatelessWidget {
           onTap: () {
             viewModel.login(
               onSuccess: () {
-                context.read<AppServiceController>().start();
+                unawaited(context.read<AppServiceController>().start());
                 context.go(AppRoute.home.path);
               },
               onFailure: (error) {

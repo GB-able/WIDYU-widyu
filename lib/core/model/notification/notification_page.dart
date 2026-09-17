@@ -9,7 +9,7 @@ abstract class NotificationPage with _$NotificationPage {
   const factory NotificationPage({
     required List<Notification> notifications,
     required bool hasNext,
-    required int nextCursor,
+    int? nextCursor,
   }) = _NotificationPage;
 
   factory NotificationPage.fromJson(Map<String, dynamic> json) =>

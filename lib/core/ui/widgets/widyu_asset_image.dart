@@ -7,6 +7,7 @@ class WidyuAssetImage extends StatelessWidget {
   final double? width;
   final double? height;
   final BoxFit? fit;
+  final Alignment alignment;
 
   /// 이미지 파일이 없거나 [name]이 비어있을 때 대신 그릴 위젯
   final Widget? fallback;
@@ -17,6 +18,7 @@ class WidyuAssetImage extends StatelessWidget {
     this.width,
     this.height,
     this.fit,
+    this.alignment = Alignment.center,
     this.fallback,
   });
 
@@ -29,6 +31,7 @@ class WidyuAssetImage extends StatelessWidget {
       width: width,
       height: height,
       fit: fit,
+      alignment: alignment,
       errorBuilder: (_, __, ___) => _buildFallback(),
     );
   }

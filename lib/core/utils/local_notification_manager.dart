@@ -1,11 +1,10 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 /// FCM 메시지를 수신했을 때 로컬 푸시를 띄우기 위한 범용 래퍼.
-/// 알림 표시/취소, 권한 요청, 알림 탭 처리(콜드 스타트 포함)를 담당한다.
+/// 알림 표시/취소, 알림 탭 처리(콜드 스타트 포함)를 담당한다.
 class LocalNotificationManager {
   LocalNotificationManager._();
 
@@ -31,7 +30,7 @@ class LocalNotificationManager {
     await _plugin.initialize(
       settings: const InitializationSettings(
         android: AndroidInitializationSettings('@mipmap/ic_launcher'),
-        // 권한은 requestPermission() 에서 명시적으로 요청한다.
+        // 초기화 시점에는 권한을 요청하지 않는다.
         iOS: DarwinInitializationSettings(
           requestAlertPermission: false,
           requestBadgePermission: false,
@@ -73,40 +72,6 @@ class LocalNotificationManager {
     _hasInitialLaunch = false;
     _initialPayload = null;
     return payload;
-  }
-
-  /// 알림 권한 보유 여부. Android 13+ 는 이 권한이 없으면 포그라운드 서비스 알림까지
-  /// 상태바에서 가려지므로, 온보딩에서 위치 권한과 함께 상태를 확인한다.
-  static Future<bool> hasPermission() async {
-    if (Platform.isAndroid) {
-      final enabled = await _plugin
-          .resolvePlatformSpecificImplementation<
-              AndroidFlutterLocalNotificationsPlugin>()
-          ?.areNotificationsEnabled();
-      return enabled ?? false;
-    }
-
-    return true;
-  }
-
-  static Future<bool> requestPermission() async {
-    if (Platform.isAndroid) {
-      final granted = await _plugin
-          .resolvePlatformSpecificImplementation<
-              AndroidFlutterLocalNotificationsPlugin>()
-          ?.requestNotificationsPermission();
-      return granted ?? false;
-    }
-
-    if (Platform.isIOS) {
-      final granted = await _plugin
-          .resolvePlatformSpecificImplementation<
-              IOSFlutterLocalNotificationsPlugin>()
-          ?.requestPermissions(alert: true, badge: true, sound: true);
-      return granted ?? false;
-    }
-
-    return false;
   }
 
   /// 로컬 푸시를 즉시 표시한다. FCM 메시지 수신 시의 진입점.

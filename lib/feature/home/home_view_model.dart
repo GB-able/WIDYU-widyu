@@ -15,11 +15,25 @@ import 'package:widyu/core/model/home/senior_card.dart';
 import 'package:widyu/core/model/location/user_location.dart';
 import 'package:widyu/core/model/myPage/user/user.dart';
 import 'package:widyu/core/model/notification/notification_page.dart';
+import 'package:widyu/core/model/permission/permission_type.dart';
+import 'package:widyu/core/model/permission/permission_recovery_prompt.dart';
+import 'package:widyu/core/utils/background_location_notice_controller.dart';
 import 'package:widyu/core/utils/camera_manager.dart';
 import 'package:widyu/core/utils/kakao_map_launcher.dart';
+import 'package:widyu/core/utils/permission_manager.dart';
+import 'package:widyu/core/utils/permission_recovery_controller.dart';
 import 'package:widyu/feature/home/home_ui_event.dart';
 import 'package:widyu/feature/home/home_ui_state.dart';
 import 'package:widyu/feature/home/notification_ui_model.dart';
+
+enum _CameraPermissionOutcome {
+  ready,
+  settingsGranted,
+  denied,
+  settingsDenied,
+  canceled,
+  settingsLaunchFailed,
+}
 
 class HomeViewModel with ChangeNotifier {
   final HomeRepository _homeRepository;
@@ -27,6 +41,17 @@ class HomeViewModel with ChangeNotifier {
   final NotificationRepository _notificationRepository;
   final HeartRateRepository _heartRateRepository;
   final LocationRepository _locationRepository;
+  final PermissionRecoveryController _permissionRecoveryController;
+
+  /// 소유권은 main.dart 의 Provider 에 있으므로 여기서 dispose 하지 않는다.
+  final BackgroundLocationNoticeController _noticeController;
+  final Future<CameraCaptureResult> Function() _takePhoto;
+  final Future<bool> Function({
+    required UserLocation destination,
+    UserLocation? start,
+    String? destinationName,
+    required KakaoMapRouteType routeType,
+  }) _openRoute;
 
   HomeUiState _uiState = HomeUiState.init();
   HomeUiState get uiState => _uiState;
@@ -42,6 +67,8 @@ class HomeViewModel with ChangeNotifier {
 
   // 중복 탭으로 카카오맵이 두 번 열리는 것을 막는다
   bool _isOpeningRoute = false;
+  bool _isTakingMedicationPhoto = false;
+  bool _isDisposed = false;
 
   HomeViewModel({
     required HomeRepository homeRepository,
@@ -49,17 +76,32 @@ class HomeViewModel with ChangeNotifier {
     required NotificationRepository notificationRepository,
     required HeartRateRepository heartRateRepository,
     required LocationRepository locationRepository,
-    required Future<bool> isPaired,
+    PermissionRecoveryController? permissionRecoveryController,
+    BackgroundLocationNoticeController? noticeController,
+    Future<CameraCaptureResult> Function()? takePhoto,
+    Future<bool> Function({
+      required UserLocation destination,
+      UserLocation? start,
+      String? destinationName,
+      required KakaoMapRouteType routeType,
+    })? openRoute,
   })  : _homeRepository = homeRepository,
         _heartRateRepository = heartRateRepository,
         _notificationRepository = notificationRepository,
         _myPageRepository = myPageRepository,
-        _locationRepository = locationRepository {
+        _locationRepository = locationRepository,
+        _permissionRecoveryController =
+            permissionRecoveryController ?? PermissionRecoveryController(),
+        _noticeController =
+            noticeController ?? BackgroundLocationNoticeController(),
+        _takePhoto = takePhoto ?? CameraManager.takePhoto,
+        _openRoute = openRoute ?? KakaoMapLauncher.openRoute {
     unawaited(_fetchNotification());
     unawaited(_fetchUser());
-    unawaited(_observeWatchConnection(isPaired));
+    _observeWatchConnection();
     unawaited(fetchHeartRate());
     unawaited(_fetchSeniorCard());
+    unawaited(_evaluateBackgroundLocationNotice());
     _medicationTicker = Timer.periodic(
       const Duration(seconds: 30),
       (_) => _applyMedicationStatus(),
@@ -67,6 +109,20 @@ class HomeViewModel with ChangeNotifier {
   }
 
   Future<void> refreshSeniorCard() => _fetchSeniorCard();
+
+  Future<void> _evaluateBackgroundLocationNotice() async {
+    final shouldShow = await _noticeController.claimNoticeIfNeeded();
+    if (_isDisposed || !shouldShow) return;
+    _uiEvent.add(const ShowBackgroundLocationNotice());
+  }
+
+  Future<void> openBackgroundLocationSettings() async {
+    final result = await _noticeController.openSettingsAndRecheck();
+    if (_isDisposed) return;
+    if (result == PermissionSettingsResult.launchFailed) {
+      _uiEvent.add(const BackgroundLocationSettingsLaunchFailure());
+    }
+  }
 
   Future<void> markNotificationAsRead(int notificationId) async {
     final previous = _uiState.notifications;
@@ -90,17 +146,75 @@ class HomeViewModel with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> takeMedicationPhoto() async {
-    final result = await CameraManager.takePhoto();
+  Future<void> takeMedicationPhoto(
+      {PermissionRecoveryPrompt? showPrompt}) async {
+    if (_isDisposed || _isTakingMedicationPhoto) return;
+    _isTakingMedicationPhoto = true;
+    try {
+      final outcome = await _resolveCameraPermission(
+        showPrompt ?? _cancelPermissionPrompt,
+      );
+      if (_isDisposed) return;
+      switch (outcome) {
+        case _CameraPermissionOutcome.ready:
+          await _captureMedicationPhoto();
+        case _CameraPermissionOutcome.settingsGranted:
+          _uiEvent.add(const CameraPermissionSettingsGranted());
+        case _CameraPermissionOutcome.denied:
+          _uiEvent.add(const RequestCameraPermissionFailure());
+        case _CameraPermissionOutcome.settingsDenied:
+          _uiEvent.add(const CameraPermissionSettingsDenied());
+        case _CameraPermissionOutcome.settingsLaunchFailed:
+          _uiEvent.add(const CameraPermissionSettingsLaunchFailure());
+        case _CameraPermissionOutcome.canceled:
+          break;
+      }
+    } finally {
+      _isTakingMedicationPhoto = false;
+    }
+  }
+
+  Future<_CameraPermissionOutcome> _resolveCameraPermission(
+    PermissionRecoveryPrompt showPrompt,
+  ) async {
+    var openedSettings = false;
+    final permission = await _permissionRecoveryController.ensurePermission(
+      PermissionType.camera,
+      showPrompt: (type, mode) async {
+        final action = await showPrompt(type, mode);
+        if (mode == PermissionRecoveryMode.settings &&
+            action == PermissionRecoveryAction.openSettings) {
+          openedSettings = true;
+        }
+        return action;
+      },
+    );
+
+    return switch (permission) {
+      PermissionRequestResult.granted => openedSettings
+          ? _CameraPermissionOutcome.settingsGranted
+          : _CameraPermissionOutcome.ready,
+      PermissionRequestResult.denied ||
+      PermissionRequestResult.permanentlyDenied ||
+      PermissionRequestResult.restricted ||
+      PermissionRequestResult.unsupported =>
+        openedSettings
+            ? _CameraPermissionOutcome.settingsDenied
+            : _CameraPermissionOutcome.denied,
+      PermissionRequestResult.settingsLaunchFailed =>
+        _CameraPermissionOutcome.settingsLaunchFailed,
+      PermissionRequestResult.canceled => _CameraPermissionOutcome.canceled,
+    };
+  }
+
+  Future<void> _captureMedicationPhoto() async {
+    final result = await _takePhoto();
+    if (_isDisposed) return;
     switch (result) {
       case CameraCaptureSuccess():
         _uiEvent.add(const TakeMedicationPhotoSuccess());
       case CameraCaptureCanceled():
         break;
-      case CameraPermissionDenied():
-        _uiEvent.add(const RequestCameraPermissionFailure());
-      case CameraPermissionPermanentlyDenied():
-        _uiEvent.add(const RequestCameraPermissionPermanentlyFailure());
       case CameraCaptureFailure():
         _uiEvent.add(const OpenCameraFailure());
     }
@@ -108,8 +222,9 @@ class HomeViewModel with ChangeNotifier {
 
   /// 건강 일정 장소로 향하는 카카오맵 길찾기를 연다.
   /// 현재 위치를 못 얻어도 목적지만으로 길찾기를 열 수 있으므로 위치 실패는 막지 않는다.
-  Future<void> openHealthScheduleRoute() async {
-    if (_isOpeningRoute) return;
+  Future<void> openHealthScheduleRoute(
+      {PermissionRecoveryPrompt? showPrompt}) async {
+    if (_isOpeningRoute || _isDisposed) return;
 
     final latitude = _uiState.healthScheduleLatitude;
     final longitude = _uiState.healthScheduleLongitude;
@@ -120,13 +235,17 @@ class HomeViewModel with ChangeNotifier {
 
     _isOpeningRoute = true;
     try {
-      final current = await _locationRepository.getCurrentLocation();
-      final isOpened = await KakaoMapLauncher.openRoute(
+      final current = await _resolveRouteStart(
+        showPrompt ?? _cancelPermissionPrompt,
+      );
+      if (_isDisposed) return;
+      final isOpened = await _openRoute(
         destination: UserLocation(latitude: latitude, longitude: longitude),
         start: current,
         destinationName: _uiState.healthSchedulePlace,
         routeType: KakaoMapRouteType.publicTransit,
       );
+      if (_isDisposed) return;
       if (!isOpened) {
         _uiEvent.add(const OpenKakaoMapFailure());
       }
@@ -134,6 +253,37 @@ class HomeViewModel with ChangeNotifier {
       _isOpeningRoute = false;
     }
   }
+
+  Future<UserLocation?> _resolveRouteStart(
+    PermissionRecoveryPrompt showPrompt,
+  ) async {
+    final permission = await _permissionRecoveryController.ensurePermission(
+      PermissionType.location,
+      showPrompt: showPrompt,
+    );
+    if (_isDisposed) return null;
+
+    switch (permission) {
+      case PermissionRequestResult.granted:
+        return _locationRepository.getCurrentLocation();
+      case PermissionRequestResult.settingsLaunchFailed:
+        _uiEvent.add(const LocationPermissionSettingsLaunchFailure());
+      case PermissionRequestResult.denied:
+      case PermissionRequestResult.permanentlyDenied:
+      case PermissionRequestResult.restricted:
+      case PermissionRequestResult.unsupported:
+        _uiEvent.add(const LocationPermissionUnavailable());
+      case PermissionRequestResult.canceled:
+        break;
+    }
+    return null;
+  }
+
+  static Future<PermissionRecoveryAction> _cancelPermissionPrompt(
+    PermissionType _,
+    PermissionRecoveryMode __,
+  ) async =>
+      PermissionRecoveryAction.cancel;
 
   Future<void> fetchHeartRate() async {
     _uiState = _uiState.copyWith(isHeartRateLoading: true);
@@ -225,11 +375,7 @@ class HomeViewModel with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> _observeWatchConnection(Future<bool> isPaired) async {
-    final isWearing = await isPaired;
-    _uiState = _uiState.copyWith(isWearing: isWearing);
-    notifyListeners();
-
+  void _observeWatchConnection() {
     _watchConnection =
         _heartRateRepository.observeConnection().listen((isWearing) {
       _uiState = _uiState.copyWith(isWearing: isWearing);
@@ -250,6 +396,8 @@ class HomeViewModel with ChangeNotifier {
 
   @override
   void dispose() {
+    _isDisposed = true;
+    _permissionRecoveryController.dispose();
     _watchConnection?.cancel();
     _medicationTicker?.cancel();
     _uiEvent.close();

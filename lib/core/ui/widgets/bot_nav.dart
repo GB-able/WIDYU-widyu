@@ -10,6 +10,8 @@ class BotNav extends StatelessWidget {
 
   const BotNav({super.key, required this.navigationShell});
 
+  static const height = 64.0;
+
   static const _routes = <({AppRoute route, String label, String icon})>[
     (route: AppRoute.home, label: "홈", icon: "home"),
     (route: AppRoute.goal, label: "목표", icon: "health"),
@@ -20,7 +22,7 @@ class BotNav extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 64 + MediaQuery.of(context).padding.bottom,
+      height: BotNav.height + MediaQuery.of(context).padding.bottom,
       decoration: BoxDecoration(
         borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
         color: MyColor.white,

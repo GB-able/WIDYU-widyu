@@ -42,6 +42,7 @@ import 'package:widyu/core/network/socket_client.dart';
 import 'package:widyu/core/network/token_manager.dart';
 import 'package:widyu/core/ui/theme/theme.dart';
 import 'package:widyu/core/utils/app_service_controller.dart';
+import 'package:widyu/core/utils/background_location_notice_controller.dart';
 import 'package:widyu/core/utils/local_notification_manager.dart';
 
 void main() {
@@ -88,7 +89,13 @@ Future<void> _bootstrap() async {
     MultiProvider(
       providers: [
         Provider<TokenManager>(create: (_) => TokenManager()),
-        Provider<AppServiceController>(create: (_) => AppServiceController()),
+        ChangeNotifierProvider<AppServiceController>(
+          create: (_) => AppServiceController(),
+        ),
+        Provider<BackgroundLocationNoticeController>(
+          create: (_) => BackgroundLocationNoticeController(),
+          dispose: (_, controller) => controller.dispose(),
+        ),
         Provider<ApiClient>(create: (_) => ApiClient()),
         Provider<SocketClient>(create: (_) => SocketClient()),
         ProxyProvider<ApiClient, AuthRemoteDataSource>(
@@ -171,14 +178,28 @@ class App extends StatefulWidget {
   State<App> createState() => _AppState();
 }
 
-class _AppState extends State<App> {
+class _AppState extends State<App> with WidgetsBindingObserver {
   late final AppServiceController _serviceController;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _serviceController = context.read<AppServiceController>();
-    _serviceController.start();
+    unawaited(_serviceController.start());
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      unawaited(_serviceController.refresh());
+    }
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
   }
 
   @override

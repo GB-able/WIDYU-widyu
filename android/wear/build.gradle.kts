@@ -13,11 +13,11 @@ buildscript {
 }
 
 android {
-    namespace = "com.example.widyu"
+    namespace = "com.gbable.widu"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.example.widyu"
+        applicationId = "com.gbable.widu"
         minSdk = 30
         targetSdk = 36
         versionCode = 1
