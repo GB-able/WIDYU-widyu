@@ -22,7 +22,7 @@ class ApiResponse<T> {
       statusCode: statusCode,
       code: json['code'] as String,
       message: json['message'] as String,
-      data: json['data'] != null && fromJsonT != null
+      data: json['data'] is Map<String, dynamic> && fromJsonT != null
           ? fromJsonT(json['data'] as Map<String, dynamic>)
           : null,
     );
