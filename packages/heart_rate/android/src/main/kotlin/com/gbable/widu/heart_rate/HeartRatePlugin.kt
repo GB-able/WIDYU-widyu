@@ -18,6 +18,7 @@ class HeartRatePlugin :
     MethodChannel.MethodCallHandler {
     private var methodChannel: MethodChannel? = null
     private var eventChannel: EventChannel? = null
+    private var sensorBatchChannel: EventChannel? = null
     private lateinit var nodeClient: NodeClient
     private lateinit var messageClient: MessageClient
 
@@ -25,6 +26,18 @@ class HeartRatePlugin :
     // StreamHandler 는 엔진마다 별도 인스턴스이므로,
     // 자신이 등록한 sink 만 정확히 회수할 수 있도록 따로 들고 있는다.
     private var eventSink: EventChannel.EventSink? = null
+    private var sensorBatchSink: EventChannel.EventSink? = null
+
+    private val sensorBatchStreamHandler = object : EventChannel.StreamHandler {
+        override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
+            sensorBatchSink = events
+            events?.let { sensorBatchSinks.add(it) }
+        }
+
+        override fun onCancel(arguments: Any?) {
+            releaseSensorBatchSink()
+        }
+    }
 
     override fun onAttachedToEngine(binding: FlutterPlugin.FlutterPluginBinding) {
         nodeClient = Wearable.getNodeClient(binding.applicationContext)
@@ -35,6 +48,10 @@ class HeartRatePlugin :
                 binding.binaryMessenger,
                 HEART_RATE_CHANNEL,
             ).apply { setStreamHandler(this@HeartRatePlugin) }
+        sensorBatchChannel =
+            EventChannel(binding.binaryMessenger, SENSOR_BATCH_CHANNEL).apply {
+                setStreamHandler(sensorBatchStreamHandler)
+            }
 
         methodChannel =
             MethodChannel(
@@ -45,7 +62,9 @@ class HeartRatePlugin :
 
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
         releaseEventSink()
+        releaseSensorBatchSink()
         eventChannel?.setStreamHandler(null)
+        sensorBatchChannel?.setStreamHandler(null)
         methodChannel?.setMethodCallHandler(null)
     }
 
@@ -83,6 +102,11 @@ class HeartRatePlugin :
         eventSink = null
     }
 
+    private fun releaseSensorBatchSink() {
+        sensorBatchSink?.let { sensorBatchSinks.remove(it) }
+        sensorBatchSink = null
+    }
+
     private fun sendHeartRateStatus(status: String) {
         nodeClient.connectedNodes.addOnSuccessListener { nodes ->
             if (nodes.isEmpty()) return@addOnSuccessListener
@@ -96,6 +120,7 @@ class HeartRatePlugin :
 
     companion object {
         private const val HEART_RATE_CHANNEL = "com.gbable.widu/heart_rate"
+        private const val SENSOR_BATCH_CHANNEL = "com.gbable.widu/sensor_batch"
         private const val HEART_RATE_STATUS_CHANNEL = "com.gbable.widu/heart_rate_status"
         private const val HEART_RATE_KEY = "heartRate"
         private const val TIMESTAMP_KEY = "timestamp"
@@ -105,6 +130,7 @@ class HeartRatePlugin :
         // Data Layer 콜백 스레드에서 등록·해제되고 메인 스레드에서 순회되므로
         // 동시 접근에 안전한 컬렉션을 사용한다.
         private val eventSinks = CopyOnWriteArraySet<EventChannel.EventSink>()
+        private val sensorBatchSinks = CopyOnWriteArraySet<EventChannel.EventSink>()
 
         fun sendHeartRate(
             heartRate: Int,
@@ -122,6 +148,19 @@ class HeartRatePlugin :
                     } catch (e: Exception) {
                         eventSinks.remove(sink)
                         Log.e("HeartRatePlugin", "Error sending heart rate to sink", e)
+                    }
+                }
+            }
+        }
+
+        fun sendSensorBatch(json: String) {
+            Handler(Looper.getMainLooper()).post {
+                sensorBatchSinks.forEach { sink ->
+                    try {
+                        sink.success(json)
+                    } catch (e: Exception) {
+                        sensorBatchSinks.remove(sink)
+                        Log.e("HeartRatePlugin", "Error sending sensor batch to sink", e)
                     }
                 }
             }

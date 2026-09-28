@@ -9,12 +9,16 @@ import 'package:widyu/core/data/repository/heartRate/heart_rate_repository.dart'
 import 'package:widyu/core/data/repository/heartRate/heart_rate_repository_impl.dart';
 import 'package:widyu/core/data/repository/location/location_repository.dart';
 import 'package:widyu/core/data/repository/location/location_repository_impl.dart';
+import 'package:widyu/core/data/repository/sensor/sensor_batch_repository.dart';
+import 'package:widyu/core/data/repository/sensor/sensor_batch_repository_impl.dart';
 import 'package:widyu/core/data/source/auth/auth_local_data_source_impl.dart';
 import 'package:widyu/core/data/source/auth/auth_remote_data_source_impl.dart';
 import 'package:widyu/core/data/source/heartRate/heart_rate_local_data_source_impl.dart';
 import 'package:widyu/core/data/source/heartRate/heart_rate_remote_data_source_impl.dart';
 import 'package:widyu/core/data/source/location/location_local_data_source_impl.dart';
 import 'package:widyu/core/data/source/location/location_remote_data_source_impl.dart';
+import 'package:widyu/core/data/source/sensor/sensor_batch_local_data_source_impl.dart';
+import 'package:widyu/core/data/source/sensor/sensor_batch_remote_data_source_impl.dart';
 import 'package:widyu/core/model/api/api_result.dart';
 import 'package:widyu/core/model/location/location_service_state.dart';
 import 'package:widyu/core/model/permission/permission_type.dart';
@@ -63,6 +67,7 @@ Future<bool> onIosBackground(ServiceInstance service) async {
   SocketClient socketClient,
   HeartRateRepository heartRateRepository,
   LocationRepository locationRepository,
+  SensorBatchRepository sensorBatchRepository,
 }) createDependencies() {
   final apiClient = ApiClient();
   final socketClient = SocketClient();
@@ -80,7 +85,14 @@ Future<bool> onIosBackground(ServiceInstance service) async {
       localDataSource: LocationLocalDataSourceImpl(),
       remoteDataSource:
           LocationRemoteDataSourceImpl(socketClient: socketClient),
-    )
+    ),
+    sensorBatchRepository: SensorBatchRepositoryImpl(
+      localDataSource: SensorBatchLocalDataSourceImpl(),
+      remoteDataSource: SensorBatchRemoteDataSourceImpl(
+        socketClient: socketClient,
+        apiClient: apiClient,
+      ),
+    ),
   );
 }
 
@@ -127,6 +139,7 @@ void onStart(ServiceInstance service) async {
     socketClient: socketClient,
     heartRateRepository: heartRateRepository,
     locationRepository: locationRepository,
+    sensorBatchRepository: sensorBatchRepository,
   ) = createDependencies();
 
   unawaited(connectSocket(socketClient));
@@ -147,6 +160,7 @@ void onStart(ServiceInstance service) async {
       await locationServiceState?.cancel();
       LocationServiceManager.stopMonitoring();
       heartRateRepository.stopObserveHeartRate();
+      sensorBatchRepository.stopObserveSensorBatches();
       locationRepository.stopLocationUpload();
       socketClient.disconnect();
       await service.stopSelf();
@@ -167,6 +181,7 @@ void onStart(ServiceInstance service) async {
   });
 
   heartRateRepository.observeHeartRate();
+  sensorBatchRepository.observeSensorBatches();
 
   if (service is AndroidServiceInstance) {
     service.on('setAsForeground').listen((event) {

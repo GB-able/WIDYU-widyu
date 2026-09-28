@@ -8,6 +8,8 @@ import com.google.android.gms.wearable.DataItem
 import com.google.android.gms.wearable.DataMapItem
 import com.google.android.gms.wearable.Wearable
 import com.google.android.gms.wearable.WearableListenerService
+import org.json.JSONObject
+import java.nio.charset.StandardCharsets
 
 class HeartRateListenerService : WearableListenerService() {
     override fun onDataChanged(dataEvents: DataEventBuffer) {
@@ -20,12 +22,29 @@ class HeartRateListenerService : WearableListenerService() {
                     path == HEART_RATE_PATH -> {
                         HeartRatePlugin.sendHeartRate(dataMap.getInt(HEART_RATE_KEY), dataMap.getLong(TIMESTAMP_KEY))
                     }
-                    // F4 검증용 수신. Flutter 로 넘기는 것은 F5 범위다.
                     path.startsWith(IMU_BATCH_PREFIX) -> {
+                        val body = dataMap.getByteArray(BODY_KEY)
+                        if (body == null) {
+                            Log.w(TAG, "IMU batch body missing path=$path")
+                            consume(item)
+                            return@forEach
+                        }
+                        val json = String(body, StandardCharsets.UTF_8)
+                        HeartRatePlugin.sendSensorBatch(json)
                         Log.d(TAG, "IMU received seq=${dataMap.getLong(SEQ_KEY)} path=$path")
                         consume(item)
                     }
                     path.startsWith(IMU_DROPPED_PREFIX) -> {
+                        HeartRatePlugin.sendSensorBatch(
+                            JSONObject()
+                                .put("stream", "imu_dropped")
+                                .put("session_id", dataMap.getString(SESSION_ID_KEY))
+                                .put("from_seq", dataMap.getLong(FROM_SEQ_KEY))
+                                .put("to_seq", dataMap.getLong(TO_SEQ_KEY))
+                                .put("reason", dataMap.getString(REASON_KEY))
+                                .put("ts_ms", dataMap.getLong(TS_MS_KEY))
+                                .toString(),
+                        )
                         Log.d(TAG, "IMU dropped from=${dataMap.getLong(FROM_SEQ_KEY)} to=${dataMap.getLong(TO_SEQ_KEY)}")
                         consume(item)
                     }
@@ -47,7 +66,11 @@ class HeartRateListenerService : WearableListenerService() {
         private const val IMU_BATCH_PREFIX = "/imu/batch/"
         private const val IMU_DROPPED_PREFIX = "/imu/dropped/"
         private const val SEQ_KEY = "seq"
+        private const val BODY_KEY = "body"
+        private const val SESSION_ID_KEY = "session_id"
         private const val FROM_SEQ_KEY = "from_seq"
         private const val TO_SEQ_KEY = "to_seq"
+        private const val REASON_KEY = "reason"
+        private const val TS_MS_KEY = "ts_ms"
     }
 }
