@@ -8,9 +8,11 @@ import android.os.Build
 import android.os.IBinder
 import android.util.Log
 import androidx.core.app.ServiceCompat
+import com.gbable.widu.BuildConfig
 import com.gbable.widu.data.model.MeasureResult
 import com.gbable.widu.data.repository.FallDetectionRepository
 import com.gbable.widu.data.repository.HeartRateRepository
+import com.gbable.widu.data.repository.ImuRepository
 import com.gbable.widu.presentation.util.WidyuNotificationManager
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -33,11 +35,15 @@ class HeartRateForegroundService : Service() {
     lateinit var fallDetectionRepository: FallDetectionRepository
 
     @Inject
+    lateinit var imuRepository: ImuRepository
+
+    @Inject
     lateinit var notificationManager: WidyuNotificationManager
 
     private val serviceScope: CoroutineScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
     private var isRunning: Boolean = false
     private var job: Job? = null
+    private var imuJob: Job? = null
 
     override fun onStartCommand(
         intent: Intent?,
@@ -90,11 +96,21 @@ class HeartRateForegroundService : Service() {
                         }
                     }
                 }.launchIn(serviceScope)
+
+        imuJob =
+            imuRepository
+                .batches()
+                .catch { Log.e("Widyu", "IMU collection error", it) }
+                .onEach { batch ->
+                    if (BuildConfig.DEBUG) Log.d("Widyu", "IMU batch seq=${batch.seq} n=${batch.acc?.values?.size}")
+                }.launchIn(serviceScope)
     }
 
     override fun onDestroy() {
         job?.cancel()
         job = null
+        imuJob?.cancel()
+        imuJob = null
         isRunning = false
         runBlocking { fallDetectionRepository.stopDetection() }
         super.onDestroy()

@@ -4,6 +4,8 @@ import com.gbable.widu.data.repository.FallDetectionRepository
 import com.gbable.widu.data.repository.FallDetectionRepositoryImpl
 import com.gbable.widu.data.repository.HeartRateRepository
 import com.gbable.widu.data.repository.HeartRateRepositoryImpl
+import com.gbable.widu.data.repository.ImuRepository
+import com.gbable.widu.data.repository.ImuRepositoryImpl
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -20,4 +22,8 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindFallDetectionRepository(impl: FallDetectionRepositoryImpl): FallDetectionRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindImuRepository(impl: ImuRepositoryImpl): ImuRepository
 }
