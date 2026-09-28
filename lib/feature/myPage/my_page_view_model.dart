@@ -32,7 +32,6 @@ class MyPageViewModel with ChangeNotifier {
         _authRepository = authRepository,
         _pointProvider = pointProvider {
     fetchUser();
-    unawaited(_pointProvider.ensureLoaded());
     _fetchAppVersion();
   }
 
