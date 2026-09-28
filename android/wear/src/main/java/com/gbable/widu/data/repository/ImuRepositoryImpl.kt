@@ -1,37 +1,39 @@
 package com.gbable.widu.data.repository
 
-import android.annotation.SuppressLint
-import android.content.Context
-import android.os.BatteryManager
-import android.provider.Settings
 import android.util.Log
-import com.gbable.widu.BuildConfig
 import com.gbable.widu.data.model.AxisSeries
 import com.gbable.widu.data.model.ClockInfo
 import com.gbable.widu.data.model.ImuBatch
 import com.gbable.widu.data.model.ImuConfig
 import com.gbable.widu.data.source.ClockLocalDataSource
+import com.gbable.widu.data.source.DeviceInfoLocalDataSource
 import com.gbable.widu.data.source.ImuLocalDataSource
+import com.gbable.widu.data.source.ImuRemoteDataSource
 import com.gbable.widu.data.util.ClockMapper
 import com.gbable.widu.data.util.ImuBatcher
-import dagger.hilt.android.qualifiers.ApplicationContext
+import com.gbable.widu.di.IoDispatcher
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.launch
-import java.io.BufferedWriter
-import java.io.File
-import java.io.FileOutputStream
+import kotlinx.coroutines.withContext
 import java.util.UUID
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 class ImuRepositoryImpl @Inject constructor(
-    @ApplicationContext private val context: Context,
     private val imuLocalDataSource: ImuLocalDataSource,
     private val clockLocalDataSource: ClockLocalDataSource,
+    private val deviceInfoLocalDataSource: DeviceInfoLocalDataSource,
+    private val imuRemoteDataSource: ImuRemoteDataSource,
     private val config: ImuConfig,
+    @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
 ) : ImuRepository {
+    /** 워치에 쌓아 둘 배치 상한. 기본 10분치(1초 배치면 600개). */
+    private val maxQueuedBatches: Int get() = config.queueMinutes * 60 / config.batchSec
+
     override fun batches(): Flow<ImuBatch> =
         channelFlow {
             val sessionId = UUID.randomUUID().toString()
@@ -43,7 +45,7 @@ class ImuRepositoryImpl @Inject constructor(
                 )
             var clock: ClockInfo = takeClock(clockMapper)
             var seq = 0L
-            val rawLog = if (BuildConfig.DEBUG) openRawLog() else null
+            val rawLog = deviceInfoLocalDataSource.openRawLog()
 
             val anchorJob =
                 launch {
@@ -54,20 +56,22 @@ class ImuRepositoryImpl @Inject constructor(
                 }
 
             suspend fun emit(series: AxisSeries) {
-                send(
+                val batch =
                     ImuBatch(
                         batchId = UUID.randomUUID().toString(),
-                        deviceId = deviceId(),
+                        deviceId = deviceInfoLocalDataSource.deviceId(),
                         sessionId = sessionId,
                         seq = seq++,
                         clock = clock,
                         acc = series,
                         gyroMode = config.gyroMode,
                         collectionMode = config.collectionMode,
-                        watchBatteryPct = batteryPercent(),
-                    ),
-                )
+                        watchBatteryPct = deviceInfoLocalDataSource.batteryPercent(),
+                    )
+                // 먼저 내보내고 전송한다. 전송이 실패해도 다음 배치는 계속 흐른다.
+                send(batch)
                 rawLog?.flush()
+                withContext(ioDispatcher) { transmit(batch) }
             }
 
             try {
@@ -82,27 +86,32 @@ class ImuRepositoryImpl @Inject constructor(
             }
         }
 
-    private fun takeClock(mapper: ClockMapper): ClockInfo {
-        val anchor = clockLocalDataSource.takeAnchor()
-        return mapper.onAnchor(clockLocalDataSource.bootId(), anchor.elapsedNs, anchor.epochMs, anchor.uncertaintyMs)
+    /** 전송·정리 실패는 삼킨다. 배치 수집을 멈출 이유가 되지 않는다. */
+    private suspend fun transmit(batch: ImuBatch) {
+        try {
+            transmitOrThrow(batch)
+        } catch (exception: CancellationException) {
+            throw exception
+        } catch (exception: Exception) {
+            Log.w(TAG, "Failed to transmit batch seq=${batch.seq}", exception)
+        }
     }
 
-    @SuppressLint("HardwareIds")
-    private fun deviceId(): String = "gw-" + Settings.Secure.getString(context.contentResolver, Settings.Secure.ANDROID_ID)
+    private suspend fun transmitOrThrow(batch: ImuBatch) {
+        imuRemoteDataSource.sendBatch(batch)
+        if (batch.seq % config.trimEverySeq != 0L) return
 
-    private fun batteryPercent(): Int? =
-        runCatching {
-            (context.getSystemService(Context.BATTERY_SERVICE) as BatteryManager)
-                .getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY)
-        }.getOrNull()
-
-    /** 기기-1 측정용 원시 로그. adb pull 로 꺼낸다. 릴리스에서는 열지 않는다. */
-    private fun openRawLog(): BufferedWriter? =
-        runCatching {
-            FileOutputStream(File(context.filesDir, "imu_raw.csv"), true).bufferedWriter()
-        }.onFailure { Log.w(TAG, "Failed to open raw IMU log", it) }.getOrNull()
+        val dropped = imuRemoteDataSource.trimQueue(batch.sessionId, maxQueuedBatches)
+        if (dropped.isEmpty()) return
+        imuRemoteDataSource.recordDrop(batch.sessionId, dropped.min(), dropped.max())
+    }
 
     private companion object {
         const val TAG = "Widyu"
+    }
+
+    private fun takeClock(mapper: ClockMapper): ClockInfo {
+        val anchor = clockLocalDataSource.takeAnchor()
+        return mapper.onAnchor(clockLocalDataSource.bootId(), anchor.elapsedNs, anchor.epochMs, anchor.uncertaintyMs)
     }
 }

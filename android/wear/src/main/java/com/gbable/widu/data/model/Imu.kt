@@ -14,6 +14,8 @@ data class ImuConfig(
     val backfillPostSec: Int = 10,
     val anchorIntervalMin: Int = 10,
     val queueMinutes: Int = 10,
+    /** 이 배수의 seq 마다 큐 길이를 정리한다. */
+    val trimEverySeq: Int = 30,
     val clockJumpToleranceMs: Double = 50.0,
 )
 

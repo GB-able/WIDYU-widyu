@@ -1,9 +1,12 @@
 package com.gbable.widu
 
+import android.util.Log
 import com.gbable.widu.heart_rate.HeartRatePlugin
 import com.google.android.gms.wearable.DataEvent
 import com.google.android.gms.wearable.DataEventBuffer
+import com.google.android.gms.wearable.DataItem
 import com.google.android.gms.wearable.DataMapItem
+import com.google.android.gms.wearable.Wearable
 import com.google.android.gms.wearable.WearableListenerService
 
 class HeartRateListenerService : WearableListenerService() {
@@ -11,19 +14,40 @@ class HeartRateListenerService : WearableListenerService() {
         dataEvents.forEach { event ->
             if (event.type == DataEvent.TYPE_CHANGED) {
                 val item = event.dataItem
-                if (item.uri.path == HEART_RATE_PATH) {
-                    val dataMap = DataMapItem.fromDataItem(item).dataMap
-                    val heartRate = dataMap.getInt(HEART_RATE_KEY)
-                    val timestamp = dataMap.getLong(TIMESTAMP_KEY)
-                    HeartRatePlugin.sendHeartRate(heartRate, timestamp)
+                val path = item.uri.path.orEmpty()
+                val dataMap = DataMapItem.fromDataItem(item).dataMap
+                when {
+                    path == HEART_RATE_PATH -> {
+                        HeartRatePlugin.sendHeartRate(dataMap.getInt(HEART_RATE_KEY), dataMap.getLong(TIMESTAMP_KEY))
+                    }
+                    // F4 검증용 수신. Flutter 로 넘기는 것은 F5 범위다.
+                    path.startsWith(IMU_BATCH_PREFIX) -> {
+                        Log.d(TAG, "IMU received seq=${dataMap.getLong(SEQ_KEY)} path=$path")
+                        consume(item)
+                    }
+                    path.startsWith(IMU_DROPPED_PREFIX) -> {
+                        Log.d(TAG, "IMU dropped from=${dataMap.getLong(FROM_SEQ_KEY)} to=${dataMap.getLong(TO_SEQ_KEY)}")
+                        consume(item)
+                    }
                 }
             }
         }
     }
 
+    /** 소비 완료 표시. 지우지 않으면 워치 쪽 큐가 줄지 않는다. */
+    private fun consume(item: DataItem) {
+        Wearable.getDataClient(this).deleteDataItems(item.uri)
+    }
+
     companion object {
+        private const val TAG = "Widyu"
         private const val HEART_RATE_PATH = "/heart_rate"
         private const val HEART_RATE_KEY = "heart_rate"
         private const val TIMESTAMP_KEY = "timestamp"
+        private const val IMU_BATCH_PREFIX = "/imu/batch/"
+        private const val IMU_DROPPED_PREFIX = "/imu/dropped/"
+        private const val SEQ_KEY = "seq"
+        private const val FROM_SEQ_KEY = "from_seq"
+        private const val TO_SEQ_KEY = "to_seq"
     }
 }

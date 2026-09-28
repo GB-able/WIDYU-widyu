@@ -2,6 +2,8 @@ package com.gbable.widu.di
 
 import com.gbable.widu.data.source.ClockLocalDataSource
 import com.gbable.widu.data.source.ClockLocalDataSourceImpl
+import com.gbable.widu.data.source.DeviceInfoLocalDataSource
+import com.gbable.widu.data.source.DeviceInfoLocalDataSourceImpl
 import com.gbable.widu.data.source.FallDetectionLocalDataSource
 import com.gbable.widu.data.source.FallDetectionLocalDataSourceImpl
 import com.gbable.widu.data.source.FallEventRemoteDataSource
@@ -12,6 +14,8 @@ import com.gbable.widu.data.source.HeartRateRemoteDataSource
 import com.gbable.widu.data.source.HeartRateRemoteDataSourceImpl
 import com.gbable.widu.data.source.ImuLocalDataSource
 import com.gbable.widu.data.source.ImuLocalDataSourceImpl
+import com.gbable.widu.data.source.ImuRemoteDataSource
+import com.gbable.widu.data.source.ImuRemoteDataSourceImpl
 import com.gbable.widu.data.source.OnboardingLocalDataSource
 import com.gbable.widu.data.source.OnboardingLocalDataSourceImpl
 import dagger.Binds
@@ -42,6 +46,14 @@ abstract class DataSourceModule {
     @Binds
     @Singleton
     abstract fun bindImuLocalDataSource(impl: ImuLocalDataSourceImpl): ImuLocalDataSource
+
+    @Binds
+    @Singleton
+    abstract fun bindImuRemoteDataSource(impl: ImuRemoteDataSourceImpl): ImuRemoteDataSource
+
+    @Binds
+    @Singleton
+    abstract fun bindDeviceInfoLocalDataSource(impl: DeviceInfoLocalDataSourceImpl): DeviceInfoLocalDataSource
 
     @Binds
     @Singleton
