@@ -1,24 +1,19 @@
 package com.gbable.widu.data.source
 
-import android.content.Context
 import android.util.Log
 import com.gbable.widu.data.model.HeartRateStatus
 import com.google.android.gms.wearable.DataClient
 import com.google.android.gms.wearable.MessageClient
 import com.google.android.gms.wearable.PutDataMapRequest
-import com.google.android.gms.wearable.Wearable
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import javax.inject.Inject
 
 class HeartRateRemoteDataSourceImpl @Inject constructor(
-    @ApplicationContext context: Context,
+    private val dataClient: DataClient,
+    private val messageClient: MessageClient,
 ) : HeartRateRemoteDataSource {
-    private val dataClient: DataClient by lazy { Wearable.getDataClient(context) }
-    private val messageClient: MessageClient by lazy { Wearable.getMessageClient(context) }
-
     override fun sendHeartRate(heartRate: Int) {
         val putDataReq =
             PutDataMapRequest.create(HEART_RATE_PATH).run {

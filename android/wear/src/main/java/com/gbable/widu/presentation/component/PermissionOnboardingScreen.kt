@@ -69,7 +69,7 @@ fun PermissionOnboardingScreen(
         Column(
             modifier =
                 Modifier
-                    .size(width = 128.dp, height = 64.dp)
+                    .width(128.dp)
                     .background(
                         color = WidyuTheme.colors.gray900,
                         shape = RoundedCornerShape(10.dp),
@@ -88,6 +88,14 @@ fun PermissionOnboardingScreen(
                 resId = R.drawable.ic_heart_rate,
                 title = "심박수",
                 description = "실시간 심박수 측정",
+            )
+
+            Spacer(modifier = Modifier.height(WidyuTheme.spacing.spaceXSmall))
+
+            PermissionContent(
+                resId = R.drawable.ic_caution,
+                title = "신체 활동",
+                description = "낙상 감지",
             )
         }
 

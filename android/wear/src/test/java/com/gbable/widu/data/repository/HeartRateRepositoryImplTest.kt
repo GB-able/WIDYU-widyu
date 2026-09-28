@@ -1,9 +1,9 @@
-package com.example.widyu.data.repository
+package com.gbable.widu.data.repository
 
-import com.example.widyu.data.model.HeartRateStatus
-import com.example.widyu.data.model.MeasureResult
-import com.example.widyu.data.source.HeartRateLocalDataSource
-import com.example.widyu.data.source.HeartRateRemoteDataSource
+import com.gbable.widu.data.model.HeartRateStatus
+import com.gbable.widu.data.model.MeasureResult
+import com.gbable.widu.data.source.HeartRateLocalDataSource
+import com.gbable.widu.data.source.HeartRateRemoteDataSource
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
