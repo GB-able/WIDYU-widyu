@@ -3,13 +3,18 @@ package com.gbable.widu.data.repository
 import android.util.Log
 import com.gbable.widu.data.model.AxisSeries
 import com.gbable.widu.data.model.ClockInfo
+import com.gbable.widu.data.model.ImpactTrigger
 import com.gbable.widu.data.model.ImuBatch
 import com.gbable.widu.data.model.ImuConfig
+import com.gbable.widu.data.model.ImuSample
+import com.gbable.widu.data.model.MissingReason
 import com.gbable.widu.data.source.ClockLocalDataSource
 import com.gbable.widu.data.source.DeviceInfoLocalDataSource
 import com.gbable.widu.data.source.ImuLocalDataSource
 import com.gbable.widu.data.source.ImuRemoteDataSource
 import com.gbable.widu.data.util.ClockMapper
+import com.gbable.widu.data.util.GyroRingBuffer
+import com.gbable.widu.data.util.ImpactDetector
 import com.gbable.widu.data.util.ImuBatcher
 import com.gbable.widu.di.IoDispatcher
 import kotlinx.coroutines.CancellationException
@@ -38,13 +43,20 @@ class ImuRepositoryImpl @Inject constructor(
         channelFlow {
             val sessionId = UUID.randomUUID().toString()
             val clockMapper = ClockMapper(config.clockJumpToleranceMs)
-            val batcher =
-                ImuBatcher(
-                    batchNs = TimeUnit.SECONDS.toNanos(config.batchSec.toLong()),
-                    fsHzRequested = config.accHz,
-                )
+            val batchNs = TimeUnit.SECONDS.toNanos(config.batchSec.toLong())
+            // 두 축은 시간축이 따로다. 샘플 수·t0 가 달라도 된다. (부록 A)
+            val accBatcher = ImuBatcher(batchNs, config.accHz)
+            val gyroBatcher = ImuBatcher(batchNs, config.accHz)
+            val ringBuffer = GyroRingBuffer(TimeUnit.SECONDS.toNanos(config.backfillPreSec.toLong()))
+            val detector = ImpactDetector(config.impactG)
+            val hasGyroscope = imuLocalDataSource.hasGyroscope()
+            val isResearch = config.collectionMode == RESEARCH_MODE
             var clock: ClockInfo = takeClock(clockMapper)
             var seq = 0L
+            /** 자이로가 배치보다 먼저 닫혔을 때 그 시리즈를 들고 있는다. */
+            var closedGyro: AxisSeries? = null
+            /** 보강 창의 끝. 이 시각까지 닫히는 배치에는 자이로를 싣는다. */
+            var postWindowEndNs = Long.MIN_VALUE
             val rawLog = deviceInfoLocalDataSource.openRawLog()
 
             val anchorJob =
@@ -55,7 +67,25 @@ class ImuRepositoryImpl @Inject constructor(
                     }
                 }
 
-            suspend fun emit(series: AxisSeries) {
+            suspend fun emit(
+                batch: ImuBatch,
+                urgent: Boolean,
+            ) {
+                // 먼저 내보내고 전송한다. 전송이 실패해도 다음 배치는 계속 흐른다.
+                send(batch)
+                rawLog?.flush()
+                withContext(ioDispatcher) { transmit(batch, urgent) }
+            }
+
+            /** 닫힌 가속도 배치를 자이로 첨부 여부와 함께 내보낸다. [nowNs] 는 배치가 닫힌 시각. */
+            suspend fun emitAcc(
+                series: AxisSeries,
+                nowNs: Long,
+                trigger: ImpactTrigger?,
+            ): ImuBatch {
+                val gyro = closedGyro?.also { closedGyro = null } ?: gyroBatcher.flush()
+                // 연구 세션 모드에는 평시 생략이 없다. 제품 모드는 보강 창 안에서만 싣는다. (A 1.6.4)
+                val attach = hasGyroscope && (isResearch || nowNs <= postWindowEndNs)
                 val batch =
                     ImuBatch(
                         batchId = UUID.randomUUID().toString(),
@@ -64,22 +94,78 @@ class ImuRepositoryImpl @Inject constructor(
                         seq = seq++,
                         clock = clock,
                         acc = series,
+                        // 자이로가 없으면 null 이다. 0 으로 채우지 않는다. (A 1.2.6)
+                        gyro = if (attach) gyro else null,
+                        trigger = trigger,
+                        gyroMode = config.gyroMode,
+                        collectionMode = config.collectionMode,
+                        missingReason =
+                            when {
+                                !hasGyroscope -> MissingReason.SENSOR_UNSUPPORTED
+                                attach -> null
+                                else -> MissingReason.OMITTED_BY_MODE
+                            },
+                        watchBatteryPct = deviceInfoLocalDataSource.batteryPercent(),
+                    )
+                emit(batch, urgent = trigger != null)
+                return batch
+            }
+
+            /** 링버퍼에 담아 둔 충격 직전 [ImuConfig.backfillPreSec] 초를 별도 배치로 보낸다. */
+            suspend fun emitBackfill(
+                eventNs: Long,
+                impactBatch: ImuBatch,
+            ) {
+                val series = ImuBatcher.samplesToSeries(ringBuffer.takeBefore(eventNs), config.accHz) ?: return
+                emit(
+                    ImuBatch(
+                        batchId = UUID.randomUUID().toString(),
+                        deviceId = deviceInfoLocalDataSource.deviceId(),
+                        sessionId = sessionId,
+                        seq = seq++,
+                        clock = clock,
+                        acc = null,
+                        gyro = series,
+                        gyroBackfill = true,
+                        backfillFor = impactBatch.batchId,
                         gyroMode = config.gyroMode,
                         collectionMode = config.collectionMode,
                         watchBatteryPct = deviceInfoLocalDataSource.batteryPercent(),
-                    )
-                // 먼저 내보내고 전송한다. 전송이 실패해도 다음 배치는 계속 흐른다.
-                send(batch)
-                rawLog?.flush()
-                withContext(ioDispatcher) { transmit(batch) }
+                    ),
+                    urgent = true,
+                )
             }
 
             try {
                 imuLocalDataSource.samples().collect { sample ->
                     rawLog?.appendLine("${sample.timestampNs},${sample.x},${sample.y},${sample.z}")
-                    batcher.add(sample)?.let { emit(it) }
+                    if (sample.type == ImuSample.Type.GYRO) {
+                        ringBuffer.add(sample)
+                        gyroBatcher.add(sample)?.let { closedGyro = it }
+                        return@collect
+                    }
+
+                    // 배치 절단 기준은 가속도다.
+                    accBatcher.add(sample)?.let { emitAcc(it, sample.timestampNs, trigger = null) }
+
+                    val smvG = detector.check(sample) ?: return@collect
+                    val eventNs = sample.timestampNs
+                    // 창이 활성인 동안의 문턱 초과는 같은 충격의 연속이다. 배치를 다시 끊지 않고 창만 연장한다.
+                    // 그렇지 않으면 스파이크가 지속되는 수 샘플마다 1샘플짜리 trigger 배치가 연달아 나간다.
+                    val windowWasActive = eventNs <= postWindowEndNs
+                    postWindowEndNs = eventNs + TimeUnit.SECONDS.toNanos(config.backfillPostSec.toLong())
+                    if (windowWasActive) return@collect
+                    val trigger =
+                        ImpactTrigger(
+                            smvG = smvG,
+                            eventElapsedNs = eventNs,
+                            tsMs = clock.anchorEpochMs + (eventNs - clock.anchorElapsedNs) / NANOS_PER_MILLI,
+                        )
+                    // 충격 배치는 기다리지 않고 그 자리에서 닫아 즉시 보낸다.
+                    val impactBatch = accBatcher.flush()?.let { emitAcc(it, eventNs, trigger) } ?: return@collect
+                    emitBackfill(eventNs, impactBatch)
                 }
-                batcher.flush()?.let { emit(it) }
+                accBatcher.flush()?.let { emitAcc(it, it.t0ElapsedNs, trigger = null) }
             } finally {
                 anchorJob.cancel()
                 runCatching { rawLog?.close() }
@@ -87,9 +173,12 @@ class ImuRepositoryImpl @Inject constructor(
         }
 
     /** 전송·정리 실패는 삼킨다. 배치 수집을 멈출 이유가 되지 않는다. */
-    private suspend fun transmit(batch: ImuBatch) {
+    private suspend fun transmit(
+        batch: ImuBatch,
+        urgent: Boolean,
+    ) {
         try {
-            transmitOrThrow(batch)
+            transmitOrThrow(batch, urgent)
         } catch (exception: CancellationException) {
             throw exception
         } catch (exception: Exception) {
@@ -97,8 +186,11 @@ class ImuRepositoryImpl @Inject constructor(
         }
     }
 
-    private suspend fun transmitOrThrow(batch: ImuBatch) {
-        imuRemoteDataSource.sendBatch(batch)
+    private suspend fun transmitOrThrow(
+        batch: ImuBatch,
+        urgent: Boolean,
+    ) {
+        imuRemoteDataSource.sendBatch(batch, urgent)
         if (batch.seq % config.trimEverySeq != 0L) return
 
         val dropped = imuRemoteDataSource.trimQueue(batch.sessionId, maxQueuedBatches)
@@ -108,6 +200,8 @@ class ImuRepositoryImpl @Inject constructor(
 
     private companion object {
         const val TAG = "Widyu"
+        const val RESEARCH_MODE = "research"
+        const val NANOS_PER_MILLI = 1_000_000L
     }
 
     private fun takeClock(mapper: ClockMapper): ClockInfo {

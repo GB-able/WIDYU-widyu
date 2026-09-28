@@ -7,6 +7,10 @@ package com.gbable.widu.data.model
 data class ImuConfig(
     val accHz: Int = 50,
     val batchSec: Int = 1,
+    /**
+     * `continuous` / `trigger` 둘뿐. 끄는 값은 없다(A 1.6.4).
+     * 지시서가 두 값의 동작 차이를 명시하지 않아 배치에 에코만 한다.
+     */
     val gyroMode: String = "continuous",
     val collectionMode: String = "product",
     val impactG: Float = 1.8f,
@@ -18,6 +22,27 @@ data class ImuConfig(
     val trimEverySeq: Int = 30,
     val clockJumpToleranceMs: Double = 50.0,
 )
+
+/**
+ * 충격 표시. 낙상 판정이 아니다 — 「이 구간의 자이로를 빠뜨리지 말라」는 신호일 뿐이다. (A 1.6.4)
+ */
+data class ImpactTrigger(
+    val kind: String = "impact",
+    val smvG: Float,
+    val eventElapsedNs: Long,
+    val tsMs: Long,
+)
+
+/**
+ * 자이로가 없을 때의 사유. 「평시 생략」·「센서 미지원」·「권한 거부」·「결측」은 다른 사실이다. (A 1.2.6)
+ * 값 목록은 아직 정해지지 않았다(정책서 합의 대기 S2). 확정되면 여기 값만 바꾼다.
+ */
+object MissingReason {
+    const val OMITTED_BY_MODE = "omitted_by_mode"
+    const val SENSOR_UNSUPPORTED = "sensor_unsupported"
+    const val PERMISSION_DENIED = "permission_denied"
+    const val MISSING = "missing"
+}
 
 data class ImuSample(
     val type: Type,

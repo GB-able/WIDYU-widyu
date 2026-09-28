@@ -2,6 +2,7 @@ package com.gbable.widu.data.util
 
 import com.gbable.widu.data.model.AxisSeries
 import com.gbable.widu.data.model.ClockInfo
+import com.gbable.widu.data.model.ImpactTrigger
 import com.gbable.widu.data.model.ImuBatch
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.shouldBe
@@ -107,5 +108,28 @@ class ImuBatchJsonTest {
         map["gyro_mode"] shouldBe "continuous"
         map["collection_mode"] shouldBe "product"
         map["watch_battery_pct"] shouldBe 63
+    }
+
+    @Test
+    @DisplayName("충격 표시와 보강 배치 표시는 부록 A 키로 실린다")
+    fun triggerAndBackfillKeys() {
+        // given
+        val map =
+            batch.copy(
+                trigger = ImpactTrigger(smvG = 3.2f, eventElapsedNs = 993_849_330_000_001L, tsMs = 1_760_000_000_600L),
+                gyroBackfill = true,
+                backfillFor = "batch-0",
+            ).toMap()
+
+        // when
+        val trigger = map["trigger"] as Map<*, *>
+
+        // then
+        trigger["kind"] shouldBe "impact"
+        trigger["smv_g"] shouldBe 3.2f
+        trigger["event_elapsed_ns"] shouldBe "993849330000001"
+        trigger["ts_ms"] shouldBe 1_760_000_000_600L
+        map["gyro_backfill"] shouldBe true
+        map["backfill_for"] shouldBe "batch-0"
     }
 }

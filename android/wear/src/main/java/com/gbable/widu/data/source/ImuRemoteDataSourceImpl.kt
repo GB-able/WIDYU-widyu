@@ -17,15 +17,18 @@ import kotlin.coroutines.resumeWithException
 class ImuRemoteDataSourceImpl @Inject constructor(
     private val dataClient: DataClient,
 ) : ImuRemoteDataSource {
-    override suspend fun sendBatch(batch: ImuBatch) {
-        // setUrgent() 를 붙이지 않는다. 평시 배치는 지연 동기화로 충분하고, 그래야 배터리를 덜 쓴다.
+    override suspend fun sendBatch(
+        batch: ImuBatch,
+        urgent: Boolean,
+    ) {
+        // 평시 배치에는 setUrgent() 를 붙이지 않는다. 지연 동기화로 충분하고, 그래야 배터리를 덜 쓴다.
         runSafely("send batch seq=${batch.seq}") {
             val request =
                 PutDataMapRequest.create("$BATCH_PREFIX/${batch.sessionId}/${batch.seq}").run {
                     dataMap.putByteArray(KEY_BODY, batch.toJson().toString().toByteArray())
                     dataMap.putLong(KEY_SEQ, batch.seq)
                     dataMap.putLong(KEY_TIMESTAMP, System.currentTimeMillis())
-                    asPutDataRequest()
+                    asPutDataRequest().apply { if (urgent) setUrgent() }
                 }
             dataClient.putDataItem(request).awaitResult()
         }

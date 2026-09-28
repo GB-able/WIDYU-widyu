@@ -9,9 +9,13 @@ data class ImuBatch(
     val clock: ClockInfo,
     val acc: AxisSeries?,
     val gyro: AxisSeries? = null,
-    val trigger: Map<String, Any?>? = null,
+    val trigger: ImpactTrigger? = null,
     val gyroMode: String,
     val collectionMode: String,
+    /** 직전 2초 자이로를 따로 싣는 보강 배치인가. */
+    val gyroBackfill: Boolean = false,
+    /** 보강 대상인 충격 배치의 batch_id. */
+    val backfillFor: String? = null,
     val missingReason: String? = null,
     val onBody: Boolean? = null,
     val watchBatteryPct: Int? = null,
@@ -52,7 +56,9 @@ data class ImuBatch(
             "clock_mapping_id" to clock.clockMappingId,
             "acc" to acc?.toMap("mg"),
             "gyro" to gyro?.toMap("mrads"),
-            "trigger" to trigger,
+            "trigger" to trigger?.toMap(),
+            "gyro_backfill" to gyroBackfill,
+            "backfill_for" to backfillFor,
             "gyro_mode" to gyroMode,
             "collection_mode" to collectionMode,
             "missing_reason" to missingReason,
@@ -66,6 +72,14 @@ data class ImuBatch(
         const val SOURCE = "watch"
     }
 }
+
+private fun ImpactTrigger.toMap(): Map<String, Any?> =
+    mapOf(
+        "kind" to kind,
+        "smv_g" to smvG,
+        "event_elapsed_ns" to eventElapsedNs.toString(),
+        "ts_ms" to tsMs,
+    )
 
 private fun AxisSeries.toMap(valuesKey: String): Map<String, Any?> =
     mapOf(

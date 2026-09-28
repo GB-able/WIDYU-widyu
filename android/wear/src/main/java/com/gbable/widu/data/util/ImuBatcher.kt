@@ -46,7 +46,21 @@ class ImuBatcher(
         return series
     }
 
-    private companion object {
+    companion object {
+        /** 링버퍼처럼 이미 모아 둔 샘플을 한 배치로 옮긴다. 시각은 원 타임스탬프 그대로 쓴다. */
+        fun samplesToSeries(
+            samples: List<ImuSample>,
+            fsHz: Int,
+        ): AxisSeries? {
+            if (samples.isEmpty()) return null
+            return AxisSeries(
+                fsHzRequested = fsHz,
+                t0ElapsedNs = samples.first().timestampNs,
+                dtNs = LongArray(samples.size - 1) { samples[it + 1].timestampNs - samples[it].timestampNs },
+                values = samples.map { it.toInts() },
+            )
+        }
+
         /** SensorEvent 배칭이 허용하는 최대 간격(uint32 ns). 이보다 벌어지면 시간축이 끊긴 것으로 본다. */
         const val MAX_GAP_NS = 4_294_967_295L
     }
