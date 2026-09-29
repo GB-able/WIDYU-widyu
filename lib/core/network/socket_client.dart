@@ -82,7 +82,11 @@ class SocketClient {
       log('Sensor result not subscribed yet, cannot send sensor batch.');
       return false;
     }
-    return _send(_sensorBatchDestination, json, 'sensor batch');
+    return _send(
+      _sensorBatchDestination,
+      json,
+      'sensor batch',
+    );
   }
 
   void _subscribeSensorResult() {

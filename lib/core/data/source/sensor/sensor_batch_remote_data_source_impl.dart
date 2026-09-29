@@ -22,10 +22,10 @@ class SensorBatchRemoteDataSourceImpl implements SensorBatchRemoteDataSource {
   @override
   Future<bool> resendBatches(List<Map<String, dynamic>> batches) async {
     try {
-      // ApiClient 가 /api 를 붙이므로 최종 경로는 /api/v1/sensor/batches 다.
+      // ApiClient 가 /api 와 /v1 을 붙이므로 최종 경로는 /api/v1/sensor/batches 다.
       // {"batches": [...]} 래핑은 서버 요청 스키마 확정 전까지의 가정이다.
       final response = await _apiClient.req(
-        path: '/v1/sensor/batches',
+        path: '/sensor/batches',
         method: HttpMethod.post,
         body: {'batches': batches},
       );
