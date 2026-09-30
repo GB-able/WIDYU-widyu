@@ -1,3 +1,5 @@
+import 'package:widyu/core/model/sensor/sensor_batch.dart';
+
 abstract class SensorBatchLocalDataSource {
-  Stream<Map<String, dynamic>> getSensorBatches();
+  Stream<SensorMessage> getSensorBatches();
 }

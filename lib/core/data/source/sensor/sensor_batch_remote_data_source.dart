@@ -1,7 +1,11 @@
-abstract class SensorBatchRemoteDataSource {
-  bool sendBatch(Map<String, dynamic> batch);
+import 'package:widyu/core/model/sensor/sensor_batch.dart';
 
-  Future<bool> resendBatches(List<Map<String, dynamic>> batches);
+abstract class SensorBatchRemoteDataSource {
+  bool sendBatch(SensorBatch batch);
+
+  Future<bool> resendBatches(List<SensorBatch> batches);
+
+  bool sendDropped(SensorDroppedRecord record);
 
   Stream<bool> get connectionState;
 }

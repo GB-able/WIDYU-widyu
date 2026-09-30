@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:widyu/core/data/repository/sensor/sensor_batch_repository_impl.dart';
 import 'package:widyu/core/data/source/sensor/sensor_batch_local_data_source.dart';
 import 'package:widyu/core/data/source/sensor/sensor_batch_remote_data_source.dart';
+import 'package:widyu/core/model/sensor/sensor_batch.dart';
 
 void main() {
   late _LocalDataSource local;
@@ -56,20 +57,19 @@ void main() {
     for (var index = 0; index < resent.length; index++) {
       final resentBatch = resent[index];
       final original = [batch, secondBatch][index];
-      final resend = resentBatch['resend'] as Map<String, dynamic>;
-      expect(resend['is_resend'], isTrue);
-      expect(resend['original_batch_id'], original['batch_id']);
-      expect(resend['original_seq'], original['seq']);
-      expect(resend['original_run_id'], original['run_id']);
-      expect(resend['original_session_id'], original['session_id']);
+      final resend = resentBatch.resend!;
+      expect(resend.isResend, isTrue);
+      expect(resend.originalBatchId, original.batchId);
+      expect(resend.originalSeq, original.seq);
+      expect(resend.originalRunId, original.runId);
+      expect(resend.originalSessionId, original.sessionId);
       expect(
-          resend['resent_at_ms'],
+          resend.resentAtMs,
           inInclusiveRange(DateTime.now().millisecondsSinceEpoch - 1000,
               DateTime.now().millisecondsSinceEpoch));
-      final copied = Map<String, dynamic>.from(resentBatch)..remove('resend');
-      expect(copied, original);
+      expect(resentBatch.copyWith(resend: null), original);
     }
-    expect(batch.containsKey('resend'), isFalse);
+    expect(batch.resend, isNull);
 
     remote.connection.add(true);
     await _settle();
@@ -86,7 +86,7 @@ void main() {
     remote.connection.add(true);
     await _settle();
 
-    expect(remote.resent.single.map((batch) => batch['seq']), [2, 3]);
+    expect(remote.resent.single.map((batch) => batch.seq), [2, 3]);
   });
 
   test('REST 재전송 실패 시 대기열을 유지한다', () async {
@@ -102,7 +102,7 @@ void main() {
     await _settle();
 
     expect(remote.resent, hasLength(2));
-    expect(remote.resent.last.single['seq'], 1);
+    expect(remote.resent.last.single.seq, 1);
   });
 
   test('REST 진행 중 새 배치와 상한 초과는 다음 재전송에 순서대로 반영한다', () async {
@@ -126,7 +126,7 @@ void main() {
 
     remote.connection.add(true);
     await _settle();
-    expect(remote.resent.last.map((batch) => batch['seq']), [3, 4]);
+    expect(remote.resent.last.map((batch) => batch.seq), [3, 4]);
   });
 
   testWidgets('재시도 타이머가 대기열을 재전송한다', (tester) async {
@@ -143,7 +143,7 @@ void main() {
 
     await tester.pump(const Duration(seconds: 1));
 
-    expect(remote.resent.single.single['seq'], 1);
+    expect(remote.resent.single.single.seq, 1);
     repository.stopObserveSensorBatches();
   });
 
@@ -159,36 +159,77 @@ void main() {
 
     expect(remote.resent, hasLength(2));
   });
+
+  test('폐기 레코드는 즉시 보내고 실패해도 대기열에 쌓지 않는다', () async {
+    remote.sendSucceeds = false;
+    local.addDropped(_dropped());
+    await _settle();
+
+    expect(remote.dropped, hasLength(1));
+    remote.connection.add(true);
+    await _settle();
+    expect(remote.resent, isEmpty);
+  });
 }
 
 Future<void> _settle() => Future<void>.delayed(Duration.zero);
 
-Map<String, dynamic> _batch(int seq, {String? runId}) => {
-      'batch_id': 'batch-$seq',
-      'seq': seq,
-      'run_id': runId,
-      'session_id': 'session-1',
-      'timestamp': 1000 + seq,
-      'accel': {
-        'samples': [seq, seq + 1],
-      },
-    };
+SensorBatch _batch(int seq, {String? runId}) => SensorBatch(
+      batchId: 'batch-$seq',
+      deviceId: 'device-1',
+      sessionId: 'session-1',
+      seq: seq,
+      runId: runId,
+      bootId: 'boot-1',
+      clockMappingId: 'mapping-1',
+      clock: const ClockInfo(
+        bootId: 'boot-1',
+        clockMappingId: 'mapping-1',
+        anchorElapsedNs: '123456789012345',
+        anchorEpochMs: 1758000000000,
+        uncertaintyMs: 1,
+      ),
+      acc: AccSeries(
+        fsHzRequested: 50,
+        n: 2,
+        t0ElapsedNs: '123456789012345',
+        dtNs: const [20000000],
+        mg: [
+          [seq, seq + 1, 1000],
+          [seq + 2, seq + 3, 1001],
+        ],
+      ),
+      gyroMode: 'continuous',
+      collectionMode: 'product',
+    );
+
+SensorDroppedRecord _dropped() => const SensorDroppedRecord(
+      sessionId: 'session-1',
+      fromSeq: 10,
+      toSeq: 15,
+      reason: 'queue_full',
+      tsMs: 1758000000200,
+    );
 
 class _LocalDataSource implements SensorBatchLocalDataSource {
-  final _controller = StreamController<Map<String, dynamic>>.broadcast();
+  final _controller = StreamController<SensorMessage>.broadcast();
 
-  void add(Map<String, dynamic> batch) => _controller.add(batch);
+  void add(SensorBatch batch) => _controller.add(SensorMessage.batch(batch));
+
+  void addDropped(SensorDroppedRecord record) =>
+      _controller.add(SensorMessage.dropped(record));
 
   @override
-  Stream<Map<String, dynamic>> getSensorBatches() => _controller.stream;
+  Stream<SensorMessage> getSensorBatches() => _controller.stream;
 
   void dispose() => _controller.close();
 }
 
 class _RemoteDataSource implements SensorBatchRemoteDataSource {
   final connection = StreamController<bool>.broadcast();
-  final sent = <Map<String, dynamic>>[];
-  final resent = <List<Map<String, dynamic>>>[];
+  final sent = <SensorBatch>[];
+  final resent = <List<SensorBatch>>[];
+  final dropped = <SensorDroppedRecord>[];
   bool sendSucceeds = true;
   bool resendSucceeds = true;
   Future<bool>? nextResend;
@@ -198,13 +239,19 @@ class _RemoteDataSource implements SensorBatchRemoteDataSource {
   Stream<bool> get connectionState => connection.stream;
 
   @override
-  bool sendBatch(Map<String, dynamic> batch) {
+  bool sendBatch(SensorBatch batch) {
     sent.add(batch);
     return sendSucceeds;
   }
 
   @override
-  Future<bool> resendBatches(List<Map<String, dynamic>> batches) {
+  bool sendDropped(SensorDroppedRecord record) {
+    dropped.add(record);
+    return sendSucceeds;
+  }
+
+  @override
+  Future<bool> resendBatches(List<SensorBatch> batches) {
     resent.add(batches);
     if (throwNextResend) {
       throwNextResend = false;
