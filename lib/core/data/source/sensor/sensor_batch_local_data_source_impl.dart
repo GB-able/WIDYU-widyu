@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:developer';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:widyu/core/data/source/sensor/sensor_batch_local_data_source.dart';
 import 'package:widyu/core/model/sensor/sensor_batch.dart';
@@ -19,7 +20,12 @@ class SensorBatchLocalDataSourceImpl implements SensorBatchLocalDataSource {
     try {
       return SensorMessage.fromJson(jsonDecode(raw) as Map<String, dynamic>);
     } catch (error, stackTrace) {
-      log('Sensor message parse failed: $error', stackTrace: stackTrace);
+      // 파싱 예외 메시지는 원문 센서 값을 품을 수 있어 디버그 빌드에서만 남긴다.
+      if (kDebugMode) {
+        log('Sensor message parse failed: $error', stackTrace: stackTrace);
+      } else {
+        log('Sensor message parse failed.');
+      }
       return null;
     }
   }

@@ -84,7 +84,8 @@ class HeartRateForegroundService : Service() {
                 .onEach { result ->
                     when (result) {
                         is MeasureResult.Availability -> Unit
-                        is MeasureResult.HeartRate -> Log.d("Widyu", "Service Heart Rate: ${result.value}")
+                        is MeasureResult.HeartRate ->
+                            if (BuildConfig.DEBUG) Log.d("Widyu", "Service Heart Rate: ${result.value}")
                         is MeasureResult.SessionSuperseded -> {
                             notificationManager.showRestartNotification()
                         }

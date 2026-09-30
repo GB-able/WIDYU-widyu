@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:stomp_dart_client/stomp_dart_client.dart';
 import 'package:widyu/core/model/heartRate/heart_rate_request.dart';
@@ -55,7 +56,7 @@ class SocketClient {
           _onLost();
         },
         onStompError: (StompFrame frame) {
-          log('STOMP Error: ${frame.body}');
+          if (kDebugMode) log('STOMP Error: ${frame.body}');
           _onLost();
         },
         onDisconnect: (StompFrame frame) => _onLost(),
@@ -97,7 +98,7 @@ class SocketClient {
       callback: (StompFrame frame) {
         final body = frame.body;
         if (body == null) return;
-        log('Sensor result: $body');
+        log('Sensor result received.');
         _sensorResultController.add(body);
       },
     );
