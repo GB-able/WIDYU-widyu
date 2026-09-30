@@ -9,6 +9,9 @@ abstract class UserLocation with _$UserLocation {
     String? memberId,
     required double latitude,
     required double longitude,
+    int? measuredAt,
+    double? accuracyM,
+    double? speedMps,
   }) = _UserLocation;
 
   factory UserLocation.fromJson(Map<String, dynamic> json) =>

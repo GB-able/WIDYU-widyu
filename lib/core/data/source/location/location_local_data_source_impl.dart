@@ -35,6 +35,9 @@ class LocationLocalDataSourceImpl extends LocationLocalDataSource {
       return UserLocation(
         latitude: position.latitude,
         longitude: position.longitude,
+        measuredAt: position.timestamp.millisecondsSinceEpoch,
+        accuracyM: position.accuracy,
+        speedMps: position.speed,
       );
     });
   }
@@ -64,6 +67,9 @@ class LocationLocalDataSourceImpl extends LocationLocalDataSource {
       return UserLocation(
         latitude: position.latitude,
         longitude: position.longitude,
+        measuredAt: position.timestamp.millisecondsSinceEpoch,
+        accuracyM: position.accuracy,
+        speedMps: position.speed,
       );
     } catch (e) {
       log('현재 위치 조회 실패: $e');

@@ -17,6 +17,9 @@ mixin _$UserLocation {
   String? get memberId;
   double get latitude;
   double get longitude;
+  int? get measuredAt;
+  double? get accuracyM;
+  double? get speedMps;
 
   /// Create a copy of UserLocation
   /// with the given fields replaced by the non-null parameter values.
@@ -39,16 +42,23 @@ mixin _$UserLocation {
             (identical(other.latitude, latitude) ||
                 other.latitude == latitude) &&
             (identical(other.longitude, longitude) ||
-                other.longitude == longitude));
+                other.longitude == longitude) &&
+            (identical(other.measuredAt, measuredAt) ||
+                other.measuredAt == measuredAt) &&
+            (identical(other.accuracyM, accuracyM) ||
+                other.accuracyM == accuracyM) &&
+            (identical(other.speedMps, speedMps) ||
+                other.speedMps == speedMps));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, memberId, latitude, longitude);
+  int get hashCode => Object.hash(runtimeType, memberId, latitude, longitude,
+      measuredAt, accuracyM, speedMps);
 
   @override
   String toString() {
-    return 'UserLocation(memberId: $memberId, latitude: $latitude, longitude: $longitude)';
+    return 'UserLocation(memberId: $memberId, latitude: $latitude, longitude: $longitude, measuredAt: $measuredAt, accuracyM: $accuracyM, speedMps: $speedMps)';
   }
 }
 
@@ -58,7 +68,13 @@ abstract mixin class $UserLocationCopyWith<$Res> {
           UserLocation value, $Res Function(UserLocation) _then) =
       _$UserLocationCopyWithImpl;
   @useResult
-  $Res call({String? memberId, double latitude, double longitude});
+  $Res call(
+      {String? memberId,
+      double latitude,
+      double longitude,
+      int? measuredAt,
+      double? accuracyM,
+      double? speedMps});
 }
 
 /// @nodoc
@@ -76,6 +92,9 @@ class _$UserLocationCopyWithImpl<$Res> implements $UserLocationCopyWith<$Res> {
     Object? memberId = freezed,
     Object? latitude = null,
     Object? longitude = null,
+    Object? measuredAt = freezed,
+    Object? accuracyM = freezed,
+    Object? speedMps = freezed,
   }) {
     return _then(_self.copyWith(
       memberId: freezed == memberId
@@ -90,6 +109,18 @@ class _$UserLocationCopyWithImpl<$Res> implements $UserLocationCopyWith<$Res> {
           ? _self.longitude
           : longitude // ignore: cast_nullable_to_non_nullable
               as double,
+      measuredAt: freezed == measuredAt
+          ? _self.measuredAt
+          : measuredAt // ignore: cast_nullable_to_non_nullable
+              as int?,
+      accuracyM: freezed == accuracyM
+          ? _self.accuracyM
+          : accuracyM // ignore: cast_nullable_to_non_nullable
+              as double?,
+      speedMps: freezed == speedMps
+          ? _self.speedMps
+          : speedMps // ignore: cast_nullable_to_non_nullable
+              as double?,
     ));
   }
 }
@@ -187,14 +218,16 @@ extension UserLocationPatterns on UserLocation {
 
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>(
-    TResult Function(String? memberId, double latitude, double longitude)?
+    TResult Function(String? memberId, double latitude, double longitude,
+            int? measuredAt, double? accuracyM, double? speedMps)?
         $default, {
     required TResult orElse(),
   }) {
     final _that = this;
     switch (_that) {
       case _UserLocation() when $default != null:
-        return $default(_that.memberId, _that.latitude, _that.longitude);
+        return $default(_that.memberId, _that.latitude, _that.longitude,
+            _that.measuredAt, _that.accuracyM, _that.speedMps);
       case _:
         return orElse();
     }
@@ -215,13 +248,15 @@ extension UserLocationPatterns on UserLocation {
 
   @optionalTypeArgs
   TResult when<TResult extends Object?>(
-    TResult Function(String? memberId, double latitude, double longitude)
+    TResult Function(String? memberId, double latitude, double longitude,
+            int? measuredAt, double? accuracyM, double? speedMps)
         $default,
   ) {
     final _that = this;
     switch (_that) {
       case _UserLocation():
-        return $default(_that.memberId, _that.latitude, _that.longitude);
+        return $default(_that.memberId, _that.latitude, _that.longitude,
+            _that.measuredAt, _that.accuracyM, _that.speedMps);
       case _:
         throw StateError('Unexpected subclass');
     }
@@ -241,13 +276,15 @@ extension UserLocationPatterns on UserLocation {
 
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>(
-    TResult? Function(String? memberId, double latitude, double longitude)?
+    TResult? Function(String? memberId, double latitude, double longitude,
+            int? measuredAt, double? accuracyM, double? speedMps)?
         $default,
   ) {
     final _that = this;
     switch (_that) {
       case _UserLocation() when $default != null:
-        return $default(_that.memberId, _that.latitude, _that.longitude);
+        return $default(_that.memberId, _that.latitude, _that.longitude,
+            _that.measuredAt, _that.accuracyM, _that.speedMps);
       case _:
         return null;
     }
@@ -258,7 +295,12 @@ extension UserLocationPatterns on UserLocation {
 @JsonSerializable()
 class _UserLocation implements UserLocation {
   const _UserLocation(
-      {this.memberId, required this.latitude, required this.longitude});
+      {this.memberId,
+      required this.latitude,
+      required this.longitude,
+      this.measuredAt,
+      this.accuracyM,
+      this.speedMps});
   factory _UserLocation.fromJson(Map<String, dynamic> json) =>
       _$UserLocationFromJson(json);
 
@@ -268,6 +310,12 @@ class _UserLocation implements UserLocation {
   final double latitude;
   @override
   final double longitude;
+  @override
+  final int? measuredAt;
+  @override
+  final double? accuracyM;
+  @override
+  final double? speedMps;
 
   /// Create a copy of UserLocation
   /// with the given fields replaced by the non-null parameter values.
@@ -294,16 +342,23 @@ class _UserLocation implements UserLocation {
             (identical(other.latitude, latitude) ||
                 other.latitude == latitude) &&
             (identical(other.longitude, longitude) ||
-                other.longitude == longitude));
+                other.longitude == longitude) &&
+            (identical(other.measuredAt, measuredAt) ||
+                other.measuredAt == measuredAt) &&
+            (identical(other.accuracyM, accuracyM) ||
+                other.accuracyM == accuracyM) &&
+            (identical(other.speedMps, speedMps) ||
+                other.speedMps == speedMps));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, memberId, latitude, longitude);
+  int get hashCode => Object.hash(runtimeType, memberId, latitude, longitude,
+      measuredAt, accuracyM, speedMps);
 
   @override
   String toString() {
-    return 'UserLocation(memberId: $memberId, latitude: $latitude, longitude: $longitude)';
+    return 'UserLocation(memberId: $memberId, latitude: $latitude, longitude: $longitude, measuredAt: $measuredAt, accuracyM: $accuracyM, speedMps: $speedMps)';
   }
 }
 
@@ -315,7 +370,13 @@ abstract mixin class _$UserLocationCopyWith<$Res>
       __$UserLocationCopyWithImpl;
   @override
   @useResult
-  $Res call({String? memberId, double latitude, double longitude});
+  $Res call(
+      {String? memberId,
+      double latitude,
+      double longitude,
+      int? measuredAt,
+      double? accuracyM,
+      double? speedMps});
 }
 
 /// @nodoc
@@ -334,6 +395,9 @@ class __$UserLocationCopyWithImpl<$Res>
     Object? memberId = freezed,
     Object? latitude = null,
     Object? longitude = null,
+    Object? measuredAt = freezed,
+    Object? accuracyM = freezed,
+    Object? speedMps = freezed,
   }) {
     return _then(_UserLocation(
       memberId: freezed == memberId
@@ -348,6 +412,18 @@ class __$UserLocationCopyWithImpl<$Res>
           ? _self.longitude
           : longitude // ignore: cast_nullable_to_non_nullable
               as double,
+      measuredAt: freezed == measuredAt
+          ? _self.measuredAt
+          : measuredAt // ignore: cast_nullable_to_non_nullable
+              as int?,
+      accuracyM: freezed == accuracyM
+          ? _self.accuracyM
+          : accuracyM // ignore: cast_nullable_to_non_nullable
+              as double?,
+      speedMps: freezed == speedMps
+          ? _self.speedMps
+          : speedMps // ignore: cast_nullable_to_non_nullable
+              as double?,
     ));
   }
 }
