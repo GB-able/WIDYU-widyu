@@ -45,11 +45,6 @@
             android:exported="false"
             android:foregroundServiceType="health" />
 
-        <service
-            android:name=".data.service.FallListenerService"
-            android:exported="true"
-            android:permission="com.google.android.wearable.healthservices.permission.PASSIVE_DATA_BINDING" />
-
         <receiver
             android:name=".presentation.receiver.WearBootReceiver"
             android:enabled="true"

@@ -22,7 +22,6 @@ import com.gbable.widu.presentation.util.PermissionManager.isPermanentlyDenied
 object PermissionManager {
     val requiredPermissions: Array<String> by lazy {
         buildList {
-            add(Manifest.permission.ACTIVITY_RECOGNITION)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 add(Manifest.permission.POST_NOTIFICATIONS)
             }

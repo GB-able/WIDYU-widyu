@@ -10,7 +10,6 @@ import android.util.Log
 import androidx.core.app.ServiceCompat
 import com.gbable.widu.BuildConfig
 import com.gbable.widu.data.model.MeasureResult
-import com.gbable.widu.data.repository.FallDetectionRepository
 import com.gbable.widu.data.repository.HeartRateRepository
 import com.gbable.widu.data.repository.ImuRepository
 import com.gbable.widu.presentation.util.WidyuNotificationManager
@@ -23,16 +22,12 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 
 @AndroidEntryPoint
 class HeartRateForegroundService : Service() {
     @Inject
     lateinit var repository: HeartRateRepository
-
-    @Inject
-    lateinit var fallDetectionRepository: FallDetectionRepository
 
     @Inject
     lateinit var imuRepository: ImuRepository
@@ -66,7 +61,6 @@ class HeartRateForegroundService : Service() {
 
     private fun startService() {
         isRunning = true
-        serviceScope.launch { fallDetectionRepository.startDetection() }
         notificationManager.createChannel()
         ServiceCompat.startForeground(
             this,
@@ -112,7 +106,6 @@ class HeartRateForegroundService : Service() {
         imuJob?.cancel()
         imuJob = null
         isRunning = false
-        runBlocking { fallDetectionRepository.stopDetection() }
         super.onDestroy()
     }
 

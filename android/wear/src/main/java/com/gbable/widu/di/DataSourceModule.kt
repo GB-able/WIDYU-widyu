@@ -4,10 +4,6 @@ import com.gbable.widu.data.source.ClockLocalDataSource
 import com.gbable.widu.data.source.ClockLocalDataSourceImpl
 import com.gbable.widu.data.source.DeviceInfoLocalDataSource
 import com.gbable.widu.data.source.DeviceInfoLocalDataSourceImpl
-import com.gbable.widu.data.source.FallDetectionLocalDataSource
-import com.gbable.widu.data.source.FallDetectionLocalDataSourceImpl
-import com.gbable.widu.data.source.FallEventRemoteDataSource
-import com.gbable.widu.data.source.FallEventRemoteDataSourceImpl
 import com.gbable.widu.data.source.HeartRateLocalDataSource
 import com.gbable.widu.data.source.HeartRateLocalDataSourceImpl
 import com.gbable.widu.data.source.HeartRateRemoteDataSource
@@ -34,14 +30,6 @@ abstract class DataSourceModule {
     @Binds
     @Singleton
     abstract fun bindHeartRateRemoteDataSource(impl: HeartRateRemoteDataSourceImpl): HeartRateRemoteDataSource
-
-    @Binds
-    @Singleton
-    abstract fun bindFallDetectionLocalDataSource(impl: FallDetectionLocalDataSourceImpl): FallDetectionLocalDataSource
-
-    @Binds
-    @Singleton
-    abstract fun bindFallEventRemoteDataSource(impl: FallEventRemoteDataSourceImpl): FallEventRemoteDataSource
 
     @Binds
     @Singleton
