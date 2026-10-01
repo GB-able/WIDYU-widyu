@@ -33,6 +33,8 @@ pubspec.lock
 .pub-cache/
 .pub/
 /build/
+packages/*/build/
+packages/*/android/build/
 
 # Symbolication related
 app.*.symbols
@@ -45,13 +47,24 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
+# Gradle local build cache (including Android directories in local packages)
+.gradle/
+
 # FVM Version Cache
 .fvm/
 
 # Environment Variables
 .env
-.cursor/
 
-# Claude
+# AI
 CLAUDE.md
 AGENTS.md
+.claude/
+.cursor/
+
+# Firebase
+android/app/google-services.json
+ios/Runner/GoogleService-Info.plist
+lib/firebase_options.dart
+firebase.json
+
