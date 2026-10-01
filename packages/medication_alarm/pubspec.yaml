@@ -1,0 +1,21 @@
+name: medication_alarm
+description: Persistent native medication alarms for Widyu.
+version: 0.1.0
+publish_to: none
+environment:
+  sdk: ^3.5.3
+  flutter: '>=3.27.0'
+dependencies:
+  flutter:
+    sdk: flutter
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+flutter:
+  plugin:
+    platforms:
+      android:
+        package: com.widyu.medication_alarm
+        pluginClass: MedicationAlarmPlugin
+      ios:
+        pluginClass: MedicationAlarmPlugin

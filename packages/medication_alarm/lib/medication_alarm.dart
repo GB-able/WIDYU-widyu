@@ -1,0 +1,53 @@
+import 'dart:async';
+
+import 'package:flutter/services.dart';
+
+export 'src/alarm_plan.dart';
+
+/// The native store owns the session fence, revision, completion ledger and OS
+/// registration state. All engines (including FCM) share that store.
+class MedicationAlarm {
+  static const _channel = MethodChannel('com.widyu/medication_alarm');
+  static const _events = EventChannel('com.widyu/medication_alarm/events');
+  static final Stream<void> changes =
+      _events.receiveBroadcastStream().map((_) => null).asBroadcastStream();
+
+  Future<Map<String, dynamic>> _map(String method, [Object? args]) async =>
+      Map<String, dynamic>.from(
+        await _channel.invokeMapMethod<String, dynamic>(method, args) ?? {},
+      );
+
+  Future<Map<String, dynamic>> capabilities() => _map('capabilities');
+  Future<Map<String, dynamic>> requestPermissions() =>
+      _map('requestPermissions');
+  Future<void> openSettings(String kind) =>
+      _channel.invokeMethod('openSettings', {'kind': kind});
+  Future<Map<String, dynamic>> activate(String memberId) =>
+      _map('activate', {'memberId': memberId});
+  Future<Map<String, dynamic>> state() => _map('state');
+  Future<Map<String, dynamic>> activeGroup() => _map('activeGroup');
+  Future<Map<String, dynamic>> applyPlan({
+    required String sessionId,
+    required Map<String, dynamic> plan,
+    required List<Map<String, dynamic>> groups,
+  }) =>
+      _map('applyPlan', {
+        'sessionId': sessionId,
+        'plan': plan,
+        'groups': groups,
+      });
+  Future<Map<String, dynamic>> complete({
+    required String sessionId,
+    required List<String> occurrenceIds,
+  }) =>
+      _map('complete', {
+        'sessionId': sessionId,
+        'occurrenceIds': occurrenceIds,
+      });
+  Future<void> stop(String groupId) =>
+      _channel.invokeMethod('stop', {'groupId': groupId});
+  Future<void> clearSession() => _channel.invokeMethod('clearSession');
+  Future<Map<String, dynamic>> pendingLaunch() => _map('pendingLaunch');
+  Future<void> acknowledgeLaunch(String eventId) =>
+      _channel.invokeMethod('acknowledgeLaunch', {'eventId': eventId});
+}
