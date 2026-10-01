@@ -23,6 +23,8 @@ import 'package:widyu/core/data/source/auth/auth_local_data_source.dart';
 import 'package:widyu/core/data/source/auth/auth_local_data_source_impl.dart';
 import 'package:widyu/core/data/source/auth/auth_remote_data_source.dart';
 import 'package:widyu/core/data/source/auth/auth_remote_data_source_impl.dart';
+import 'package:widyu/core/data/source/device/device_local_data_source.dart';
+import 'package:widyu/core/data/source/device/device_local_data_source_impl.dart';
 import 'package:widyu/core/data/source/heartRate/heart_rate_local_data_source.dart';
 import 'package:widyu/core/data/source/heartRate/heart_rate_local_data_source_impl.dart';
 import 'package:widyu/core/data/source/heartRate/heart_rate_remote_data_source.dart';
@@ -118,6 +120,9 @@ Future<void> _bootstrap() async {
         Provider<HeartRateLocalDataSource>(
           create: (_) => HeartRateLocalDataSourceImpl(),
         ),
+        Provider<DeviceLocalDataSource>(
+          create: (_) => DeviceLocalDataSourceImpl(),
+        ),
         Provider<LocationLocalDataSource>(
           create: (_) => LocationLocalDataSourceImpl(),
         ),
@@ -158,11 +163,14 @@ Future<void> _bootstrap() async {
             remoteDataSource: remote,
           ),
         ),
-        ProxyProvider2<LocationLocalDataSource, LocationRemoteDataSource,
-            LocationRepository>(
-          update: (_, local, remote, __) => LocationRepositoryImpl(
+        ProxyProvider4<LocationLocalDataSource, LocationRemoteDataSource,
+            AuthLocalDataSource, DeviceLocalDataSource, LocationRepository>(
+          update: (_, local, remote, authLocal, deviceLocal, __) =>
+              LocationRepositoryImpl(
             localDataSource: local,
             remoteDataSource: remote,
+            authLocalDataSource: authLocal,
+            deviceLocalDataSource: deviceLocal,
           ),
         ),
       ],

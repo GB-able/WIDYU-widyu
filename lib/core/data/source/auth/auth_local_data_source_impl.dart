@@ -18,4 +18,8 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
   Future<void> removeAuthentication() async {
     await _tokenManager.removeToken();
   }
+
+  @override
+  Future<int?> getMemberId() async =>
+      int.tryParse(await _tokenManager.memberId ?? '');
 }

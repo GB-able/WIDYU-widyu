@@ -13,6 +13,7 @@ import 'package:widyu/core/data/repository/sensor/sensor_batch_repository.dart';
 import 'package:widyu/core/data/repository/sensor/sensor_batch_repository_impl.dart';
 import 'package:widyu/core/data/source/auth/auth_local_data_source_impl.dart';
 import 'package:widyu/core/data/source/auth/auth_remote_data_source_impl.dart';
+import 'package:widyu/core/data/source/device/device_local_data_source_impl.dart';
 import 'package:widyu/core/data/source/heartRate/heart_rate_local_data_source_impl.dart';
 import 'package:widyu/core/data/source/heartRate/heart_rate_remote_data_source_impl.dart';
 import 'package:widyu/core/data/source/location/location_local_data_source_impl.dart';
@@ -85,6 +86,8 @@ Future<bool> onIosBackground(ServiceInstance service) async {
       localDataSource: LocationLocalDataSourceImpl(),
       remoteDataSource:
           LocationRemoteDataSourceImpl(socketClient: socketClient),
+      authLocalDataSource: AuthLocalDataSourceImpl(),
+      deviceLocalDataSource: DeviceLocalDataSourceImpl(),
     ),
     sensorBatchRepository: SensorBatchRepositoryImpl(
       localDataSource: SensorBatchLocalDataSourceImpl(),

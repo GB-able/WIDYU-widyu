@@ -46,4 +46,23 @@ class AppPreference {
       debugPrint('[AppPreference] ${key.name} 저장 실패: $e\n$stack');
     }
   }
+
+  Future<String?> getString(PreferenceKey key) async {
+    try {
+      final prefs = await _getPrefs();
+      return prefs?.getString(key.name);
+    } catch (e, stack) {
+      debugPrint('[AppPreference] ${key.name} 읽기 실패: $e\n$stack');
+      return null;
+    }
+  }
+
+  Future<void> setString(PreferenceKey key, String value) async {
+    try {
+      final prefs = await _getPrefs();
+      await prefs?.setString(key.name, value);
+    } catch (e, stack) {
+      debugPrint('[AppPreference] ${key.name} 저장 실패: $e\n$stack');
+    }
+  }
 }
