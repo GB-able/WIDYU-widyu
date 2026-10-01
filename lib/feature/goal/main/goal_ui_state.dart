@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:widyu/core/model/goal/hospital/hospital.dart';
-import 'package:widyu/core/model/goal/medicine/medicine.dart';
+import 'package:widyu/core/model/goal/medication/medication.dart';
 import 'package:widyu/core/model/goal/walk/walk.dart';
 import 'package:widyu/core/model/goal/weekly_goal_status_response.dart';
 
@@ -17,7 +17,7 @@ sealed class GoalCardsState with _$GoalCardsState {
   const factory GoalCardsState.error() = GoalCardsError;
 
   const factory GoalCardsState.data({
-    Medicine? medicine,
+    Medication? medicine,
     Walk? walk,
     Hospital? hospital,
     @Default(Duration.zero) Duration verifyRemaining,

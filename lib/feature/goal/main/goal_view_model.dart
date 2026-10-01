@@ -9,7 +9,7 @@ import 'package:widyu/core/data/repository/goal/goal_repository.dart';
 import 'package:widyu/core/data/repository/location/location_repository.dart';
 import 'package:widyu/core/model/api/api_result.dart';
 import 'package:widyu/core/model/goal/goal_home_response.dart';
-import 'package:widyu/core/model/goal/medicine/medicine_point_result.dart';
+import 'package:widyu/core/model/goal/medication/medication_point_result.dart';
 import 'package:widyu/core/model/goal/weekly_goal_status_response.dart';
 import 'package:widyu/core/model/location/user_location.dart';
 import 'package:widyu/core/utils/kakao_map_launcher.dart';
@@ -173,7 +173,7 @@ class GoalViewModel with ChangeNotifier {
     );
 
     switch (result) {
-      case Success<MedicinePointResult>():
+      case Success<MedicationPointResult>():
         _pointProvider
             .sync(result.data.currentPoints + result.data.earnedPoints);
         _uiEvent.add(VerifyMeidcineSuccess(
@@ -181,11 +181,11 @@ class GoalViewModel with ChangeNotifier {
           result.data.currentPoints,
         ));
         return;
-      case Failure<MedicinePointResult>():
+      case Failure<MedicationPointResult>():
         // 실패하면 인증 전 상태로 되돌리고 카운트다운을 다시 돌린다.
         _updateCards(cards);
         _startCountdownIfNeeded();
-        _uiEvent.add(VerifyMedicineFailure(result.message));
+        _uiEvent.add(VerifyMedicationFailure(result.message));
         notifyListeners();
     }
   }

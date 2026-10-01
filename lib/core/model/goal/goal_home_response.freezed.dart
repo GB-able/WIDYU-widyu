@@ -14,7 +14,7 @@ T _$identity<T>(T value) => value;
 
 /// @nodoc
 mixin _$GoalHomeResponse {
-  Medicine? get medicine;
+  Medication? get medicine;
   @JsonKey(name: 'steps')
   Walk? get walk;
   Hospital? get hospital;
@@ -59,11 +59,11 @@ abstract mixin class $GoalHomeResponseCopyWith<$Res> {
       _$GoalHomeResponseCopyWithImpl;
   @useResult
   $Res call(
-      {Medicine? medicine,
+      {Medication? medicine,
       @JsonKey(name: 'steps') Walk? walk,
       Hospital? hospital});
 
-  $MedicineCopyWith<$Res>? get medicine;
+  $MedicationCopyWith<$Res>? get medicine;
   $WalkCopyWith<$Res>? get walk;
   $HospitalCopyWith<$Res>? get hospital;
 }
@@ -89,7 +89,7 @@ class _$GoalHomeResponseCopyWithImpl<$Res>
       medicine: freezed == medicine
           ? _self.medicine
           : medicine // ignore: cast_nullable_to_non_nullable
-              as Medicine?,
+              as Medication?,
       walk: freezed == walk
           ? _self.walk
           : walk // ignore: cast_nullable_to_non_nullable
@@ -105,12 +105,12 @@ class _$GoalHomeResponseCopyWithImpl<$Res>
   /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
-  $MedicineCopyWith<$Res>? get medicine {
+  $MedicationCopyWith<$Res>? get medicine {
     if (_self.medicine == null) {
       return null;
     }
 
-    return $MedicineCopyWith<$Res>(_self.medicine!, (value) {
+    return $MedicationCopyWith<$Res>(_self.medicine!, (value) {
       return _then(_self.copyWith(medicine: value));
     });
   }
@@ -237,7 +237,7 @@ extension GoalHomeResponsePatterns on GoalHomeResponse {
 
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>(
-    TResult Function(Medicine? medicine, @JsonKey(name: 'steps') Walk? walk,
+    TResult Function(Medication? medicine, @JsonKey(name: 'steps') Walk? walk,
             Hospital? hospital)?
         $default, {
     required TResult orElse(),
@@ -266,7 +266,7 @@ extension GoalHomeResponsePatterns on GoalHomeResponse {
 
   @optionalTypeArgs
   TResult when<TResult extends Object?>(
-    TResult Function(Medicine? medicine, @JsonKey(name: 'steps') Walk? walk,
+    TResult Function(Medication? medicine, @JsonKey(name: 'steps') Walk? walk,
             Hospital? hospital)
         $default,
   ) {
@@ -293,7 +293,7 @@ extension GoalHomeResponsePatterns on GoalHomeResponse {
 
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>(
-    TResult? Function(Medicine? medicine, @JsonKey(name: 'steps') Walk? walk,
+    TResult? Function(Medication? medicine, @JsonKey(name: 'steps') Walk? walk,
             Hospital? hospital)?
         $default,
   ) {
@@ -318,7 +318,7 @@ class _GoalHomeResponse implements GoalHomeResponse {
       _$GoalHomeResponseFromJson(json);
 
   @override
-  final Medicine? medicine;
+  final Medication? medicine;
   @override
   @JsonKey(name: 'steps')
   final Walk? walk;
@@ -371,12 +371,12 @@ abstract mixin class _$GoalHomeResponseCopyWith<$Res>
   @override
   @useResult
   $Res call(
-      {Medicine? medicine,
+      {Medication? medicine,
       @JsonKey(name: 'steps') Walk? walk,
       Hospital? hospital});
 
   @override
-  $MedicineCopyWith<$Res>? get medicine;
+  $MedicationCopyWith<$Res>? get medicine;
   @override
   $WalkCopyWith<$Res>? get walk;
   @override
@@ -404,7 +404,7 @@ class __$GoalHomeResponseCopyWithImpl<$Res>
       medicine: freezed == medicine
           ? _self.medicine
           : medicine // ignore: cast_nullable_to_non_nullable
-              as Medicine?,
+              as Medication?,
       walk: freezed == walk
           ? _self.walk
           : walk // ignore: cast_nullable_to_non_nullable
@@ -420,12 +420,12 @@ class __$GoalHomeResponseCopyWithImpl<$Res>
   /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
-  $MedicineCopyWith<$Res>? get medicine {
+  $MedicationCopyWith<$Res>? get medicine {
     if (_self.medicine == null) {
       return null;
     }
 
-    return $MedicineCopyWith<$Res>(_self.medicine!, (value) {
+    return $MedicationCopyWith<$Res>(_self.medicine!, (value) {
       return _then(_self.copyWith(medicine: value));
     });
   }

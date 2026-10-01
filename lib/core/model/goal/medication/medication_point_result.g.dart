@@ -1,19 +1,20 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'medicine_point_result.dart';
+part of 'medication_point_result.dart';
 
 // **************************************************************************
 // JsonSerializableGenerator
 // **************************************************************************
 
-_MedicinePointResult _$MedicinePointResultFromJson(Map<String, dynamic> json) =>
-    _MedicinePointResult(
+_MedicationPointResult _$MedicationPointResultFromJson(
+        Map<String, dynamic> json) =>
+    _MedicationPointResult(
       currentPoints: (json['currentPoints'] as num?)?.toInt() ?? 0,
       earnedPoints: (json['earnedPoints'] as num?)?.toInt() ?? 0,
     );
 
-Map<String, dynamic> _$MedicinePointResultToJson(
-        _MedicinePointResult instance) =>
+Map<String, dynamic> _$MedicationPointResultToJson(
+        _MedicationPointResult instance) =>
     <String, dynamic>{
       'currentPoints': instance.currentPoints,
       'earnedPoints': instance.earnedPoints,

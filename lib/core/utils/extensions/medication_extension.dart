@@ -1,6 +1,6 @@
 const medicationVerifyWindow = Duration(minutes: 30);
 
-extension MedicineExtension on DateTime {
+extension MedicationExtension on DateTime {
   DateTime get windowOpensAt {
     final open = subtract(medicationVerifyWindow);
     if (open.day != day) return DateTime(year, month, day);

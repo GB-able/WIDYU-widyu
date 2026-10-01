@@ -3,7 +3,7 @@
 // ignore_for_file: type=lint
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
-part of 'medicine.dart';
+part of 'medication.dart';
 
 // **************************************************************************
 // FreezedGenerator
@@ -13,7 +13,7 @@ part of 'medicine.dart';
 T _$identity<T>(T value) => value;
 
 /// @nodoc
-mixin _$Medicine {
+mixin _$Medication {
   int get medicineScheduleId;
   int get takenCount;
   int get totalCount;
@@ -23,21 +23,21 @@ mixin _$Medicine {
   String? get proofImage;
   bool? get isReward;
 
-  /// Create a copy of Medicine
+  /// Create a copy of Medication
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
   @pragma('vm:prefer-inline')
-  $MedicineCopyWith<Medicine> get copyWith =>
-      _$MedicineCopyWithImpl<Medicine>(this as Medicine, _$identity);
+  $MedicationCopyWith<Medication> get copyWith =>
+      _$MedicationCopyWithImpl<Medication>(this as Medication, _$identity);
 
-  /// Serializes this Medicine to a JSON map.
+  /// Serializes this Medication to a JSON map.
   Map<String, dynamic> toJson();
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is Medicine &&
+            other is Medication &&
             (identical(other.medicineScheduleId, medicineScheduleId) ||
                 other.medicineScheduleId == medicineScheduleId) &&
             (identical(other.takenCount, takenCount) ||
@@ -61,14 +61,15 @@ mixin _$Medicine {
 
   @override
   String toString() {
-    return 'Medicine(medicineScheduleId: $medicineScheduleId, takenCount: $takenCount, totalCount: $totalCount, nextDoseCount: $nextDoseCount, nextAlarmTime: $nextAlarmTime, proofImage: $proofImage, isReward: $isReward)';
+    return 'Medication(medicineScheduleId: $medicineScheduleId, takenCount: $takenCount, totalCount: $totalCount, nextDoseCount: $nextDoseCount, nextAlarmTime: $nextAlarmTime, proofImage: $proofImage, isReward: $isReward)';
   }
 }
 
 /// @nodoc
-abstract mixin class $MedicineCopyWith<$Res> {
-  factory $MedicineCopyWith(Medicine value, $Res Function(Medicine) _then) =
-      _$MedicineCopyWithImpl;
+abstract mixin class $MedicationCopyWith<$Res> {
+  factory $MedicationCopyWith(
+          Medication value, $Res Function(Medication) _then) =
+      _$MedicationCopyWithImpl;
   @useResult
   $Res call(
       {int medicineScheduleId,
@@ -81,13 +82,13 @@ abstract mixin class $MedicineCopyWith<$Res> {
 }
 
 /// @nodoc
-class _$MedicineCopyWithImpl<$Res> implements $MedicineCopyWith<$Res> {
-  _$MedicineCopyWithImpl(this._self, this._then);
+class _$MedicationCopyWithImpl<$Res> implements $MedicationCopyWith<$Res> {
+  _$MedicationCopyWithImpl(this._self, this._then);
 
-  final Medicine _self;
-  final $Res Function(Medicine) _then;
+  final Medication _self;
+  final $Res Function(Medication) _then;
 
-  /// Create a copy of Medicine
+  /// Create a copy of Medication
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
@@ -133,8 +134,8 @@ class _$MedicineCopyWithImpl<$Res> implements $MedicineCopyWith<$Res> {
   }
 }
 
-/// Adds pattern-matching-related methods to [Medicine].
-extension MedicinePatterns on Medicine {
+/// Adds pattern-matching-related methods to [Medication].
+extension MedicationPatterns on Medication {
   /// A variant of `map` that fallback to returning `orElse`.
   ///
   /// It is equivalent to doing:
@@ -149,12 +150,12 @@ extension MedicinePatterns on Medicine {
 
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>(
-    TResult Function(_Medicine value)? $default, {
+    TResult Function(_Medication value)? $default, {
     required TResult orElse(),
   }) {
     final _that = this;
     switch (_that) {
-      case _Medicine() when $default != null:
+      case _Medication() when $default != null:
         return $default(_that);
       case _:
         return orElse();
@@ -176,11 +177,11 @@ extension MedicinePatterns on Medicine {
 
   @optionalTypeArgs
   TResult map<TResult extends Object?>(
-    TResult Function(_Medicine value) $default,
+    TResult Function(_Medication value) $default,
   ) {
     final _that = this;
     switch (_that) {
-      case _Medicine():
+      case _Medication():
         return $default(_that);
       case _:
         throw StateError('Unexpected subclass');
@@ -201,11 +202,11 @@ extension MedicinePatterns on Medicine {
 
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>(
-    TResult? Function(_Medicine value)? $default,
+    TResult? Function(_Medication value)? $default,
   ) {
     final _that = this;
     switch (_that) {
-      case _Medicine() when $default != null:
+      case _Medication() when $default != null:
         return $default(_that);
       case _:
         return null;
@@ -239,7 +240,7 @@ extension MedicinePatterns on Medicine {
   }) {
     final _that = this;
     switch (_that) {
-      case _Medicine() when $default != null:
+      case _Medication() when $default != null:
         return $default(
             _that.medicineScheduleId,
             _that.takenCount,
@@ -280,7 +281,7 @@ extension MedicinePatterns on Medicine {
   ) {
     final _that = this;
     switch (_that) {
-      case _Medicine():
+      case _Medication():
         return $default(
             _that.medicineScheduleId,
             _that.takenCount,
@@ -320,7 +321,7 @@ extension MedicinePatterns on Medicine {
   ) {
     final _that = this;
     switch (_that) {
-      case _Medicine() when $default != null:
+      case _Medication() when $default != null:
         return $default(
             _that.medicineScheduleId,
             _that.takenCount,
@@ -337,8 +338,8 @@ extension MedicinePatterns on Medicine {
 
 /// @nodoc
 @JsonSerializable()
-class _Medicine extends Medicine {
-  const _Medicine(
+class _Medication extends Medication {
+  const _Medication(
       {required this.medicineScheduleId,
       required this.takenCount,
       required this.totalCount,
@@ -347,8 +348,8 @@ class _Medicine extends Medicine {
       @JsonKey(name: 'proofImageUrl') required this.proofImage,
       this.isReward})
       : super._();
-  factory _Medicine.fromJson(Map<String, dynamic> json) =>
-      _$MedicineFromJson(json);
+  factory _Medication.fromJson(Map<String, dynamic> json) =>
+      _$MedicationFromJson(json);
 
   @override
   final int medicineScheduleId;
@@ -366,17 +367,17 @@ class _Medicine extends Medicine {
   @override
   final bool? isReward;
 
-  /// Create a copy of Medicine
+  /// Create a copy of Medication
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
   @pragma('vm:prefer-inline')
-  _$MedicineCopyWith<_Medicine> get copyWith =>
-      __$MedicineCopyWithImpl<_Medicine>(this, _$identity);
+  _$MedicationCopyWith<_Medication> get copyWith =>
+      __$MedicationCopyWithImpl<_Medication>(this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$MedicineToJson(
+    return _$MedicationToJson(
       this,
     );
   }
@@ -385,7 +386,7 @@ class _Medicine extends Medicine {
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _Medicine &&
+            other is _Medication &&
             (identical(other.medicineScheduleId, medicineScheduleId) ||
                 other.medicineScheduleId == medicineScheduleId) &&
             (identical(other.takenCount, takenCount) ||
@@ -409,15 +410,16 @@ class _Medicine extends Medicine {
 
   @override
   String toString() {
-    return 'Medicine(medicineScheduleId: $medicineScheduleId, takenCount: $takenCount, totalCount: $totalCount, nextDoseCount: $nextDoseCount, nextAlarmTime: $nextAlarmTime, proofImage: $proofImage, isReward: $isReward)';
+    return 'Medication(medicineScheduleId: $medicineScheduleId, takenCount: $takenCount, totalCount: $totalCount, nextDoseCount: $nextDoseCount, nextAlarmTime: $nextAlarmTime, proofImage: $proofImage, isReward: $isReward)';
   }
 }
 
 /// @nodoc
-abstract mixin class _$MedicineCopyWith<$Res>
-    implements $MedicineCopyWith<$Res> {
-  factory _$MedicineCopyWith(_Medicine value, $Res Function(_Medicine) _then) =
-      __$MedicineCopyWithImpl;
+abstract mixin class _$MedicationCopyWith<$Res>
+    implements $MedicationCopyWith<$Res> {
+  factory _$MedicationCopyWith(
+          _Medication value, $Res Function(_Medication) _then) =
+      __$MedicationCopyWithImpl;
   @override
   @useResult
   $Res call(
@@ -431,13 +433,13 @@ abstract mixin class _$MedicineCopyWith<$Res>
 }
 
 /// @nodoc
-class __$MedicineCopyWithImpl<$Res> implements _$MedicineCopyWith<$Res> {
-  __$MedicineCopyWithImpl(this._self, this._then);
+class __$MedicationCopyWithImpl<$Res> implements _$MedicationCopyWith<$Res> {
+  __$MedicationCopyWithImpl(this._self, this._then);
 
-  final _Medicine _self;
-  final $Res Function(_Medicine) _then;
+  final _Medication _self;
+  final $Res Function(_Medication) _then;
 
-  /// Create a copy of Medicine
+  /// Create a copy of Medication
   /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
@@ -450,7 +452,7 @@ class __$MedicineCopyWithImpl<$Res> implements _$MedicineCopyWith<$Res> {
     Object? proofImage = freezed,
     Object? isReward = freezed,
   }) {
-    return _then(_Medicine(
+    return _then(_Medication(
       medicineScheduleId: null == medicineScheduleId
           ? _self.medicineScheduleId
           : medicineScheduleId // ignore: cast_nullable_to_non_nullable

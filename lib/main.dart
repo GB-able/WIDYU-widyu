@@ -34,8 +34,8 @@ import 'package:widyu/core/data/source/auth/auth_remote_data_source.dart';
 import 'package:widyu/core/data/source/auth/auth_remote_data_source_impl.dart';
 import 'package:widyu/core/data/source/goal/goal_remote_data_source.dart';
 import 'package:widyu/core/data/source/goal/goal_remote_data_source_impl.dart';
-import 'package:widyu/core/data/source/goal/medicine_remote_data_source.dart';
-import 'package:widyu/core/data/source/goal/medicine_remote_data_source_impl.dart';
+import 'package:widyu/core/data/source/goal/medication_remote_data_source.dart';
+import 'package:widyu/core/data/source/goal/medication_remote_data_source_impl.dart';
 import 'package:widyu/core/data/source/goal/walk_local_data_source.dart';
 import 'package:widyu/core/data/source/goal/walk_local_data_source_impl.dart';
 import 'package:widyu/core/data/source/goal/walk_remote_data_source.dart';
@@ -110,9 +110,9 @@ Future<void> _bootstrap() async {
         Provider<AppServiceController>(create: (_) => AppServiceController()),
         Provider<ApiClient>(create: (_) => ApiClient()),
         Provider<SocketClient>(create: (_) => SocketClient()),
-        ProxyProvider<ApiClient, MedicineRemoteDataSource>(
+        ProxyProvider<ApiClient, MedicationRemoteDataSource>(
           update: (_, apiClient, __) =>
-              MedicineRemoteDataSourceImpl(apiClient: apiClient),
+              MedicationRemoteDataSourceImpl(apiClient: apiClient),
         ),
         ProxyProvider<ApiClient, WalkRemoteDataSource>(
           update: (_, apiClient, __) =>
@@ -130,11 +130,11 @@ Future<void> _bootstrap() async {
             remoteDataSource: remote,
           ),
         ),
-        ProxyProvider2<GoalRemoteDataSource, MedicineRemoteDataSource,
+        ProxyProvider2<GoalRemoteDataSource, MedicationRemoteDataSource,
             GoalRepository>(
-          update: (_, goal, medicine, __) => GoalRepositoryImpl(
+          update: (_, goal, medication, __) => GoalRepositoryImpl(
             goalRemoteDataSource: goal,
-            medicineRemoteDataSource: medicine,
+            medicationRemoteDataSource: medication,
           ),
         ),
         ProxyProvider<ApiClient, AuthRemoteDataSource>(

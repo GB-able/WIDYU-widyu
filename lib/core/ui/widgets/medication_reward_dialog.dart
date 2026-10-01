@@ -7,8 +7,8 @@ import 'package:widyu/core/ui/widgets/widyu_asset_image.dart';
 import 'package:widyu/core/ui/widgets/widyu_icon.dart';
 import 'package:widyu/core/ui/widgets/widyu_text_button.dart';
 
-class MedicineRewardDialog extends StatelessWidget {
-  const MedicineRewardDialog(
+class MedicationRewardDialog extends StatelessWidget {
+  const MedicationRewardDialog(
       {super.key, required this.earnedPoint, required this.existingPoint});
 
   final int earnedPoint;

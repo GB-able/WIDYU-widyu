@@ -6,8 +6,8 @@ class FetchWeeklyStatusFailure extends GoalUiEvent {
   const FetchWeeklyStatusFailure();
 }
 
-class VerifyMedicineFailure extends GoalUiEvent {
-  const VerifyMedicineFailure(this.message);
+class VerifyMedicationFailure extends GoalUiEvent {
+  const VerifyMedicationFailure(this.message);
 
   final String message;
 }

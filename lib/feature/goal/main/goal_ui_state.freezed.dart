@@ -146,7 +146,7 @@ extension GoalCardsStatePatterns on GoalCardsState {
     TResult Function()? loading,
     TResult Function()? error,
     TResult Function(
-            Medicine? medicine,
+            Medication? medicine,
             Walk? walk,
             Hospital? hospital,
             Duration verifyRemaining,
@@ -187,7 +187,7 @@ extension GoalCardsStatePatterns on GoalCardsState {
     required TResult Function() loading,
     required TResult Function() error,
     required TResult Function(
-            Medicine? medicine,
+            Medication? medicine,
             Walk? walk,
             Hospital? hospital,
             Duration verifyRemaining,
@@ -224,7 +224,7 @@ extension GoalCardsStatePatterns on GoalCardsState {
     TResult? Function()? loading,
     TResult? Function()? error,
     TResult? Function(
-            Medicine? medicine,
+            Medication? medicine,
             Walk? walk,
             Hospital? hospital,
             Duration verifyRemaining,
@@ -298,7 +298,7 @@ class GoalCardsData implements GoalCardsState {
       this.verifyStatus = MedicationVerifyStatus.pending,
       this.proofPhoto});
 
-  final Medicine? medicine;
+  final Medication? medicine;
   final Walk? walk;
   final Hospital? hospital;
   @JsonKey()
@@ -350,14 +350,14 @@ abstract mixin class $GoalCardsDataCopyWith<$Res>
       _$GoalCardsDataCopyWithImpl;
   @useResult
   $Res call(
-      {Medicine? medicine,
+      {Medication? medicine,
       Walk? walk,
       Hospital? hospital,
       Duration verifyRemaining,
       MedicationVerifyStatus verifyStatus,
       File? proofPhoto});
 
-  $MedicineCopyWith<$Res>? get medicine;
+  $MedicationCopyWith<$Res>? get medicine;
   $WalkCopyWith<$Res>? get walk;
   $HospitalCopyWith<$Res>? get hospital;
 }
@@ -385,7 +385,7 @@ class _$GoalCardsDataCopyWithImpl<$Res>
       medicine: freezed == medicine
           ? _self.medicine
           : medicine // ignore: cast_nullable_to_non_nullable
-              as Medicine?,
+              as Medication?,
       walk: freezed == walk
           ? _self.walk
           : walk // ignore: cast_nullable_to_non_nullable
@@ -413,12 +413,12 @@ class _$GoalCardsDataCopyWithImpl<$Res>
   /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
-  $MedicineCopyWith<$Res>? get medicine {
+  $MedicationCopyWith<$Res>? get medicine {
     if (_self.medicine == null) {
       return null;
     }
 
-    return $MedicineCopyWith<$Res>(_self.medicine!, (value) {
+    return $MedicationCopyWith<$Res>(_self.medicine!, (value) {
       return _then(_self.copyWith(medicine: value));
     });
   }

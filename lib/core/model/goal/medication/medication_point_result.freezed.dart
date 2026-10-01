@@ -3,7 +3,7 @@
 // ignore_for_file: type=lint
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
-part of 'medicine_point_result.dart';
+part of 'medication_point_result.dart';
 
 // **************************************************************************
 // FreezedGenerator
@@ -13,26 +13,26 @@ part of 'medicine_point_result.dart';
 T _$identity<T>(T value) => value;
 
 /// @nodoc
-mixin _$MedicinePointResult {
+mixin _$MedicationPointResult {
   int get currentPoints;
   int get earnedPoints;
 
-  /// Create a copy of MedicinePointResult
+  /// Create a copy of MedicationPointResult
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
   @pragma('vm:prefer-inline')
-  $MedicinePointResultCopyWith<MedicinePointResult> get copyWith =>
-      _$MedicinePointResultCopyWithImpl<MedicinePointResult>(
-          this as MedicinePointResult, _$identity);
+  $MedicationPointResultCopyWith<MedicationPointResult> get copyWith =>
+      _$MedicationPointResultCopyWithImpl<MedicationPointResult>(
+          this as MedicationPointResult, _$identity);
 
-  /// Serializes this MedicinePointResult to a JSON map.
+  /// Serializes this MedicationPointResult to a JSON map.
   Map<String, dynamic> toJson();
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is MedicinePointResult &&
+            other is MedicationPointResult &&
             (identical(other.currentPoints, currentPoints) ||
                 other.currentPoints == currentPoints) &&
             (identical(other.earnedPoints, earnedPoints) ||
@@ -45,28 +45,28 @@ mixin _$MedicinePointResult {
 
   @override
   String toString() {
-    return 'MedicinePointResult(currentPoints: $currentPoints, earnedPoints: $earnedPoints)';
+    return 'MedicationPointResult(currentPoints: $currentPoints, earnedPoints: $earnedPoints)';
   }
 }
 
 /// @nodoc
-abstract mixin class $MedicinePointResultCopyWith<$Res> {
-  factory $MedicinePointResultCopyWith(
-          MedicinePointResult value, $Res Function(MedicinePointResult) _then) =
-      _$MedicinePointResultCopyWithImpl;
+abstract mixin class $MedicationPointResultCopyWith<$Res> {
+  factory $MedicationPointResultCopyWith(MedicationPointResult value,
+          $Res Function(MedicationPointResult) _then) =
+      _$MedicationPointResultCopyWithImpl;
   @useResult
   $Res call({int currentPoints, int earnedPoints});
 }
 
 /// @nodoc
-class _$MedicinePointResultCopyWithImpl<$Res>
-    implements $MedicinePointResultCopyWith<$Res> {
-  _$MedicinePointResultCopyWithImpl(this._self, this._then);
+class _$MedicationPointResultCopyWithImpl<$Res>
+    implements $MedicationPointResultCopyWith<$Res> {
+  _$MedicationPointResultCopyWithImpl(this._self, this._then);
 
-  final MedicinePointResult _self;
-  final $Res Function(MedicinePointResult) _then;
+  final MedicationPointResult _self;
+  final $Res Function(MedicationPointResult) _then;
 
-  /// Create a copy of MedicinePointResult
+  /// Create a copy of MedicationPointResult
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
@@ -87,8 +87,8 @@ class _$MedicinePointResultCopyWithImpl<$Res>
   }
 }
 
-/// Adds pattern-matching-related methods to [MedicinePointResult].
-extension MedicinePointResultPatterns on MedicinePointResult {
+/// Adds pattern-matching-related methods to [MedicationPointResult].
+extension MedicationPointResultPatterns on MedicationPointResult {
   /// A variant of `map` that fallback to returning `orElse`.
   ///
   /// It is equivalent to doing:
@@ -103,12 +103,12 @@ extension MedicinePointResultPatterns on MedicinePointResult {
 
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>(
-    TResult Function(_MedicinePointResult value)? $default, {
+    TResult Function(_MedicationPointResult value)? $default, {
     required TResult orElse(),
   }) {
     final _that = this;
     switch (_that) {
-      case _MedicinePointResult() when $default != null:
+      case _MedicationPointResult() when $default != null:
         return $default(_that);
       case _:
         return orElse();
@@ -130,11 +130,11 @@ extension MedicinePointResultPatterns on MedicinePointResult {
 
   @optionalTypeArgs
   TResult map<TResult extends Object?>(
-    TResult Function(_MedicinePointResult value) $default,
+    TResult Function(_MedicationPointResult value) $default,
   ) {
     final _that = this;
     switch (_that) {
-      case _MedicinePointResult():
+      case _MedicationPointResult():
         return $default(_that);
       case _:
         throw StateError('Unexpected subclass');
@@ -155,11 +155,11 @@ extension MedicinePointResultPatterns on MedicinePointResult {
 
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>(
-    TResult? Function(_MedicinePointResult value)? $default,
+    TResult? Function(_MedicationPointResult value)? $default,
   ) {
     final _that = this;
     switch (_that) {
-      case _MedicinePointResult() when $default != null:
+      case _MedicationPointResult() when $default != null:
         return $default(_that);
       case _:
         return null;
@@ -185,7 +185,7 @@ extension MedicinePointResultPatterns on MedicinePointResult {
   }) {
     final _that = this;
     switch (_that) {
-      case _MedicinePointResult() when $default != null:
+      case _MedicationPointResult() when $default != null:
         return $default(_that.currentPoints, _that.earnedPoints);
       case _:
         return orElse();
@@ -211,7 +211,7 @@ extension MedicinePointResultPatterns on MedicinePointResult {
   ) {
     final _that = this;
     switch (_that) {
-      case _MedicinePointResult():
+      case _MedicationPointResult():
         return $default(_that.currentPoints, _that.earnedPoints);
       case _:
         throw StateError('Unexpected subclass');
@@ -236,7 +236,7 @@ extension MedicinePointResultPatterns on MedicinePointResult {
   ) {
     final _that = this;
     switch (_that) {
-      case _MedicinePointResult() when $default != null:
+      case _MedicationPointResult() when $default != null:
         return $default(_that.currentPoints, _that.earnedPoints);
       case _:
         return null;
@@ -246,10 +246,10 @@ extension MedicinePointResultPatterns on MedicinePointResult {
 
 /// @nodoc
 @JsonSerializable()
-class _MedicinePointResult implements MedicinePointResult {
-  const _MedicinePointResult({this.currentPoints = 0, this.earnedPoints = 0});
-  factory _MedicinePointResult.fromJson(Map<String, dynamic> json) =>
-      _$MedicinePointResultFromJson(json);
+class _MedicationPointResult implements MedicationPointResult {
+  const _MedicationPointResult({this.currentPoints = 0, this.earnedPoints = 0});
+  factory _MedicationPointResult.fromJson(Map<String, dynamic> json) =>
+      _$MedicationPointResultFromJson(json);
 
   @override
   @JsonKey()
@@ -258,18 +258,18 @@ class _MedicinePointResult implements MedicinePointResult {
   @JsonKey()
   final int earnedPoints;
 
-  /// Create a copy of MedicinePointResult
+  /// Create a copy of MedicationPointResult
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
   @pragma('vm:prefer-inline')
-  _$MedicinePointResultCopyWith<_MedicinePointResult> get copyWith =>
-      __$MedicinePointResultCopyWithImpl<_MedicinePointResult>(
+  _$MedicationPointResultCopyWith<_MedicationPointResult> get copyWith =>
+      __$MedicationPointResultCopyWithImpl<_MedicationPointResult>(
           this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$MedicinePointResultToJson(
+    return _$MedicationPointResultToJson(
       this,
     );
   }
@@ -278,7 +278,7 @@ class _MedicinePointResult implements MedicinePointResult {
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _MedicinePointResult &&
+            other is _MedicationPointResult &&
             (identical(other.currentPoints, currentPoints) ||
                 other.currentPoints == currentPoints) &&
             (identical(other.earnedPoints, earnedPoints) ||
@@ -291,30 +291,30 @@ class _MedicinePointResult implements MedicinePointResult {
 
   @override
   String toString() {
-    return 'MedicinePointResult(currentPoints: $currentPoints, earnedPoints: $earnedPoints)';
+    return 'MedicationPointResult(currentPoints: $currentPoints, earnedPoints: $earnedPoints)';
   }
 }
 
 /// @nodoc
-abstract mixin class _$MedicinePointResultCopyWith<$Res>
-    implements $MedicinePointResultCopyWith<$Res> {
-  factory _$MedicinePointResultCopyWith(_MedicinePointResult value,
-          $Res Function(_MedicinePointResult) _then) =
-      __$MedicinePointResultCopyWithImpl;
+abstract mixin class _$MedicationPointResultCopyWith<$Res>
+    implements $MedicationPointResultCopyWith<$Res> {
+  factory _$MedicationPointResultCopyWith(_MedicationPointResult value,
+          $Res Function(_MedicationPointResult) _then) =
+      __$MedicationPointResultCopyWithImpl;
   @override
   @useResult
   $Res call({int currentPoints, int earnedPoints});
 }
 
 /// @nodoc
-class __$MedicinePointResultCopyWithImpl<$Res>
-    implements _$MedicinePointResultCopyWith<$Res> {
-  __$MedicinePointResultCopyWithImpl(this._self, this._then);
+class __$MedicationPointResultCopyWithImpl<$Res>
+    implements _$MedicationPointResultCopyWith<$Res> {
+  __$MedicationPointResultCopyWithImpl(this._self, this._then);
 
-  final _MedicinePointResult _self;
-  final $Res Function(_MedicinePointResult) _then;
+  final _MedicationPointResult _self;
+  final $Res Function(_MedicationPointResult) _then;
 
-  /// Create a copy of MedicinePointResult
+  /// Create a copy of MedicationPointResult
   /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
@@ -322,7 +322,7 @@ class __$MedicinePointResultCopyWithImpl<$Res>
     Object? currentPoints = null,
     Object? earnedPoints = null,
   }) {
-    return _then(_MedicinePointResult(
+    return _then(_MedicationPointResult(
       currentPoints: null == currentPoints
           ? _self.currentPoints
           : currentPoints // ignore: cast_nullable_to_non_nullable

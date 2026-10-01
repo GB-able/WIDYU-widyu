@@ -2,22 +2,22 @@ import 'dart:io';
 
 import 'package:widyu/core/data/repository/goal/goal_repository.dart';
 import 'package:widyu/core/data/source/goal/goal_remote_data_source.dart';
-import 'package:widyu/core/data/source/goal/medicine_remote_data_source.dart';
+import 'package:widyu/core/data/source/goal/medication_remote_data_source.dart';
 import 'package:widyu/core/model/api/api_result.dart';
 import 'package:widyu/core/model/goal/goal_home_response.dart';
-import 'package:widyu/core/model/goal/medicine/medicine_point_result.dart';
+import 'package:widyu/core/model/goal/medication/medication_point_result.dart';
 import 'package:widyu/core/model/goal/weekly_goal_status_response.dart';
 import 'package:widyu/core/utils/extensions/api_result_extension.dart';
 
 class GoalRepositoryImpl extends GoalRepository {
   final GoalRemoteDataSource _goalRemoteDataSource;
-  final MedicineRemoteDataSource _medicineRemoteDataSource;
+  final MedicationRemoteDataSource _medicationRemoteDataSource;
 
   GoalRepositoryImpl({
     required GoalRemoteDataSource goalRemoteDataSource,
-    required MedicineRemoteDataSource medicineRemoteDataSource,
+    required MedicationRemoteDataSource medicationRemoteDataSource,
   })  : _goalRemoteDataSource = goalRemoteDataSource,
-        _medicineRemoteDataSource = medicineRemoteDataSource;
+        _medicationRemoteDataSource = medicationRemoteDataSource;
 
   @override
   Future<ApiResult<GoalHomeResponse>> fetchGoalHome() async {
@@ -37,10 +37,10 @@ class GoalRepositoryImpl extends GoalRepository {
   }
 
   @override
-  Future<ApiResult<MedicinePointResult>> verifyMedication({
+  Future<ApiResult<MedicationPointResult>> verifyMedication({
     required int scheduleId,
     required File proofImage,
   }) async =>
-      await _medicineRemoteDataSource.verifyMedication(
+      await _medicationRemoteDataSource.verifyMedication(
           scheduleId: scheduleId, proofImages: [proofImage]).toApiResult();
 }

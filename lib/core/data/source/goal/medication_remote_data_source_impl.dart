@@ -1,22 +1,22 @@
 import 'dart:io';
 
 import 'package:dio/dio.dart';
-import 'package:widyu/core/data/source/goal/medicine_remote_data_source.dart';
+import 'package:widyu/core/data/source/goal/medication_remote_data_source.dart';
 import 'package:widyu/core/model/api/api_response.dart';
-import 'package:widyu/core/model/goal/medicine/medicine_point_result.dart';
+import 'package:widyu/core/model/goal/medication/medication_point_result.dart';
 import 'package:widyu/core/network/api_client.dart';
 import 'package:widyu/core/utils/extensions/api_response_extension.dart';
 
-class MedicineRemoteDataSourceImpl extends MedicineRemoteDataSource {
+class MedicationRemoteDataSourceImpl extends MedicationRemoteDataSource {
   final ApiClient _apiClient;
 
-  MedicineRemoteDataSourceImpl({required ApiClient apiClient})
+  MedicationRemoteDataSourceImpl({required ApiClient apiClient})
       : _apiClient = apiClient;
 
   static const String _path = '/goals/medicine-schedules';
 
   @override
-  Future<ApiResponse<MedicinePointResult>> verifyMedication({
+  Future<ApiResponse<MedicationPointResult>> verifyMedication({
     required int scheduleId,
     required List<File> proofImages,
   }) async {
@@ -36,7 +36,7 @@ class MedicineRemoteDataSourceImpl extends MedicineRemoteDataSource {
         method: HttpMethod.post,
         body: formData,
       );
-      return response.toApiResponse(MedicinePointResult.fromJson);
+      return response.toApiResponse(MedicationPointResult.fromJson);
     } catch (e) {
       throw Exception("약 복용 인증에 실패했습니다: $e");
     }

@@ -48,7 +48,7 @@ class _GoalContent extends StatelessWidget {
             spacing: 16,
             children: [
               medicine != null
-                  ? MedicineCard(
+                  ? MedicationCard(
                       medicine: medicine,
                       proofPhoto: proofPhoto,
                       verifyRemaining: verifyRemaining,

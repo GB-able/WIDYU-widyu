@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:widyu/core/model/goal/medicine/medicine.dart';
+import 'package:widyu/core/model/goal/medication/medication.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
 import 'package:widyu/core/ui/widgets/custom_network_image.dart';
@@ -28,8 +28,8 @@ enum _VerifyState {
   bool get isFailed => this == expiredFailed;
 }
 
-class MedicineCard extends StatelessWidget {
-  const MedicineCard({
+class MedicationCard extends StatelessWidget {
+  const MedicationCard({
     super.key,
     required this.medicine,
     required this.proofPhoto,
@@ -37,7 +37,7 @@ class MedicineCard extends StatelessWidget {
     required this.onTakePhoto,
   });
 
-  final Medicine medicine;
+  final Medication medicine;
   final File? proofPhoto;
   final Duration verifyRemaining;
   final ValueChanged<File> onTakePhoto;

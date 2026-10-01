@@ -1,6 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:widyu/core/model/home/senior_card.dart';
-import 'package:widyu/core/utils/extensions/medicine_extension.dart';
+import 'package:widyu/core/utils/extensions/medication_extension.dart';
 import 'package:widyu/core/utils/extensions/string_extension.dart';
 
 part 'medication_status.freezed.dart';

@@ -11,7 +11,7 @@ import 'package:widyu/core/data/repository/myPage/my_page_repository.dart';
 import 'package:widyu/core/data/repository/notification/notification_repository.dart';
 import 'package:widyu/core/model/api/api_result.dart';
 import 'package:widyu/core/model/camera/camera_capture_result.dart';
-import 'package:widyu/core/model/goal/medicine/medicine_point_result.dart';
+import 'package:widyu/core/model/goal/medication/medication_point_result.dart';
 import 'package:widyu/core/model/heartRate/heart_rate_response.dart';
 import 'package:widyu/core/model/heartRate/heart_rate_status.dart';
 import 'package:widyu/core/model/home/medication_status.dart';
@@ -136,7 +136,7 @@ class HomeViewModel with ChangeNotifier {
       );
 
       switch (result) {
-        case Success<MedicinePointResult>():
+        case Success<MedicationPointResult>():
           final earned = result.data.earnedPoints;
           final total = result.data.currentPoints + earned;
           _pointProvider.sync(total);
@@ -146,7 +146,7 @@ class HomeViewModel with ChangeNotifier {
           // 복용 횟수와 다음 회차가 바뀌므로 카드를 다시 읽는다.
           // 리워드 다이얼로그 뒤에서 캐러셀이 로딩으로 깜빡이지 않게 한다.
           await _fetchSeniorCard(showLoading: false);
-        case Failure<MedicinePointResult>():
+        case Failure<MedicationPointResult>():
           _uiEvent.add(VerifyMedicationFailure(result.message));
       }
     } finally {

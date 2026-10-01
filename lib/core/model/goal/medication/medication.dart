@@ -1,15 +1,15 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:widyu/core/utils/extensions/medicine_extension.dart';
+import 'package:widyu/core/utils/extensions/medication_extension.dart';
 import 'package:widyu/core/utils/extensions/string_extension.dart';
 
-part 'medicine.freezed.dart';
-part 'medicine.g.dart';
+part 'medication.freezed.dart';
+part 'medication.g.dart';
 
 @freezed
-abstract class Medicine with _$Medicine {
-  const Medicine._();
+abstract class Medication with _$Medication {
+  const Medication._();
 
-  const factory Medicine({
+  const factory Medication({
     required int medicineScheduleId,
     required int takenCount,
     required int totalCount,
@@ -17,10 +17,10 @@ abstract class Medicine with _$Medicine {
     required String nextAlarmTime,
     @JsonKey(name: 'proofImageUrl') required String? proofImage,
     bool? isReward, // [TODO] 변경 예정
-  }) = _Medicine;
+  }) = _Medication;
 
-  factory Medicine.fromJson(Map<String, dynamic> json) =>
-      _$MedicineFromJson(json);
+  factory Medication.fromJson(Map<String, dynamic> json) =>
+      _$MedicationFromJson(json);
 
   DateTime? alarmAt(DateTime today) => nextAlarmTime.toAlarmAt(today);
 

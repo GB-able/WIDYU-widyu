@@ -16,7 +16,7 @@ import 'package:widyu/core/model/goal/weekly_goal_status_response.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
 import 'package:widyu/core/ui/widgets/icon_widget.dart';
-import 'package:widyu/core/ui/widgets/medicine_reward_dialog.dart';
+import 'package:widyu/core/ui/widgets/medication_reward_dialog.dart';
 import 'package:widyu/core/ui/widgets/ui_event_listener.dart';
 import 'package:widyu/core/ui/widgets/widyu_asset_image.dart';
 import 'package:widyu/core/ui/widgets/widyu_text_button.dart';
@@ -24,7 +24,7 @@ import 'package:widyu/core/utils/extensions/date_extension.dart';
 import 'package:widyu/core/utils/show_toast.dart';
 import 'package:widyu/feature/goal/_widget/goal_empty_card.dart';
 import 'package:widyu/feature/goal/_widget/hospital_card.dart';
-import 'package:widyu/feature/goal/_widget/medicine_card.dart';
+import 'package:widyu/feature/goal/_widget/medication_card.dart';
 import 'package:widyu/feature/goal/_widget/walk_card.dart';
 import 'package:widyu/feature/goal/main/goal_ui_event.dart';
 import 'package:widyu/feature/goal/main/goal_ui_state.dart';
@@ -76,12 +76,12 @@ class _GoalScreenState extends State<GoalScreen> {
     switch (event) {
       case FetchWeeklyStatusFailure():
         showToast('이번 주 달성 현황을 불러오지 못했어요.');
-      case VerifyMedicineFailure(:final message):
+      case VerifyMedicationFailure(:final message):
         showToast(message);
       case VerifyMeidcineSuccess(:final earnedPoint, :final existingPoint):
         showDialog(
             context: context,
-            builder: (context) => MedicineRewardDialog(
+            builder: (context) => MedicationRewardDialog(
                 earnedPoint: earnedPoint, existingPoint: existingPoint));
     }
   }

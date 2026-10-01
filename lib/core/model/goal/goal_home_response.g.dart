@@ -10,7 +10,7 @@ _GoalHomeResponse _$GoalHomeResponseFromJson(Map<String, dynamic> json) =>
     _GoalHomeResponse(
       medicine: json['medicine'] == null
           ? null
-          : Medicine.fromJson(json['medicine'] as Map<String, dynamic>),
+          : Medication.fromJson(json['medicine'] as Map<String, dynamic>),
       walk: json['steps'] == null
           ? null
           : Walk.fromJson(json['steps'] as Map<String, dynamic>),
