@@ -6,8 +6,8 @@ import kotlin.math.abs
 
 /**
  * 앵커(단조 시각 ↔ 벽시계) 한 쌍에 이름을 붙인다.
- * 재부팅이나 시각 점프로 환산이 달라지면 새 clock_mapping_id 를 발급한다.
- * 이미 발급한 값은 고치지 않는다.
+ * 서버는 같은 clock_mapping_id 의 기준점 값이 바뀌면 거절한다(SENSOR_4090).
+ * 그래서 재부팅이나 시각 점프가 아니면 이전 앵커를 그대로 쓰고, 그때만 새 id 와 새 앵커를 발급한다.
  */
 class ClockMapper(
     private val jumpToleranceMs: Double,
@@ -21,13 +21,10 @@ class ClockMapper(
         uncertaintyMs: Double,
     ): ClockInfo {
         val prev = previous
-        val mappingId =
-            when {
-                prev == null || prev.bootId != bootId -> UUID.randomUUID().toString()
-                abs(predictEpochMs(prev, elapsedNs) - epochMs) > jumpToleranceMs -> UUID.randomUUID().toString()
-                else -> prev.clockMappingId
-            }
-        return ClockInfo(bootId, mappingId, elapsedNs, epochMs, uncertaintyMs).also { previous = it }
+        if (prev != null && prev.bootId == bootId && abs(predictEpochMs(prev, elapsedNs) - epochMs) <= jumpToleranceMs) {
+            return prev
+        }
+        return ClockInfo(bootId, UUID.randomUUID().toString(), elapsedNs, epochMs, uncertaintyMs).also { previous = it }
     }
 
     private fun predictEpochMs(

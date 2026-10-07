@@ -7,11 +7,13 @@ sealed interface MeasureResult {
         val isOnBody: Boolean? = null,
     ) : MeasureResult
 
+    /** [value] 는 화면 표시용 최신 값(믿을 만한 샘플이 없으면 null), [readings] 는 전송할 원 샘플 전부다. */
     data class HeartRate(
-        val value: Int,
+        val value: Int?,
+        val readings: List<HeartRateReading> = emptyList(),
     ) : MeasureResult {
         init {
-            require(value > 0) { HEART_RATE_ERROR }
+            require(value == null || value > 0) { HEART_RATE_ERROR }
         }
 
         companion object {

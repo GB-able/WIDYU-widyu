@@ -1,18 +1,15 @@
 package com.gbable.widu.data.source
 
-import android.net.Uri
 import android.util.Log
 import com.gbable.widu.data.model.ImuBatch
 import com.gbable.widu.data.model.toJson
-import com.google.android.gms.tasks.Task
+import com.gbable.widu.data.util.awaitResult
+import com.gbable.widu.data.util.putBatch
+import com.gbable.widu.data.util.trimOldest
 import com.google.android.gms.wearable.DataClient
-import com.google.android.gms.wearable.DataMapItem
 import com.google.android.gms.wearable.PutDataMapRequest
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.suspendCancellableCoroutine
 import javax.inject.Inject
-import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
 
 class ImuRemoteDataSourceImpl @Inject constructor(
     private val dataClient: DataClient,
@@ -23,38 +20,14 @@ class ImuRemoteDataSourceImpl @Inject constructor(
     ) {
         // 평시 배치에는 setUrgent() 를 붙이지 않는다. 지연 동기화로 충분하고, 그래야 배터리를 덜 쓴다.
         runSafely("send batch seq=${batch.seq}") {
-            val request =
-                PutDataMapRequest.create("$BATCH_PREFIX/${batch.sessionId}/${batch.seq}").run {
-                    dataMap.putByteArray(KEY_BODY, batch.toJson().toString().toByteArray())
-                    dataMap.putLong(KEY_SEQ, batch.seq)
-                    dataMap.putLong(KEY_TIMESTAMP, System.currentTimeMillis())
-                    asPutDataRequest().apply { if (urgent) setUrgent() }
-                }
-            dataClient.putDataItem(request).awaitResult()
+            dataClient.putBatch(BATCH_PREFIX, batch.sessionId, batch.seq, batch.toJson().toString().toByteArray(), urgent)
         }
     }
 
     override suspend fun trimQueue(
         sessionId: String,
         maxItems: Int,
-    ): List<Long> =
-        runSafely("trim queue of $sessionId") {
-            val buffer = dataClient.getDataItems(queueUri(sessionId), DataClient.FILTER_PREFIX).awaitResult()
-            val queued =
-                try {
-                    buffer.map { DataMapItem.fromDataItem(it).dataMap.getLong(KEY_SEQ) to it.uri }.sortedBy { it.first }
-                } finally {
-                    buffer.release()
-                }
-
-            val excess = queued.size - maxItems
-            if (excess <= 0) return@runSafely emptyList()
-
-            queued.take(excess).map { (seq, uri) ->
-                dataClient.deleteDataItems(uri).awaitResult()
-                seq
-            }
-        } ?: emptyList()
+    ): List<Long> = runSafely("trim queue of $sessionId") { dataClient.trimOldest(BATCH_PREFIX, sessionId, maxItems) } ?: emptyList()
 
     override suspend fun recordDrop(
         sessionId: String,
@@ -90,15 +63,10 @@ class ImuRemoteDataSourceImpl @Inject constructor(
             null
         }
 
-    private fun queueUri(sessionId: String): Uri = Uri.parse("wear://*$BATCH_PREFIX/$sessionId")
-
     private companion object {
         const val TAG = "Widyu"
         const val BATCH_PREFIX = "/imu/batch"
         const val DROPPED_PREFIX = "/imu/dropped"
-        const val KEY_BODY = "body"
-        const val KEY_SEQ = "seq"
-        const val KEY_TIMESTAMP = "timestamp"
         const val KEY_SESSION_ID = "session_id"
         const val KEY_FROM_SEQ = "from_seq"
         const val KEY_TO_SEQ = "to_seq"
@@ -107,16 +75,3 @@ class ImuRemoteDataSourceImpl @Inject constructor(
         const val REASON_QUEUE_OVERFLOW = "queue_overflow"
     }
 }
-
-/** kotlinx-coroutines-play-services 를 더 들이지 않으려고 직접 감싼다. */
-private suspend fun <T> Task<T>.awaitResult(): T =
-    suspendCancellableCoroutine { continuation ->
-        addOnCompleteListener { task ->
-            val exception = task.exception
-            when {
-                exception != null -> continuation.resumeWithException(exception)
-                task.isCanceled -> continuation.cancel()
-                else -> continuation.resume(task.result)
-            }
-        }
-    }

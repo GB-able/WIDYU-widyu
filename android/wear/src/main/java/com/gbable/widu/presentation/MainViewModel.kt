@@ -87,7 +87,9 @@ class MainViewModel @Inject constructor(
                     }
 
                     is MeasureResult.HeartRate -> {
-                        heartRate.value = measureResult.value
+                        // 믿을 만한 샘플이 없던 묶음은 화면 값을 바꾸지 않는다.
+                        val value = measureResult.value ?: return@onEach
+                        heartRate.value = value
                         measureState.value = MeasureState.Measuring
                     }
 

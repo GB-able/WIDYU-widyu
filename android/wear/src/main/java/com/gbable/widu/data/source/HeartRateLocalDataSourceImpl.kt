@@ -15,6 +15,7 @@ import androidx.health.services.client.data.ExerciseType
 import androidx.health.services.client.data.ExerciseUpdate
 import com.gbable.widu.data.model.MeasureResult
 import com.gbable.widu.data.util.latestHeartRate
+import com.gbable.widu.data.util.toReading
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.channels.trySendBlocking
 import kotlinx.coroutines.flow.Flow
@@ -69,9 +70,8 @@ class HeartRateLocalDataSourceImpl @Inject constructor(
                             return
                         }
                         val heartRateData = update.latestMetrics.getData(DataType.HEART_RATE_BPM)
-                        heartRateData.latestHeartRate()?.let { heartRate ->
-                            trySendBlocking(MeasureResult.HeartRate(heartRate))
-                        }
+                        if (heartRateData.isEmpty()) return
+                        trySendBlocking(MeasureResult.HeartRate(heartRateData.latestHeartRate(), heartRateData.map { it.toReading() }))
                     }
 
                     override fun onRegistered() {}

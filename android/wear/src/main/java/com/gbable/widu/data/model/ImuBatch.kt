@@ -42,14 +42,7 @@ data class ImuBatch(
             "study_id" to studyId,
             "participation_id" to participationId,
             "run_id" to runId,
-            "clock" to
-                mapOf(
-                    "boot_id" to clock.bootId,
-                    "clock_mapping_id" to clock.clockMappingId,
-                    "anchor_elapsed_ns" to clock.anchorElapsedNs.toString(),
-                    "anchor_epoch_ms" to clock.anchorEpochMs,
-                    "uncertainty_ms" to clock.uncertaintyMs,
-                ),
+            "clock" to clock.toMap(),
             "acc" to acc?.toMap("mg"),
             "gyro" to gyro?.toMap("mrads"),
             "trigger" to trigger?.toMap(),
@@ -71,6 +64,16 @@ data class ImuBatch(
         const val SOURCE = "watch"
     }
 }
+
+/** 나노초 값은 자바스크립트 정수 범위를 넘으므로 10진 문자열로 싣는다. */
+internal fun ClockInfo.toMap(): Map<String, Any?> =
+    mapOf(
+        "boot_id" to bootId,
+        "clock_mapping_id" to clockMappingId,
+        "anchor_elapsed_ns" to anchorElapsedNs.toString(),
+        "anchor_epoch_ms" to anchorEpochMs,
+        "uncertainty_ms" to uncertaintyMs,
+    )
 
 private fun ImpactTrigger.toMap(): Map<String, Any?> =
     mapOf(

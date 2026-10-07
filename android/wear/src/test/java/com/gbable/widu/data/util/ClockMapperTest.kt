@@ -21,7 +21,7 @@ class ClockMapperTest {
     }
 
     @Test
-    @DisplayName("오차가 허용치 안이면 id 를 유지하고 앵커 값만 갱신한다")
+    @DisplayName("오차가 허용치 안이면 id 와 앵커 값을 모두 그대로 둔다")
     fun keepsTheIdWhenTheClockDidNotJump() {
         // given
         val first = mapper.onAnchor("boot-1", 1_000_000_000L, 1_760_000_000_000L, 2.0)
@@ -29,10 +29,8 @@ class ClockMapperTest {
         // when — 10분 뒤, 10ms 만 어긋남
         val second = mapper.onAnchor("boot-1", 601_000_000_000L, 1_760_000_600_010L, 2.0)
 
-        // then
-        second.clockMappingId shouldBe first.clockMappingId
-        second.anchorElapsedNs shouldBe 601_000_000_000L
-        second.anchorEpochMs shouldBe 1_760_000_600_010L
+        // then — 같은 id 의 기준점이 바뀌면 서버가 거절한다(SENSOR_4090)
+        second shouldBe first
     }
 
     @Test
