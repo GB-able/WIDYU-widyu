@@ -11,6 +11,8 @@ import 'package:widyu/core/data/repository/location/location_repository.dart';
 import 'package:widyu/core/data/repository/location/location_repository_impl.dart';
 import 'package:widyu/core/data/repository/sensor/sensor_batch_repository.dart';
 import 'package:widyu/core/data/repository/sensor/sensor_batch_repository_impl.dart';
+import 'package:widyu/core/data/repository/sensor/sensor_config_repository.dart';
+import 'package:widyu/core/data/repository/sensor/sensor_config_repository_impl.dart';
 import 'package:widyu/core/data/source/auth/auth_local_data_source_impl.dart';
 import 'package:widyu/core/data/source/auth/auth_remote_data_source_impl.dart';
 import 'package:widyu/core/data/source/device/device_local_data_source_impl.dart';
@@ -20,6 +22,8 @@ import 'package:widyu/core/data/source/location/location_local_data_source_impl.
 import 'package:widyu/core/data/source/location/location_remote_data_source_impl.dart';
 import 'package:widyu/core/data/source/sensor/sensor_batch_local_data_source_impl.dart';
 import 'package:widyu/core/data/source/sensor/sensor_batch_remote_data_source_impl.dart';
+import 'package:widyu/core/data/source/sensor/sensor_config_local_data_source_impl.dart';
+import 'package:widyu/core/data/source/sensor/sensor_config_remote_data_source_impl.dart';
 import 'package:widyu/core/model/api/api_result.dart';
 import 'package:widyu/core/model/location/location_service_state.dart';
 import 'package:widyu/core/model/permission/permission_type.dart';
@@ -31,9 +35,8 @@ import 'package:widyu/core/utils/permission_manager.dart';
 
 Future<void> initializeService({bool autoStartOnBoot = false}) async {
   final service = FlutterBackgroundService();
-  // Android 14+는 foreground 위치 권한 없이 location 타입으로 startForeground 하면
-  // SecurityException이 나고, 플러그인이 이를 삼켜 서비스가 foreground가 되지 못한 채
-  // 시스템에 종료된다. 권한이 있을 때만 location 타입을 얹는다.
+  // Android 14+는 위치 권한 없이 location 타입으로 startForeground 하면 SecurityException 이 나고,
+  // 플러그인이 이를 삼켜 서비스가 foreground 가 되지 못한 채 종료된다.
   final foregroundServiceTypes = [
     if (await PermissionManager.isGranted(PermissionType.location))
       AndroidForegroundType.location,
@@ -69,6 +72,7 @@ Future<bool> onIosBackground(ServiceInstance service) async {
   HeartRateRepository heartRateRepository,
   LocationRepository locationRepository,
   SensorBatchRepository sensorBatchRepository,
+  SensorConfigRepository sensorConfigRepository,
 }) createDependencies() {
   final apiClient = ApiClient();
   final socketClient = SocketClient();
@@ -96,6 +100,10 @@ Future<bool> onIosBackground(ServiceInstance service) async {
         apiClient: apiClient,
       ),
     ),
+    sensorConfigRepository: SensorConfigRepositoryImpl(
+      remoteDataSource: SensorConfigRemoteDataSourceImpl(apiClient: apiClient),
+      localDataSource: SensorConfigLocalDataSourceImpl(),
+    ),
   );
 }
 
@@ -105,12 +113,17 @@ Future<void> connectSocket(SocketClient socketClient) async {
     localDataSource: AuthLocalDataSourceImpl(),
   );
 
+  // WS 토큰은 30초·일회용이라 재연결마다 새로 받아야 한다. 소켓이 발급을 직접 호출한다.
   try {
-    final result = await authRepository.fetchSocketToken();
-    if (result is Success) {
-      final socketToken = (result as Success<String>).data;
-      socketClient.connect(socketToken);
-    }
+    await socketClient.connect(tokenProvider: () async {
+      try {
+        final result = await authRepository.fetchSocketToken();
+        return result is Success<String> ? result.data : null;
+      } catch (e, stack) {
+        debugPrint('[background_service] 소켓 토큰 발급 실패: $e\n$stack');
+        return null;
+      }
+    });
   } catch (e, stack) {
     debugPrint('[background_service] 소켓 연결 실패: $e\n$stack');
   }
@@ -143,6 +156,7 @@ void onStart(ServiceInstance service) async {
     heartRateRepository: heartRateRepository,
     locationRepository: locationRepository,
     sensorBatchRepository: sensorBatchRepository,
+    sensorConfigRepository: sensorConfigRepository,
   ) = createDependencies();
 
   unawaited(connectSocket(socketClient));
@@ -164,6 +178,7 @@ void onStart(ServiceInstance service) async {
       LocationServiceManager.stopMonitoring();
       heartRateRepository.stopObserveHeartRate();
       sensorBatchRepository.stopObserveSensorBatches();
+      sensorConfigRepository.stop();
       locationRepository.stopLocationUpload();
       socketClient.disconnect();
       await service.stopSelf();
@@ -185,6 +200,7 @@ void onStart(ServiceInstance service) async {
 
   heartRateRepository.observeHeartRate();
   sensorBatchRepository.observeSensorBatches();
+  sensorConfigRepository.start();
 
   if (service is AndroidServiceInstance) {
     service.on('setAsForeground').listen((event) {

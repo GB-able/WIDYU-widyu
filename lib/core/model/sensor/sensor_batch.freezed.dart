@@ -2141,11 +2141,7 @@ mixin _$SensorBatch {
   @JsonKey(name: 'participation_id')
   String? get participationId;
   @JsonKey(name: 'run_id')
-  String? get runId; // 서버가 clock{} 을 펼치지 않고도 세대를 가릴 수 있도록 최상위에도 둔다.
-  @JsonKey(name: 'boot_id')
-  String get bootId;
-  @JsonKey(name: 'clock_mapping_id')
-  String get clockMappingId;
+  String? get runId;
   @JsonKey(toJson: _nestedToJson)
   ClockInfo get clock;
   @JsonKey(toJson: _nestedToJson)
@@ -2158,18 +2154,22 @@ mixin _$SensorBatch {
   bool get gyroBackfill;
   @JsonKey(name: 'backfill_for')
   String? get backfillFor;
-  @JsonKey(name: 'gyro_mode')
-  String get gyroMode;
-  @JsonKey(name: 'collection_mode')
-  String get collectionMode;
-  @JsonKey(name: 'missing_reason')
-  String? get missingReason;
-  @JsonKey(name: 'on_body')
-  bool? get onBody;
-  @JsonKey(name: 'watch_battery_pct')
-  int? get watchBatteryPct;
   @JsonKey(toJson: _nestedToJson)
   ResendInfo? get resend;
+  @JsonKey(name: 'collection_mode')
+  String get collectionMode;
+  @JsonKey(name: 'gyro_mode')
+  String get gyroMode;
+  @JsonKey(name: 'on_body')
+  bool? get onBody;
+  @JsonKey(name: 'wear_state')
+  String? get wearState;
+  @JsonKey(name: 'missing_reason')
+  String? get missingReason;
+  @JsonKey(name: 'watch_battery_pct')
+  int? get watchBatteryPct;
+  @JsonKey(name: 'phone_received_at_ms')
+  int? get phoneReceivedAtMs;
 
   /// Create a copy of SensorBatch
   /// with the given fields replaced by the non-null parameter values.
@@ -2199,9 +2199,6 @@ mixin _$SensorBatch {
             (identical(other.participationId, participationId) ||
                 other.participationId == participationId) &&
             (identical(other.runId, runId) || other.runId == runId) &&
-            (identical(other.bootId, bootId) || other.bootId == bootId) &&
-            (identical(other.clockMappingId, clockMappingId) ||
-                other.clockMappingId == clockMappingId) &&
             (identical(other.clock, clock) || other.clock == clock) &&
             (identical(other.acc, acc) || other.acc == acc) &&
             (identical(other.gyro, gyro) || other.gyro == gyro) &&
@@ -2210,16 +2207,20 @@ mixin _$SensorBatch {
                 other.gyroBackfill == gyroBackfill) &&
             (identical(other.backfillFor, backfillFor) ||
                 other.backfillFor == backfillFor) &&
-            (identical(other.gyroMode, gyroMode) ||
-                other.gyroMode == gyroMode) &&
+            (identical(other.resend, resend) || other.resend == resend) &&
             (identical(other.collectionMode, collectionMode) ||
                 other.collectionMode == collectionMode) &&
+            (identical(other.gyroMode, gyroMode) ||
+                other.gyroMode == gyroMode) &&
+            (identical(other.onBody, onBody) || other.onBody == onBody) &&
+            (identical(other.wearState, wearState) ||
+                other.wearState == wearState) &&
             (identical(other.missingReason, missingReason) ||
                 other.missingReason == missingReason) &&
-            (identical(other.onBody, onBody) || other.onBody == onBody) &&
             (identical(other.watchBatteryPct, watchBatteryPct) ||
                 other.watchBatteryPct == watchBatteryPct) &&
-            (identical(other.resend, resend) || other.resend == resend));
+            (identical(other.phoneReceivedAtMs, phoneReceivedAtMs) ||
+                other.phoneReceivedAtMs == phoneReceivedAtMs));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -2236,25 +2237,25 @@ mixin _$SensorBatch {
         studyId,
         participationId,
         runId,
-        bootId,
-        clockMappingId,
         clock,
         acc,
         gyro,
         trigger,
         gyroBackfill,
         backfillFor,
-        gyroMode,
+        resend,
         collectionMode,
-        missingReason,
+        gyroMode,
         onBody,
+        wearState,
+        missingReason,
         watchBatteryPct,
-        resend
+        phoneReceivedAtMs
       ]);
 
   @override
   String toString() {
-    return 'SensorBatch(v: $v, stream: $stream, source: $source, batchId: $batchId, deviceId: $deviceId, sessionId: $sessionId, seq: $seq, studyId: $studyId, participationId: $participationId, runId: $runId, bootId: $bootId, clockMappingId: $clockMappingId, clock: $clock, acc: $acc, gyro: $gyro, trigger: $trigger, gyroBackfill: $gyroBackfill, backfillFor: $backfillFor, gyroMode: $gyroMode, collectionMode: $collectionMode, missingReason: $missingReason, onBody: $onBody, watchBatteryPct: $watchBatteryPct, resend: $resend)';
+    return 'SensorBatch(v: $v, stream: $stream, source: $source, batchId: $batchId, deviceId: $deviceId, sessionId: $sessionId, seq: $seq, studyId: $studyId, participationId: $participationId, runId: $runId, clock: $clock, acc: $acc, gyro: $gyro, trigger: $trigger, gyroBackfill: $gyroBackfill, backfillFor: $backfillFor, resend: $resend, collectionMode: $collectionMode, gyroMode: $gyroMode, onBody: $onBody, wearState: $wearState, missingReason: $missingReason, watchBatteryPct: $watchBatteryPct, phoneReceivedAtMs: $phoneReceivedAtMs)';
   }
 }
 
@@ -2275,20 +2276,20 @@ abstract mixin class $SensorBatchCopyWith<$Res> {
       @JsonKey(name: 'study_id') String? studyId,
       @JsonKey(name: 'participation_id') String? participationId,
       @JsonKey(name: 'run_id') String? runId,
-      @JsonKey(name: 'boot_id') String bootId,
-      @JsonKey(name: 'clock_mapping_id') String clockMappingId,
       @JsonKey(toJson: _nestedToJson) ClockInfo clock,
       @JsonKey(toJson: _nestedToJson) AccSeries? acc,
       @JsonKey(toJson: _nestedToJson) GyroSeries? gyro,
       @JsonKey(toJson: _nestedToJson) ImpactTrigger? trigger,
       @JsonKey(name: 'gyro_backfill') bool gyroBackfill,
       @JsonKey(name: 'backfill_for') String? backfillFor,
-      @JsonKey(name: 'gyro_mode') String gyroMode,
+      @JsonKey(toJson: _nestedToJson) ResendInfo? resend,
       @JsonKey(name: 'collection_mode') String collectionMode,
-      @JsonKey(name: 'missing_reason') String? missingReason,
+      @JsonKey(name: 'gyro_mode') String gyroMode,
       @JsonKey(name: 'on_body') bool? onBody,
+      @JsonKey(name: 'wear_state') String? wearState,
+      @JsonKey(name: 'missing_reason') String? missingReason,
       @JsonKey(name: 'watch_battery_pct') int? watchBatteryPct,
-      @JsonKey(toJson: _nestedToJson) ResendInfo? resend});
+      @JsonKey(name: 'phone_received_at_ms') int? phoneReceivedAtMs});
 
   $ClockInfoCopyWith<$Res> get clock;
   $AccSeriesCopyWith<$Res>? get acc;
@@ -2319,20 +2320,20 @@ class _$SensorBatchCopyWithImpl<$Res> implements $SensorBatchCopyWith<$Res> {
     Object? studyId = freezed,
     Object? participationId = freezed,
     Object? runId = freezed,
-    Object? bootId = null,
-    Object? clockMappingId = null,
     Object? clock = null,
     Object? acc = freezed,
     Object? gyro = freezed,
     Object? trigger = freezed,
     Object? gyroBackfill = null,
     Object? backfillFor = freezed,
-    Object? gyroMode = null,
-    Object? collectionMode = null,
-    Object? missingReason = freezed,
-    Object? onBody = freezed,
-    Object? watchBatteryPct = freezed,
     Object? resend = freezed,
+    Object? collectionMode = null,
+    Object? gyroMode = null,
+    Object? onBody = freezed,
+    Object? wearState = freezed,
+    Object? missingReason = freezed,
+    Object? watchBatteryPct = freezed,
+    Object? phoneReceivedAtMs = freezed,
   }) {
     return _then(_self.copyWith(
       v: null == v
@@ -2375,14 +2376,6 @@ class _$SensorBatchCopyWithImpl<$Res> implements $SensorBatchCopyWith<$Res> {
           ? _self.runId
           : runId // ignore: cast_nullable_to_non_nullable
               as String?,
-      bootId: null == bootId
-          ? _self.bootId
-          : bootId // ignore: cast_nullable_to_non_nullable
-              as String,
-      clockMappingId: null == clockMappingId
-          ? _self.clockMappingId
-          : clockMappingId // ignore: cast_nullable_to_non_nullable
-              as String,
       clock: null == clock
           ? _self.clock
           : clock // ignore: cast_nullable_to_non_nullable
@@ -2407,30 +2400,38 @@ class _$SensorBatchCopyWithImpl<$Res> implements $SensorBatchCopyWith<$Res> {
           ? _self.backfillFor
           : backfillFor // ignore: cast_nullable_to_non_nullable
               as String?,
-      gyroMode: null == gyroMode
-          ? _self.gyroMode
-          : gyroMode // ignore: cast_nullable_to_non_nullable
-              as String,
-      collectionMode: null == collectionMode
-          ? _self.collectionMode
-          : collectionMode // ignore: cast_nullable_to_non_nullable
-              as String,
-      missingReason: freezed == missingReason
-          ? _self.missingReason
-          : missingReason // ignore: cast_nullable_to_non_nullable
-              as String?,
-      onBody: freezed == onBody
-          ? _self.onBody
-          : onBody // ignore: cast_nullable_to_non_nullable
-              as bool?,
-      watchBatteryPct: freezed == watchBatteryPct
-          ? _self.watchBatteryPct
-          : watchBatteryPct // ignore: cast_nullable_to_non_nullable
-              as int?,
       resend: freezed == resend
           ? _self.resend
           : resend // ignore: cast_nullable_to_non_nullable
               as ResendInfo?,
+      collectionMode: null == collectionMode
+          ? _self.collectionMode
+          : collectionMode // ignore: cast_nullable_to_non_nullable
+              as String,
+      gyroMode: null == gyroMode
+          ? _self.gyroMode
+          : gyroMode // ignore: cast_nullable_to_non_nullable
+              as String,
+      onBody: freezed == onBody
+          ? _self.onBody
+          : onBody // ignore: cast_nullable_to_non_nullable
+              as bool?,
+      wearState: freezed == wearState
+          ? _self.wearState
+          : wearState // ignore: cast_nullable_to_non_nullable
+              as String?,
+      missingReason: freezed == missingReason
+          ? _self.missingReason
+          : missingReason // ignore: cast_nullable_to_non_nullable
+              as String?,
+      watchBatteryPct: freezed == watchBatteryPct
+          ? _self.watchBatteryPct
+          : watchBatteryPct // ignore: cast_nullable_to_non_nullable
+              as int?,
+      phoneReceivedAtMs: freezed == phoneReceivedAtMs
+          ? _self.phoneReceivedAtMs
+          : phoneReceivedAtMs // ignore: cast_nullable_to_non_nullable
+              as int?,
     ));
   }
 
@@ -2605,20 +2606,20 @@ extension SensorBatchPatterns on SensorBatch {
             @JsonKey(name: 'study_id') String? studyId,
             @JsonKey(name: 'participation_id') String? participationId,
             @JsonKey(name: 'run_id') String? runId,
-            @JsonKey(name: 'boot_id') String bootId,
-            @JsonKey(name: 'clock_mapping_id') String clockMappingId,
             @JsonKey(toJson: _nestedToJson) ClockInfo clock,
             @JsonKey(toJson: _nestedToJson) AccSeries? acc,
             @JsonKey(toJson: _nestedToJson) GyroSeries? gyro,
             @JsonKey(toJson: _nestedToJson) ImpactTrigger? trigger,
             @JsonKey(name: 'gyro_backfill') bool gyroBackfill,
             @JsonKey(name: 'backfill_for') String? backfillFor,
-            @JsonKey(name: 'gyro_mode') String gyroMode,
+            @JsonKey(toJson: _nestedToJson) ResendInfo? resend,
             @JsonKey(name: 'collection_mode') String collectionMode,
-            @JsonKey(name: 'missing_reason') String? missingReason,
+            @JsonKey(name: 'gyro_mode') String gyroMode,
             @JsonKey(name: 'on_body') bool? onBody,
+            @JsonKey(name: 'wear_state') String? wearState,
+            @JsonKey(name: 'missing_reason') String? missingReason,
             @JsonKey(name: 'watch_battery_pct') int? watchBatteryPct,
-            @JsonKey(toJson: _nestedToJson) ResendInfo? resend)?
+            @JsonKey(name: 'phone_received_at_ms') int? phoneReceivedAtMs)?
         $default, {
     required TResult orElse(),
   }) {
@@ -2636,20 +2637,20 @@ extension SensorBatchPatterns on SensorBatch {
             _that.studyId,
             _that.participationId,
             _that.runId,
-            _that.bootId,
-            _that.clockMappingId,
             _that.clock,
             _that.acc,
             _that.gyro,
             _that.trigger,
             _that.gyroBackfill,
             _that.backfillFor,
-            _that.gyroMode,
+            _that.resend,
             _that.collectionMode,
-            _that.missingReason,
+            _that.gyroMode,
             _that.onBody,
+            _that.wearState,
+            _that.missingReason,
             _that.watchBatteryPct,
-            _that.resend);
+            _that.phoneReceivedAtMs);
       case _:
         return orElse();
     }
@@ -2681,20 +2682,20 @@ extension SensorBatchPatterns on SensorBatch {
             @JsonKey(name: 'study_id') String? studyId,
             @JsonKey(name: 'participation_id') String? participationId,
             @JsonKey(name: 'run_id') String? runId,
-            @JsonKey(name: 'boot_id') String bootId,
-            @JsonKey(name: 'clock_mapping_id') String clockMappingId,
             @JsonKey(toJson: _nestedToJson) ClockInfo clock,
             @JsonKey(toJson: _nestedToJson) AccSeries? acc,
             @JsonKey(toJson: _nestedToJson) GyroSeries? gyro,
             @JsonKey(toJson: _nestedToJson) ImpactTrigger? trigger,
             @JsonKey(name: 'gyro_backfill') bool gyroBackfill,
             @JsonKey(name: 'backfill_for') String? backfillFor,
-            @JsonKey(name: 'gyro_mode') String gyroMode,
+            @JsonKey(toJson: _nestedToJson) ResendInfo? resend,
             @JsonKey(name: 'collection_mode') String collectionMode,
-            @JsonKey(name: 'missing_reason') String? missingReason,
+            @JsonKey(name: 'gyro_mode') String gyroMode,
             @JsonKey(name: 'on_body') bool? onBody,
+            @JsonKey(name: 'wear_state') String? wearState,
+            @JsonKey(name: 'missing_reason') String? missingReason,
             @JsonKey(name: 'watch_battery_pct') int? watchBatteryPct,
-            @JsonKey(toJson: _nestedToJson) ResendInfo? resend)
+            @JsonKey(name: 'phone_received_at_ms') int? phoneReceivedAtMs)
         $default,
   ) {
     final _that = this;
@@ -2711,20 +2712,20 @@ extension SensorBatchPatterns on SensorBatch {
             _that.studyId,
             _that.participationId,
             _that.runId,
-            _that.bootId,
-            _that.clockMappingId,
             _that.clock,
             _that.acc,
             _that.gyro,
             _that.trigger,
             _that.gyroBackfill,
             _that.backfillFor,
-            _that.gyroMode,
+            _that.resend,
             _that.collectionMode,
-            _that.missingReason,
+            _that.gyroMode,
             _that.onBody,
+            _that.wearState,
+            _that.missingReason,
             _that.watchBatteryPct,
-            _that.resend);
+            _that.phoneReceivedAtMs);
       case _:
         throw StateError('Unexpected subclass');
     }
@@ -2755,20 +2756,20 @@ extension SensorBatchPatterns on SensorBatch {
             @JsonKey(name: 'study_id') String? studyId,
             @JsonKey(name: 'participation_id') String? participationId,
             @JsonKey(name: 'run_id') String? runId,
-            @JsonKey(name: 'boot_id') String bootId,
-            @JsonKey(name: 'clock_mapping_id') String clockMappingId,
             @JsonKey(toJson: _nestedToJson) ClockInfo clock,
             @JsonKey(toJson: _nestedToJson) AccSeries? acc,
             @JsonKey(toJson: _nestedToJson) GyroSeries? gyro,
             @JsonKey(toJson: _nestedToJson) ImpactTrigger? trigger,
             @JsonKey(name: 'gyro_backfill') bool gyroBackfill,
             @JsonKey(name: 'backfill_for') String? backfillFor,
-            @JsonKey(name: 'gyro_mode') String gyroMode,
+            @JsonKey(toJson: _nestedToJson) ResendInfo? resend,
             @JsonKey(name: 'collection_mode') String collectionMode,
-            @JsonKey(name: 'missing_reason') String? missingReason,
+            @JsonKey(name: 'gyro_mode') String gyroMode,
             @JsonKey(name: 'on_body') bool? onBody,
+            @JsonKey(name: 'wear_state') String? wearState,
+            @JsonKey(name: 'missing_reason') String? missingReason,
             @JsonKey(name: 'watch_battery_pct') int? watchBatteryPct,
-            @JsonKey(toJson: _nestedToJson) ResendInfo? resend)?
+            @JsonKey(name: 'phone_received_at_ms') int? phoneReceivedAtMs)?
         $default,
   ) {
     final _that = this;
@@ -2785,20 +2786,20 @@ extension SensorBatchPatterns on SensorBatch {
             _that.studyId,
             _that.participationId,
             _that.runId,
-            _that.bootId,
-            _that.clockMappingId,
             _that.clock,
             _that.acc,
             _that.gyro,
             _that.trigger,
             _that.gyroBackfill,
             _that.backfillFor,
-            _that.gyroMode,
+            _that.resend,
             _that.collectionMode,
-            _that.missingReason,
+            _that.gyroMode,
             _that.onBody,
+            _that.wearState,
+            _that.missingReason,
             _that.watchBatteryPct,
-            _that.resend);
+            _that.phoneReceivedAtMs);
       case _:
         return null;
     }
@@ -2819,20 +2820,20 @@ class _SensorBatch implements SensorBatch {
       @JsonKey(name: 'study_id') this.studyId,
       @JsonKey(name: 'participation_id') this.participationId,
       @JsonKey(name: 'run_id') this.runId,
-      @JsonKey(name: 'boot_id') required this.bootId,
-      @JsonKey(name: 'clock_mapping_id') required this.clockMappingId,
       @JsonKey(toJson: _nestedToJson) required this.clock,
       @JsonKey(toJson: _nestedToJson) this.acc,
       @JsonKey(toJson: _nestedToJson) this.gyro,
       @JsonKey(toJson: _nestedToJson) this.trigger,
       @JsonKey(name: 'gyro_backfill') this.gyroBackfill = false,
       @JsonKey(name: 'backfill_for') this.backfillFor,
-      @JsonKey(name: 'gyro_mode') required this.gyroMode,
+      @JsonKey(toJson: _nestedToJson) this.resend,
       @JsonKey(name: 'collection_mode') required this.collectionMode,
-      @JsonKey(name: 'missing_reason') this.missingReason,
+      @JsonKey(name: 'gyro_mode') required this.gyroMode,
       @JsonKey(name: 'on_body') this.onBody,
+      @JsonKey(name: 'wear_state') this.wearState,
+      @JsonKey(name: 'missing_reason') this.missingReason,
       @JsonKey(name: 'watch_battery_pct') this.watchBatteryPct,
-      @JsonKey(toJson: _nestedToJson) this.resend});
+      @JsonKey(name: 'phone_received_at_ms') this.phoneReceivedAtMs});
   factory _SensorBatch.fromJson(Map<String, dynamic> json) =>
       _$SensorBatchFromJson(json);
 
@@ -2865,13 +2866,6 @@ class _SensorBatch implements SensorBatch {
   @override
   @JsonKey(name: 'run_id')
   final String? runId;
-// 서버가 clock{} 을 펼치지 않고도 세대를 가릴 수 있도록 최상위에도 둔다.
-  @override
-  @JsonKey(name: 'boot_id')
-  final String bootId;
-  @override
-  @JsonKey(name: 'clock_mapping_id')
-  final String clockMappingId;
   @override
   @JsonKey(toJson: _nestedToJson)
   final ClockInfo clock;
@@ -2891,23 +2885,29 @@ class _SensorBatch implements SensorBatch {
   @JsonKey(name: 'backfill_for')
   final String? backfillFor;
   @override
-  @JsonKey(name: 'gyro_mode')
-  final String gyroMode;
+  @JsonKey(toJson: _nestedToJson)
+  final ResendInfo? resend;
   @override
   @JsonKey(name: 'collection_mode')
   final String collectionMode;
   @override
-  @JsonKey(name: 'missing_reason')
-  final String? missingReason;
+  @JsonKey(name: 'gyro_mode')
+  final String gyroMode;
   @override
   @JsonKey(name: 'on_body')
   final bool? onBody;
   @override
+  @JsonKey(name: 'wear_state')
+  final String? wearState;
+  @override
+  @JsonKey(name: 'missing_reason')
+  final String? missingReason;
+  @override
   @JsonKey(name: 'watch_battery_pct')
   final int? watchBatteryPct;
   @override
-  @JsonKey(toJson: _nestedToJson)
-  final ResendInfo? resend;
+  @JsonKey(name: 'phone_received_at_ms')
+  final int? phoneReceivedAtMs;
 
   /// Create a copy of SensorBatch
   /// with the given fields replaced by the non-null parameter values.
@@ -2942,9 +2942,6 @@ class _SensorBatch implements SensorBatch {
             (identical(other.participationId, participationId) ||
                 other.participationId == participationId) &&
             (identical(other.runId, runId) || other.runId == runId) &&
-            (identical(other.bootId, bootId) || other.bootId == bootId) &&
-            (identical(other.clockMappingId, clockMappingId) ||
-                other.clockMappingId == clockMappingId) &&
             (identical(other.clock, clock) || other.clock == clock) &&
             (identical(other.acc, acc) || other.acc == acc) &&
             (identical(other.gyro, gyro) || other.gyro == gyro) &&
@@ -2953,16 +2950,20 @@ class _SensorBatch implements SensorBatch {
                 other.gyroBackfill == gyroBackfill) &&
             (identical(other.backfillFor, backfillFor) ||
                 other.backfillFor == backfillFor) &&
-            (identical(other.gyroMode, gyroMode) ||
-                other.gyroMode == gyroMode) &&
+            (identical(other.resend, resend) || other.resend == resend) &&
             (identical(other.collectionMode, collectionMode) ||
                 other.collectionMode == collectionMode) &&
+            (identical(other.gyroMode, gyroMode) ||
+                other.gyroMode == gyroMode) &&
+            (identical(other.onBody, onBody) || other.onBody == onBody) &&
+            (identical(other.wearState, wearState) ||
+                other.wearState == wearState) &&
             (identical(other.missingReason, missingReason) ||
                 other.missingReason == missingReason) &&
-            (identical(other.onBody, onBody) || other.onBody == onBody) &&
             (identical(other.watchBatteryPct, watchBatteryPct) ||
                 other.watchBatteryPct == watchBatteryPct) &&
-            (identical(other.resend, resend) || other.resend == resend));
+            (identical(other.phoneReceivedAtMs, phoneReceivedAtMs) ||
+                other.phoneReceivedAtMs == phoneReceivedAtMs));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -2979,25 +2980,25 @@ class _SensorBatch implements SensorBatch {
         studyId,
         participationId,
         runId,
-        bootId,
-        clockMappingId,
         clock,
         acc,
         gyro,
         trigger,
         gyroBackfill,
         backfillFor,
-        gyroMode,
+        resend,
         collectionMode,
-        missingReason,
+        gyroMode,
         onBody,
+        wearState,
+        missingReason,
         watchBatteryPct,
-        resend
+        phoneReceivedAtMs
       ]);
 
   @override
   String toString() {
-    return 'SensorBatch(v: $v, stream: $stream, source: $source, batchId: $batchId, deviceId: $deviceId, sessionId: $sessionId, seq: $seq, studyId: $studyId, participationId: $participationId, runId: $runId, bootId: $bootId, clockMappingId: $clockMappingId, clock: $clock, acc: $acc, gyro: $gyro, trigger: $trigger, gyroBackfill: $gyroBackfill, backfillFor: $backfillFor, gyroMode: $gyroMode, collectionMode: $collectionMode, missingReason: $missingReason, onBody: $onBody, watchBatteryPct: $watchBatteryPct, resend: $resend)';
+    return 'SensorBatch(v: $v, stream: $stream, source: $source, batchId: $batchId, deviceId: $deviceId, sessionId: $sessionId, seq: $seq, studyId: $studyId, participationId: $participationId, runId: $runId, clock: $clock, acc: $acc, gyro: $gyro, trigger: $trigger, gyroBackfill: $gyroBackfill, backfillFor: $backfillFor, resend: $resend, collectionMode: $collectionMode, gyroMode: $gyroMode, onBody: $onBody, wearState: $wearState, missingReason: $missingReason, watchBatteryPct: $watchBatteryPct, phoneReceivedAtMs: $phoneReceivedAtMs)';
   }
 }
 
@@ -3020,20 +3021,20 @@ abstract mixin class _$SensorBatchCopyWith<$Res>
       @JsonKey(name: 'study_id') String? studyId,
       @JsonKey(name: 'participation_id') String? participationId,
       @JsonKey(name: 'run_id') String? runId,
-      @JsonKey(name: 'boot_id') String bootId,
-      @JsonKey(name: 'clock_mapping_id') String clockMappingId,
       @JsonKey(toJson: _nestedToJson) ClockInfo clock,
       @JsonKey(toJson: _nestedToJson) AccSeries? acc,
       @JsonKey(toJson: _nestedToJson) GyroSeries? gyro,
       @JsonKey(toJson: _nestedToJson) ImpactTrigger? trigger,
       @JsonKey(name: 'gyro_backfill') bool gyroBackfill,
       @JsonKey(name: 'backfill_for') String? backfillFor,
-      @JsonKey(name: 'gyro_mode') String gyroMode,
+      @JsonKey(toJson: _nestedToJson) ResendInfo? resend,
       @JsonKey(name: 'collection_mode') String collectionMode,
-      @JsonKey(name: 'missing_reason') String? missingReason,
+      @JsonKey(name: 'gyro_mode') String gyroMode,
       @JsonKey(name: 'on_body') bool? onBody,
+      @JsonKey(name: 'wear_state') String? wearState,
+      @JsonKey(name: 'missing_reason') String? missingReason,
       @JsonKey(name: 'watch_battery_pct') int? watchBatteryPct,
-      @JsonKey(toJson: _nestedToJson) ResendInfo? resend});
+      @JsonKey(name: 'phone_received_at_ms') int? phoneReceivedAtMs});
 
   @override
   $ClockInfoCopyWith<$Res> get clock;
@@ -3069,20 +3070,20 @@ class __$SensorBatchCopyWithImpl<$Res> implements _$SensorBatchCopyWith<$Res> {
     Object? studyId = freezed,
     Object? participationId = freezed,
     Object? runId = freezed,
-    Object? bootId = null,
-    Object? clockMappingId = null,
     Object? clock = null,
     Object? acc = freezed,
     Object? gyro = freezed,
     Object? trigger = freezed,
     Object? gyroBackfill = null,
     Object? backfillFor = freezed,
-    Object? gyroMode = null,
-    Object? collectionMode = null,
-    Object? missingReason = freezed,
-    Object? onBody = freezed,
-    Object? watchBatteryPct = freezed,
     Object? resend = freezed,
+    Object? collectionMode = null,
+    Object? gyroMode = null,
+    Object? onBody = freezed,
+    Object? wearState = freezed,
+    Object? missingReason = freezed,
+    Object? watchBatteryPct = freezed,
+    Object? phoneReceivedAtMs = freezed,
   }) {
     return _then(_SensorBatch(
       v: null == v
@@ -3125,14 +3126,6 @@ class __$SensorBatchCopyWithImpl<$Res> implements _$SensorBatchCopyWith<$Res> {
           ? _self.runId
           : runId // ignore: cast_nullable_to_non_nullable
               as String?,
-      bootId: null == bootId
-          ? _self.bootId
-          : bootId // ignore: cast_nullable_to_non_nullable
-              as String,
-      clockMappingId: null == clockMappingId
-          ? _self.clockMappingId
-          : clockMappingId // ignore: cast_nullable_to_non_nullable
-              as String,
       clock: null == clock
           ? _self.clock
           : clock // ignore: cast_nullable_to_non_nullable
@@ -3157,30 +3150,38 @@ class __$SensorBatchCopyWithImpl<$Res> implements _$SensorBatchCopyWith<$Res> {
           ? _self.backfillFor
           : backfillFor // ignore: cast_nullable_to_non_nullable
               as String?,
-      gyroMode: null == gyroMode
-          ? _self.gyroMode
-          : gyroMode // ignore: cast_nullable_to_non_nullable
-              as String,
-      collectionMode: null == collectionMode
-          ? _self.collectionMode
-          : collectionMode // ignore: cast_nullable_to_non_nullable
-              as String,
-      missingReason: freezed == missingReason
-          ? _self.missingReason
-          : missingReason // ignore: cast_nullable_to_non_nullable
-              as String?,
-      onBody: freezed == onBody
-          ? _self.onBody
-          : onBody // ignore: cast_nullable_to_non_nullable
-              as bool?,
-      watchBatteryPct: freezed == watchBatteryPct
-          ? _self.watchBatteryPct
-          : watchBatteryPct // ignore: cast_nullable_to_non_nullable
-              as int?,
       resend: freezed == resend
           ? _self.resend
           : resend // ignore: cast_nullable_to_non_nullable
               as ResendInfo?,
+      collectionMode: null == collectionMode
+          ? _self.collectionMode
+          : collectionMode // ignore: cast_nullable_to_non_nullable
+              as String,
+      gyroMode: null == gyroMode
+          ? _self.gyroMode
+          : gyroMode // ignore: cast_nullable_to_non_nullable
+              as String,
+      onBody: freezed == onBody
+          ? _self.onBody
+          : onBody // ignore: cast_nullable_to_non_nullable
+              as bool?,
+      wearState: freezed == wearState
+          ? _self.wearState
+          : wearState // ignore: cast_nullable_to_non_nullable
+              as String?,
+      missingReason: freezed == missingReason
+          ? _self.missingReason
+          : missingReason // ignore: cast_nullable_to_non_nullable
+              as String?,
+      watchBatteryPct: freezed == watchBatteryPct
+          ? _self.watchBatteryPct
+          : watchBatteryPct // ignore: cast_nullable_to_non_nullable
+              as int?,
+      phoneReceivedAtMs: freezed == phoneReceivedAtMs
+          ? _self.phoneReceivedAtMs
+          : phoneReceivedAtMs // ignore: cast_nullable_to_non_nullable
+              as int?,
     ));
   }
 

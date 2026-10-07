@@ -15,10 +15,19 @@ class SensorBatchLocalDataSourceImpl implements SensorBatchLocalDataSource {
       .where((message) => message != null)
       .cast<SensorMessage>();
 
-  /// 한 건이 깨져도 스트림은 살려 둔다.
+  /// 한 건이 깨져도 스트림은 살려 두고, 서버가 워치→폰 지연을 볼 수 있도록 수신 시각을 채운다.
   static SensorMessage? _parse(String raw) {
     try {
-      return SensorMessage.fromJson(jsonDecode(raw) as Map<String, dynamic>);
+      final message =
+          SensorMessage.fromJson(jsonDecode(raw) as Map<String, dynamic>);
+      return switch (message) {
+        SensorMessageBatch(:final batch) => SensorMessage.batch(
+            batch.copyWith(
+              phoneReceivedAtMs: DateTime.now().millisecondsSinceEpoch,
+            ),
+          ),
+        SensorMessageDropped() => message,
+      };
     } catch (error, stackTrace) {
       // 파싱 예외 메시지는 원문 센서 값을 품을 수 있어 디버그 빌드에서만 남긴다.
       if (kDebugMode) {

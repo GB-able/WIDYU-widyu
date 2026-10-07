@@ -5,11 +5,6 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 part 'sensor_batch.freezed.dart';
 part 'sensor_batch.g.dart';
 
-/// 워치 `ImuBatch.toMap()`(부록 A)이 만드는 JSON 그대로를 모델로 옮긴 것이다.
-/// 키 이름·타입·null 규칙은 그 파일이 정본이므로 임의로 바꾸지 않는다.
-/// 나노초 값은 JS 정수 범위를 넘으므로 10진 문자열로 싣는다(int 로 바꾸지 말 것).
-
-/// 단조 시각(부팅 기준)을 벽시계로 환산하기 위한 기준점.
 @freezed
 abstract class ClockInfo with _$ClockInfo {
   const factory ClockInfo({
@@ -24,7 +19,6 @@ abstract class ClockInfo with _$ClockInfo {
       _$ClockInfoFromJson(json);
 }
 
-/// 가속도 묶음. 값 배열 키가 `mg` 라 [GyroSeries] 와 클래스를 나눈다.
 @freezed
 abstract class AccSeries with _$AccSeries {
   const factory AccSeries({
@@ -39,7 +33,6 @@ abstract class AccSeries with _$AccSeries {
       _$AccSeriesFromJson(json);
 }
 
-/// 자이로 묶음. 값 배열 키가 `mrads` 라 [AccSeries] 와 클래스를 나눈다.
 @freezed
 abstract class GyroSeries with _$GyroSeries {
   const factory GyroSeries({
@@ -54,7 +47,6 @@ abstract class GyroSeries with _$GyroSeries {
       _$GyroSeriesFromJson(json);
 }
 
-/// 충격 표시. 낙상 판정이 아니라 「이 구간 자이로를 빠뜨리지 말라」는 신호다.
 @freezed
 abstract class ImpactTrigger with _$ImpactTrigger {
   const factory ImpactTrigger({
@@ -68,7 +60,6 @@ abstract class ImpactTrigger with _$ImpactTrigger {
       _$ImpactTriggerFromJson(json);
 }
 
-/// REST 재전송 시에만 붙는다. 원본 배치 필드는 건드리지 않는다.
 @freezed
 abstract class ResendInfo with _$ResendInfo {
   const factory ResendInfo({
@@ -84,7 +75,6 @@ abstract class ResendInfo with _$ResendInfo {
       _$ResendInfoFromJson(json);
 }
 
-/// IMU 배치 봉투(`stream == 'imu_watch'`).
 @freezed
 abstract class SensorBatch with _$SensorBatch {
   const factory SensorBatch({
@@ -98,28 +88,26 @@ abstract class SensorBatch with _$SensorBatch {
     @JsonKey(name: 'study_id') String? studyId,
     @JsonKey(name: 'participation_id') String? participationId,
     @JsonKey(name: 'run_id') String? runId,
-    // 서버가 clock{} 을 펼치지 않고도 세대를 가릴 수 있도록 최상위에도 둔다.
-    @JsonKey(name: 'boot_id') required String bootId,
-    @JsonKey(name: 'clock_mapping_id') required String clockMappingId,
     @JsonKey(toJson: _nestedToJson) required ClockInfo clock,
     @JsonKey(toJson: _nestedToJson) AccSeries? acc,
     @JsonKey(toJson: _nestedToJson) GyroSeries? gyro,
     @JsonKey(toJson: _nestedToJson) ImpactTrigger? trigger,
     @JsonKey(name: 'gyro_backfill') @Default(false) bool gyroBackfill,
     @JsonKey(name: 'backfill_for') String? backfillFor,
-    @JsonKey(name: 'gyro_mode') required String gyroMode,
-    @JsonKey(name: 'collection_mode') required String collectionMode,
-    @JsonKey(name: 'missing_reason') String? missingReason,
-    @JsonKey(name: 'on_body') bool? onBody,
-    @JsonKey(name: 'watch_battery_pct') int? watchBatteryPct,
     @JsonKey(toJson: _nestedToJson) ResendInfo? resend,
+    @JsonKey(name: 'collection_mode') required String collectionMode,
+    @JsonKey(name: 'gyro_mode') required String gyroMode,
+    @JsonKey(name: 'on_body') bool? onBody,
+    @JsonKey(name: 'wear_state') String? wearState,
+    @JsonKey(name: 'missing_reason') String? missingReason,
+    @JsonKey(name: 'watch_battery_pct') int? watchBatteryPct,
+    @JsonKey(name: 'phone_received_at_ms') int? phoneReceivedAtMs,
   }) = _SensorBatch;
 
   factory SensorBatch.fromJson(Map<String, dynamic> json) =>
       _$SensorBatchFromJson(json);
 }
 
-/// 폰 네이티브가 넘기는 폐기 레코드(`stream == 'imu_dropped'`).
 @freezed
 abstract class SensorDroppedRecord with _$SensorDroppedRecord {
   const factory SensorDroppedRecord({
@@ -143,15 +131,13 @@ sealed class SensorMessage with _$SensorMessage {
   const factory SensorMessage.dropped(SensorDroppedRecord record) =
       SensorMessageDropped;
 
-  /// factory 가 아닌 static — freezed 의 runtimeType 기반 union JSON 대신
-  /// 워치/네이티브가 실제로 보내는 `stream` 값으로 분기한다.
+  /// freezed 의 runtimeType 기반 union JSON 대신 `stream` 값으로 분기하므로 static 이다.
   static SensorMessage fromJson(Map<String, dynamic> json) =>
       json['stream'] == 'imu_dropped'
           ? SensorMessage.dropped(SensorDroppedRecord.fromJson(json))
           : SensorMessage.batch(SensorBatch.fromJson(json));
 }
 
-/// json_serializable 의 `explicitToJson` 대체. 클래스 단위 `@JsonSerializable` 을
-/// freezed 클래스에 붙이면 생성기가 추상 클래스를 대상으로 삼아 실패한다.
+/// `explicitToJson` 대체 — 클래스 단위 `@JsonSerializable` 은 freezed 추상 클래스에서 생성이 실패한다.
 Map<String, dynamic>? _nestedToJson(dynamic value) =>
     value?.toJson() as Map<String, dynamic>?;

@@ -5,11 +5,28 @@ import 'package:widyu/core/data/repository/sensor/sensor_batch_repository_impl.d
 import 'package:widyu/core/data/source/sensor/sensor_batch_local_data_source.dart';
 import 'package:widyu/core/data/source/sensor/sensor_batch_remote_data_source.dart';
 import 'package:widyu/core/model/sensor/sensor_batch.dart';
+import 'package:widyu/core/model/sensor/sensor_result.dart';
 
 void main() {
   late _LocalDataSource local;
   late _RemoteDataSource remote;
   late SensorBatchRepositoryImpl repository;
+
+  /// ack 대기가 바로 만료되는 설정. 타이머가 돌면 결과 없는 pending 은 큐로 간다.
+  SensorBatchRepositoryImpl build({
+    int queueMax = 2,
+    Duration retryInterval = const Duration(hours: 1),
+    Duration ackTimeout = Duration.zero,
+  }) {
+    repository.stopObserveSensorBatches();
+    return repository = SensorBatchRepositoryImpl(
+      localDataSource: local,
+      remoteDataSource: remote,
+      queueMax: queueMax,
+      retryInterval: retryInterval,
+      ackTimeout: ackTimeout,
+    )..observeSensorBatches();
+  }
 
   setUp(() {
     local = _LocalDataSource();
@@ -41,7 +58,7 @@ void main() {
     expect(remote.resent, isEmpty);
   });
 
-  test('전송 실패 배치는 연결 복구 시 resend 정보를 붙여 REST로 재전송한다', () async {
+  test('전송 실패 배치는 연결 복구 시 원문 그대로 REST로 재전송한다', () async {
     remote.sendSucceeds = false;
     final batch = _batch(4);
     final secondBatch = _batch(5, runId: 'run-5');
@@ -52,28 +69,13 @@ void main() {
     remote.connection.add(true);
     await _settle();
 
-    final resent = remote.resent.single;
-    expect(resent, hasLength(2));
-    for (var index = 0; index < resent.length; index++) {
-      final resentBatch = resent[index];
-      final original = [batch, secondBatch][index];
-      final resend = resentBatch.resend!;
-      expect(resend.isResend, isTrue);
-      expect(resend.originalBatchId, original.batchId);
-      expect(resend.originalSeq, original.seq);
-      expect(resend.originalRunId, original.runId);
-      expect(resend.originalSessionId, original.sessionId);
-      expect(
-          resend.resentAtMs,
-          inInclusiveRange(DateTime.now().millisecondsSinceEpoch - 1000,
-              DateTime.now().millisecondsSinceEpoch));
-      expect(resentBatch.copyWith(resend: null), original);
-    }
-    expect(batch.resend, isNull);
+    expect(remote.resent, [batch, secondBatch]);
+    // 같은 batch_id 로 resend 를 붙여 보내면 서버가 4003 으로 거절한다.
+    expect(remote.resent.every((batch) => batch.resend == null), isTrue);
 
     remote.connection.add(true);
     await _settle();
-    expect(remote.resent, hasLength(1));
+    expect(remote.resent, hasLength(2));
   });
 
   test('대기열 상한을 넘으면 가장 오래된 배치부터 버린다', () async {
@@ -86,28 +88,44 @@ void main() {
     remote.connection.add(true);
     await _settle();
 
-    expect(remote.resent.single.map((batch) => batch.seq), [2, 3]);
+    expect(remote.resent.map((batch) => batch.seq), [2, 3]);
   });
 
-  test('REST 재전송 실패 시 대기열을 유지한다', () async {
+  test('REST 재전송이 retryLater 면 대기열을 유지한다', () async {
     remote.sendSucceeds = false;
-    remote.resendSucceeds = false;
+    remote.outcome = ResendOutcome.retryLater;
     local.add(_batch(1));
     await _settle();
 
     remote.connection.add(true);
     await _settle();
-    remote.resendSucceeds = true;
+    remote.outcome = ResendOutcome.stored;
     remote.connection.add(true);
     await _settle();
 
+    expect(remote.resent.map((batch) => batch.seq), [1, 1]);
+  });
+
+  test('REST 가 rejected 면 큐에서 빼고 다음 배치로 넘어간다', () async {
+    remote.sendSucceeds = false;
+    remote.outcome = ResendOutcome.rejected;
+    local.add(_batch(1));
+    local.add(_batch(2));
+    await _settle();
+
+    remote.connection.add(true);
+    await _settle();
+    expect(remote.resent.map((batch) => batch.seq), [1, 2]);
+
+    // 거절된 배치는 큐에 남지 않는다.
+    remote.connection.add(true);
+    await _settle();
     expect(remote.resent, hasLength(2));
-    expect(remote.resent.last.single.seq, 1);
   });
 
   test('REST 진행 중 새 배치와 상한 초과는 다음 재전송에 순서대로 반영한다', () async {
     remote.sendSucceeds = false;
-    final pending = Completer<bool>();
+    final pending = Completer<ResendOutcome>();
     remote.nextResend = pending.future;
     local.add(_batch(1));
     local.add(_batch(2));
@@ -121,29 +139,23 @@ void main() {
     remote.connection.add(true);
     await _settle();
     expect(remote.resent, hasLength(1));
-    pending.complete(true);
+    pending.complete(ResendOutcome.stored);
     await _settle();
 
     remote.connection.add(true);
     await _settle();
-    expect(remote.resent.last.map((batch) => batch.seq), [3, 4]);
+    expect(remote.resent.map((batch) => batch.seq), [1, 3, 4]);
   });
 
   testWidgets('재시도 타이머가 대기열을 재전송한다', (tester) async {
-    repository.stopObserveSensorBatches();
-    repository = SensorBatchRepositoryImpl(
-      localDataSource: local,
-      remoteDataSource: remote,
-      queueMax: 2,
-      retryInterval: const Duration(seconds: 1),
-    )..observeSensorBatches();
+    build(retryInterval: const Duration(seconds: 1));
     remote.sendSucceeds = false;
     local.add(_batch(1));
     await tester.pump();
 
     await tester.pump(const Duration(seconds: 1));
 
-    expect(remote.resent.single.single.seq, 1);
+    expect(remote.resent.single.seq, 1);
     repository.stopObserveSensorBatches();
   });
 
@@ -158,6 +170,70 @@ void main() {
     await _settle();
 
     expect(remote.resent, hasLength(2));
+  });
+
+  group('STOMP 결과 처리', () {
+    testWidgets('STORED 를 받으면 ack 대기가 끝나 재전송하지 않는다', (tester) async {
+      build(retryInterval: const Duration(seconds: 1));
+      final batch = _batch(1);
+      local.add(batch);
+      await tester.pump();
+      remote.resultController.add(
+        SensorResult(batchId: batch.batchId, seq: batch.seq, result: 'STORED'),
+      );
+      await tester.pump();
+
+      await tester.pump(const Duration(seconds: 1));
+
+      expect(remote.resent, isEmpty);
+      repository.stopObserveSensorBatches();
+    });
+
+    testWidgets('REJECTED 를 받으면 재전송하지 않는다', (tester) async {
+      build(retryInterval: const Duration(seconds: 1));
+      final batch = _batch(1);
+      local.add(batch);
+      await tester.pump();
+      remote.resultController.add(
+        SensorResult(
+            batchId: batch.batchId, seq: batch.seq, result: 'REJECTED'),
+      );
+      await tester.pump();
+
+      await tester.pump(const Duration(seconds: 1));
+
+      expect(remote.resent, isEmpty);
+      repository.stopObserveSensorBatches();
+    });
+
+    testWidgets('결과 없이 ack 대기가 지나면 원문 그대로 REST 로 재전송한다', (tester) async {
+      build(retryInterval: const Duration(seconds: 1));
+      final batch = _batch(1);
+      local.add(batch);
+      await tester.pump();
+
+      await tester.pump(const Duration(seconds: 1));
+
+      final resent = remote.resent.single;
+      expect(resent.batchId, batch.batchId);
+      expect(resent.resend, isNull);
+      expect(resent, batch);
+      repository.stopObserveSensorBatches();
+    });
+
+    test('연결이 끊기면 ack 대기 중인 배치를 모두 대기열로 옮긴다', () async {
+      final batch = _batch(1);
+      local.add(batch);
+      await _settle();
+      expect(remote.resent, isEmpty);
+
+      remote.connection.add(false);
+      await _settle();
+      remote.connection.add(true);
+      await _settle();
+
+      expect(remote.resent, [batch]);
+    });
   });
 
   test('폐기 레코드는 즉시 보내고 실패해도 대기열에 쌓지 않는다', () async {
@@ -180,8 +256,6 @@ SensorBatch _batch(int seq, {String? runId}) => SensorBatch(
       sessionId: 'session-1',
       seq: seq,
       runId: runId,
-      bootId: 'boot-1',
-      clockMappingId: 'mapping-1',
       clock: const ClockInfo(
         bootId: 'boot-1',
         clockMappingId: 'mapping-1',
@@ -227,16 +301,20 @@ class _LocalDataSource implements SensorBatchLocalDataSource {
 
 class _RemoteDataSource implements SensorBatchRemoteDataSource {
   final connection = StreamController<bool>.broadcast();
+  final resultController = StreamController<SensorResult>.broadcast();
   final sent = <SensorBatch>[];
-  final resent = <List<SensorBatch>>[];
+  final resent = <SensorBatch>[];
   final dropped = <SensorDroppedRecord>[];
   bool sendSucceeds = true;
-  bool resendSucceeds = true;
-  Future<bool>? nextResend;
+  ResendOutcome outcome = ResendOutcome.stored;
+  Future<ResendOutcome>? nextResend;
   bool throwNextResend = false;
 
   @override
   Stream<bool> get connectionState => connection.stream;
+
+  @override
+  Stream<SensorResult> get results => resultController.stream;
 
   @override
   bool sendBatch(SensorBatch batch) {
@@ -251,16 +329,19 @@ class _RemoteDataSource implements SensorBatchRemoteDataSource {
   }
 
   @override
-  Future<bool> resendBatches(List<SensorBatch> batches) {
-    resent.add(batches);
+  Future<ResendOutcome> resendBatch(SensorBatch batch) {
+    resent.add(batch);
     if (throwNextResend) {
       throwNextResend = false;
-      return Future<bool>.error(StateError('network failure'));
+      return Future<ResendOutcome>.error(StateError('network failure'));
     }
     final next = nextResend;
     nextResend = null;
-    return next ?? Future.value(resendSucceeds);
+    return next ?? Future.value(outcome);
   }
 
-  void dispose() => connection.close();
+  void dispose() {
+    connection.close();
+    resultController.close();
+  }
 }

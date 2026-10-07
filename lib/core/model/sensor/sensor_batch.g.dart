@@ -113,8 +113,6 @@ _SensorBatch _$SensorBatchFromJson(Map<String, dynamic> json) => _SensorBatch(
       studyId: json['study_id'] as String?,
       participationId: json['participation_id'] as String?,
       runId: json['run_id'] as String?,
-      bootId: json['boot_id'] as String,
-      clockMappingId: json['clock_mapping_id'] as String,
       clock: ClockInfo.fromJson(json['clock'] as Map<String, dynamic>),
       acc: json['acc'] == null
           ? null
@@ -127,14 +125,16 @@ _SensorBatch _$SensorBatchFromJson(Map<String, dynamic> json) => _SensorBatch(
           : ImpactTrigger.fromJson(json['trigger'] as Map<String, dynamic>),
       gyroBackfill: json['gyro_backfill'] as bool? ?? false,
       backfillFor: json['backfill_for'] as String?,
-      gyroMode: json['gyro_mode'] as String,
-      collectionMode: json['collection_mode'] as String,
-      missingReason: json['missing_reason'] as String?,
-      onBody: json['on_body'] as bool?,
-      watchBatteryPct: (json['watch_battery_pct'] as num?)?.toInt(),
       resend: json['resend'] == null
           ? null
           : ResendInfo.fromJson(json['resend'] as Map<String, dynamic>),
+      collectionMode: json['collection_mode'] as String,
+      gyroMode: json['gyro_mode'] as String,
+      onBody: json['on_body'] as bool?,
+      wearState: json['wear_state'] as String?,
+      missingReason: json['missing_reason'] as String?,
+      watchBatteryPct: (json['watch_battery_pct'] as num?)?.toInt(),
+      phoneReceivedAtMs: (json['phone_received_at_ms'] as num?)?.toInt(),
     );
 
 Map<String, dynamic> _$SensorBatchToJson(_SensorBatch instance) =>
@@ -149,20 +149,20 @@ Map<String, dynamic> _$SensorBatchToJson(_SensorBatch instance) =>
       'study_id': instance.studyId,
       'participation_id': instance.participationId,
       'run_id': instance.runId,
-      'boot_id': instance.bootId,
-      'clock_mapping_id': instance.clockMappingId,
       'clock': _nestedToJson(instance.clock),
       'acc': _nestedToJson(instance.acc),
       'gyro': _nestedToJson(instance.gyro),
       'trigger': _nestedToJson(instance.trigger),
       'gyro_backfill': instance.gyroBackfill,
       'backfill_for': instance.backfillFor,
-      'gyro_mode': instance.gyroMode,
-      'collection_mode': instance.collectionMode,
-      'missing_reason': instance.missingReason,
-      'on_body': instance.onBody,
-      'watch_battery_pct': instance.watchBatteryPct,
       'resend': _nestedToJson(instance.resend),
+      'collection_mode': instance.collectionMode,
+      'gyro_mode': instance.gyroMode,
+      'on_body': instance.onBody,
+      'wear_state': instance.wearState,
+      'missing_reason': instance.missingReason,
+      'watch_battery_pct': instance.watchBatteryPct,
+      'phone_received_at_ms': instance.phoneReceivedAtMs,
     };
 
 _SensorDroppedRecord _$SensorDroppedRecordFromJson(Map<String, dynamic> json) =>

@@ -10,6 +10,7 @@ import com.google.android.gms.wearable.DataItem
 import com.google.android.gms.wearable.DataMapItem
 import com.google.android.gms.wearable.MessageClient
 import com.google.android.gms.wearable.NodeClient
+import com.google.android.gms.wearable.PutDataMapRequest
 import com.google.android.gms.wearable.Wearable
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.EventChannel
@@ -26,13 +27,12 @@ class HeartRatePlugin :
     private var methodChannel: MethodChannel? = null
     private var eventChannel: EventChannel? = null
     private var sensorBatchChannel: EventChannel? = null
+    private var sensorConfigChannel: MethodChannel? = null
     private lateinit var nodeClient: NodeClient
     private lateinit var messageClient: MessageClient
     private var applicationContext: Context? = null
 
-    // eventSinks 는 메인 엔진과 백그라운드 서비스 엔진이 공유하지만
-    // StreamHandler 는 엔진마다 별도 인스턴스이므로,
-    // 자신이 등록한 sink 만 정확히 회수할 수 있도록 따로 들고 있는다.
+    // sink 집합은 두 엔진이 공유하지만 StreamHandler 는 엔진마다 별도라, 자신의 sink 만 회수하려고 들고 있는다.
     private var eventSink: EventChannel.EventSink? = null
     private var sensorBatchSink: EventChannel.EventSink? = null
 
@@ -70,6 +70,17 @@ class HeartRatePlugin :
                 binding.binaryMessenger,
                 HEART_RATE_STATUS_CHANNEL,
             ).apply { setMethodCallHandler(this@HeartRatePlugin) }
+        sensorConfigChannel =
+            MethodChannel(binding.binaryMessenger, SENSOR_CONFIG_CHANNEL).apply {
+                setMethodCallHandler { call, result ->
+                    if (call.method == "applyConfig") {
+                        putSensorConfig(call)
+                        result.success(null)
+                    } else {
+                        result.notImplemented()
+                    }
+                }
+            }
     }
 
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
@@ -79,6 +90,7 @@ class HeartRatePlugin :
         eventChannel?.setStreamHandler(null)
         sensorBatchChannel?.setStreamHandler(null)
         methodChannel?.setMethodCallHandler(null)
+        sensorConfigChannel?.setMethodCallHandler(null)
     }
 
     override fun onMethodCall(
@@ -104,8 +116,7 @@ class HeartRatePlugin :
         events?.let { eventSinks.add(it) }
     }
 
-    // 다른 엔진이 등록한 sink 까지 지우면 그 엔진의 심박수 수신이 영구히 끊기므로
-    // 반드시 자신의 sink 만 제거한다.
+    // 다른 엔진의 sink 까지 지우면 그 엔진의 심박수 수신이 영구히 끊긴다.
     override fun onCancel(arguments: Any?) {
         releaseEventSink()
     }
@@ -120,10 +131,7 @@ class HeartRatePlugin :
         sensorBatchSink = null
     }
 
-    /**
-     * 남아 있는 /imu/batch/·/imu/dropped/ DataItem 을 seq 오름차순으로 sink 에 넘기고 지운다.
-     * getDataItems 콜백은 백그라운드 스레드일 수 있어 sendSensorBatch 안에서 메인으로 넘어간다.
-     */
+    /** 남아 있는 IMU DataItem 을 seq 오름차순으로 넘기고 지운다. */
     private fun drainPendingImuItems() {
         val context = applicationContext ?: return
         val dataClient = Wearable.getDataClient(context)
@@ -148,6 +156,26 @@ class HeartRatePlugin :
             }.addOnFailureListener { Log.w("Widyu", "Failed to read pending IMU items", it) }
     }
 
+    /** 키 이름은 워치와의 계약이므로 바꾸지 않는다. 늦게 반영되면 의미가 없어 setUrgent() 로 보낸다. */
+    private fun putSensorConfig(call: MethodCall) {
+        val context = applicationContext ?: return
+        val request =
+            PutDataMapRequest.create(IMU_CONFIG_PATH).apply {
+                dataMap.putString("collection_mode", call.argument<String>("collection_mode").orEmpty())
+                dataMap.putString("gyro_mode", call.argument<String>("gyro_mode").orEmpty())
+                dataMap.putInt("acc_hz", call.argument<Int>("acc_hz") ?: 0)
+                dataMap.putInt("batch_sec", call.argument<Int>("batch_sec") ?: 0)
+                dataMap.putFloat("impact_g", (call.argument<Double>("impact_g") ?: 0.0).toFloat())
+                dataMap.putInt("backfill_pre_sec", call.argument<Int>("backfill_pre_sec") ?: 0)
+                dataMap.putInt("backfill_post_sec", call.argument<Int>("backfill_post_sec") ?: 0)
+                dataMap.putLong("updated_at_ms", System.currentTimeMillis())
+            }
+        Wearable
+            .getDataClient(context)
+            .putDataItem(request.asPutDataRequest().setUrgent())
+            .addOnFailureListener { Log.w("Widyu", "Failed to put IMU config", it) }
+    }
+
     private fun sendHeartRateStatus(status: String) {
         nodeClient.connectedNodes.addOnSuccessListener { nodes ->
             if (nodes.isEmpty()) return@addOnSuccessListener
@@ -167,6 +195,8 @@ class HeartRatePlugin :
         private const val TIMESTAMP_KEY = "timestamp"
         private const val HEART_RATE_STATUS_KEY = "heartRateStatus"
         private const val HEART_RATE_STATUS_PATH = "/heart_rate_status"
+        private const val SENSOR_CONFIG_CHANNEL = "com.gbable.widu/sensor_config"
+        private const val IMU_CONFIG_PATH = "/imu/config"
         private const val IMU_PREFIX = "/imu/"
         private const val IMU_BATCH_PREFIX = "/imu/batch/"
         private const val IMU_DROPPED_PREFIX = "/imu/dropped/"
@@ -178,8 +208,7 @@ class HeartRatePlugin :
         private const val REASON_KEY = "reason"
         private const val TS_MS_KEY = "ts_ms"
 
-        // Data Layer 콜백 스레드에서 등록·해제되고 메인 스레드에서 순회되므로
-        // 동시 접근에 안전한 컬렉션을 사용한다.
+        // Data Layer 콜백 스레드에서 등록·해제되고 메인 스레드에서 순회된다.
         private val eventSinks = CopyOnWriteArraySet<EventChannel.EventSink>()
         private val sensorBatchSinks = CopyOnWriteArraySet<EventChannel.EventSink>()
 
@@ -204,10 +233,7 @@ class HeartRatePlugin :
             }
         }
 
-        /**
-         * DataItem 을 Flutter 로 보낼 JSON 문자열로 바꾼다. IMU 항목이 아니거나 body 가 없으면 null.
-         * 서비스와 onListen 재전달이 같은 변환을 쓰도록 여기 한 곳에만 둔다.
-         */
+        /** IMU 항목이 아니거나 body 가 없으면 null. 서비스와 재전달이 같은 변환을 쓰도록 한 곳에만 둔다. */
         fun imuItemToJson(item: DataItem): String? {
             val path = item.uri.path.orEmpty()
             val dataMap = DataMapItem.fromDataItem(item).dataMap
@@ -235,10 +261,7 @@ class HeartRatePlugin :
             return if (dataMap.containsKey(SEQ_KEY)) dataMap.getLong(SEQ_KEY) else dataMap.getLong(FROM_SEQ_KEY)
         }
 
-        /**
-         * sink 가 하나도 없으면 전달되지 않았음을 알리려고 false 를 돌려준다.
-         * 호출자는 이때 DataItem 을 남겨 두어 엔진이 살아난 뒤 다시 읽게 한다.
-         */
+        /** sink 가 없으면 false — 호출자는 DataItem 을 남겨 두어 엔진이 살아난 뒤 다시 읽게 한다. */
         fun sendSensorBatch(json: String): Boolean {
             if (sensorBatchSinks.isEmpty()) return false
             Handler(Looper.getMainLooper()).post {

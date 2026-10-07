@@ -1,48 +1,50 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:widyu/core/model/sensor/sensor_batch.dart';
 
-/// 워치 `ImuBatch.toMap()`(android/wear .../data/model/ImuBatch.kt) 형태 그대로.
+/// 서버 스펙(배치 1건)의 키 집합 그대로. 워치 `ImuBatch.toMap()`
+/// (android/wear .../data/model/ImuBatch.kt)이 만드는 형태가 정본이다.
 /// 평시 배치: acc 있음, gyro·trigger null.
 Map<String, dynamic> _steadyBatch() => {
       'v': 2,
       'stream': 'imu_watch',
       'source': 'watch',
       'batch_id': 'batch-1',
-      'device_id': 'device-1',
+      'device_id': 'gw-abc',
       'session_id': 'session-1',
-      'seq': 1,
+      'seq': 88213,
       'study_id': null,
       'participation_id': null,
       'run_id': null,
       'clock': {
-        'boot_id': 'boot-1',
-        'clock_mapping_id': 'mapping-1',
-        'anchor_elapsed_ns': '123456789012345',
-        'anchor_epoch_ms': 1758000000000,
-        'uncertainty_ms': 1.5,
+        'boot_id': 'b7c1',
+        'clock_mapping_id': 'cm-01',
+        'anchor_elapsed_ns': '993847100000001',
+        'anchor_epoch_ms': 1760000000000,
+        'uncertainty_ms': 2.0,
       },
-      'boot_id': 'boot-1',
-      'clock_mapping_id': 'mapping-1',
       'acc': {
         'fs_hz_requested': 50,
         'n': 3,
-        't0_elapsed_ns': '123456789012345',
-        'dt_ns': [20000000, 20000000],
+        't0_elapsed_ns': '993847112340001',
+        'dt_ns': [19998417, 20003005],
         'mg': [
-          [1, 2, 1000],
-          [3, 4, 1001],
-          [5, 6, 1002],
+          [20, -980, 110],
+          [22, -979, 108],
+          [21, -981, 109],
         ],
       },
       'gyro': null,
       'trigger': null,
       'gyro_backfill': false,
       'backfill_for': null,
-      'gyro_mode': 'continuous',
+      'resend': null,
       'collection_mode': 'product',
-      'missing_reason': 'omitted_by_mode',
+      'gyro_mode': 'continuous',
       'on_body': true,
-      'watch_battery_pct': 84,
+      'wear_state': null,
+      'missing_reason': null,
+      'watch_battery_pct': 63,
+      'phone_received_at_ms': null,
     };
 
 /// 충격 배치: gyro·trigger 있음, backfill_for 채워짐.
@@ -51,25 +53,23 @@ Map<String, dynamic> _impactBatch() => {
       'stream': 'imu_watch',
       'source': 'watch',
       'batch_id': 'batch-2',
-      'device_id': 'device-1',
+      'device_id': 'gw-abc',
       'session_id': 'session-1',
-      'seq': 2,
+      'seq': 88214,
       'study_id': 'study-1',
       'participation_id': 'participation-1',
       'run_id': 'run-1',
       'clock': {
-        'boot_id': 'boot-1',
-        'clock_mapping_id': 'mapping-1',
-        'anchor_elapsed_ns': '123456789012345',
-        'anchor_epoch_ms': 1758000000000,
+        'boot_id': 'b7c1',
+        'clock_mapping_id': 'cm-01',
+        'anchor_elapsed_ns': '993847100000001',
+        'anchor_epoch_ms': 1760000000000,
         'uncertainty_ms': 0.5,
       },
-      'boot_id': 'boot-1',
-      'clock_mapping_id': 'mapping-1',
       'acc': {
         'fs_hz_requested': 50,
         'n': 2,
-        't0_elapsed_ns': '123456789032345',
+        't0_elapsed_ns': '993847132340001',
         'dt_ns': [20000000],
         'mg': [
           [10, 20, 900],
@@ -79,7 +79,7 @@ Map<String, dynamic> _impactBatch() => {
       'gyro': {
         'fs_hz_requested': 50,
         'n': 2,
-        't0_elapsed_ns': '123456789032345',
+        't0_elapsed_ns': '993847132340001',
         'dt_ns': [20000000],
         'mrads': [
           [100, 200, 300],
@@ -89,16 +89,19 @@ Map<String, dynamic> _impactBatch() => {
       'trigger': {
         'kind': 'impact',
         'smv_g': 2.4,
-        'event_elapsed_ns': '123456789042345',
-        'ts_ms': 1758000000100,
+        'event_elapsed_ns': '993847142340001',
+        'ts_ms': 1760000000100,
       },
       'gyro_backfill': true,
       'backfill_for': 'batch-1',
-      'gyro_mode': 'trigger',
+      'resend': null,
       'collection_mode': 'product',
-      'missing_reason': null,
+      'gyro_mode': 'trigger',
       'on_body': null,
+      'wear_state': null,
+      'missing_reason': null,
       'watch_battery_pct': null,
+      'phone_received_at_ms': 1760000000123,
     };
 
 /// 폰 네이티브 HeartRateListenerService 가 넘기는 폐기 레코드.
@@ -112,17 +115,16 @@ Map<String, dynamic> _droppedRecord() => {
     };
 
 void main() {
-  // 워치 toMap() 에는 resend 키가 없다(재전송 때 폰이 붙인다).
-  // 그 한 키만 빼면 왕복 결과가 원본과 같아야 한다.
+  // 서버 스펙의 키 집합과 한 글자도 다르지 않아야 한다.
   group('fromJson -> toJson 왕복', () {
     test('평시 배치는 원본 Map 과 같다', () {
       final json = _steadyBatch();
-      expect(SensorBatch.fromJson(json).toJson(), {...json, 'resend': null});
+      expect(SensorBatch.fromJson(json).toJson(), json);
     });
 
     test('충격 배치는 원본 Map 과 같다', () {
       final json = _impactBatch();
-      expect(SensorBatch.fromJson(json).toJson(), {...json, 'resend': null});
+      expect(SensorBatch.fromJson(json).toJson(), json);
     });
 
     test('폐기 레코드는 원본 Map 과 같다', () {
@@ -135,11 +137,11 @@ void main() {
     final batch = SensorBatch.fromJson(_impactBatch());
 
     expect(batch.clock.anchorElapsedNs, isA<String>());
-    expect(batch.clock.anchorElapsedNs, '123456789012345');
+    expect(batch.clock.anchorElapsedNs, '993847100000001');
     expect(batch.acc!.t0ElapsedNs, isA<String>());
     expect(batch.gyro!.t0ElapsedNs, isA<String>());
     expect(batch.trigger!.eventElapsedNs, isA<String>());
-    expect(batch.trigger!.eventElapsedNs, '123456789042345');
+    expect(batch.trigger!.eventElapsedNs, '993847142340001');
 
     final roundTripped = batch.toJson();
     expect((roundTripped['clock'] as Map)['anchor_elapsed_ns'], isA<String>());
@@ -159,12 +161,22 @@ void main() {
       'trigger',
       'backfill_for',
       'resend',
+      'wear_state',
+      'missing_reason',
+      'phone_received_at_ms',
     ]) {
       expect(json.containsKey(key), isTrue, reason: '$key 키가 사라졌다');
       expect(json[key], isNull);
     }
-    // resend 는 워치 toMap() 에 없는 필드라 기본 null 이다.
-    expect(json['resend'], isNull);
+  });
+
+  test('최상위 boot_id·clock_mapping_id 는 clock 안에만 있다', () {
+    final json = SensorBatch.fromJson(_steadyBatch()).toJson();
+
+    expect(json.containsKey('boot_id'), isFalse);
+    expect(json.containsKey('clock_mapping_id'), isFalse);
+    expect((json['clock'] as Map)['boot_id'], 'b7c1');
+    expect((json['clock'] as Map)['clock_mapping_id'], 'cm-01');
   });
 
   group('SensorMessage.fromJson 분기', () {
