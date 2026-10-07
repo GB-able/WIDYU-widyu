@@ -83,9 +83,14 @@ class HeartRateForegroundService : Service() {
                 .catch { Log.e("Widyu", "Service Measurement Error", it) }
                 .onEach { result ->
                     when (result) {
-                        is MeasureResult.Availability -> Unit
-                        is MeasureResult.HeartRate ->
+                        is MeasureResult.Availability -> {
+                            Unit
+                        }
+
+                        is MeasureResult.HeartRate -> {
                             if (BuildConfig.DEBUG) Log.d("Widyu", "Service Heart Rate: ${result.value}")
+                        }
+
                         is MeasureResult.SessionSuperseded -> {
                             notificationManager.showRestartNotification()
                         }
@@ -117,7 +122,6 @@ class HeartRateForegroundService : Service() {
 
         fun newIntent(context: Context): Intent = Intent(context, HeartRateForegroundService::class.java)
 
-        fun restartSessionIntent(context: Context): Intent =
-            newIntent(context).apply { action = ACTION_RESTART_SESSION }
+        fun restartSessionIntent(context: Context): Intent = newIntent(context).apply { action = ACTION_RESTART_SESSION }
     }
 }

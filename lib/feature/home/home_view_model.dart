@@ -290,6 +290,7 @@ class HomeViewModel with ChangeNotifier {
     notifyListeners();
 
     final result = await _heartRateRepository.fetchHeartRate();
+    print(result);
     if (result is Success) {
       final data = (result as Success<HeartRateResponse>).data;
       _uiState = _uiState.copyWith(
