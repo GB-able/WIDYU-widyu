@@ -4,6 +4,7 @@ import com.gbable.widu.data.model.HeartRateStatus
 import com.gbable.widu.data.model.MeasureResult
 import com.gbable.widu.data.source.HeartRateLocalDataSource
 import com.gbable.widu.data.source.HeartRateRemoteDataSource
+import com.gbable.widu.data.util.OnBodyStateHolder
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -32,6 +33,7 @@ class HeartRateRepositoryImplTest {
     private lateinit var local: FakeLocalDataSource
     private lateinit var remote: FakeRemoteDataSource
     private lateinit var repository: HeartRateRepository
+    private lateinit var onBodyStateHolder: OnBodyStateHolder
     private lateinit var appScope: CoroutineScope
     private lateinit var collector: Job
     private lateinit var scheduler: TestCoroutineScheduler
@@ -46,7 +48,8 @@ class HeartRateRepositoryImplTest {
         local = FakeLocalDataSource()
         remote = FakeRemoteDataSource()
         appScope = testScope.backgroundScope
-        repository = HeartRateRepositoryImpl(local, remote, dispatcher, appScope)
+        onBodyStateHolder = OnBodyStateHolder()
+        repository = HeartRateRepositoryImpl(local, remote, onBodyStateHolder, dispatcher, appScope)
         collector = appScope.launch { repository.getHeartRate().collect() }
         scheduler.runCurrent()
     }
@@ -191,6 +194,21 @@ class HeartRateRepositoryImplTest {
 
             // then
             remote.sentHeartRates shouldBe listOf(110, 110)
+        }
+
+    @Test
+    @DisplayName("기기가 몸에서 떨어졌다고 알리면 착용 상태를 false 로 적는다")
+    fun offBodyAvailabilityUpdatesTheHolder() =
+        testScope.runTest {
+            // given — 알려 주기 전에는 모른다
+            onBodyStateHolder.state.value shouldBe null
+
+            // when
+            local.events.emit(MeasureResult.Availability(isAvailable = false, isOnBody = false))
+            runCurrent()
+
+            // then
+            onBodyStateHolder.state.value shouldBe false
         }
 
     private class FakeLocalDataSource : HeartRateLocalDataSource {

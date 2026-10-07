@@ -8,8 +8,10 @@ import com.gbable.widu.data.model.ImuSample
 import com.gbable.widu.data.model.MissingReason
 import com.gbable.widu.data.source.ClockLocalDataSource
 import com.gbable.widu.data.source.DeviceInfoLocalDataSource
+import com.gbable.widu.data.source.ImuConfigLocalDataSource
 import com.gbable.widu.data.source.ImuLocalDataSource
 import com.gbable.widu.data.source.ImuRemoteDataSource
+import com.gbable.widu.data.util.OnBodyStateHolder
 import io.kotest.matchers.doubles.plusOrMinus
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
@@ -17,6 +19,8 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestCoroutineScheduler
@@ -33,8 +37,10 @@ import java.io.BufferedWriter
 @OptIn(ExperimentalCoroutinesApi::class)
 class ImuRepositoryImplTest {
     private lateinit var local: FakeImuLocalDataSource
+    private lateinit var configSource: FakeImuConfigLocalDataSource
     private lateinit var remote: FakeImuRemoteDataSource
     private lateinit var repository: ImuRepository
+    private lateinit var onBodyStateHolder: OnBodyStateHolder
     private lateinit var scheduler: TestCoroutineScheduler
     private lateinit var dispatcher: TestDispatcher
     private lateinit var testScope: TestScope
@@ -47,19 +53,23 @@ class ImuRepositoryImplTest {
         dispatcher = StandardTestDispatcher(scheduler)
         testScope = TestScope(dispatcher)
         local = FakeImuLocalDataSource()
+        configSource = FakeImuConfigLocalDataSource()
         remote = FakeImuRemoteDataSource()
+        onBodyStateHolder = OnBodyStateHolder()
         collected.clear()
     }
 
     /** 설정을 바꿔 보는 테스트가 있어 수집 시작을 따로 둔다. */
     private fun start(config: ImuConfig = ImuConfig(batchSec = 1, trimEverySeq = 2, queueMinutes = 10)) {
+        configSource.apply(config)
         repository =
             ImuRepositoryImpl(
                 imuLocalDataSource = local,
                 clockLocalDataSource = FakeClockLocalDataSource(),
                 deviceInfoLocalDataSource = FakeDeviceInfoLocalDataSource(),
                 imuRemoteDataSource = remote,
-                config = config,
+                imuConfigLocalDataSource = configSource,
+                onBodyStateHolder = onBodyStateHolder,
                 ioDispatcher = dispatcher,
             )
         collector = testScope.backgroundScope.launch { repository.batches().collect { collected += it } }
@@ -260,6 +270,61 @@ class ImuRepositoryImplTest {
             collected.last().gyro shouldBe null
         }
 
+    @Test
+    @DisplayName("착용 상태를 알게 되면 그 값을 싣고 wear_state 는 비운다")
+    fun onBodyFollowsTheHolder() =
+        testScope.runTest {
+            // given
+            start()
+            onBodyStateHolder.update(false)
+
+            // when
+            emitSamplesUpTo(seconds = 1)
+
+            // then
+            collected.last().onBody shouldBe false
+            collected.last().wearState shouldBe null
+        }
+
+    @Test
+    @DisplayName("착용 상태를 관측하지 못하면 on_body 는 true, wear_state 는 unknown 이다")
+    fun unobservedOnBodyIsSentAsTrueWithUnknownWearState() =
+        testScope.runTest {
+            // given — 홀더가 null 인 상태
+            start()
+
+            // when
+            emitSamplesUpTo(seconds = 1)
+
+            // then
+            collected.last().onBody shouldBe true
+            collected.last().wearState shouldBe "unknown"
+        }
+
+    @Test
+    @DisplayName("수집 중 설정이 바뀌면 새 설정으로 다시 수집한다")
+    fun aConfigChangeRestartsCollection() =
+        testScope.runTest {
+            // given
+            start(productConfig())
+            emitPairsUpTo(untilNs = 3 * ONE_SECOND_NS)
+            collected.last().collectionMode shouldBe "product"
+            collected.last().gyro shouldBe null
+
+            // when
+            configSource.apply(configSource.config().value.copy(collectionMode = "research"))
+            scheduler.runCurrent()
+            collected.clear()
+            emitPairsUpTo(untilNs = 3 * ONE_SECOND_NS)
+
+            // then — 연구 모드로 자이로가 실린다
+            collected.isNotEmpty() shouldBe true
+            collected.forEach {
+                it.collectionMode shouldBe "research"
+                it.gyro.shouldNotBeNull()
+            }
+        }
+
     private fun productConfig() = ImuConfig(batchSec = 1, accHz = 50, trimEverySeq = 1_000, queueMinutes = 10)
 
     /** [STEP_NS] 간격으로 가속도·자이로 샘플을 함께 흘린다. */
@@ -288,11 +353,21 @@ class ImuRepositoryImplTest {
         }
     }
 
+    private class FakeImuConfigLocalDataSource : ImuConfigLocalDataSource {
+        private val state = MutableStateFlow(ImuConfig())
+
+        override fun config(): StateFlow<ImuConfig> = state
+
+        override fun apply(config: ImuConfig) {
+            state.value = config
+        }
+    }
+
     private class FakeImuLocalDataSource : ImuLocalDataSource {
         val samples = MutableSharedFlow<ImuSample>()
         var hasGyroscope = true
 
-        override fun samples(): Flow<ImuSample> = samples
+        override fun samples(config: ImuConfig): Flow<ImuSample> = samples
 
         override fun hasGyroscope(): Boolean = hasGyroscope
     }

@@ -48,7 +48,18 @@ class HeartRateLocalDataSourceImpl @Inject constructor(
                         availability: Availability,
                     ) {
                         if (dataType == DataType.HEART_RATE_BPM && availability is DataTypeAvailability) {
-                            trySendBlocking(MeasureResult.Availability(availability == DataTypeAvailability.AVAILABLE))
+                            trySendBlocking(
+                                MeasureResult.Availability(
+                                    isAvailable = availability == DataTypeAvailability.AVAILABLE,
+                                    // 그 외 사유(초기화 중·신호 불량)는 착용 여부를 말해 주지 않는다.
+                                    isOnBody =
+                                        when (availability) {
+                                            DataTypeAvailability.AVAILABLE -> true
+                                            DataTypeAvailability.UNAVAILABLE_DEVICE_OFF_BODY -> false
+                                            else -> null
+                                        },
+                                ),
+                            )
                         }
                     }
 

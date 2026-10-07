@@ -5,6 +5,7 @@ import com.gbable.widu.data.model.HeartRateStatus
 import com.gbable.widu.data.model.MeasureResult
 import com.gbable.widu.data.source.HeartRateLocalDataSource
 import com.gbable.widu.data.source.HeartRateRemoteDataSource
+import com.gbable.widu.data.util.OnBodyStateHolder
 import com.gbable.widu.di.ApplicationScope
 import com.gbable.widu.di.IoDispatcher
 import kotlinx.coroutines.CancellationException
@@ -24,6 +25,7 @@ import javax.inject.Inject
 class HeartRateRepositoryImpl @Inject constructor(
     private val heartRateLocalDataSource: HeartRateLocalDataSource,
     private val heartRateRemoteDataSource: HeartRateRemoteDataSource,
+    private val onBodyStateHolder: OnBodyStateHolder,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
     @ApplicationScope applicationScope: CoroutineScope,
 ) : HeartRateRepository {
@@ -54,7 +56,9 @@ class HeartRateRepositoryImpl @Inject constructor(
                     when (measureResult) {
                         is MeasureResult.HeartRate -> latestHeartRate.set(measureResult.value)
                         MeasureResult.SessionSuperseded -> latestHeartRate.set(null)
-                        is MeasureResult.Availability -> Unit
+                        // 착용 여부를 말해 주는 가용성 변화만 반영한다. 모르는 값으로 덮지 않는다.
+                        is MeasureResult.Availability ->
+                            measureResult.isOnBody?.let(onBodyStateHolder::update) ?: Unit
                     }
                     send(measureResult)
                 }

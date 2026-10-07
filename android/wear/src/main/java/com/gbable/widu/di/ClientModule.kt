@@ -2,7 +2,6 @@ package com.gbable.widu.di
 
 import android.content.Context
 import android.hardware.SensorManager
-import com.gbable.widu.data.model.ImuConfig
 import com.google.android.gms.wearable.DataClient
 import com.google.android.gms.wearable.MessageClient
 import com.google.android.gms.wearable.Wearable
@@ -33,8 +32,4 @@ object ClientModule {
     fun provideSensorManager(
         @ApplicationContext context: Context,
     ): SensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
-
-    @Provides
-    @Singleton
-    fun provideImuConfig(): ImuConfig = ImuConfig()
 }

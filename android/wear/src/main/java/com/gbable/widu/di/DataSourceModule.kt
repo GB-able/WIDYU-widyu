@@ -8,6 +8,8 @@ import com.gbable.widu.data.source.HeartRateLocalDataSource
 import com.gbable.widu.data.source.HeartRateLocalDataSourceImpl
 import com.gbable.widu.data.source.HeartRateRemoteDataSource
 import com.gbable.widu.data.source.HeartRateRemoteDataSourceImpl
+import com.gbable.widu.data.source.ImuConfigLocalDataSource
+import com.gbable.widu.data.source.ImuConfigLocalDataSourceImpl
 import com.gbable.widu.data.source.ImuLocalDataSource
 import com.gbable.widu.data.source.ImuLocalDataSourceImpl
 import com.gbable.widu.data.source.ImuRemoteDataSource
@@ -34,6 +36,10 @@ abstract class DataSourceModule {
     @Binds
     @Singleton
     abstract fun bindImuLocalDataSource(impl: ImuLocalDataSourceImpl): ImuLocalDataSource
+
+    @Binds
+    @Singleton
+    abstract fun bindImuConfigLocalDataSource(impl: ImuConfigLocalDataSourceImpl): ImuConfigLocalDataSource
 
     @Binds
     @Singleton

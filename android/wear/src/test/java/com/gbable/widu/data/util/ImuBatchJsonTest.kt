@@ -37,6 +37,7 @@ class ImuBatchJsonTest {
                 ),
             gyroMode = "continuous",
             collectionMode = "product",
+            onBody = true,
             watchBatteryPct = 63,
         )
 
@@ -82,17 +83,28 @@ class ImuBatchJsonTest {
     }
 
     @Test
-    @DisplayName("boot_id 와 clock_mapping_id 는 clock 안과 최상위 양쪽에 둔다")
-    fun clockIdentifiersAppearAtBothLevels() {
+    @DisplayName("boot_id 와 clock_mapping_id 는 clock 안에만 둔다")
+    fun clockIdentifiersLiveOnlyInsideClock() {
         // when
         val map = batch.toMap()
         val clock = map["clock"] as Map<*, *>
 
         // then
-        map["boot_id"] shouldBe "boot-1"
-        map["clock_mapping_id"] shouldBe "cm-1"
+        map.containsKey("boot_id") shouldBe false
+        map.containsKey("clock_mapping_id") shouldBe false
         clock["boot_id"] shouldBe "boot-1"
         clock["clock_mapping_id"] shouldBe "cm-1"
+    }
+
+    @Test
+    @DisplayName("wear_state 는 값이 미정이어도 키로 남긴다")
+    fun wearStateKeyStaysEvenWhenNull() {
+        // when
+        val map = batch.toMap()
+
+        // then
+        map.containsKey("wear_state") shouldBe true
+        map["wear_state"] shouldBe null
     }
 
     @Test

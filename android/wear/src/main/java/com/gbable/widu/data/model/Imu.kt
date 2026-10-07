@@ -1,16 +1,10 @@
 package com.gbable.widu.data.model
 
-/**
- * IMU 수집 설정. 수집 관련 상수는 모두 여기서만 읽는다.
- * (추후 F9 에서 서버 설정으로 교체될 자리)
- */
+/** 앞쪽 7개 필드는 서버 `GET /api/v1/sensor/config` 값(폰이 `/imu/config` 로 전달), 나머지는 서버 스펙에 없어 기본값이다. */
 data class ImuConfig(
     val accHz: Int = 50,
     val batchSec: Int = 1,
-    /**
-     * `continuous` / `trigger` 둘뿐. 끄는 값은 없다(A 1.6.4).
-     * 지시서가 두 값의 동작 차이를 명시하지 않아 배치에 에코만 한다.
-     */
+    /** `continuous` / `trigger` 둘뿐이고 끄는 값은 없다(A 1.6.4). 동작 차이가 미정이라 배치에 에코만 한다. */
     val gyroMode: String = "continuous",
     val collectionMode: String = "product",
     val impactG: Float = 1.8f,
@@ -23,9 +17,7 @@ data class ImuConfig(
     val clockJumpToleranceMs: Double = 50.0,
 )
 
-/**
- * 충격 표시. 낙상 판정이 아니다 — 「이 구간의 자이로를 빠뜨리지 말라」는 신호일 뿐이다. (A 1.6.4)
- */
+/** 낙상 판정이 아니라 「이 구간의 자이로를 빠뜨리지 말라」는 신호다. (A 1.6.4) */
 data class ImpactTrigger(
     val kind: String = "impact",
     val smvG: Float,
@@ -33,10 +25,7 @@ data class ImpactTrigger(
     val tsMs: Long,
 )
 
-/**
- * 자이로가 없을 때의 사유. 「평시 생략」·「센서 미지원」·「권한 거부」·「결측」은 다른 사실이다. (A 1.2.6)
- * 값 목록은 아직 정해지지 않았다(정책서 합의 대기 S2). 확정되면 여기 값만 바꾼다.
- */
+/** 자이로 결측 사유 (A 1.2.6). 값 목록은 정책서 합의 대기(S2). */
 object MissingReason {
     const val OMITTED_BY_MODE = "omitted_by_mode"
     const val SENSOR_UNSUPPORTED = "sensor_unsupported"
@@ -63,17 +52,13 @@ data class ClockInfo(
     val uncertaintyMs: Double,
 )
 
-/** ClockLocalDataSource 가 측정한 앵커 원시값. */
 data class ClockAnchor(
     val elapsedNs: Long,
     val epochMs: Long,
     val uncertaintyMs: Double,
 )
 
-/**
- * 한 축 묶음. 첫 샘플 시각 [t0ElapsedNs] 과 샘플 사이 간격 [dtNs](길이 n-1)로 시각을 표현한다.
- * 등간격을 가정해 되계산하지 않는다.
- */
+/** 시각은 [t0ElapsedNs] 과 간격 [dtNs](n-1개)로만 표현한다 — 등간격을 가정해 되계산하지 않는다. */
 data class AxisSeries(
     val fsHzRequested: Int,
     val t0ElapsedNs: Long,

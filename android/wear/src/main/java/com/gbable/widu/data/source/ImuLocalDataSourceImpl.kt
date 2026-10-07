@@ -17,11 +17,10 @@ import javax.inject.Inject
 
 class ImuLocalDataSourceImpl @Inject constructor(
     private val sensorManager: SensorManager,
-    private val config: ImuConfig,
 ) : ImuLocalDataSource {
     override fun hasGyroscope(): Boolean = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE) != null
 
-    override fun samples(): Flow<ImuSample> =
+    override fun samples(config: ImuConfig): Flow<ImuSample> =
         callbackFlow {
             // 중력이 포함된 원래 가속도. TYPE_LINEAR_ACCELERATION 이 아니다. (A 1.6.2)
             val sensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
@@ -94,7 +93,7 @@ class ImuLocalDataSourceImpl @Inject constructor(
     private companion object {
         const val TAG = "Widyu"
 
-        /** maxReportLatencyUs = 1초. 센서 FIFO 가 1초치를 모아 주는 동안 CPU 가 잔다. */
+        /** maxReportLatencyUs 로도 쓴다 — 센서 FIFO 가 1초치를 모으는 동안 CPU 가 잔다. */
         const val MICROS_PER_SECOND = 1_000_000
     }
 }

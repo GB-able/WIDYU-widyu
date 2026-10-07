@@ -12,12 +12,14 @@ data class ImuBatch(
     val trigger: ImpactTrigger? = null,
     val gyroMode: String,
     val collectionMode: String,
-    /** 직전 2초 자이로를 따로 싣는 보강 배치인가. */
     val gyroBackfill: Boolean = false,
     /** 보강 대상인 충격 배치의 batch_id. */
     val backfillFor: String? = null,
     val missingReason: String? = null,
-    val onBody: Boolean? = null,
+    /** 서버가 boolean 필수로 받는다. */
+    val onBody: Boolean,
+    /** 미관측일 때만 `unknown` 을 싣는다. */
+    val wearState: String? = null,
     val watchBatteryPct: Int? = null,
     val studyId: String? = null,
     val participationId: String? = null,
@@ -27,10 +29,7 @@ data class ImuBatch(
     val stream: String get() = STREAM
     val source: String get() = SOURCE
 
-    /**
-     * 부록 A 형식의 키/값. JSON 직렬화는 [ImuBatchJson] 이 얇게 감싼다.
-     * 나노초 값은 자바스크립트 정수 범위를 넘으므로 10진 문자열로 싣는다.
-     */
+    /** 나노초 값은 자바스크립트 정수 범위를 넘으므로 10진 문자열로 싣는다. */
     fun toMap(): Map<String, Any?> =
         mapOf(
             "v" to VERSION,
@@ -51,18 +50,18 @@ data class ImuBatch(
                     "anchor_epoch_ms" to clock.anchorEpochMs,
                     "uncertainty_ms" to clock.uncertaintyMs,
                 ),
-            // 최상위에도 둔다 — 서버가 clock{} 을 펼치지 않고도 세대를 가릴 수 있게.
-            "boot_id" to clock.bootId,
-            "clock_mapping_id" to clock.clockMappingId,
             "acc" to acc?.toMap("mg"),
             "gyro" to gyro?.toMap("mrads"),
             "trigger" to trigger?.toMap(),
             "gyro_backfill" to gyroBackfill,
             "backfill_for" to backfillFor,
-            "gyro_mode" to gyroMode,
+            // 재전송 정보는 폰이 REST 로 다시 올릴 때 붙인다.
+            "resend" to null,
             "collection_mode" to collectionMode,
-            "missing_reason" to missingReason,
+            "gyro_mode" to gyroMode,
             "on_body" to onBody,
+            "wear_state" to wearState,
+            "missing_reason" to missingReason,
             "watch_battery_pct" to watchBatteryPct,
         )
 
