@@ -5,7 +5,6 @@ import 'dart:developer';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:stomp_dart_client/stomp_dart_client.dart';
-import 'package:widyu/core/model/heartRate/heart_rate_request.dart';
 
 class SocketClient {
   static final SocketClient _instance = SocketClient._internal();
@@ -37,7 +36,6 @@ class SocketClient {
 
   static const String _socketPrefix = '/ws/location';
   static const String _locationDestination = '/app/location/update';
-  static const String _heartRateDestination = '/app/heart-rate/send';
   static const String _sensorBatchDestination = '/app/sensor/batches/send';
   static const String _sensorResultDestination = '/user/queue/sensor/result';
   static const String _errorDestination = '/user/queue/errors';
@@ -123,12 +121,6 @@ class SocketClient {
         'location',
       );
 
-  void sendHeartRates(HeartRateRequest heartRateRequest) => _send(
-        _heartRateDestination,
-        heartRateRequest.toJson(),
-        'heart rates',
-      );
-
   bool sendSensorBatch(Map<String, dynamic> json) {
     if (!_isSensorSubscribed) {
       log('Sensor result not subscribed yet, cannot send sensor batch.');
@@ -189,7 +181,11 @@ class SocketClient {
 
     try {
       final body = jsonEncode(json);
-      _stompClient!.send(destination: destination, body: body);
+      _stompClient!.send(
+        destination: destination,
+        headers: const {'content-type': 'application/json'},
+        body: body,
+      );
       return true;
     } catch (e) {
       log("Failed to send $label: $e");

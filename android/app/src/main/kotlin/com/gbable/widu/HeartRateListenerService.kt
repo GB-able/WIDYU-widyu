@@ -23,21 +23,21 @@ class HeartRateListenerService : WearableListenerService() {
                     // 폰이 직접 올린 설정 DataItem 이다. 지우면 워치가 못 읽으므로 손대지 않는다.
                     path == IMU_CONFIG_PATH -> Unit
 
-                    path.startsWith(IMU_PREFIX) -> {
-                        val json = HeartRatePlugin.imuItemToJson(item)
+                    path.startsWith(IMU_PREFIX) || path.startsWith(HR_PREFIX) -> {
+                        val json = HeartRatePlugin.sensorItemToJson(item)
                         if (json == null) {
                             // 변환할 내용이 없는 항목(body 누락 등)은 남겨 둘 이유가 없다.
-                            Log.w(TAG, "IMU item has no payload path=$path")
+                            Log.w(TAG, "Sensor item has no payload path=$path")
                             consume(item)
                             return@forEach
                         }
                         // Flutter 엔진이 죽어 있으면 남겨 두어 엔진이 살아난 뒤 다시 읽게 한다.
                         // 워치 쪽 10분 상한이 오래된 것부터 정리하므로 무한히 쌓이지는 않는다.
                         if (HeartRatePlugin.sendSensorBatch(json)) {
-                            Log.d(TAG, "IMU delivered path=$path")
+                            Log.d(TAG, "Sensor item delivered path=$path")
                             consume(item)
                         } else {
-                            Log.w(TAG, "No Flutter sink, keeping IMU item path=$path")
+                            Log.w(TAG, "No Flutter sink, keeping sensor item path=$path")
                         }
                     }
                 }
@@ -56,6 +56,7 @@ class HeartRateListenerService : WearableListenerService() {
         private const val HEART_RATE_KEY = "heart_rate"
         private const val TIMESTAMP_KEY = "timestamp"
         private const val IMU_PREFIX = "/imu/"
+        private const val HR_PREFIX = "/hr/"
         private const val IMU_CONFIG_PATH = "/imu/config"
     }
 }

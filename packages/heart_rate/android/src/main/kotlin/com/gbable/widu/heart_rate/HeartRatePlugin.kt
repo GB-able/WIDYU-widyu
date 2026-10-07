@@ -131,29 +131,31 @@ class HeartRatePlugin :
         sensorBatchSink = null
     }
 
-    /** 남아 있는 IMU DataItem 을 seq 오름차순으로 넘기고 지운다. */
+    /** 엔진이 없던 동안 남겨 둔 센서 DataItem(IMU·심박)을 seq 오름차순으로 넘기고 지운다. */
     private fun drainPendingImuItems() {
         val context = applicationContext ?: return
         val dataClient = Wearable.getDataClient(context)
-        dataClient
-            .getDataItems(Uri.parse("wear://*$IMU_PREFIX"), DataClient.FILTER_PREFIX)
-            .addOnSuccessListener { buffer ->
-                val pending =
-                    try {
-                        buffer
-                            .mapNotNull { item ->
-                                val json = imuItemToJson(item) ?: return@mapNotNull null
-                                Triple(imuItemSeq(item), item.uri, json)
-                            }.sortedBy { it.first }
-                    } finally {
-                        buffer.release()
+        SENSOR_PREFIXES.forEach { prefix ->
+            dataClient
+                .getDataItems(Uri.parse("wear://*$prefix"), DataClient.FILTER_PREFIX)
+                .addOnSuccessListener { buffer ->
+                    val pending =
+                        try {
+                            buffer
+                                .mapNotNull { item ->
+                                    val json = sensorItemToJson(item) ?: return@mapNotNull null
+                                    Triple(sensorItemSeq(item), item.uri, json)
+                                }.sortedBy { it.first }
+                        } finally {
+                            buffer.release()
+                        }
+                    if (pending.isEmpty()) return@addOnSuccessListener
+                    Log.d("Widyu", "Replaying ${pending.size} pending sensor items under $prefix")
+                    pending.forEach { (_, uri, json) ->
+                        if (sendSensorBatch(json)) dataClient.deleteDataItems(uri)
                     }
-                if (pending.isEmpty()) return@addOnSuccessListener
-                Log.d("Widyu", "Replaying ${pending.size} pending IMU items")
-                pending.forEach { (_, uri, json) ->
-                    if (sendSensorBatch(json)) dataClient.deleteDataItems(uri)
-                }
-            }.addOnFailureListener { Log.w("Widyu", "Failed to read pending IMU items", it) }
+                }.addOnFailureListener { Log.w("Widyu", "Failed to read pending sensor items", it) }
+        }
     }
 
     /** 키 이름은 워치와의 계약이므로 바꾸지 않는다. 늦게 반영되면 의미가 없어 setUrgent() 로 보낸다. */
@@ -200,6 +202,8 @@ class HeartRatePlugin :
         private const val IMU_PREFIX = "/imu/"
         private const val IMU_BATCH_PREFIX = "/imu/batch/"
         private const val IMU_DROPPED_PREFIX = "/imu/dropped/"
+        private const val HR_BATCH_PREFIX = "/hr/batch/"
+        private val SENSOR_PREFIXES = listOf(IMU_PREFIX, "/hr/")
         private const val SEQ_KEY = "seq"
         private const val BODY_KEY = "body"
         private const val SESSION_ID_KEY = "session_id"
@@ -233,12 +237,12 @@ class HeartRatePlugin :
             }
         }
 
-        /** IMU 항목이 아니거나 body 가 없으면 null. 서비스와 재전달이 같은 변환을 쓰도록 한 곳에만 둔다. */
-        fun imuItemToJson(item: DataItem): String? {
+        /** 센서 배치 항목이 아니거나 body 가 없으면 null. 서비스와 재전달이 같은 변환을 쓰도록 한 곳에만 둔다. */
+        fun sensorItemToJson(item: DataItem): String? {
             val path = item.uri.path.orEmpty()
             val dataMap = DataMapItem.fromDataItem(item).dataMap
             return when {
-                path.startsWith(IMU_BATCH_PREFIX) ->
+                path.startsWith(IMU_BATCH_PREFIX) || path.startsWith(HR_BATCH_PREFIX) ->
                     dataMap.getByteArray(BODY_KEY)?.let { String(it, StandardCharsets.UTF_8) }
 
                 path.startsWith(IMU_DROPPED_PREFIX) ->
@@ -256,7 +260,7 @@ class HeartRatePlugin :
         }
 
         /** dropped 항목에는 seq 가 없어 from_seq 로 대신 정렬한다. */
-        private fun imuItemSeq(item: DataItem): Long {
+        private fun sensorItemSeq(item: DataItem): Long {
             val dataMap = DataMapItem.fromDataItem(item).dataMap
             return if (dataMap.containsKey(SEQ_KEY)) dataMap.getLong(SEQ_KEY) else dataMap.getLong(FROM_SEQ_KEY)
         }

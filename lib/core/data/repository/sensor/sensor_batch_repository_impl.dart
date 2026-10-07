@@ -6,6 +6,7 @@ import 'package:widyu/core/data/repository/sensor/sensor_batch_repository.dart';
 import 'package:widyu/core/data/source/sensor/sensor_batch_local_data_source.dart';
 import 'package:widyu/core/data/source/sensor/sensor_batch_remote_data_source.dart';
 import 'package:widyu/core/model/sensor/sensor_batch.dart';
+import 'package:widyu/core/model/sensor/sensor_message.dart';
 import 'package:widyu/core/model/sensor/sensor_batch_config.dart';
 import 'package:widyu/core/model/sensor/sensor_result.dart';
 
@@ -31,10 +32,10 @@ class SensorBatchRepositoryImpl implements SensorBatchRepository {
   final int _queueMax;
   final Duration _retryInterval;
   final Duration _ackTimeout;
-  final ListQueue<SensorBatch> _queue = ListQueue();
+  final ListQueue<SensorUpload> _queue = ListQueue();
 
   /// 결과를 기다리는 배치. 삽입 순서를 쓰므로 LinkedHashMap 기본 구현에 의존한다.
-  final Map<String, ({SensorBatch batch, DateTime sentAt})> _pending = {};
+  final Map<String, ({SensorUpload batch, DateTime sentAt})> _pending = {};
   StreamSubscription<SensorMessage>? _batches;
   StreamSubscription<bool>? _connection;
   StreamSubscription<SensorResult>? _results;
@@ -71,11 +72,9 @@ class SensorBatchRepositoryImpl implements SensorBatchRepository {
     if (!_active) return;
     switch (message) {
       case SensorMessageBatch(:final batch):
-        if (_remoteDataSource.sendBatch(batch)) {
-          _addPending(batch);
-        } else {
-          _enqueue(batch);
-        }
+        _send(batch);
+      case SensorMessageHeartRate(:final batch):
+        _send(batch);
       // 폐기 레코드는 재전송 대상이 아니다 — 서버 수용 여부가 미정이라 실패는 기록만 한다.
       case SensorMessageDropped(:final record):
         if (!_remoteDataSource.sendDropped(record)) {
@@ -86,6 +85,14 @@ class SensorBatchRepositoryImpl implements SensorBatchRepository {
     }
   }
 
+  void _send(SensorUpload batch) {
+    if (_remoteDataSource.sendBatch(batch)) {
+      _addPending(batch);
+    } else {
+      _enqueue(batch);
+    }
+  }
+
   void _onResult(SensorResult result) {
     final removed = _pending.remove(result.batchId);
     if (result.result == SensorResult.rejected) {
@@ -93,7 +100,7 @@ class SensorBatchRepositoryImpl implements SensorBatchRepository {
     }
   }
 
-  void _addPending(SensorBatch batch) {
+  void _addPending(SensorUpload batch) {
     if (_pending.length >= _queueMax) {
       final oldest = _pending.keys.first;
       final dropped = _pending.remove(oldest);
@@ -113,7 +120,7 @@ class SensorBatchRepositoryImpl implements SensorBatchRepository {
     }
   }
 
-  void _enqueue(SensorBatch batch) {
+  void _enqueue(SensorUpload batch) {
     if (_queue.length == _queueMax) {
       final dropped = _queue.removeFirst();
       log('Sensor batch resend queue full; dropped oldest seq=${dropped.seq}');

@@ -13,113 +13,385 @@ part of 'sensor_batch.dart';
 T _$identity<T>(T value) => value;
 
 /// @nodoc
-mixin _$ClockInfo {
-  @JsonKey(name: 'boot_id')
-  String get bootId;
-  @JsonKey(name: 'clock_mapping_id')
-  String get clockMappingId;
-  @JsonKey(name: 'anchor_elapsed_ns')
-  String get anchorElapsedNs;
-  @JsonKey(name: 'anchor_epoch_ms')
-  int get anchorEpochMs;
-  @JsonKey(name: 'uncertainty_ms')
-  double get uncertaintyMs;
+mixin _$SensorBatch {
+  int get v;
+  String get stream;
+  String get source;
+  @JsonKey(name: 'batch_id')
+  String get batchId;
+  @JsonKey(name: 'device_id')
+  String get deviceId;
+  @JsonKey(name: 'session_id')
+  String get sessionId;
+  int get seq;
+  @JsonKey(name: 'study_id')
+  String? get studyId;
+  @JsonKey(name: 'participation_id')
+  String? get participationId;
+  @JsonKey(name: 'run_id')
+  String? get runId;
+  @JsonKey(toJson: nestedToJson)
+  ClockInfo get clock;
+  @JsonKey(toJson: nestedToJson)
+  AccSeries? get acc;
+  @JsonKey(toJson: nestedToJson)
+  GyroSeries? get gyro;
+  @JsonKey(toJson: nestedToJson)
+  ImpactTrigger? get trigger;
+  @JsonKey(name: 'gyro_backfill')
+  bool get gyroBackfill;
+  @JsonKey(name: 'backfill_for')
+  String? get backfillFor;
+  @JsonKey(toJson: nestedToJson)
+  ResendInfo? get resend;
+  @JsonKey(name: 'collection_mode')
+  String get collectionMode;
+  @JsonKey(name: 'gyro_mode')
+  String get gyroMode;
+  @JsonKey(name: 'on_body')
+  bool? get onBody;
+  @JsonKey(name: 'wear_state')
+  String? get wearState;
+  @JsonKey(name: 'missing_reason')
+  String? get missingReason;
+  @JsonKey(name: 'watch_battery_pct')
+  int? get watchBatteryPct;
+  @JsonKey(name: 'phone_received_at_ms')
+  int? get phoneReceivedAtMs;
 
-  /// Create a copy of ClockInfo
+  /// Create a copy of SensorBatch
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
   @pragma('vm:prefer-inline')
-  $ClockInfoCopyWith<ClockInfo> get copyWith =>
-      _$ClockInfoCopyWithImpl<ClockInfo>(this as ClockInfo, _$identity);
+  $SensorBatchCopyWith<SensorBatch> get copyWith =>
+      _$SensorBatchCopyWithImpl<SensorBatch>(this as SensorBatch, _$identity);
 
-  /// Serializes this ClockInfo to a JSON map.
+  /// Serializes this SensorBatch to a JSON map.
   Map<String, dynamic> toJson();
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is ClockInfo &&
-            (identical(other.bootId, bootId) || other.bootId == bootId) &&
-            (identical(other.clockMappingId, clockMappingId) ||
-                other.clockMappingId == clockMappingId) &&
-            (identical(other.anchorElapsedNs, anchorElapsedNs) ||
-                other.anchorElapsedNs == anchorElapsedNs) &&
-            (identical(other.anchorEpochMs, anchorEpochMs) ||
-                other.anchorEpochMs == anchorEpochMs) &&
-            (identical(other.uncertaintyMs, uncertaintyMs) ||
-                other.uncertaintyMs == uncertaintyMs));
+            other is SensorBatch &&
+            (identical(other.v, v) || other.v == v) &&
+            (identical(other.stream, stream) || other.stream == stream) &&
+            (identical(other.source, source) || other.source == source) &&
+            (identical(other.batchId, batchId) || other.batchId == batchId) &&
+            (identical(other.deviceId, deviceId) ||
+                other.deviceId == deviceId) &&
+            (identical(other.sessionId, sessionId) ||
+                other.sessionId == sessionId) &&
+            (identical(other.seq, seq) || other.seq == seq) &&
+            (identical(other.studyId, studyId) || other.studyId == studyId) &&
+            (identical(other.participationId, participationId) ||
+                other.participationId == participationId) &&
+            (identical(other.runId, runId) || other.runId == runId) &&
+            (identical(other.clock, clock) || other.clock == clock) &&
+            (identical(other.acc, acc) || other.acc == acc) &&
+            (identical(other.gyro, gyro) || other.gyro == gyro) &&
+            (identical(other.trigger, trigger) || other.trigger == trigger) &&
+            (identical(other.gyroBackfill, gyroBackfill) ||
+                other.gyroBackfill == gyroBackfill) &&
+            (identical(other.backfillFor, backfillFor) ||
+                other.backfillFor == backfillFor) &&
+            (identical(other.resend, resend) || other.resend == resend) &&
+            (identical(other.collectionMode, collectionMode) ||
+                other.collectionMode == collectionMode) &&
+            (identical(other.gyroMode, gyroMode) ||
+                other.gyroMode == gyroMode) &&
+            (identical(other.onBody, onBody) || other.onBody == onBody) &&
+            (identical(other.wearState, wearState) ||
+                other.wearState == wearState) &&
+            (identical(other.missingReason, missingReason) ||
+                other.missingReason == missingReason) &&
+            (identical(other.watchBatteryPct, watchBatteryPct) ||
+                other.watchBatteryPct == watchBatteryPct) &&
+            (identical(other.phoneReceivedAtMs, phoneReceivedAtMs) ||
+                other.phoneReceivedAtMs == phoneReceivedAtMs));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, bootId, clockMappingId,
-      anchorElapsedNs, anchorEpochMs, uncertaintyMs);
+  int get hashCode => Object.hashAll([
+        runtimeType,
+        v,
+        stream,
+        source,
+        batchId,
+        deviceId,
+        sessionId,
+        seq,
+        studyId,
+        participationId,
+        runId,
+        clock,
+        acc,
+        gyro,
+        trigger,
+        gyroBackfill,
+        backfillFor,
+        resend,
+        collectionMode,
+        gyroMode,
+        onBody,
+        wearState,
+        missingReason,
+        watchBatteryPct,
+        phoneReceivedAtMs
+      ]);
 
   @override
   String toString() {
-    return 'ClockInfo(bootId: $bootId, clockMappingId: $clockMappingId, anchorElapsedNs: $anchorElapsedNs, anchorEpochMs: $anchorEpochMs, uncertaintyMs: $uncertaintyMs)';
+    return 'SensorBatch(v: $v, stream: $stream, source: $source, batchId: $batchId, deviceId: $deviceId, sessionId: $sessionId, seq: $seq, studyId: $studyId, participationId: $participationId, runId: $runId, clock: $clock, acc: $acc, gyro: $gyro, trigger: $trigger, gyroBackfill: $gyroBackfill, backfillFor: $backfillFor, resend: $resend, collectionMode: $collectionMode, gyroMode: $gyroMode, onBody: $onBody, wearState: $wearState, missingReason: $missingReason, watchBatteryPct: $watchBatteryPct, phoneReceivedAtMs: $phoneReceivedAtMs)';
   }
 }
 
 /// @nodoc
-abstract mixin class $ClockInfoCopyWith<$Res> {
-  factory $ClockInfoCopyWith(ClockInfo value, $Res Function(ClockInfo) _then) =
-      _$ClockInfoCopyWithImpl;
+abstract mixin class $SensorBatchCopyWith<$Res> {
+  factory $SensorBatchCopyWith(
+          SensorBatch value, $Res Function(SensorBatch) _then) =
+      _$SensorBatchCopyWithImpl;
   @useResult
   $Res call(
-      {@JsonKey(name: 'boot_id') String bootId,
-      @JsonKey(name: 'clock_mapping_id') String clockMappingId,
-      @JsonKey(name: 'anchor_elapsed_ns') String anchorElapsedNs,
-      @JsonKey(name: 'anchor_epoch_ms') int anchorEpochMs,
-      @JsonKey(name: 'uncertainty_ms') double uncertaintyMs});
+      {int v,
+      String stream,
+      String source,
+      @JsonKey(name: 'batch_id') String batchId,
+      @JsonKey(name: 'device_id') String deviceId,
+      @JsonKey(name: 'session_id') String sessionId,
+      int seq,
+      @JsonKey(name: 'study_id') String? studyId,
+      @JsonKey(name: 'participation_id') String? participationId,
+      @JsonKey(name: 'run_id') String? runId,
+      @JsonKey(toJson: nestedToJson) ClockInfo clock,
+      @JsonKey(toJson: nestedToJson) AccSeries? acc,
+      @JsonKey(toJson: nestedToJson) GyroSeries? gyro,
+      @JsonKey(toJson: nestedToJson) ImpactTrigger? trigger,
+      @JsonKey(name: 'gyro_backfill') bool gyroBackfill,
+      @JsonKey(name: 'backfill_for') String? backfillFor,
+      @JsonKey(toJson: nestedToJson) ResendInfo? resend,
+      @JsonKey(name: 'collection_mode') String collectionMode,
+      @JsonKey(name: 'gyro_mode') String gyroMode,
+      @JsonKey(name: 'on_body') bool? onBody,
+      @JsonKey(name: 'wear_state') String? wearState,
+      @JsonKey(name: 'missing_reason') String? missingReason,
+      @JsonKey(name: 'watch_battery_pct') int? watchBatteryPct,
+      @JsonKey(name: 'phone_received_at_ms') int? phoneReceivedAtMs});
+
+  $ClockInfoCopyWith<$Res> get clock;
+  $AccSeriesCopyWith<$Res>? get acc;
+  $GyroSeriesCopyWith<$Res>? get gyro;
+  $ImpactTriggerCopyWith<$Res>? get trigger;
+  $ResendInfoCopyWith<$Res>? get resend;
 }
 
 /// @nodoc
-class _$ClockInfoCopyWithImpl<$Res> implements $ClockInfoCopyWith<$Res> {
-  _$ClockInfoCopyWithImpl(this._self, this._then);
+class _$SensorBatchCopyWithImpl<$Res> implements $SensorBatchCopyWith<$Res> {
+  _$SensorBatchCopyWithImpl(this._self, this._then);
 
-  final ClockInfo _self;
-  final $Res Function(ClockInfo) _then;
+  final SensorBatch _self;
+  final $Res Function(SensorBatch) _then;
 
-  /// Create a copy of ClockInfo
+  /// Create a copy of SensorBatch
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? bootId = null,
-    Object? clockMappingId = null,
-    Object? anchorElapsedNs = null,
-    Object? anchorEpochMs = null,
-    Object? uncertaintyMs = null,
+    Object? v = null,
+    Object? stream = null,
+    Object? source = null,
+    Object? batchId = null,
+    Object? deviceId = null,
+    Object? sessionId = null,
+    Object? seq = null,
+    Object? studyId = freezed,
+    Object? participationId = freezed,
+    Object? runId = freezed,
+    Object? clock = null,
+    Object? acc = freezed,
+    Object? gyro = freezed,
+    Object? trigger = freezed,
+    Object? gyroBackfill = null,
+    Object? backfillFor = freezed,
+    Object? resend = freezed,
+    Object? collectionMode = null,
+    Object? gyroMode = null,
+    Object? onBody = freezed,
+    Object? wearState = freezed,
+    Object? missingReason = freezed,
+    Object? watchBatteryPct = freezed,
+    Object? phoneReceivedAtMs = freezed,
   }) {
     return _then(_self.copyWith(
-      bootId: null == bootId
-          ? _self.bootId
-          : bootId // ignore: cast_nullable_to_non_nullable
-              as String,
-      clockMappingId: null == clockMappingId
-          ? _self.clockMappingId
-          : clockMappingId // ignore: cast_nullable_to_non_nullable
-              as String,
-      anchorElapsedNs: null == anchorElapsedNs
-          ? _self.anchorElapsedNs
-          : anchorElapsedNs // ignore: cast_nullable_to_non_nullable
-              as String,
-      anchorEpochMs: null == anchorEpochMs
-          ? _self.anchorEpochMs
-          : anchorEpochMs // ignore: cast_nullable_to_non_nullable
+      v: null == v
+          ? _self.v
+          : v // ignore: cast_nullable_to_non_nullable
               as int,
-      uncertaintyMs: null == uncertaintyMs
-          ? _self.uncertaintyMs
-          : uncertaintyMs // ignore: cast_nullable_to_non_nullable
-              as double,
+      stream: null == stream
+          ? _self.stream
+          : stream // ignore: cast_nullable_to_non_nullable
+              as String,
+      source: null == source
+          ? _self.source
+          : source // ignore: cast_nullable_to_non_nullable
+              as String,
+      batchId: null == batchId
+          ? _self.batchId
+          : batchId // ignore: cast_nullable_to_non_nullable
+              as String,
+      deviceId: null == deviceId
+          ? _self.deviceId
+          : deviceId // ignore: cast_nullable_to_non_nullable
+              as String,
+      sessionId: null == sessionId
+          ? _self.sessionId
+          : sessionId // ignore: cast_nullable_to_non_nullable
+              as String,
+      seq: null == seq
+          ? _self.seq
+          : seq // ignore: cast_nullable_to_non_nullable
+              as int,
+      studyId: freezed == studyId
+          ? _self.studyId
+          : studyId // ignore: cast_nullable_to_non_nullable
+              as String?,
+      participationId: freezed == participationId
+          ? _self.participationId
+          : participationId // ignore: cast_nullable_to_non_nullable
+              as String?,
+      runId: freezed == runId
+          ? _self.runId
+          : runId // ignore: cast_nullable_to_non_nullable
+              as String?,
+      clock: null == clock
+          ? _self.clock
+          : clock // ignore: cast_nullable_to_non_nullable
+              as ClockInfo,
+      acc: freezed == acc
+          ? _self.acc
+          : acc // ignore: cast_nullable_to_non_nullable
+              as AccSeries?,
+      gyro: freezed == gyro
+          ? _self.gyro
+          : gyro // ignore: cast_nullable_to_non_nullable
+              as GyroSeries?,
+      trigger: freezed == trigger
+          ? _self.trigger
+          : trigger // ignore: cast_nullable_to_non_nullable
+              as ImpactTrigger?,
+      gyroBackfill: null == gyroBackfill
+          ? _self.gyroBackfill
+          : gyroBackfill // ignore: cast_nullable_to_non_nullable
+              as bool,
+      backfillFor: freezed == backfillFor
+          ? _self.backfillFor
+          : backfillFor // ignore: cast_nullable_to_non_nullable
+              as String?,
+      resend: freezed == resend
+          ? _self.resend
+          : resend // ignore: cast_nullable_to_non_nullable
+              as ResendInfo?,
+      collectionMode: null == collectionMode
+          ? _self.collectionMode
+          : collectionMode // ignore: cast_nullable_to_non_nullable
+              as String,
+      gyroMode: null == gyroMode
+          ? _self.gyroMode
+          : gyroMode // ignore: cast_nullable_to_non_nullable
+              as String,
+      onBody: freezed == onBody
+          ? _self.onBody
+          : onBody // ignore: cast_nullable_to_non_nullable
+              as bool?,
+      wearState: freezed == wearState
+          ? _self.wearState
+          : wearState // ignore: cast_nullable_to_non_nullable
+              as String?,
+      missingReason: freezed == missingReason
+          ? _self.missingReason
+          : missingReason // ignore: cast_nullable_to_non_nullable
+              as String?,
+      watchBatteryPct: freezed == watchBatteryPct
+          ? _self.watchBatteryPct
+          : watchBatteryPct // ignore: cast_nullable_to_non_nullable
+              as int?,
+      phoneReceivedAtMs: freezed == phoneReceivedAtMs
+          ? _self.phoneReceivedAtMs
+          : phoneReceivedAtMs // ignore: cast_nullable_to_non_nullable
+              as int?,
     ));
+  }
+
+  /// Create a copy of SensorBatch
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $ClockInfoCopyWith<$Res> get clock {
+    return $ClockInfoCopyWith<$Res>(_self.clock, (value) {
+      return _then(_self.copyWith(clock: value));
+    });
+  }
+
+  /// Create a copy of SensorBatch
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $AccSeriesCopyWith<$Res>? get acc {
+    if (_self.acc == null) {
+      return null;
+    }
+
+    return $AccSeriesCopyWith<$Res>(_self.acc!, (value) {
+      return _then(_self.copyWith(acc: value));
+    });
+  }
+
+  /// Create a copy of SensorBatch
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $GyroSeriesCopyWith<$Res>? get gyro {
+    if (_self.gyro == null) {
+      return null;
+    }
+
+    return $GyroSeriesCopyWith<$Res>(_self.gyro!, (value) {
+      return _then(_self.copyWith(gyro: value));
+    });
+  }
+
+  /// Create a copy of SensorBatch
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $ImpactTriggerCopyWith<$Res>? get trigger {
+    if (_self.trigger == null) {
+      return null;
+    }
+
+    return $ImpactTriggerCopyWith<$Res>(_self.trigger!, (value) {
+      return _then(_self.copyWith(trigger: value));
+    });
+  }
+
+  /// Create a copy of SensorBatch
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $ResendInfoCopyWith<$Res>? get resend {
+    if (_self.resend == null) {
+      return null;
+    }
+
+    return $ResendInfoCopyWith<$Res>(_self.resend!, (value) {
+      return _then(_self.copyWith(resend: value));
+    });
   }
 }
 
-/// Adds pattern-matching-related methods to [ClockInfo].
-extension ClockInfoPatterns on ClockInfo {
+/// Adds pattern-matching-related methods to [SensorBatch].
+extension SensorBatchPatterns on SensorBatch {
   /// A variant of `map` that fallback to returning `orElse`.
   ///
   /// It is equivalent to doing:
@@ -134,12 +406,12 @@ extension ClockInfoPatterns on ClockInfo {
 
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>(
-    TResult Function(_ClockInfo value)? $default, {
+    TResult Function(_SensorBatch value)? $default, {
     required TResult orElse(),
   }) {
     final _that = this;
     switch (_that) {
-      case _ClockInfo() when $default != null:
+      case _SensorBatch() when $default != null:
         return $default(_that);
       case _:
         return orElse();
@@ -161,11 +433,11 @@ extension ClockInfoPatterns on ClockInfo {
 
   @optionalTypeArgs
   TResult map<TResult extends Object?>(
-    TResult Function(_ClockInfo value) $default,
+    TResult Function(_SensorBatch value) $default,
   ) {
     final _that = this;
     switch (_that) {
-      case _ClockInfo():
+      case _SensorBatch():
         return $default(_that);
       case _:
         throw StateError('Unexpected subclass');
@@ -186,11 +458,11 @@ extension ClockInfoPatterns on ClockInfo {
 
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>(
-    TResult? Function(_ClockInfo value)? $default,
+    TResult? Function(_SensorBatch value)? $default,
   ) {
     final _that = this;
     switch (_that) {
-      case _ClockInfo() when $default != null:
+      case _SensorBatch() when $default != null:
         return $default(_that);
       case _:
         return null;
@@ -212,19 +484,61 @@ extension ClockInfoPatterns on ClockInfo {
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>(
     TResult Function(
-            @JsonKey(name: 'boot_id') String bootId,
-            @JsonKey(name: 'clock_mapping_id') String clockMappingId,
-            @JsonKey(name: 'anchor_elapsed_ns') String anchorElapsedNs,
-            @JsonKey(name: 'anchor_epoch_ms') int anchorEpochMs,
-            @JsonKey(name: 'uncertainty_ms') double uncertaintyMs)?
+            int v,
+            String stream,
+            String source,
+            @JsonKey(name: 'batch_id') String batchId,
+            @JsonKey(name: 'device_id') String deviceId,
+            @JsonKey(name: 'session_id') String sessionId,
+            int seq,
+            @JsonKey(name: 'study_id') String? studyId,
+            @JsonKey(name: 'participation_id') String? participationId,
+            @JsonKey(name: 'run_id') String? runId,
+            @JsonKey(toJson: nestedToJson) ClockInfo clock,
+            @JsonKey(toJson: nestedToJson) AccSeries? acc,
+            @JsonKey(toJson: nestedToJson) GyroSeries? gyro,
+            @JsonKey(toJson: nestedToJson) ImpactTrigger? trigger,
+            @JsonKey(name: 'gyro_backfill') bool gyroBackfill,
+            @JsonKey(name: 'backfill_for') String? backfillFor,
+            @JsonKey(toJson: nestedToJson) ResendInfo? resend,
+            @JsonKey(name: 'collection_mode') String collectionMode,
+            @JsonKey(name: 'gyro_mode') String gyroMode,
+            @JsonKey(name: 'on_body') bool? onBody,
+            @JsonKey(name: 'wear_state') String? wearState,
+            @JsonKey(name: 'missing_reason') String? missingReason,
+            @JsonKey(name: 'watch_battery_pct') int? watchBatteryPct,
+            @JsonKey(name: 'phone_received_at_ms') int? phoneReceivedAtMs)?
         $default, {
     required TResult orElse(),
   }) {
     final _that = this;
     switch (_that) {
-      case _ClockInfo() when $default != null:
-        return $default(_that.bootId, _that.clockMappingId,
-            _that.anchorElapsedNs, _that.anchorEpochMs, _that.uncertaintyMs);
+      case _SensorBatch() when $default != null:
+        return $default(
+            _that.v,
+            _that.stream,
+            _that.source,
+            _that.batchId,
+            _that.deviceId,
+            _that.sessionId,
+            _that.seq,
+            _that.studyId,
+            _that.participationId,
+            _that.runId,
+            _that.clock,
+            _that.acc,
+            _that.gyro,
+            _that.trigger,
+            _that.gyroBackfill,
+            _that.backfillFor,
+            _that.resend,
+            _that.collectionMode,
+            _that.gyroMode,
+            _that.onBody,
+            _that.wearState,
+            _that.missingReason,
+            _that.watchBatteryPct,
+            _that.phoneReceivedAtMs);
       case _:
         return orElse();
     }
@@ -246,18 +560,60 @@ extension ClockInfoPatterns on ClockInfo {
   @optionalTypeArgs
   TResult when<TResult extends Object?>(
     TResult Function(
-            @JsonKey(name: 'boot_id') String bootId,
-            @JsonKey(name: 'clock_mapping_id') String clockMappingId,
-            @JsonKey(name: 'anchor_elapsed_ns') String anchorElapsedNs,
-            @JsonKey(name: 'anchor_epoch_ms') int anchorEpochMs,
-            @JsonKey(name: 'uncertainty_ms') double uncertaintyMs)
+            int v,
+            String stream,
+            String source,
+            @JsonKey(name: 'batch_id') String batchId,
+            @JsonKey(name: 'device_id') String deviceId,
+            @JsonKey(name: 'session_id') String sessionId,
+            int seq,
+            @JsonKey(name: 'study_id') String? studyId,
+            @JsonKey(name: 'participation_id') String? participationId,
+            @JsonKey(name: 'run_id') String? runId,
+            @JsonKey(toJson: nestedToJson) ClockInfo clock,
+            @JsonKey(toJson: nestedToJson) AccSeries? acc,
+            @JsonKey(toJson: nestedToJson) GyroSeries? gyro,
+            @JsonKey(toJson: nestedToJson) ImpactTrigger? trigger,
+            @JsonKey(name: 'gyro_backfill') bool gyroBackfill,
+            @JsonKey(name: 'backfill_for') String? backfillFor,
+            @JsonKey(toJson: nestedToJson) ResendInfo? resend,
+            @JsonKey(name: 'collection_mode') String collectionMode,
+            @JsonKey(name: 'gyro_mode') String gyroMode,
+            @JsonKey(name: 'on_body') bool? onBody,
+            @JsonKey(name: 'wear_state') String? wearState,
+            @JsonKey(name: 'missing_reason') String? missingReason,
+            @JsonKey(name: 'watch_battery_pct') int? watchBatteryPct,
+            @JsonKey(name: 'phone_received_at_ms') int? phoneReceivedAtMs)
         $default,
   ) {
     final _that = this;
     switch (_that) {
-      case _ClockInfo():
-        return $default(_that.bootId, _that.clockMappingId,
-            _that.anchorElapsedNs, _that.anchorEpochMs, _that.uncertaintyMs);
+      case _SensorBatch():
+        return $default(
+            _that.v,
+            _that.stream,
+            _that.source,
+            _that.batchId,
+            _that.deviceId,
+            _that.sessionId,
+            _that.seq,
+            _that.studyId,
+            _that.participationId,
+            _that.runId,
+            _that.clock,
+            _that.acc,
+            _that.gyro,
+            _that.trigger,
+            _that.gyroBackfill,
+            _that.backfillFor,
+            _that.resend,
+            _that.collectionMode,
+            _that.gyroMode,
+            _that.onBody,
+            _that.wearState,
+            _that.missingReason,
+            _that.watchBatteryPct,
+            _that.phoneReceivedAtMs);
       case _:
         throw StateError('Unexpected subclass');
     }
@@ -278,18 +634,60 @@ extension ClockInfoPatterns on ClockInfo {
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>(
     TResult? Function(
-            @JsonKey(name: 'boot_id') String bootId,
-            @JsonKey(name: 'clock_mapping_id') String clockMappingId,
-            @JsonKey(name: 'anchor_elapsed_ns') String anchorElapsedNs,
-            @JsonKey(name: 'anchor_epoch_ms') int anchorEpochMs,
-            @JsonKey(name: 'uncertainty_ms') double uncertaintyMs)?
+            int v,
+            String stream,
+            String source,
+            @JsonKey(name: 'batch_id') String batchId,
+            @JsonKey(name: 'device_id') String deviceId,
+            @JsonKey(name: 'session_id') String sessionId,
+            int seq,
+            @JsonKey(name: 'study_id') String? studyId,
+            @JsonKey(name: 'participation_id') String? participationId,
+            @JsonKey(name: 'run_id') String? runId,
+            @JsonKey(toJson: nestedToJson) ClockInfo clock,
+            @JsonKey(toJson: nestedToJson) AccSeries? acc,
+            @JsonKey(toJson: nestedToJson) GyroSeries? gyro,
+            @JsonKey(toJson: nestedToJson) ImpactTrigger? trigger,
+            @JsonKey(name: 'gyro_backfill') bool gyroBackfill,
+            @JsonKey(name: 'backfill_for') String? backfillFor,
+            @JsonKey(toJson: nestedToJson) ResendInfo? resend,
+            @JsonKey(name: 'collection_mode') String collectionMode,
+            @JsonKey(name: 'gyro_mode') String gyroMode,
+            @JsonKey(name: 'on_body') bool? onBody,
+            @JsonKey(name: 'wear_state') String? wearState,
+            @JsonKey(name: 'missing_reason') String? missingReason,
+            @JsonKey(name: 'watch_battery_pct') int? watchBatteryPct,
+            @JsonKey(name: 'phone_received_at_ms') int? phoneReceivedAtMs)?
         $default,
   ) {
     final _that = this;
     switch (_that) {
-      case _ClockInfo() when $default != null:
-        return $default(_that.bootId, _that.clockMappingId,
-            _that.anchorElapsedNs, _that.anchorEpochMs, _that.uncertaintyMs);
+      case _SensorBatch() when $default != null:
+        return $default(
+            _that.v,
+            _that.stream,
+            _that.source,
+            _that.batchId,
+            _that.deviceId,
+            _that.sessionId,
+            _that.seq,
+            _that.studyId,
+            _that.participationId,
+            _that.runId,
+            _that.clock,
+            _that.acc,
+            _that.gyro,
+            _that.trigger,
+            _that.gyroBackfill,
+            _that.backfillFor,
+            _that.resend,
+            _that.collectionMode,
+            _that.gyroMode,
+            _that.onBody,
+            _that.wearState,
+            _that.missingReason,
+            _that.watchBatteryPct,
+            _that.phoneReceivedAtMs);
       case _:
         return null;
     }
@@ -298,43 +696,118 @@ extension ClockInfoPatterns on ClockInfo {
 
 /// @nodoc
 @JsonSerializable()
-class _ClockInfo implements ClockInfo {
-  const _ClockInfo(
-      {@JsonKey(name: 'boot_id') required this.bootId,
-      @JsonKey(name: 'clock_mapping_id') required this.clockMappingId,
-      @JsonKey(name: 'anchor_elapsed_ns') required this.anchorElapsedNs,
-      @JsonKey(name: 'anchor_epoch_ms') required this.anchorEpochMs,
-      @JsonKey(name: 'uncertainty_ms') required this.uncertaintyMs});
-  factory _ClockInfo.fromJson(Map<String, dynamic> json) =>
-      _$ClockInfoFromJson(json);
+class _SensorBatch implements SensorBatch {
+  const _SensorBatch(
+      {this.v = 2,
+      this.stream = 'imu_watch',
+      this.source = 'watch',
+      @JsonKey(name: 'batch_id') required this.batchId,
+      @JsonKey(name: 'device_id') required this.deviceId,
+      @JsonKey(name: 'session_id') required this.sessionId,
+      required this.seq,
+      @JsonKey(name: 'study_id') this.studyId,
+      @JsonKey(name: 'participation_id') this.participationId,
+      @JsonKey(name: 'run_id') this.runId,
+      @JsonKey(toJson: nestedToJson) required this.clock,
+      @JsonKey(toJson: nestedToJson) this.acc,
+      @JsonKey(toJson: nestedToJson) this.gyro,
+      @JsonKey(toJson: nestedToJson) this.trigger,
+      @JsonKey(name: 'gyro_backfill') this.gyroBackfill = false,
+      @JsonKey(name: 'backfill_for') this.backfillFor,
+      @JsonKey(toJson: nestedToJson) this.resend,
+      @JsonKey(name: 'collection_mode') required this.collectionMode,
+      @JsonKey(name: 'gyro_mode') required this.gyroMode,
+      @JsonKey(name: 'on_body') this.onBody,
+      @JsonKey(name: 'wear_state') this.wearState,
+      @JsonKey(name: 'missing_reason') this.missingReason,
+      @JsonKey(name: 'watch_battery_pct') this.watchBatteryPct,
+      @JsonKey(name: 'phone_received_at_ms') this.phoneReceivedAtMs});
+  factory _SensorBatch.fromJson(Map<String, dynamic> json) =>
+      _$SensorBatchFromJson(json);
 
   @override
-  @JsonKey(name: 'boot_id')
-  final String bootId;
+  @JsonKey()
+  final int v;
   @override
-  @JsonKey(name: 'clock_mapping_id')
-  final String clockMappingId;
+  @JsonKey()
+  final String stream;
   @override
-  @JsonKey(name: 'anchor_elapsed_ns')
-  final String anchorElapsedNs;
+  @JsonKey()
+  final String source;
   @override
-  @JsonKey(name: 'anchor_epoch_ms')
-  final int anchorEpochMs;
+  @JsonKey(name: 'batch_id')
+  final String batchId;
   @override
-  @JsonKey(name: 'uncertainty_ms')
-  final double uncertaintyMs;
+  @JsonKey(name: 'device_id')
+  final String deviceId;
+  @override
+  @JsonKey(name: 'session_id')
+  final String sessionId;
+  @override
+  final int seq;
+  @override
+  @JsonKey(name: 'study_id')
+  final String? studyId;
+  @override
+  @JsonKey(name: 'participation_id')
+  final String? participationId;
+  @override
+  @JsonKey(name: 'run_id')
+  final String? runId;
+  @override
+  @JsonKey(toJson: nestedToJson)
+  final ClockInfo clock;
+  @override
+  @JsonKey(toJson: nestedToJson)
+  final AccSeries? acc;
+  @override
+  @JsonKey(toJson: nestedToJson)
+  final GyroSeries? gyro;
+  @override
+  @JsonKey(toJson: nestedToJson)
+  final ImpactTrigger? trigger;
+  @override
+  @JsonKey(name: 'gyro_backfill')
+  final bool gyroBackfill;
+  @override
+  @JsonKey(name: 'backfill_for')
+  final String? backfillFor;
+  @override
+  @JsonKey(toJson: nestedToJson)
+  final ResendInfo? resend;
+  @override
+  @JsonKey(name: 'collection_mode')
+  final String collectionMode;
+  @override
+  @JsonKey(name: 'gyro_mode')
+  final String gyroMode;
+  @override
+  @JsonKey(name: 'on_body')
+  final bool? onBody;
+  @override
+  @JsonKey(name: 'wear_state')
+  final String? wearState;
+  @override
+  @JsonKey(name: 'missing_reason')
+  final String? missingReason;
+  @override
+  @JsonKey(name: 'watch_battery_pct')
+  final int? watchBatteryPct;
+  @override
+  @JsonKey(name: 'phone_received_at_ms')
+  final int? phoneReceivedAtMs;
 
-  /// Create a copy of ClockInfo
+  /// Create a copy of SensorBatch
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
   @pragma('vm:prefer-inline')
-  _$ClockInfoCopyWith<_ClockInfo> get copyWith =>
-      __$ClockInfoCopyWithImpl<_ClockInfo>(this, _$identity);
+  _$SensorBatchCopyWith<_SensorBatch> get copyWith =>
+      __$SensorBatchCopyWithImpl<_SensorBatch>(this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$ClockInfoToJson(
+    return _$SensorBatchToJson(
       this,
     );
   }
@@ -343,85 +816,327 @@ class _ClockInfo implements ClockInfo {
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _ClockInfo &&
-            (identical(other.bootId, bootId) || other.bootId == bootId) &&
-            (identical(other.clockMappingId, clockMappingId) ||
-                other.clockMappingId == clockMappingId) &&
-            (identical(other.anchorElapsedNs, anchorElapsedNs) ||
-                other.anchorElapsedNs == anchorElapsedNs) &&
-            (identical(other.anchorEpochMs, anchorEpochMs) ||
-                other.anchorEpochMs == anchorEpochMs) &&
-            (identical(other.uncertaintyMs, uncertaintyMs) ||
-                other.uncertaintyMs == uncertaintyMs));
+            other is _SensorBatch &&
+            (identical(other.v, v) || other.v == v) &&
+            (identical(other.stream, stream) || other.stream == stream) &&
+            (identical(other.source, source) || other.source == source) &&
+            (identical(other.batchId, batchId) || other.batchId == batchId) &&
+            (identical(other.deviceId, deviceId) ||
+                other.deviceId == deviceId) &&
+            (identical(other.sessionId, sessionId) ||
+                other.sessionId == sessionId) &&
+            (identical(other.seq, seq) || other.seq == seq) &&
+            (identical(other.studyId, studyId) || other.studyId == studyId) &&
+            (identical(other.participationId, participationId) ||
+                other.participationId == participationId) &&
+            (identical(other.runId, runId) || other.runId == runId) &&
+            (identical(other.clock, clock) || other.clock == clock) &&
+            (identical(other.acc, acc) || other.acc == acc) &&
+            (identical(other.gyro, gyro) || other.gyro == gyro) &&
+            (identical(other.trigger, trigger) || other.trigger == trigger) &&
+            (identical(other.gyroBackfill, gyroBackfill) ||
+                other.gyroBackfill == gyroBackfill) &&
+            (identical(other.backfillFor, backfillFor) ||
+                other.backfillFor == backfillFor) &&
+            (identical(other.resend, resend) || other.resend == resend) &&
+            (identical(other.collectionMode, collectionMode) ||
+                other.collectionMode == collectionMode) &&
+            (identical(other.gyroMode, gyroMode) ||
+                other.gyroMode == gyroMode) &&
+            (identical(other.onBody, onBody) || other.onBody == onBody) &&
+            (identical(other.wearState, wearState) ||
+                other.wearState == wearState) &&
+            (identical(other.missingReason, missingReason) ||
+                other.missingReason == missingReason) &&
+            (identical(other.watchBatteryPct, watchBatteryPct) ||
+                other.watchBatteryPct == watchBatteryPct) &&
+            (identical(other.phoneReceivedAtMs, phoneReceivedAtMs) ||
+                other.phoneReceivedAtMs == phoneReceivedAtMs));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, bootId, clockMappingId,
-      anchorElapsedNs, anchorEpochMs, uncertaintyMs);
+  int get hashCode => Object.hashAll([
+        runtimeType,
+        v,
+        stream,
+        source,
+        batchId,
+        deviceId,
+        sessionId,
+        seq,
+        studyId,
+        participationId,
+        runId,
+        clock,
+        acc,
+        gyro,
+        trigger,
+        gyroBackfill,
+        backfillFor,
+        resend,
+        collectionMode,
+        gyroMode,
+        onBody,
+        wearState,
+        missingReason,
+        watchBatteryPct,
+        phoneReceivedAtMs
+      ]);
 
   @override
   String toString() {
-    return 'ClockInfo(bootId: $bootId, clockMappingId: $clockMappingId, anchorElapsedNs: $anchorElapsedNs, anchorEpochMs: $anchorEpochMs, uncertaintyMs: $uncertaintyMs)';
+    return 'SensorBatch(v: $v, stream: $stream, source: $source, batchId: $batchId, deviceId: $deviceId, sessionId: $sessionId, seq: $seq, studyId: $studyId, participationId: $participationId, runId: $runId, clock: $clock, acc: $acc, gyro: $gyro, trigger: $trigger, gyroBackfill: $gyroBackfill, backfillFor: $backfillFor, resend: $resend, collectionMode: $collectionMode, gyroMode: $gyroMode, onBody: $onBody, wearState: $wearState, missingReason: $missingReason, watchBatteryPct: $watchBatteryPct, phoneReceivedAtMs: $phoneReceivedAtMs)';
   }
 }
 
 /// @nodoc
-abstract mixin class _$ClockInfoCopyWith<$Res>
-    implements $ClockInfoCopyWith<$Res> {
-  factory _$ClockInfoCopyWith(
-          _ClockInfo value, $Res Function(_ClockInfo) _then) =
-      __$ClockInfoCopyWithImpl;
+abstract mixin class _$SensorBatchCopyWith<$Res>
+    implements $SensorBatchCopyWith<$Res> {
+  factory _$SensorBatchCopyWith(
+          _SensorBatch value, $Res Function(_SensorBatch) _then) =
+      __$SensorBatchCopyWithImpl;
   @override
   @useResult
   $Res call(
-      {@JsonKey(name: 'boot_id') String bootId,
-      @JsonKey(name: 'clock_mapping_id') String clockMappingId,
-      @JsonKey(name: 'anchor_elapsed_ns') String anchorElapsedNs,
-      @JsonKey(name: 'anchor_epoch_ms') int anchorEpochMs,
-      @JsonKey(name: 'uncertainty_ms') double uncertaintyMs});
+      {int v,
+      String stream,
+      String source,
+      @JsonKey(name: 'batch_id') String batchId,
+      @JsonKey(name: 'device_id') String deviceId,
+      @JsonKey(name: 'session_id') String sessionId,
+      int seq,
+      @JsonKey(name: 'study_id') String? studyId,
+      @JsonKey(name: 'participation_id') String? participationId,
+      @JsonKey(name: 'run_id') String? runId,
+      @JsonKey(toJson: nestedToJson) ClockInfo clock,
+      @JsonKey(toJson: nestedToJson) AccSeries? acc,
+      @JsonKey(toJson: nestedToJson) GyroSeries? gyro,
+      @JsonKey(toJson: nestedToJson) ImpactTrigger? trigger,
+      @JsonKey(name: 'gyro_backfill') bool gyroBackfill,
+      @JsonKey(name: 'backfill_for') String? backfillFor,
+      @JsonKey(toJson: nestedToJson) ResendInfo? resend,
+      @JsonKey(name: 'collection_mode') String collectionMode,
+      @JsonKey(name: 'gyro_mode') String gyroMode,
+      @JsonKey(name: 'on_body') bool? onBody,
+      @JsonKey(name: 'wear_state') String? wearState,
+      @JsonKey(name: 'missing_reason') String? missingReason,
+      @JsonKey(name: 'watch_battery_pct') int? watchBatteryPct,
+      @JsonKey(name: 'phone_received_at_ms') int? phoneReceivedAtMs});
+
+  @override
+  $ClockInfoCopyWith<$Res> get clock;
+  @override
+  $AccSeriesCopyWith<$Res>? get acc;
+  @override
+  $GyroSeriesCopyWith<$Res>? get gyro;
+  @override
+  $ImpactTriggerCopyWith<$Res>? get trigger;
+  @override
+  $ResendInfoCopyWith<$Res>? get resend;
 }
 
 /// @nodoc
-class __$ClockInfoCopyWithImpl<$Res> implements _$ClockInfoCopyWith<$Res> {
-  __$ClockInfoCopyWithImpl(this._self, this._then);
+class __$SensorBatchCopyWithImpl<$Res> implements _$SensorBatchCopyWith<$Res> {
+  __$SensorBatchCopyWithImpl(this._self, this._then);
 
-  final _ClockInfo _self;
-  final $Res Function(_ClockInfo) _then;
+  final _SensorBatch _self;
+  final $Res Function(_SensorBatch) _then;
 
-  /// Create a copy of ClockInfo
+  /// Create a copy of SensorBatch
   /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
   $Res call({
-    Object? bootId = null,
-    Object? clockMappingId = null,
-    Object? anchorElapsedNs = null,
-    Object? anchorEpochMs = null,
-    Object? uncertaintyMs = null,
+    Object? v = null,
+    Object? stream = null,
+    Object? source = null,
+    Object? batchId = null,
+    Object? deviceId = null,
+    Object? sessionId = null,
+    Object? seq = null,
+    Object? studyId = freezed,
+    Object? participationId = freezed,
+    Object? runId = freezed,
+    Object? clock = null,
+    Object? acc = freezed,
+    Object? gyro = freezed,
+    Object? trigger = freezed,
+    Object? gyroBackfill = null,
+    Object? backfillFor = freezed,
+    Object? resend = freezed,
+    Object? collectionMode = null,
+    Object? gyroMode = null,
+    Object? onBody = freezed,
+    Object? wearState = freezed,
+    Object? missingReason = freezed,
+    Object? watchBatteryPct = freezed,
+    Object? phoneReceivedAtMs = freezed,
   }) {
-    return _then(_ClockInfo(
-      bootId: null == bootId
-          ? _self.bootId
-          : bootId // ignore: cast_nullable_to_non_nullable
-              as String,
-      clockMappingId: null == clockMappingId
-          ? _self.clockMappingId
-          : clockMappingId // ignore: cast_nullable_to_non_nullable
-              as String,
-      anchorElapsedNs: null == anchorElapsedNs
-          ? _self.anchorElapsedNs
-          : anchorElapsedNs // ignore: cast_nullable_to_non_nullable
-              as String,
-      anchorEpochMs: null == anchorEpochMs
-          ? _self.anchorEpochMs
-          : anchorEpochMs // ignore: cast_nullable_to_non_nullable
+    return _then(_SensorBatch(
+      v: null == v
+          ? _self.v
+          : v // ignore: cast_nullable_to_non_nullable
               as int,
-      uncertaintyMs: null == uncertaintyMs
-          ? _self.uncertaintyMs
-          : uncertaintyMs // ignore: cast_nullable_to_non_nullable
-              as double,
+      stream: null == stream
+          ? _self.stream
+          : stream // ignore: cast_nullable_to_non_nullable
+              as String,
+      source: null == source
+          ? _self.source
+          : source // ignore: cast_nullable_to_non_nullable
+              as String,
+      batchId: null == batchId
+          ? _self.batchId
+          : batchId // ignore: cast_nullable_to_non_nullable
+              as String,
+      deviceId: null == deviceId
+          ? _self.deviceId
+          : deviceId // ignore: cast_nullable_to_non_nullable
+              as String,
+      sessionId: null == sessionId
+          ? _self.sessionId
+          : sessionId // ignore: cast_nullable_to_non_nullable
+              as String,
+      seq: null == seq
+          ? _self.seq
+          : seq // ignore: cast_nullable_to_non_nullable
+              as int,
+      studyId: freezed == studyId
+          ? _self.studyId
+          : studyId // ignore: cast_nullable_to_non_nullable
+              as String?,
+      participationId: freezed == participationId
+          ? _self.participationId
+          : participationId // ignore: cast_nullable_to_non_nullable
+              as String?,
+      runId: freezed == runId
+          ? _self.runId
+          : runId // ignore: cast_nullable_to_non_nullable
+              as String?,
+      clock: null == clock
+          ? _self.clock
+          : clock // ignore: cast_nullable_to_non_nullable
+              as ClockInfo,
+      acc: freezed == acc
+          ? _self.acc
+          : acc // ignore: cast_nullable_to_non_nullable
+              as AccSeries?,
+      gyro: freezed == gyro
+          ? _self.gyro
+          : gyro // ignore: cast_nullable_to_non_nullable
+              as GyroSeries?,
+      trigger: freezed == trigger
+          ? _self.trigger
+          : trigger // ignore: cast_nullable_to_non_nullable
+              as ImpactTrigger?,
+      gyroBackfill: null == gyroBackfill
+          ? _self.gyroBackfill
+          : gyroBackfill // ignore: cast_nullable_to_non_nullable
+              as bool,
+      backfillFor: freezed == backfillFor
+          ? _self.backfillFor
+          : backfillFor // ignore: cast_nullable_to_non_nullable
+              as String?,
+      resend: freezed == resend
+          ? _self.resend
+          : resend // ignore: cast_nullable_to_non_nullable
+              as ResendInfo?,
+      collectionMode: null == collectionMode
+          ? _self.collectionMode
+          : collectionMode // ignore: cast_nullable_to_non_nullable
+              as String,
+      gyroMode: null == gyroMode
+          ? _self.gyroMode
+          : gyroMode // ignore: cast_nullable_to_non_nullable
+              as String,
+      onBody: freezed == onBody
+          ? _self.onBody
+          : onBody // ignore: cast_nullable_to_non_nullable
+              as bool?,
+      wearState: freezed == wearState
+          ? _self.wearState
+          : wearState // ignore: cast_nullable_to_non_nullable
+              as String?,
+      missingReason: freezed == missingReason
+          ? _self.missingReason
+          : missingReason // ignore: cast_nullable_to_non_nullable
+              as String?,
+      watchBatteryPct: freezed == watchBatteryPct
+          ? _self.watchBatteryPct
+          : watchBatteryPct // ignore: cast_nullable_to_non_nullable
+              as int?,
+      phoneReceivedAtMs: freezed == phoneReceivedAtMs
+          ? _self.phoneReceivedAtMs
+          : phoneReceivedAtMs // ignore: cast_nullable_to_non_nullable
+              as int?,
     ));
+  }
+
+  /// Create a copy of SensorBatch
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $ClockInfoCopyWith<$Res> get clock {
+    return $ClockInfoCopyWith<$Res>(_self.clock, (value) {
+      return _then(_self.copyWith(clock: value));
+    });
+  }
+
+  /// Create a copy of SensorBatch
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $AccSeriesCopyWith<$Res>? get acc {
+    if (_self.acc == null) {
+      return null;
+    }
+
+    return $AccSeriesCopyWith<$Res>(_self.acc!, (value) {
+      return _then(_self.copyWith(acc: value));
+    });
+  }
+
+  /// Create a copy of SensorBatch
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $GyroSeriesCopyWith<$Res>? get gyro {
+    if (_self.gyro == null) {
+      return null;
+    }
+
+    return $GyroSeriesCopyWith<$Res>(_self.gyro!, (value) {
+      return _then(_self.copyWith(gyro: value));
+    });
+  }
+
+  /// Create a copy of SensorBatch
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $ImpactTriggerCopyWith<$Res>? get trigger {
+    if (_self.trigger == null) {
+      return null;
+    }
+
+    return $ImpactTriggerCopyWith<$Res>(_self.trigger!, (value) {
+      return _then(_self.copyWith(trigger: value));
+    });
+  }
+
+  /// Create a copy of SensorBatch
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $ResendInfoCopyWith<$Res>? get resend {
+    if (_self.resend == null) {
+      return null;
+    }
+
+    return $ResendInfoCopyWith<$Res>(_self.resend!, (value) {
+      return _then(_self.copyWith(resend: value));
+    });
   }
 }
 
@@ -1669,6 +2384,419 @@ class __$ImpactTriggerCopyWithImpl<$Res>
 }
 
 /// @nodoc
+mixin _$ClockInfo {
+  @JsonKey(name: 'boot_id')
+  String get bootId;
+  @JsonKey(name: 'clock_mapping_id')
+  String get clockMappingId;
+  @JsonKey(name: 'anchor_elapsed_ns')
+  String get anchorElapsedNs;
+  @JsonKey(name: 'anchor_epoch_ms')
+  int get anchorEpochMs;
+  @JsonKey(name: 'uncertainty_ms')
+  double get uncertaintyMs;
+
+  /// Create a copy of ClockInfo
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
+  $ClockInfoCopyWith<ClockInfo> get copyWith =>
+      _$ClockInfoCopyWithImpl<ClockInfo>(this as ClockInfo, _$identity);
+
+  /// Serializes this ClockInfo to a JSON map.
+  Map<String, dynamic> toJson();
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is ClockInfo &&
+            (identical(other.bootId, bootId) || other.bootId == bootId) &&
+            (identical(other.clockMappingId, clockMappingId) ||
+                other.clockMappingId == clockMappingId) &&
+            (identical(other.anchorElapsedNs, anchorElapsedNs) ||
+                other.anchorElapsedNs == anchorElapsedNs) &&
+            (identical(other.anchorEpochMs, anchorEpochMs) ||
+                other.anchorEpochMs == anchorEpochMs) &&
+            (identical(other.uncertaintyMs, uncertaintyMs) ||
+                other.uncertaintyMs == uncertaintyMs));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(runtimeType, bootId, clockMappingId,
+      anchorElapsedNs, anchorEpochMs, uncertaintyMs);
+
+  @override
+  String toString() {
+    return 'ClockInfo(bootId: $bootId, clockMappingId: $clockMappingId, anchorElapsedNs: $anchorElapsedNs, anchorEpochMs: $anchorEpochMs, uncertaintyMs: $uncertaintyMs)';
+  }
+}
+
+/// @nodoc
+abstract mixin class $ClockInfoCopyWith<$Res> {
+  factory $ClockInfoCopyWith(ClockInfo value, $Res Function(ClockInfo) _then) =
+      _$ClockInfoCopyWithImpl;
+  @useResult
+  $Res call(
+      {@JsonKey(name: 'boot_id') String bootId,
+      @JsonKey(name: 'clock_mapping_id') String clockMappingId,
+      @JsonKey(name: 'anchor_elapsed_ns') String anchorElapsedNs,
+      @JsonKey(name: 'anchor_epoch_ms') int anchorEpochMs,
+      @JsonKey(name: 'uncertainty_ms') double uncertaintyMs});
+}
+
+/// @nodoc
+class _$ClockInfoCopyWithImpl<$Res> implements $ClockInfoCopyWith<$Res> {
+  _$ClockInfoCopyWithImpl(this._self, this._then);
+
+  final ClockInfo _self;
+  final $Res Function(ClockInfo) _then;
+
+  /// Create a copy of ClockInfo
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? bootId = null,
+    Object? clockMappingId = null,
+    Object? anchorElapsedNs = null,
+    Object? anchorEpochMs = null,
+    Object? uncertaintyMs = null,
+  }) {
+    return _then(_self.copyWith(
+      bootId: null == bootId
+          ? _self.bootId
+          : bootId // ignore: cast_nullable_to_non_nullable
+              as String,
+      clockMappingId: null == clockMappingId
+          ? _self.clockMappingId
+          : clockMappingId // ignore: cast_nullable_to_non_nullable
+              as String,
+      anchorElapsedNs: null == anchorElapsedNs
+          ? _self.anchorElapsedNs
+          : anchorElapsedNs // ignore: cast_nullable_to_non_nullable
+              as String,
+      anchorEpochMs: null == anchorEpochMs
+          ? _self.anchorEpochMs
+          : anchorEpochMs // ignore: cast_nullable_to_non_nullable
+              as int,
+      uncertaintyMs: null == uncertaintyMs
+          ? _self.uncertaintyMs
+          : uncertaintyMs // ignore: cast_nullable_to_non_nullable
+              as double,
+    ));
+  }
+}
+
+/// Adds pattern-matching-related methods to [ClockInfo].
+extension ClockInfoPatterns on ClockInfo {
+  /// A variant of `map` that fallback to returning `orElse`.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case _:
+  ///     return orElse();
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>(
+    TResult Function(_ClockInfo value)? $default, {
+    required TResult orElse(),
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _ClockInfo() when $default != null:
+        return $default(_that);
+      case _:
+        return orElse();
+    }
+  }
+
+  /// A `switch`-like method, using callbacks.
+  ///
+  /// Callbacks receives the raw object, upcasted.
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case final Subclass2 value:
+  ///     return ...;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>(
+    TResult Function(_ClockInfo value) $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _ClockInfo():
+        return $default(_that);
+      case _:
+        throw StateError('Unexpected subclass');
+    }
+  }
+
+  /// A variant of `map` that fallback to returning `null`.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case _:
+  ///     return null;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>(
+    TResult? Function(_ClockInfo value)? $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _ClockInfo() when $default != null:
+        return $default(_that);
+      case _:
+        return null;
+    }
+  }
+
+  /// A variant of `when` that fallback to an `orElse` callback.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case _:
+  ///     return orElse();
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>(
+    TResult Function(
+            @JsonKey(name: 'boot_id') String bootId,
+            @JsonKey(name: 'clock_mapping_id') String clockMappingId,
+            @JsonKey(name: 'anchor_elapsed_ns') String anchorElapsedNs,
+            @JsonKey(name: 'anchor_epoch_ms') int anchorEpochMs,
+            @JsonKey(name: 'uncertainty_ms') double uncertaintyMs)?
+        $default, {
+    required TResult orElse(),
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _ClockInfo() when $default != null:
+        return $default(_that.bootId, _that.clockMappingId,
+            _that.anchorElapsedNs, _that.anchorEpochMs, _that.uncertaintyMs);
+      case _:
+        return orElse();
+    }
+  }
+
+  /// A `switch`-like method, using callbacks.
+  ///
+  /// As opposed to `map`, this offers destructuring.
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case Subclass2(:final field2):
+  ///     return ...;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>(
+    TResult Function(
+            @JsonKey(name: 'boot_id') String bootId,
+            @JsonKey(name: 'clock_mapping_id') String clockMappingId,
+            @JsonKey(name: 'anchor_elapsed_ns') String anchorElapsedNs,
+            @JsonKey(name: 'anchor_epoch_ms') int anchorEpochMs,
+            @JsonKey(name: 'uncertainty_ms') double uncertaintyMs)
+        $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _ClockInfo():
+        return $default(_that.bootId, _that.clockMappingId,
+            _that.anchorElapsedNs, _that.anchorEpochMs, _that.uncertaintyMs);
+      case _:
+        throw StateError('Unexpected subclass');
+    }
+  }
+
+  /// A variant of `when` that fallback to returning `null`
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case _:
+  ///     return null;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>(
+    TResult? Function(
+            @JsonKey(name: 'boot_id') String bootId,
+            @JsonKey(name: 'clock_mapping_id') String clockMappingId,
+            @JsonKey(name: 'anchor_elapsed_ns') String anchorElapsedNs,
+            @JsonKey(name: 'anchor_epoch_ms') int anchorEpochMs,
+            @JsonKey(name: 'uncertainty_ms') double uncertaintyMs)?
+        $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _ClockInfo() when $default != null:
+        return $default(_that.bootId, _that.clockMappingId,
+            _that.anchorElapsedNs, _that.anchorEpochMs, _that.uncertaintyMs);
+      case _:
+        return null;
+    }
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _ClockInfo implements ClockInfo {
+  const _ClockInfo(
+      {@JsonKey(name: 'boot_id') required this.bootId,
+      @JsonKey(name: 'clock_mapping_id') required this.clockMappingId,
+      @JsonKey(name: 'anchor_elapsed_ns') required this.anchorElapsedNs,
+      @JsonKey(name: 'anchor_epoch_ms') required this.anchorEpochMs,
+      @JsonKey(name: 'uncertainty_ms') required this.uncertaintyMs});
+  factory _ClockInfo.fromJson(Map<String, dynamic> json) =>
+      _$ClockInfoFromJson(json);
+
+  @override
+  @JsonKey(name: 'boot_id')
+  final String bootId;
+  @override
+  @JsonKey(name: 'clock_mapping_id')
+  final String clockMappingId;
+  @override
+  @JsonKey(name: 'anchor_elapsed_ns')
+  final String anchorElapsedNs;
+  @override
+  @JsonKey(name: 'anchor_epoch_ms')
+  final int anchorEpochMs;
+  @override
+  @JsonKey(name: 'uncertainty_ms')
+  final double uncertaintyMs;
+
+  /// Create a copy of ClockInfo
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
+  _$ClockInfoCopyWith<_ClockInfo> get copyWith =>
+      __$ClockInfoCopyWithImpl<_ClockInfo>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$ClockInfoToJson(
+      this,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _ClockInfo &&
+            (identical(other.bootId, bootId) || other.bootId == bootId) &&
+            (identical(other.clockMappingId, clockMappingId) ||
+                other.clockMappingId == clockMappingId) &&
+            (identical(other.anchorElapsedNs, anchorElapsedNs) ||
+                other.anchorElapsedNs == anchorElapsedNs) &&
+            (identical(other.anchorEpochMs, anchorEpochMs) ||
+                other.anchorEpochMs == anchorEpochMs) &&
+            (identical(other.uncertaintyMs, uncertaintyMs) ||
+                other.uncertaintyMs == uncertaintyMs));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(runtimeType, bootId, clockMappingId,
+      anchorElapsedNs, anchorEpochMs, uncertaintyMs);
+
+  @override
+  String toString() {
+    return 'ClockInfo(bootId: $bootId, clockMappingId: $clockMappingId, anchorElapsedNs: $anchorElapsedNs, anchorEpochMs: $anchorEpochMs, uncertaintyMs: $uncertaintyMs)';
+  }
+}
+
+/// @nodoc
+abstract mixin class _$ClockInfoCopyWith<$Res>
+    implements $ClockInfoCopyWith<$Res> {
+  factory _$ClockInfoCopyWith(
+          _ClockInfo value, $Res Function(_ClockInfo) _then) =
+      __$ClockInfoCopyWithImpl;
+  @override
+  @useResult
+  $Res call(
+      {@JsonKey(name: 'boot_id') String bootId,
+      @JsonKey(name: 'clock_mapping_id') String clockMappingId,
+      @JsonKey(name: 'anchor_elapsed_ns') String anchorElapsedNs,
+      @JsonKey(name: 'anchor_epoch_ms') int anchorEpochMs,
+      @JsonKey(name: 'uncertainty_ms') double uncertaintyMs});
+}
+
+/// @nodoc
+class __$ClockInfoCopyWithImpl<$Res> implements _$ClockInfoCopyWith<$Res> {
+  __$ClockInfoCopyWithImpl(this._self, this._then);
+
+  final _ClockInfo _self;
+  final $Res Function(_ClockInfo) _then;
+
+  /// Create a copy of ClockInfo
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $Res call({
+    Object? bootId = null,
+    Object? clockMappingId = null,
+    Object? anchorElapsedNs = null,
+    Object? anchorEpochMs = null,
+    Object? uncertaintyMs = null,
+  }) {
+    return _then(_ClockInfo(
+      bootId: null == bootId
+          ? _self.bootId
+          : bootId // ignore: cast_nullable_to_non_nullable
+              as String,
+      clockMappingId: null == clockMappingId
+          ? _self.clockMappingId
+          : clockMappingId // ignore: cast_nullable_to_non_nullable
+              as String,
+      anchorElapsedNs: null == anchorElapsedNs
+          ? _self.anchorElapsedNs
+          : anchorElapsedNs // ignore: cast_nullable_to_non_nullable
+              as String,
+      anchorEpochMs: null == anchorEpochMs
+          ? _self.anchorEpochMs
+          : anchorEpochMs // ignore: cast_nullable_to_non_nullable
+              as int,
+      uncertaintyMs: null == uncertaintyMs
+          ? _self.uncertaintyMs
+          : uncertaintyMs // ignore: cast_nullable_to_non_nullable
+              as double,
+    ));
+  }
+}
+
+/// @nodoc
 mixin _$ResendInfo {
   @JsonKey(name: 'is_resend')
   bool get isResend;
@@ -2121,1912 +3249,6 @@ class __$ResendInfoCopyWithImpl<$Res> implements _$ResendInfoCopyWith<$Res> {
           : resentAtMs // ignore: cast_nullable_to_non_nullable
               as int,
     ));
-  }
-}
-
-/// @nodoc
-mixin _$SensorBatch {
-  int get v;
-  String get stream;
-  String get source;
-  @JsonKey(name: 'batch_id')
-  String get batchId;
-  @JsonKey(name: 'device_id')
-  String get deviceId;
-  @JsonKey(name: 'session_id')
-  String get sessionId;
-  int get seq;
-  @JsonKey(name: 'study_id')
-  String? get studyId;
-  @JsonKey(name: 'participation_id')
-  String? get participationId;
-  @JsonKey(name: 'run_id')
-  String? get runId;
-  @JsonKey(toJson: _nestedToJson)
-  ClockInfo get clock;
-  @JsonKey(toJson: _nestedToJson)
-  AccSeries? get acc;
-  @JsonKey(toJson: _nestedToJson)
-  GyroSeries? get gyro;
-  @JsonKey(toJson: _nestedToJson)
-  ImpactTrigger? get trigger;
-  @JsonKey(name: 'gyro_backfill')
-  bool get gyroBackfill;
-  @JsonKey(name: 'backfill_for')
-  String? get backfillFor;
-  @JsonKey(toJson: _nestedToJson)
-  ResendInfo? get resend;
-  @JsonKey(name: 'collection_mode')
-  String get collectionMode;
-  @JsonKey(name: 'gyro_mode')
-  String get gyroMode;
-  @JsonKey(name: 'on_body')
-  bool? get onBody;
-  @JsonKey(name: 'wear_state')
-  String? get wearState;
-  @JsonKey(name: 'missing_reason')
-  String? get missingReason;
-  @JsonKey(name: 'watch_battery_pct')
-  int? get watchBatteryPct;
-  @JsonKey(name: 'phone_received_at_ms')
-  int? get phoneReceivedAtMs;
-
-  /// Create a copy of SensorBatch
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @pragma('vm:prefer-inline')
-  $SensorBatchCopyWith<SensorBatch> get copyWith =>
-      _$SensorBatchCopyWithImpl<SensorBatch>(this as SensorBatch, _$identity);
-
-  /// Serializes this SensorBatch to a JSON map.
-  Map<String, dynamic> toJson();
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is SensorBatch &&
-            (identical(other.v, v) || other.v == v) &&
-            (identical(other.stream, stream) || other.stream == stream) &&
-            (identical(other.source, source) || other.source == source) &&
-            (identical(other.batchId, batchId) || other.batchId == batchId) &&
-            (identical(other.deviceId, deviceId) ||
-                other.deviceId == deviceId) &&
-            (identical(other.sessionId, sessionId) ||
-                other.sessionId == sessionId) &&
-            (identical(other.seq, seq) || other.seq == seq) &&
-            (identical(other.studyId, studyId) || other.studyId == studyId) &&
-            (identical(other.participationId, participationId) ||
-                other.participationId == participationId) &&
-            (identical(other.runId, runId) || other.runId == runId) &&
-            (identical(other.clock, clock) || other.clock == clock) &&
-            (identical(other.acc, acc) || other.acc == acc) &&
-            (identical(other.gyro, gyro) || other.gyro == gyro) &&
-            (identical(other.trigger, trigger) || other.trigger == trigger) &&
-            (identical(other.gyroBackfill, gyroBackfill) ||
-                other.gyroBackfill == gyroBackfill) &&
-            (identical(other.backfillFor, backfillFor) ||
-                other.backfillFor == backfillFor) &&
-            (identical(other.resend, resend) || other.resend == resend) &&
-            (identical(other.collectionMode, collectionMode) ||
-                other.collectionMode == collectionMode) &&
-            (identical(other.gyroMode, gyroMode) ||
-                other.gyroMode == gyroMode) &&
-            (identical(other.onBody, onBody) || other.onBody == onBody) &&
-            (identical(other.wearState, wearState) ||
-                other.wearState == wearState) &&
-            (identical(other.missingReason, missingReason) ||
-                other.missingReason == missingReason) &&
-            (identical(other.watchBatteryPct, watchBatteryPct) ||
-                other.watchBatteryPct == watchBatteryPct) &&
-            (identical(other.phoneReceivedAtMs, phoneReceivedAtMs) ||
-                other.phoneReceivedAtMs == phoneReceivedAtMs));
-  }
-
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  int get hashCode => Object.hashAll([
-        runtimeType,
-        v,
-        stream,
-        source,
-        batchId,
-        deviceId,
-        sessionId,
-        seq,
-        studyId,
-        participationId,
-        runId,
-        clock,
-        acc,
-        gyro,
-        trigger,
-        gyroBackfill,
-        backfillFor,
-        resend,
-        collectionMode,
-        gyroMode,
-        onBody,
-        wearState,
-        missingReason,
-        watchBatteryPct,
-        phoneReceivedAtMs
-      ]);
-
-  @override
-  String toString() {
-    return 'SensorBatch(v: $v, stream: $stream, source: $source, batchId: $batchId, deviceId: $deviceId, sessionId: $sessionId, seq: $seq, studyId: $studyId, participationId: $participationId, runId: $runId, clock: $clock, acc: $acc, gyro: $gyro, trigger: $trigger, gyroBackfill: $gyroBackfill, backfillFor: $backfillFor, resend: $resend, collectionMode: $collectionMode, gyroMode: $gyroMode, onBody: $onBody, wearState: $wearState, missingReason: $missingReason, watchBatteryPct: $watchBatteryPct, phoneReceivedAtMs: $phoneReceivedAtMs)';
-  }
-}
-
-/// @nodoc
-abstract mixin class $SensorBatchCopyWith<$Res> {
-  factory $SensorBatchCopyWith(
-          SensorBatch value, $Res Function(SensorBatch) _then) =
-      _$SensorBatchCopyWithImpl;
-  @useResult
-  $Res call(
-      {int v,
-      String stream,
-      String source,
-      @JsonKey(name: 'batch_id') String batchId,
-      @JsonKey(name: 'device_id') String deviceId,
-      @JsonKey(name: 'session_id') String sessionId,
-      int seq,
-      @JsonKey(name: 'study_id') String? studyId,
-      @JsonKey(name: 'participation_id') String? participationId,
-      @JsonKey(name: 'run_id') String? runId,
-      @JsonKey(toJson: _nestedToJson) ClockInfo clock,
-      @JsonKey(toJson: _nestedToJson) AccSeries? acc,
-      @JsonKey(toJson: _nestedToJson) GyroSeries? gyro,
-      @JsonKey(toJson: _nestedToJson) ImpactTrigger? trigger,
-      @JsonKey(name: 'gyro_backfill') bool gyroBackfill,
-      @JsonKey(name: 'backfill_for') String? backfillFor,
-      @JsonKey(toJson: _nestedToJson) ResendInfo? resend,
-      @JsonKey(name: 'collection_mode') String collectionMode,
-      @JsonKey(name: 'gyro_mode') String gyroMode,
-      @JsonKey(name: 'on_body') bool? onBody,
-      @JsonKey(name: 'wear_state') String? wearState,
-      @JsonKey(name: 'missing_reason') String? missingReason,
-      @JsonKey(name: 'watch_battery_pct') int? watchBatteryPct,
-      @JsonKey(name: 'phone_received_at_ms') int? phoneReceivedAtMs});
-
-  $ClockInfoCopyWith<$Res> get clock;
-  $AccSeriesCopyWith<$Res>? get acc;
-  $GyroSeriesCopyWith<$Res>? get gyro;
-  $ImpactTriggerCopyWith<$Res>? get trigger;
-  $ResendInfoCopyWith<$Res>? get resend;
-}
-
-/// @nodoc
-class _$SensorBatchCopyWithImpl<$Res> implements $SensorBatchCopyWith<$Res> {
-  _$SensorBatchCopyWithImpl(this._self, this._then);
-
-  final SensorBatch _self;
-  final $Res Function(SensorBatch) _then;
-
-  /// Create a copy of SensorBatch
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? v = null,
-    Object? stream = null,
-    Object? source = null,
-    Object? batchId = null,
-    Object? deviceId = null,
-    Object? sessionId = null,
-    Object? seq = null,
-    Object? studyId = freezed,
-    Object? participationId = freezed,
-    Object? runId = freezed,
-    Object? clock = null,
-    Object? acc = freezed,
-    Object? gyro = freezed,
-    Object? trigger = freezed,
-    Object? gyroBackfill = null,
-    Object? backfillFor = freezed,
-    Object? resend = freezed,
-    Object? collectionMode = null,
-    Object? gyroMode = null,
-    Object? onBody = freezed,
-    Object? wearState = freezed,
-    Object? missingReason = freezed,
-    Object? watchBatteryPct = freezed,
-    Object? phoneReceivedAtMs = freezed,
-  }) {
-    return _then(_self.copyWith(
-      v: null == v
-          ? _self.v
-          : v // ignore: cast_nullable_to_non_nullable
-              as int,
-      stream: null == stream
-          ? _self.stream
-          : stream // ignore: cast_nullable_to_non_nullable
-              as String,
-      source: null == source
-          ? _self.source
-          : source // ignore: cast_nullable_to_non_nullable
-              as String,
-      batchId: null == batchId
-          ? _self.batchId
-          : batchId // ignore: cast_nullable_to_non_nullable
-              as String,
-      deviceId: null == deviceId
-          ? _self.deviceId
-          : deviceId // ignore: cast_nullable_to_non_nullable
-              as String,
-      sessionId: null == sessionId
-          ? _self.sessionId
-          : sessionId // ignore: cast_nullable_to_non_nullable
-              as String,
-      seq: null == seq
-          ? _self.seq
-          : seq // ignore: cast_nullable_to_non_nullable
-              as int,
-      studyId: freezed == studyId
-          ? _self.studyId
-          : studyId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      participationId: freezed == participationId
-          ? _self.participationId
-          : participationId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      runId: freezed == runId
-          ? _self.runId
-          : runId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      clock: null == clock
-          ? _self.clock
-          : clock // ignore: cast_nullable_to_non_nullable
-              as ClockInfo,
-      acc: freezed == acc
-          ? _self.acc
-          : acc // ignore: cast_nullable_to_non_nullable
-              as AccSeries?,
-      gyro: freezed == gyro
-          ? _self.gyro
-          : gyro // ignore: cast_nullable_to_non_nullable
-              as GyroSeries?,
-      trigger: freezed == trigger
-          ? _self.trigger
-          : trigger // ignore: cast_nullable_to_non_nullable
-              as ImpactTrigger?,
-      gyroBackfill: null == gyroBackfill
-          ? _self.gyroBackfill
-          : gyroBackfill // ignore: cast_nullable_to_non_nullable
-              as bool,
-      backfillFor: freezed == backfillFor
-          ? _self.backfillFor
-          : backfillFor // ignore: cast_nullable_to_non_nullable
-              as String?,
-      resend: freezed == resend
-          ? _self.resend
-          : resend // ignore: cast_nullable_to_non_nullable
-              as ResendInfo?,
-      collectionMode: null == collectionMode
-          ? _self.collectionMode
-          : collectionMode // ignore: cast_nullable_to_non_nullable
-              as String,
-      gyroMode: null == gyroMode
-          ? _self.gyroMode
-          : gyroMode // ignore: cast_nullable_to_non_nullable
-              as String,
-      onBody: freezed == onBody
-          ? _self.onBody
-          : onBody // ignore: cast_nullable_to_non_nullable
-              as bool?,
-      wearState: freezed == wearState
-          ? _self.wearState
-          : wearState // ignore: cast_nullable_to_non_nullable
-              as String?,
-      missingReason: freezed == missingReason
-          ? _self.missingReason
-          : missingReason // ignore: cast_nullable_to_non_nullable
-              as String?,
-      watchBatteryPct: freezed == watchBatteryPct
-          ? _self.watchBatteryPct
-          : watchBatteryPct // ignore: cast_nullable_to_non_nullable
-              as int?,
-      phoneReceivedAtMs: freezed == phoneReceivedAtMs
-          ? _self.phoneReceivedAtMs
-          : phoneReceivedAtMs // ignore: cast_nullable_to_non_nullable
-              as int?,
-    ));
-  }
-
-  /// Create a copy of SensorBatch
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @pragma('vm:prefer-inline')
-  $ClockInfoCopyWith<$Res> get clock {
-    return $ClockInfoCopyWith<$Res>(_self.clock, (value) {
-      return _then(_self.copyWith(clock: value));
-    });
-  }
-
-  /// Create a copy of SensorBatch
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @pragma('vm:prefer-inline')
-  $AccSeriesCopyWith<$Res>? get acc {
-    if (_self.acc == null) {
-      return null;
-    }
-
-    return $AccSeriesCopyWith<$Res>(_self.acc!, (value) {
-      return _then(_self.copyWith(acc: value));
-    });
-  }
-
-  /// Create a copy of SensorBatch
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @pragma('vm:prefer-inline')
-  $GyroSeriesCopyWith<$Res>? get gyro {
-    if (_self.gyro == null) {
-      return null;
-    }
-
-    return $GyroSeriesCopyWith<$Res>(_self.gyro!, (value) {
-      return _then(_self.copyWith(gyro: value));
-    });
-  }
-
-  /// Create a copy of SensorBatch
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @pragma('vm:prefer-inline')
-  $ImpactTriggerCopyWith<$Res>? get trigger {
-    if (_self.trigger == null) {
-      return null;
-    }
-
-    return $ImpactTriggerCopyWith<$Res>(_self.trigger!, (value) {
-      return _then(_self.copyWith(trigger: value));
-    });
-  }
-
-  /// Create a copy of SensorBatch
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @pragma('vm:prefer-inline')
-  $ResendInfoCopyWith<$Res>? get resend {
-    if (_self.resend == null) {
-      return null;
-    }
-
-    return $ResendInfoCopyWith<$Res>(_self.resend!, (value) {
-      return _then(_self.copyWith(resend: value));
-    });
-  }
-}
-
-/// Adds pattern-matching-related methods to [SensorBatch].
-extension SensorBatchPatterns on SensorBatch {
-  /// A variant of `map` that fallback to returning `orElse`.
-  ///
-  /// It is equivalent to doing:
-  /// ```dart
-  /// switch (sealedClass) {
-  ///   case final Subclass value:
-  ///     return ...;
-  ///   case _:
-  ///     return orElse();
-  /// }
-  /// ```
-
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>(
-    TResult Function(_SensorBatch value)? $default, {
-    required TResult orElse(),
-  }) {
-    final _that = this;
-    switch (_that) {
-      case _SensorBatch() when $default != null:
-        return $default(_that);
-      case _:
-        return orElse();
-    }
-  }
-
-  /// A `switch`-like method, using callbacks.
-  ///
-  /// Callbacks receives the raw object, upcasted.
-  /// It is equivalent to doing:
-  /// ```dart
-  /// switch (sealedClass) {
-  ///   case final Subclass value:
-  ///     return ...;
-  ///   case final Subclass2 value:
-  ///     return ...;
-  /// }
-  /// ```
-
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>(
-    TResult Function(_SensorBatch value) $default,
-  ) {
-    final _that = this;
-    switch (_that) {
-      case _SensorBatch():
-        return $default(_that);
-      case _:
-        throw StateError('Unexpected subclass');
-    }
-  }
-
-  /// A variant of `map` that fallback to returning `null`.
-  ///
-  /// It is equivalent to doing:
-  /// ```dart
-  /// switch (sealedClass) {
-  ///   case final Subclass value:
-  ///     return ...;
-  ///   case _:
-  ///     return null;
-  /// }
-  /// ```
-
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>(
-    TResult? Function(_SensorBatch value)? $default,
-  ) {
-    final _that = this;
-    switch (_that) {
-      case _SensorBatch() when $default != null:
-        return $default(_that);
-      case _:
-        return null;
-    }
-  }
-
-  /// A variant of `when` that fallback to an `orElse` callback.
-  ///
-  /// It is equivalent to doing:
-  /// ```dart
-  /// switch (sealedClass) {
-  ///   case Subclass(:final field):
-  ///     return ...;
-  ///   case _:
-  ///     return orElse();
-  /// }
-  /// ```
-
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>(
-    TResult Function(
-            int v,
-            String stream,
-            String source,
-            @JsonKey(name: 'batch_id') String batchId,
-            @JsonKey(name: 'device_id') String deviceId,
-            @JsonKey(name: 'session_id') String sessionId,
-            int seq,
-            @JsonKey(name: 'study_id') String? studyId,
-            @JsonKey(name: 'participation_id') String? participationId,
-            @JsonKey(name: 'run_id') String? runId,
-            @JsonKey(toJson: _nestedToJson) ClockInfo clock,
-            @JsonKey(toJson: _nestedToJson) AccSeries? acc,
-            @JsonKey(toJson: _nestedToJson) GyroSeries? gyro,
-            @JsonKey(toJson: _nestedToJson) ImpactTrigger? trigger,
-            @JsonKey(name: 'gyro_backfill') bool gyroBackfill,
-            @JsonKey(name: 'backfill_for') String? backfillFor,
-            @JsonKey(toJson: _nestedToJson) ResendInfo? resend,
-            @JsonKey(name: 'collection_mode') String collectionMode,
-            @JsonKey(name: 'gyro_mode') String gyroMode,
-            @JsonKey(name: 'on_body') bool? onBody,
-            @JsonKey(name: 'wear_state') String? wearState,
-            @JsonKey(name: 'missing_reason') String? missingReason,
-            @JsonKey(name: 'watch_battery_pct') int? watchBatteryPct,
-            @JsonKey(name: 'phone_received_at_ms') int? phoneReceivedAtMs)?
-        $default, {
-    required TResult orElse(),
-  }) {
-    final _that = this;
-    switch (_that) {
-      case _SensorBatch() when $default != null:
-        return $default(
-            _that.v,
-            _that.stream,
-            _that.source,
-            _that.batchId,
-            _that.deviceId,
-            _that.sessionId,
-            _that.seq,
-            _that.studyId,
-            _that.participationId,
-            _that.runId,
-            _that.clock,
-            _that.acc,
-            _that.gyro,
-            _that.trigger,
-            _that.gyroBackfill,
-            _that.backfillFor,
-            _that.resend,
-            _that.collectionMode,
-            _that.gyroMode,
-            _that.onBody,
-            _that.wearState,
-            _that.missingReason,
-            _that.watchBatteryPct,
-            _that.phoneReceivedAtMs);
-      case _:
-        return orElse();
-    }
-  }
-
-  /// A `switch`-like method, using callbacks.
-  ///
-  /// As opposed to `map`, this offers destructuring.
-  /// It is equivalent to doing:
-  /// ```dart
-  /// switch (sealedClass) {
-  ///   case Subclass(:final field):
-  ///     return ...;
-  ///   case Subclass2(:final field2):
-  ///     return ...;
-  /// }
-  /// ```
-
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>(
-    TResult Function(
-            int v,
-            String stream,
-            String source,
-            @JsonKey(name: 'batch_id') String batchId,
-            @JsonKey(name: 'device_id') String deviceId,
-            @JsonKey(name: 'session_id') String sessionId,
-            int seq,
-            @JsonKey(name: 'study_id') String? studyId,
-            @JsonKey(name: 'participation_id') String? participationId,
-            @JsonKey(name: 'run_id') String? runId,
-            @JsonKey(toJson: _nestedToJson) ClockInfo clock,
-            @JsonKey(toJson: _nestedToJson) AccSeries? acc,
-            @JsonKey(toJson: _nestedToJson) GyroSeries? gyro,
-            @JsonKey(toJson: _nestedToJson) ImpactTrigger? trigger,
-            @JsonKey(name: 'gyro_backfill') bool gyroBackfill,
-            @JsonKey(name: 'backfill_for') String? backfillFor,
-            @JsonKey(toJson: _nestedToJson) ResendInfo? resend,
-            @JsonKey(name: 'collection_mode') String collectionMode,
-            @JsonKey(name: 'gyro_mode') String gyroMode,
-            @JsonKey(name: 'on_body') bool? onBody,
-            @JsonKey(name: 'wear_state') String? wearState,
-            @JsonKey(name: 'missing_reason') String? missingReason,
-            @JsonKey(name: 'watch_battery_pct') int? watchBatteryPct,
-            @JsonKey(name: 'phone_received_at_ms') int? phoneReceivedAtMs)
-        $default,
-  ) {
-    final _that = this;
-    switch (_that) {
-      case _SensorBatch():
-        return $default(
-            _that.v,
-            _that.stream,
-            _that.source,
-            _that.batchId,
-            _that.deviceId,
-            _that.sessionId,
-            _that.seq,
-            _that.studyId,
-            _that.participationId,
-            _that.runId,
-            _that.clock,
-            _that.acc,
-            _that.gyro,
-            _that.trigger,
-            _that.gyroBackfill,
-            _that.backfillFor,
-            _that.resend,
-            _that.collectionMode,
-            _that.gyroMode,
-            _that.onBody,
-            _that.wearState,
-            _that.missingReason,
-            _that.watchBatteryPct,
-            _that.phoneReceivedAtMs);
-      case _:
-        throw StateError('Unexpected subclass');
-    }
-  }
-
-  /// A variant of `when` that fallback to returning `null`
-  ///
-  /// It is equivalent to doing:
-  /// ```dart
-  /// switch (sealedClass) {
-  ///   case Subclass(:final field):
-  ///     return ...;
-  ///   case _:
-  ///     return null;
-  /// }
-  /// ```
-
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>(
-    TResult? Function(
-            int v,
-            String stream,
-            String source,
-            @JsonKey(name: 'batch_id') String batchId,
-            @JsonKey(name: 'device_id') String deviceId,
-            @JsonKey(name: 'session_id') String sessionId,
-            int seq,
-            @JsonKey(name: 'study_id') String? studyId,
-            @JsonKey(name: 'participation_id') String? participationId,
-            @JsonKey(name: 'run_id') String? runId,
-            @JsonKey(toJson: _nestedToJson) ClockInfo clock,
-            @JsonKey(toJson: _nestedToJson) AccSeries? acc,
-            @JsonKey(toJson: _nestedToJson) GyroSeries? gyro,
-            @JsonKey(toJson: _nestedToJson) ImpactTrigger? trigger,
-            @JsonKey(name: 'gyro_backfill') bool gyroBackfill,
-            @JsonKey(name: 'backfill_for') String? backfillFor,
-            @JsonKey(toJson: _nestedToJson) ResendInfo? resend,
-            @JsonKey(name: 'collection_mode') String collectionMode,
-            @JsonKey(name: 'gyro_mode') String gyroMode,
-            @JsonKey(name: 'on_body') bool? onBody,
-            @JsonKey(name: 'wear_state') String? wearState,
-            @JsonKey(name: 'missing_reason') String? missingReason,
-            @JsonKey(name: 'watch_battery_pct') int? watchBatteryPct,
-            @JsonKey(name: 'phone_received_at_ms') int? phoneReceivedAtMs)?
-        $default,
-  ) {
-    final _that = this;
-    switch (_that) {
-      case _SensorBatch() when $default != null:
-        return $default(
-            _that.v,
-            _that.stream,
-            _that.source,
-            _that.batchId,
-            _that.deviceId,
-            _that.sessionId,
-            _that.seq,
-            _that.studyId,
-            _that.participationId,
-            _that.runId,
-            _that.clock,
-            _that.acc,
-            _that.gyro,
-            _that.trigger,
-            _that.gyroBackfill,
-            _that.backfillFor,
-            _that.resend,
-            _that.collectionMode,
-            _that.gyroMode,
-            _that.onBody,
-            _that.wearState,
-            _that.missingReason,
-            _that.watchBatteryPct,
-            _that.phoneReceivedAtMs);
-      case _:
-        return null;
-    }
-  }
-}
-
-/// @nodoc
-@JsonSerializable()
-class _SensorBatch implements SensorBatch {
-  const _SensorBatch(
-      {this.v = 2,
-      this.stream = 'imu_watch',
-      this.source = 'watch',
-      @JsonKey(name: 'batch_id') required this.batchId,
-      @JsonKey(name: 'device_id') required this.deviceId,
-      @JsonKey(name: 'session_id') required this.sessionId,
-      required this.seq,
-      @JsonKey(name: 'study_id') this.studyId,
-      @JsonKey(name: 'participation_id') this.participationId,
-      @JsonKey(name: 'run_id') this.runId,
-      @JsonKey(toJson: _nestedToJson) required this.clock,
-      @JsonKey(toJson: _nestedToJson) this.acc,
-      @JsonKey(toJson: _nestedToJson) this.gyro,
-      @JsonKey(toJson: _nestedToJson) this.trigger,
-      @JsonKey(name: 'gyro_backfill') this.gyroBackfill = false,
-      @JsonKey(name: 'backfill_for') this.backfillFor,
-      @JsonKey(toJson: _nestedToJson) this.resend,
-      @JsonKey(name: 'collection_mode') required this.collectionMode,
-      @JsonKey(name: 'gyro_mode') required this.gyroMode,
-      @JsonKey(name: 'on_body') this.onBody,
-      @JsonKey(name: 'wear_state') this.wearState,
-      @JsonKey(name: 'missing_reason') this.missingReason,
-      @JsonKey(name: 'watch_battery_pct') this.watchBatteryPct,
-      @JsonKey(name: 'phone_received_at_ms') this.phoneReceivedAtMs});
-  factory _SensorBatch.fromJson(Map<String, dynamic> json) =>
-      _$SensorBatchFromJson(json);
-
-  @override
-  @JsonKey()
-  final int v;
-  @override
-  @JsonKey()
-  final String stream;
-  @override
-  @JsonKey()
-  final String source;
-  @override
-  @JsonKey(name: 'batch_id')
-  final String batchId;
-  @override
-  @JsonKey(name: 'device_id')
-  final String deviceId;
-  @override
-  @JsonKey(name: 'session_id')
-  final String sessionId;
-  @override
-  final int seq;
-  @override
-  @JsonKey(name: 'study_id')
-  final String? studyId;
-  @override
-  @JsonKey(name: 'participation_id')
-  final String? participationId;
-  @override
-  @JsonKey(name: 'run_id')
-  final String? runId;
-  @override
-  @JsonKey(toJson: _nestedToJson)
-  final ClockInfo clock;
-  @override
-  @JsonKey(toJson: _nestedToJson)
-  final AccSeries? acc;
-  @override
-  @JsonKey(toJson: _nestedToJson)
-  final GyroSeries? gyro;
-  @override
-  @JsonKey(toJson: _nestedToJson)
-  final ImpactTrigger? trigger;
-  @override
-  @JsonKey(name: 'gyro_backfill')
-  final bool gyroBackfill;
-  @override
-  @JsonKey(name: 'backfill_for')
-  final String? backfillFor;
-  @override
-  @JsonKey(toJson: _nestedToJson)
-  final ResendInfo? resend;
-  @override
-  @JsonKey(name: 'collection_mode')
-  final String collectionMode;
-  @override
-  @JsonKey(name: 'gyro_mode')
-  final String gyroMode;
-  @override
-  @JsonKey(name: 'on_body')
-  final bool? onBody;
-  @override
-  @JsonKey(name: 'wear_state')
-  final String? wearState;
-  @override
-  @JsonKey(name: 'missing_reason')
-  final String? missingReason;
-  @override
-  @JsonKey(name: 'watch_battery_pct')
-  final int? watchBatteryPct;
-  @override
-  @JsonKey(name: 'phone_received_at_ms')
-  final int? phoneReceivedAtMs;
-
-  /// Create a copy of SensorBatch
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @pragma('vm:prefer-inline')
-  _$SensorBatchCopyWith<_SensorBatch> get copyWith =>
-      __$SensorBatchCopyWithImpl<_SensorBatch>(this, _$identity);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$SensorBatchToJson(
-      this,
-    );
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _SensorBatch &&
-            (identical(other.v, v) || other.v == v) &&
-            (identical(other.stream, stream) || other.stream == stream) &&
-            (identical(other.source, source) || other.source == source) &&
-            (identical(other.batchId, batchId) || other.batchId == batchId) &&
-            (identical(other.deviceId, deviceId) ||
-                other.deviceId == deviceId) &&
-            (identical(other.sessionId, sessionId) ||
-                other.sessionId == sessionId) &&
-            (identical(other.seq, seq) || other.seq == seq) &&
-            (identical(other.studyId, studyId) || other.studyId == studyId) &&
-            (identical(other.participationId, participationId) ||
-                other.participationId == participationId) &&
-            (identical(other.runId, runId) || other.runId == runId) &&
-            (identical(other.clock, clock) || other.clock == clock) &&
-            (identical(other.acc, acc) || other.acc == acc) &&
-            (identical(other.gyro, gyro) || other.gyro == gyro) &&
-            (identical(other.trigger, trigger) || other.trigger == trigger) &&
-            (identical(other.gyroBackfill, gyroBackfill) ||
-                other.gyroBackfill == gyroBackfill) &&
-            (identical(other.backfillFor, backfillFor) ||
-                other.backfillFor == backfillFor) &&
-            (identical(other.resend, resend) || other.resend == resend) &&
-            (identical(other.collectionMode, collectionMode) ||
-                other.collectionMode == collectionMode) &&
-            (identical(other.gyroMode, gyroMode) ||
-                other.gyroMode == gyroMode) &&
-            (identical(other.onBody, onBody) || other.onBody == onBody) &&
-            (identical(other.wearState, wearState) ||
-                other.wearState == wearState) &&
-            (identical(other.missingReason, missingReason) ||
-                other.missingReason == missingReason) &&
-            (identical(other.watchBatteryPct, watchBatteryPct) ||
-                other.watchBatteryPct == watchBatteryPct) &&
-            (identical(other.phoneReceivedAtMs, phoneReceivedAtMs) ||
-                other.phoneReceivedAtMs == phoneReceivedAtMs));
-  }
-
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  int get hashCode => Object.hashAll([
-        runtimeType,
-        v,
-        stream,
-        source,
-        batchId,
-        deviceId,
-        sessionId,
-        seq,
-        studyId,
-        participationId,
-        runId,
-        clock,
-        acc,
-        gyro,
-        trigger,
-        gyroBackfill,
-        backfillFor,
-        resend,
-        collectionMode,
-        gyroMode,
-        onBody,
-        wearState,
-        missingReason,
-        watchBatteryPct,
-        phoneReceivedAtMs
-      ]);
-
-  @override
-  String toString() {
-    return 'SensorBatch(v: $v, stream: $stream, source: $source, batchId: $batchId, deviceId: $deviceId, sessionId: $sessionId, seq: $seq, studyId: $studyId, participationId: $participationId, runId: $runId, clock: $clock, acc: $acc, gyro: $gyro, trigger: $trigger, gyroBackfill: $gyroBackfill, backfillFor: $backfillFor, resend: $resend, collectionMode: $collectionMode, gyroMode: $gyroMode, onBody: $onBody, wearState: $wearState, missingReason: $missingReason, watchBatteryPct: $watchBatteryPct, phoneReceivedAtMs: $phoneReceivedAtMs)';
-  }
-}
-
-/// @nodoc
-abstract mixin class _$SensorBatchCopyWith<$Res>
-    implements $SensorBatchCopyWith<$Res> {
-  factory _$SensorBatchCopyWith(
-          _SensorBatch value, $Res Function(_SensorBatch) _then) =
-      __$SensorBatchCopyWithImpl;
-  @override
-  @useResult
-  $Res call(
-      {int v,
-      String stream,
-      String source,
-      @JsonKey(name: 'batch_id') String batchId,
-      @JsonKey(name: 'device_id') String deviceId,
-      @JsonKey(name: 'session_id') String sessionId,
-      int seq,
-      @JsonKey(name: 'study_id') String? studyId,
-      @JsonKey(name: 'participation_id') String? participationId,
-      @JsonKey(name: 'run_id') String? runId,
-      @JsonKey(toJson: _nestedToJson) ClockInfo clock,
-      @JsonKey(toJson: _nestedToJson) AccSeries? acc,
-      @JsonKey(toJson: _nestedToJson) GyroSeries? gyro,
-      @JsonKey(toJson: _nestedToJson) ImpactTrigger? trigger,
-      @JsonKey(name: 'gyro_backfill') bool gyroBackfill,
-      @JsonKey(name: 'backfill_for') String? backfillFor,
-      @JsonKey(toJson: _nestedToJson) ResendInfo? resend,
-      @JsonKey(name: 'collection_mode') String collectionMode,
-      @JsonKey(name: 'gyro_mode') String gyroMode,
-      @JsonKey(name: 'on_body') bool? onBody,
-      @JsonKey(name: 'wear_state') String? wearState,
-      @JsonKey(name: 'missing_reason') String? missingReason,
-      @JsonKey(name: 'watch_battery_pct') int? watchBatteryPct,
-      @JsonKey(name: 'phone_received_at_ms') int? phoneReceivedAtMs});
-
-  @override
-  $ClockInfoCopyWith<$Res> get clock;
-  @override
-  $AccSeriesCopyWith<$Res>? get acc;
-  @override
-  $GyroSeriesCopyWith<$Res>? get gyro;
-  @override
-  $ImpactTriggerCopyWith<$Res>? get trigger;
-  @override
-  $ResendInfoCopyWith<$Res>? get resend;
-}
-
-/// @nodoc
-class __$SensorBatchCopyWithImpl<$Res> implements _$SensorBatchCopyWith<$Res> {
-  __$SensorBatchCopyWithImpl(this._self, this._then);
-
-  final _SensorBatch _self;
-  final $Res Function(_SensorBatch) _then;
-
-  /// Create a copy of SensorBatch
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @pragma('vm:prefer-inline')
-  $Res call({
-    Object? v = null,
-    Object? stream = null,
-    Object? source = null,
-    Object? batchId = null,
-    Object? deviceId = null,
-    Object? sessionId = null,
-    Object? seq = null,
-    Object? studyId = freezed,
-    Object? participationId = freezed,
-    Object? runId = freezed,
-    Object? clock = null,
-    Object? acc = freezed,
-    Object? gyro = freezed,
-    Object? trigger = freezed,
-    Object? gyroBackfill = null,
-    Object? backfillFor = freezed,
-    Object? resend = freezed,
-    Object? collectionMode = null,
-    Object? gyroMode = null,
-    Object? onBody = freezed,
-    Object? wearState = freezed,
-    Object? missingReason = freezed,
-    Object? watchBatteryPct = freezed,
-    Object? phoneReceivedAtMs = freezed,
-  }) {
-    return _then(_SensorBatch(
-      v: null == v
-          ? _self.v
-          : v // ignore: cast_nullable_to_non_nullable
-              as int,
-      stream: null == stream
-          ? _self.stream
-          : stream // ignore: cast_nullable_to_non_nullable
-              as String,
-      source: null == source
-          ? _self.source
-          : source // ignore: cast_nullable_to_non_nullable
-              as String,
-      batchId: null == batchId
-          ? _self.batchId
-          : batchId // ignore: cast_nullable_to_non_nullable
-              as String,
-      deviceId: null == deviceId
-          ? _self.deviceId
-          : deviceId // ignore: cast_nullable_to_non_nullable
-              as String,
-      sessionId: null == sessionId
-          ? _self.sessionId
-          : sessionId // ignore: cast_nullable_to_non_nullable
-              as String,
-      seq: null == seq
-          ? _self.seq
-          : seq // ignore: cast_nullable_to_non_nullable
-              as int,
-      studyId: freezed == studyId
-          ? _self.studyId
-          : studyId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      participationId: freezed == participationId
-          ? _self.participationId
-          : participationId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      runId: freezed == runId
-          ? _self.runId
-          : runId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      clock: null == clock
-          ? _self.clock
-          : clock // ignore: cast_nullable_to_non_nullable
-              as ClockInfo,
-      acc: freezed == acc
-          ? _self.acc
-          : acc // ignore: cast_nullable_to_non_nullable
-              as AccSeries?,
-      gyro: freezed == gyro
-          ? _self.gyro
-          : gyro // ignore: cast_nullable_to_non_nullable
-              as GyroSeries?,
-      trigger: freezed == trigger
-          ? _self.trigger
-          : trigger // ignore: cast_nullable_to_non_nullable
-              as ImpactTrigger?,
-      gyroBackfill: null == gyroBackfill
-          ? _self.gyroBackfill
-          : gyroBackfill // ignore: cast_nullable_to_non_nullable
-              as bool,
-      backfillFor: freezed == backfillFor
-          ? _self.backfillFor
-          : backfillFor // ignore: cast_nullable_to_non_nullable
-              as String?,
-      resend: freezed == resend
-          ? _self.resend
-          : resend // ignore: cast_nullable_to_non_nullable
-              as ResendInfo?,
-      collectionMode: null == collectionMode
-          ? _self.collectionMode
-          : collectionMode // ignore: cast_nullable_to_non_nullable
-              as String,
-      gyroMode: null == gyroMode
-          ? _self.gyroMode
-          : gyroMode // ignore: cast_nullable_to_non_nullable
-              as String,
-      onBody: freezed == onBody
-          ? _self.onBody
-          : onBody // ignore: cast_nullable_to_non_nullable
-              as bool?,
-      wearState: freezed == wearState
-          ? _self.wearState
-          : wearState // ignore: cast_nullable_to_non_nullable
-              as String?,
-      missingReason: freezed == missingReason
-          ? _self.missingReason
-          : missingReason // ignore: cast_nullable_to_non_nullable
-              as String?,
-      watchBatteryPct: freezed == watchBatteryPct
-          ? _self.watchBatteryPct
-          : watchBatteryPct // ignore: cast_nullable_to_non_nullable
-              as int?,
-      phoneReceivedAtMs: freezed == phoneReceivedAtMs
-          ? _self.phoneReceivedAtMs
-          : phoneReceivedAtMs // ignore: cast_nullable_to_non_nullable
-              as int?,
-    ));
-  }
-
-  /// Create a copy of SensorBatch
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @pragma('vm:prefer-inline')
-  $ClockInfoCopyWith<$Res> get clock {
-    return $ClockInfoCopyWith<$Res>(_self.clock, (value) {
-      return _then(_self.copyWith(clock: value));
-    });
-  }
-
-  /// Create a copy of SensorBatch
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @pragma('vm:prefer-inline')
-  $AccSeriesCopyWith<$Res>? get acc {
-    if (_self.acc == null) {
-      return null;
-    }
-
-    return $AccSeriesCopyWith<$Res>(_self.acc!, (value) {
-      return _then(_self.copyWith(acc: value));
-    });
-  }
-
-  /// Create a copy of SensorBatch
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @pragma('vm:prefer-inline')
-  $GyroSeriesCopyWith<$Res>? get gyro {
-    if (_self.gyro == null) {
-      return null;
-    }
-
-    return $GyroSeriesCopyWith<$Res>(_self.gyro!, (value) {
-      return _then(_self.copyWith(gyro: value));
-    });
-  }
-
-  /// Create a copy of SensorBatch
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @pragma('vm:prefer-inline')
-  $ImpactTriggerCopyWith<$Res>? get trigger {
-    if (_self.trigger == null) {
-      return null;
-    }
-
-    return $ImpactTriggerCopyWith<$Res>(_self.trigger!, (value) {
-      return _then(_self.copyWith(trigger: value));
-    });
-  }
-
-  /// Create a copy of SensorBatch
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @pragma('vm:prefer-inline')
-  $ResendInfoCopyWith<$Res>? get resend {
-    if (_self.resend == null) {
-      return null;
-    }
-
-    return $ResendInfoCopyWith<$Res>(_self.resend!, (value) {
-      return _then(_self.copyWith(resend: value));
-    });
-  }
-}
-
-/// @nodoc
-mixin _$SensorDroppedRecord {
-  String get stream;
-  @JsonKey(name: 'session_id')
-  String get sessionId;
-  @JsonKey(name: 'from_seq')
-  int get fromSeq;
-  @JsonKey(name: 'to_seq')
-  int get toSeq;
-  String get reason;
-  @JsonKey(name: 'ts_ms')
-  int get tsMs;
-
-  /// Create a copy of SensorDroppedRecord
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @pragma('vm:prefer-inline')
-  $SensorDroppedRecordCopyWith<SensorDroppedRecord> get copyWith =>
-      _$SensorDroppedRecordCopyWithImpl<SensorDroppedRecord>(
-          this as SensorDroppedRecord, _$identity);
-
-  /// Serializes this SensorDroppedRecord to a JSON map.
-  Map<String, dynamic> toJson();
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is SensorDroppedRecord &&
-            (identical(other.stream, stream) || other.stream == stream) &&
-            (identical(other.sessionId, sessionId) ||
-                other.sessionId == sessionId) &&
-            (identical(other.fromSeq, fromSeq) || other.fromSeq == fromSeq) &&
-            (identical(other.toSeq, toSeq) || other.toSeq == toSeq) &&
-            (identical(other.reason, reason) || other.reason == reason) &&
-            (identical(other.tsMs, tsMs) || other.tsMs == tsMs));
-  }
-
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  int get hashCode =>
-      Object.hash(runtimeType, stream, sessionId, fromSeq, toSeq, reason, tsMs);
-
-  @override
-  String toString() {
-    return 'SensorDroppedRecord(stream: $stream, sessionId: $sessionId, fromSeq: $fromSeq, toSeq: $toSeq, reason: $reason, tsMs: $tsMs)';
-  }
-}
-
-/// @nodoc
-abstract mixin class $SensorDroppedRecordCopyWith<$Res> {
-  factory $SensorDroppedRecordCopyWith(
-          SensorDroppedRecord value, $Res Function(SensorDroppedRecord) _then) =
-      _$SensorDroppedRecordCopyWithImpl;
-  @useResult
-  $Res call(
-      {String stream,
-      @JsonKey(name: 'session_id') String sessionId,
-      @JsonKey(name: 'from_seq') int fromSeq,
-      @JsonKey(name: 'to_seq') int toSeq,
-      String reason,
-      @JsonKey(name: 'ts_ms') int tsMs});
-}
-
-/// @nodoc
-class _$SensorDroppedRecordCopyWithImpl<$Res>
-    implements $SensorDroppedRecordCopyWith<$Res> {
-  _$SensorDroppedRecordCopyWithImpl(this._self, this._then);
-
-  final SensorDroppedRecord _self;
-  final $Res Function(SensorDroppedRecord) _then;
-
-  /// Create a copy of SensorDroppedRecord
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? stream = null,
-    Object? sessionId = null,
-    Object? fromSeq = null,
-    Object? toSeq = null,
-    Object? reason = null,
-    Object? tsMs = null,
-  }) {
-    return _then(_self.copyWith(
-      stream: null == stream
-          ? _self.stream
-          : stream // ignore: cast_nullable_to_non_nullable
-              as String,
-      sessionId: null == sessionId
-          ? _self.sessionId
-          : sessionId // ignore: cast_nullable_to_non_nullable
-              as String,
-      fromSeq: null == fromSeq
-          ? _self.fromSeq
-          : fromSeq // ignore: cast_nullable_to_non_nullable
-              as int,
-      toSeq: null == toSeq
-          ? _self.toSeq
-          : toSeq // ignore: cast_nullable_to_non_nullable
-              as int,
-      reason: null == reason
-          ? _self.reason
-          : reason // ignore: cast_nullable_to_non_nullable
-              as String,
-      tsMs: null == tsMs
-          ? _self.tsMs
-          : tsMs // ignore: cast_nullable_to_non_nullable
-              as int,
-    ));
-  }
-}
-
-/// Adds pattern-matching-related methods to [SensorDroppedRecord].
-extension SensorDroppedRecordPatterns on SensorDroppedRecord {
-  /// A variant of `map` that fallback to returning `orElse`.
-  ///
-  /// It is equivalent to doing:
-  /// ```dart
-  /// switch (sealedClass) {
-  ///   case final Subclass value:
-  ///     return ...;
-  ///   case _:
-  ///     return orElse();
-  /// }
-  /// ```
-
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>(
-    TResult Function(_SensorDroppedRecord value)? $default, {
-    required TResult orElse(),
-  }) {
-    final _that = this;
-    switch (_that) {
-      case _SensorDroppedRecord() when $default != null:
-        return $default(_that);
-      case _:
-        return orElse();
-    }
-  }
-
-  /// A `switch`-like method, using callbacks.
-  ///
-  /// Callbacks receives the raw object, upcasted.
-  /// It is equivalent to doing:
-  /// ```dart
-  /// switch (sealedClass) {
-  ///   case final Subclass value:
-  ///     return ...;
-  ///   case final Subclass2 value:
-  ///     return ...;
-  /// }
-  /// ```
-
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>(
-    TResult Function(_SensorDroppedRecord value) $default,
-  ) {
-    final _that = this;
-    switch (_that) {
-      case _SensorDroppedRecord():
-        return $default(_that);
-      case _:
-        throw StateError('Unexpected subclass');
-    }
-  }
-
-  /// A variant of `map` that fallback to returning `null`.
-  ///
-  /// It is equivalent to doing:
-  /// ```dart
-  /// switch (sealedClass) {
-  ///   case final Subclass value:
-  ///     return ...;
-  ///   case _:
-  ///     return null;
-  /// }
-  /// ```
-
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>(
-    TResult? Function(_SensorDroppedRecord value)? $default,
-  ) {
-    final _that = this;
-    switch (_that) {
-      case _SensorDroppedRecord() when $default != null:
-        return $default(_that);
-      case _:
-        return null;
-    }
-  }
-
-  /// A variant of `when` that fallback to an `orElse` callback.
-  ///
-  /// It is equivalent to doing:
-  /// ```dart
-  /// switch (sealedClass) {
-  ///   case Subclass(:final field):
-  ///     return ...;
-  ///   case _:
-  ///     return orElse();
-  /// }
-  /// ```
-
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>(
-    TResult Function(
-            String stream,
-            @JsonKey(name: 'session_id') String sessionId,
-            @JsonKey(name: 'from_seq') int fromSeq,
-            @JsonKey(name: 'to_seq') int toSeq,
-            String reason,
-            @JsonKey(name: 'ts_ms') int tsMs)?
-        $default, {
-    required TResult orElse(),
-  }) {
-    final _that = this;
-    switch (_that) {
-      case _SensorDroppedRecord() when $default != null:
-        return $default(_that.stream, _that.sessionId, _that.fromSeq,
-            _that.toSeq, _that.reason, _that.tsMs);
-      case _:
-        return orElse();
-    }
-  }
-
-  /// A `switch`-like method, using callbacks.
-  ///
-  /// As opposed to `map`, this offers destructuring.
-  /// It is equivalent to doing:
-  /// ```dart
-  /// switch (sealedClass) {
-  ///   case Subclass(:final field):
-  ///     return ...;
-  ///   case Subclass2(:final field2):
-  ///     return ...;
-  /// }
-  /// ```
-
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>(
-    TResult Function(
-            String stream,
-            @JsonKey(name: 'session_id') String sessionId,
-            @JsonKey(name: 'from_seq') int fromSeq,
-            @JsonKey(name: 'to_seq') int toSeq,
-            String reason,
-            @JsonKey(name: 'ts_ms') int tsMs)
-        $default,
-  ) {
-    final _that = this;
-    switch (_that) {
-      case _SensorDroppedRecord():
-        return $default(_that.stream, _that.sessionId, _that.fromSeq,
-            _that.toSeq, _that.reason, _that.tsMs);
-      case _:
-        throw StateError('Unexpected subclass');
-    }
-  }
-
-  /// A variant of `when` that fallback to returning `null`
-  ///
-  /// It is equivalent to doing:
-  /// ```dart
-  /// switch (sealedClass) {
-  ///   case Subclass(:final field):
-  ///     return ...;
-  ///   case _:
-  ///     return null;
-  /// }
-  /// ```
-
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>(
-    TResult? Function(
-            String stream,
-            @JsonKey(name: 'session_id') String sessionId,
-            @JsonKey(name: 'from_seq') int fromSeq,
-            @JsonKey(name: 'to_seq') int toSeq,
-            String reason,
-            @JsonKey(name: 'ts_ms') int tsMs)?
-        $default,
-  ) {
-    final _that = this;
-    switch (_that) {
-      case _SensorDroppedRecord() when $default != null:
-        return $default(_that.stream, _that.sessionId, _that.fromSeq,
-            _that.toSeq, _that.reason, _that.tsMs);
-      case _:
-        return null;
-    }
-  }
-}
-
-/// @nodoc
-@JsonSerializable()
-class _SensorDroppedRecord implements SensorDroppedRecord {
-  const _SensorDroppedRecord(
-      {this.stream = 'imu_dropped',
-      @JsonKey(name: 'session_id') required this.sessionId,
-      @JsonKey(name: 'from_seq') required this.fromSeq,
-      @JsonKey(name: 'to_seq') required this.toSeq,
-      required this.reason,
-      @JsonKey(name: 'ts_ms') required this.tsMs});
-  factory _SensorDroppedRecord.fromJson(Map<String, dynamic> json) =>
-      _$SensorDroppedRecordFromJson(json);
-
-  @override
-  @JsonKey()
-  final String stream;
-  @override
-  @JsonKey(name: 'session_id')
-  final String sessionId;
-  @override
-  @JsonKey(name: 'from_seq')
-  final int fromSeq;
-  @override
-  @JsonKey(name: 'to_seq')
-  final int toSeq;
-  @override
-  final String reason;
-  @override
-  @JsonKey(name: 'ts_ms')
-  final int tsMs;
-
-  /// Create a copy of SensorDroppedRecord
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @pragma('vm:prefer-inline')
-  _$SensorDroppedRecordCopyWith<_SensorDroppedRecord> get copyWith =>
-      __$SensorDroppedRecordCopyWithImpl<_SensorDroppedRecord>(
-          this, _$identity);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$SensorDroppedRecordToJson(
-      this,
-    );
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _SensorDroppedRecord &&
-            (identical(other.stream, stream) || other.stream == stream) &&
-            (identical(other.sessionId, sessionId) ||
-                other.sessionId == sessionId) &&
-            (identical(other.fromSeq, fromSeq) || other.fromSeq == fromSeq) &&
-            (identical(other.toSeq, toSeq) || other.toSeq == toSeq) &&
-            (identical(other.reason, reason) || other.reason == reason) &&
-            (identical(other.tsMs, tsMs) || other.tsMs == tsMs));
-  }
-
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  int get hashCode =>
-      Object.hash(runtimeType, stream, sessionId, fromSeq, toSeq, reason, tsMs);
-
-  @override
-  String toString() {
-    return 'SensorDroppedRecord(stream: $stream, sessionId: $sessionId, fromSeq: $fromSeq, toSeq: $toSeq, reason: $reason, tsMs: $tsMs)';
-  }
-}
-
-/// @nodoc
-abstract mixin class _$SensorDroppedRecordCopyWith<$Res>
-    implements $SensorDroppedRecordCopyWith<$Res> {
-  factory _$SensorDroppedRecordCopyWith(_SensorDroppedRecord value,
-          $Res Function(_SensorDroppedRecord) _then) =
-      __$SensorDroppedRecordCopyWithImpl;
-  @override
-  @useResult
-  $Res call(
-      {String stream,
-      @JsonKey(name: 'session_id') String sessionId,
-      @JsonKey(name: 'from_seq') int fromSeq,
-      @JsonKey(name: 'to_seq') int toSeq,
-      String reason,
-      @JsonKey(name: 'ts_ms') int tsMs});
-}
-
-/// @nodoc
-class __$SensorDroppedRecordCopyWithImpl<$Res>
-    implements _$SensorDroppedRecordCopyWith<$Res> {
-  __$SensorDroppedRecordCopyWithImpl(this._self, this._then);
-
-  final _SensorDroppedRecord _self;
-  final $Res Function(_SensorDroppedRecord) _then;
-
-  /// Create a copy of SensorDroppedRecord
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @pragma('vm:prefer-inline')
-  $Res call({
-    Object? stream = null,
-    Object? sessionId = null,
-    Object? fromSeq = null,
-    Object? toSeq = null,
-    Object? reason = null,
-    Object? tsMs = null,
-  }) {
-    return _then(_SensorDroppedRecord(
-      stream: null == stream
-          ? _self.stream
-          : stream // ignore: cast_nullable_to_non_nullable
-              as String,
-      sessionId: null == sessionId
-          ? _self.sessionId
-          : sessionId // ignore: cast_nullable_to_non_nullable
-              as String,
-      fromSeq: null == fromSeq
-          ? _self.fromSeq
-          : fromSeq // ignore: cast_nullable_to_non_nullable
-              as int,
-      toSeq: null == toSeq
-          ? _self.toSeq
-          : toSeq // ignore: cast_nullable_to_non_nullable
-              as int,
-      reason: null == reason
-          ? _self.reason
-          : reason // ignore: cast_nullable_to_non_nullable
-              as String,
-      tsMs: null == tsMs
-          ? _self.tsMs
-          : tsMs // ignore: cast_nullable_to_non_nullable
-              as int,
-    ));
-  }
-}
-
-/// @nodoc
-mixin _$SensorMessage {
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType && other is SensorMessage);
-  }
-
-  @override
-  int get hashCode => runtimeType.hashCode;
-
-  @override
-  String toString() {
-    return 'SensorMessage()';
-  }
-}
-
-/// @nodoc
-class $SensorMessageCopyWith<$Res> {
-  $SensorMessageCopyWith(SensorMessage _, $Res Function(SensorMessage) __);
-}
-
-/// Adds pattern-matching-related methods to [SensorMessage].
-extension SensorMessagePatterns on SensorMessage {
-  /// A variant of `map` that fallback to returning `orElse`.
-  ///
-  /// It is equivalent to doing:
-  /// ```dart
-  /// switch (sealedClass) {
-  ///   case final Subclass value:
-  ///     return ...;
-  ///   case _:
-  ///     return orElse();
-  /// }
-  /// ```
-
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(SensorMessageBatch value)? batch,
-    TResult Function(SensorMessageDropped value)? dropped,
-    required TResult orElse(),
-  }) {
-    final _that = this;
-    switch (_that) {
-      case SensorMessageBatch() when batch != null:
-        return batch(_that);
-      case SensorMessageDropped() when dropped != null:
-        return dropped(_that);
-      case _:
-        return orElse();
-    }
-  }
-
-  /// A `switch`-like method, using callbacks.
-  ///
-  /// Callbacks receives the raw object, upcasted.
-  /// It is equivalent to doing:
-  /// ```dart
-  /// switch (sealedClass) {
-  ///   case final Subclass value:
-  ///     return ...;
-  ///   case final Subclass2 value:
-  ///     return ...;
-  /// }
-  /// ```
-
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(SensorMessageBatch value) batch,
-    required TResult Function(SensorMessageDropped value) dropped,
-  }) {
-    final _that = this;
-    switch (_that) {
-      case SensorMessageBatch():
-        return batch(_that);
-      case SensorMessageDropped():
-        return dropped(_that);
-    }
-  }
-
-  /// A variant of `map` that fallback to returning `null`.
-  ///
-  /// It is equivalent to doing:
-  /// ```dart
-  /// switch (sealedClass) {
-  ///   case final Subclass value:
-  ///     return ...;
-  ///   case _:
-  ///     return null;
-  /// }
-  /// ```
-
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(SensorMessageBatch value)? batch,
-    TResult? Function(SensorMessageDropped value)? dropped,
-  }) {
-    final _that = this;
-    switch (_that) {
-      case SensorMessageBatch() when batch != null:
-        return batch(_that);
-      case SensorMessageDropped() when dropped != null:
-        return dropped(_that);
-      case _:
-        return null;
-    }
-  }
-
-  /// A variant of `when` that fallback to an `orElse` callback.
-  ///
-  /// It is equivalent to doing:
-  /// ```dart
-  /// switch (sealedClass) {
-  ///   case Subclass(:final field):
-  ///     return ...;
-  ///   case _:
-  ///     return orElse();
-  /// }
-  /// ```
-
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function(SensorBatch batch)? batch,
-    TResult Function(SensorDroppedRecord record)? dropped,
-    required TResult orElse(),
-  }) {
-    final _that = this;
-    switch (_that) {
-      case SensorMessageBatch() when batch != null:
-        return batch(_that.batch);
-      case SensorMessageDropped() when dropped != null:
-        return dropped(_that.record);
-      case _:
-        return orElse();
-    }
-  }
-
-  /// A `switch`-like method, using callbacks.
-  ///
-  /// As opposed to `map`, this offers destructuring.
-  /// It is equivalent to doing:
-  /// ```dart
-  /// switch (sealedClass) {
-  ///   case Subclass(:final field):
-  ///     return ...;
-  ///   case Subclass2(:final field2):
-  ///     return ...;
-  /// }
-  /// ```
-
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function(SensorBatch batch) batch,
-    required TResult Function(SensorDroppedRecord record) dropped,
-  }) {
-    final _that = this;
-    switch (_that) {
-      case SensorMessageBatch():
-        return batch(_that.batch);
-      case SensorMessageDropped():
-        return dropped(_that.record);
-    }
-  }
-
-  /// A variant of `when` that fallback to returning `null`
-  ///
-  /// It is equivalent to doing:
-  /// ```dart
-  /// switch (sealedClass) {
-  ///   case Subclass(:final field):
-  ///     return ...;
-  ///   case _:
-  ///     return null;
-  /// }
-  /// ```
-
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(SensorBatch batch)? batch,
-    TResult? Function(SensorDroppedRecord record)? dropped,
-  }) {
-    final _that = this;
-    switch (_that) {
-      case SensorMessageBatch() when batch != null:
-        return batch(_that.batch);
-      case SensorMessageDropped() when dropped != null:
-        return dropped(_that.record);
-      case _:
-        return null;
-    }
-  }
-}
-
-/// @nodoc
-
-class SensorMessageBatch implements SensorMessage {
-  const SensorMessageBatch(this.batch);
-
-  final SensorBatch batch;
-
-  /// Create a copy of SensorMessage
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @pragma('vm:prefer-inline')
-  $SensorMessageBatchCopyWith<SensorMessageBatch> get copyWith =>
-      _$SensorMessageBatchCopyWithImpl<SensorMessageBatch>(this, _$identity);
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is SensorMessageBatch &&
-            (identical(other.batch, batch) || other.batch == batch));
-  }
-
-  @override
-  int get hashCode => Object.hash(runtimeType, batch);
-
-  @override
-  String toString() {
-    return 'SensorMessage.batch(batch: $batch)';
-  }
-}
-
-/// @nodoc
-abstract mixin class $SensorMessageBatchCopyWith<$Res>
-    implements $SensorMessageCopyWith<$Res> {
-  factory $SensorMessageBatchCopyWith(
-          SensorMessageBatch value, $Res Function(SensorMessageBatch) _then) =
-      _$SensorMessageBatchCopyWithImpl;
-  @useResult
-  $Res call({SensorBatch batch});
-
-  $SensorBatchCopyWith<$Res> get batch;
-}
-
-/// @nodoc
-class _$SensorMessageBatchCopyWithImpl<$Res>
-    implements $SensorMessageBatchCopyWith<$Res> {
-  _$SensorMessageBatchCopyWithImpl(this._self, this._then);
-
-  final SensorMessageBatch _self;
-  final $Res Function(SensorMessageBatch) _then;
-
-  /// Create a copy of SensorMessage
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  $Res call({
-    Object? batch = null,
-  }) {
-    return _then(SensorMessageBatch(
-      null == batch
-          ? _self.batch
-          : batch // ignore: cast_nullable_to_non_nullable
-              as SensorBatch,
-    ));
-  }
-
-  /// Create a copy of SensorMessage
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @pragma('vm:prefer-inline')
-  $SensorBatchCopyWith<$Res> get batch {
-    return $SensorBatchCopyWith<$Res>(_self.batch, (value) {
-      return _then(_self.copyWith(batch: value));
-    });
-  }
-}
-
-/// @nodoc
-
-class SensorMessageDropped implements SensorMessage {
-  const SensorMessageDropped(this.record);
-
-  final SensorDroppedRecord record;
-
-  /// Create a copy of SensorMessage
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @pragma('vm:prefer-inline')
-  $SensorMessageDroppedCopyWith<SensorMessageDropped> get copyWith =>
-      _$SensorMessageDroppedCopyWithImpl<SensorMessageDropped>(
-          this, _$identity);
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is SensorMessageDropped &&
-            (identical(other.record, record) || other.record == record));
-  }
-
-  @override
-  int get hashCode => Object.hash(runtimeType, record);
-
-  @override
-  String toString() {
-    return 'SensorMessage.dropped(record: $record)';
-  }
-}
-
-/// @nodoc
-abstract mixin class $SensorMessageDroppedCopyWith<$Res>
-    implements $SensorMessageCopyWith<$Res> {
-  factory $SensorMessageDroppedCopyWith(SensorMessageDropped value,
-          $Res Function(SensorMessageDropped) _then) =
-      _$SensorMessageDroppedCopyWithImpl;
-  @useResult
-  $Res call({SensorDroppedRecord record});
-
-  $SensorDroppedRecordCopyWith<$Res> get record;
-}
-
-/// @nodoc
-class _$SensorMessageDroppedCopyWithImpl<$Res>
-    implements $SensorMessageDroppedCopyWith<$Res> {
-  _$SensorMessageDroppedCopyWithImpl(this._self, this._then);
-
-  final SensorMessageDropped _self;
-  final $Res Function(SensorMessageDropped) _then;
-
-  /// Create a copy of SensorMessage
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  $Res call({
-    Object? record = null,
-  }) {
-    return _then(SensorMessageDropped(
-      null == record
-          ? _self.record
-          : record // ignore: cast_nullable_to_non_nullable
-              as SensorDroppedRecord,
-    ));
-  }
-
-  /// Create a copy of SensorMessage
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @pragma('vm:prefer-inline')
-  $SensorDroppedRecordCopyWith<$Res> get record {
-    return $SensorDroppedRecordCopyWith<$Res>(_self.record, (value) {
-      return _then(_self.copyWith(record: value));
-    });
   }
 }
 

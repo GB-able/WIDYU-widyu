@@ -130,12 +130,9 @@ Future<void> _bootstrap() async {
           update: (_, socketClient, __) =>
               LocationRemoteDataSourceImpl(socketClient: socketClient),
         ),
-        ProxyProvider2<SocketClient, ApiClient, HeartRateRemoteDataSource>(
-          update: (_, socketClient, apiClient, __) =>
-              HeartRateRemoteDataSourceImpl(
-            socketClient: socketClient,
-            apiClient: apiClient,
-          ),
+        ProxyProvider<ApiClient, HeartRateRemoteDataSource>(
+          update: (_, apiClient, __) =>
+              HeartRateRemoteDataSourceImpl(apiClient: apiClient),
         ),
         ProxyProvider2<AuthRemoteDataSource, AuthLocalDataSource,
             AuthRepository>(

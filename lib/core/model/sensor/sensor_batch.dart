@@ -5,18 +5,38 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 part 'sensor_batch.freezed.dart';
 part 'sensor_batch.g.dart';
 
+/// IMU 배치 v2(`stream == 'imu_watch'`).
 @freezed
-abstract class ClockInfo with _$ClockInfo {
-  const factory ClockInfo({
-    @JsonKey(name: 'boot_id') required String bootId,
-    @JsonKey(name: 'clock_mapping_id') required String clockMappingId,
-    @JsonKey(name: 'anchor_elapsed_ns') required String anchorElapsedNs,
-    @JsonKey(name: 'anchor_epoch_ms') required int anchorEpochMs,
-    @JsonKey(name: 'uncertainty_ms') required double uncertaintyMs,
-  }) = _ClockInfo;
+abstract class SensorBatch with _$SensorBatch implements SensorUpload {
+  const factory SensorBatch({
+    @Default(2) int v,
+    @Default('imu_watch') String stream,
+    @Default('watch') String source,
+    @JsonKey(name: 'batch_id') required String batchId,
+    @JsonKey(name: 'device_id') required String deviceId,
+    @JsonKey(name: 'session_id') required String sessionId,
+    required int seq,
+    @JsonKey(name: 'study_id') String? studyId,
+    @JsonKey(name: 'participation_id') String? participationId,
+    @JsonKey(name: 'run_id') String? runId,
+    @JsonKey(toJson: nestedToJson) required ClockInfo clock,
+    @JsonKey(toJson: nestedToJson) AccSeries? acc,
+    @JsonKey(toJson: nestedToJson) GyroSeries? gyro,
+    @JsonKey(toJson: nestedToJson) ImpactTrigger? trigger,
+    @JsonKey(name: 'gyro_backfill') @Default(false) bool gyroBackfill,
+    @JsonKey(name: 'backfill_for') String? backfillFor,
+    @JsonKey(toJson: nestedToJson) ResendInfo? resend,
+    @JsonKey(name: 'collection_mode') required String collectionMode,
+    @JsonKey(name: 'gyro_mode') required String gyroMode,
+    @JsonKey(name: 'on_body') bool? onBody,
+    @JsonKey(name: 'wear_state') String? wearState,
+    @JsonKey(name: 'missing_reason') String? missingReason,
+    @JsonKey(name: 'watch_battery_pct') int? watchBatteryPct,
+    @JsonKey(name: 'phone_received_at_ms') int? phoneReceivedAtMs,
+  }) = _SensorBatch;
 
-  factory ClockInfo.fromJson(Map<String, dynamic> json) =>
-      _$ClockInfoFromJson(json);
+  factory SensorBatch.fromJson(Map<String, dynamic> json) =>
+      _$SensorBatchFromJson(json);
 }
 
 @freezed
@@ -61,6 +81,20 @@ abstract class ImpactTrigger with _$ImpactTrigger {
 }
 
 @freezed
+abstract class ClockInfo with _$ClockInfo {
+  const factory ClockInfo({
+    @JsonKey(name: 'boot_id') required String bootId,
+    @JsonKey(name: 'clock_mapping_id') required String clockMappingId,
+    @JsonKey(name: 'anchor_elapsed_ns') required String anchorElapsedNs,
+    @JsonKey(name: 'anchor_epoch_ms') required int anchorEpochMs,
+    @JsonKey(name: 'uncertainty_ms') required double uncertaintyMs,
+  }) = _ClockInfo;
+
+  factory ClockInfo.fromJson(Map<String, dynamic> json) =>
+      _$ClockInfoFromJson(json);
+}
+
+@freezed
 abstract class ResendInfo with _$ResendInfo {
   const factory ResendInfo({
     @JsonKey(name: 'is_resend') required bool isResend,
@@ -75,69 +109,18 @@ abstract class ResendInfo with _$ResendInfo {
       _$ResendInfoFromJson(json);
 }
 
-@freezed
-abstract class SensorBatch with _$SensorBatch {
-  const factory SensorBatch({
-    @Default(2) int v,
-    @Default('imu_watch') String stream,
-    @Default('watch') String source,
-    @JsonKey(name: 'batch_id') required String batchId,
-    @JsonKey(name: 'device_id') required String deviceId,
-    @JsonKey(name: 'session_id') required String sessionId,
-    required int seq,
-    @JsonKey(name: 'study_id') String? studyId,
-    @JsonKey(name: 'participation_id') String? participationId,
-    @JsonKey(name: 'run_id') String? runId,
-    @JsonKey(toJson: _nestedToJson) required ClockInfo clock,
-    @JsonKey(toJson: _nestedToJson) AccSeries? acc,
-    @JsonKey(toJson: _nestedToJson) GyroSeries? gyro,
-    @JsonKey(toJson: _nestedToJson) ImpactTrigger? trigger,
-    @JsonKey(name: 'gyro_backfill') @Default(false) bool gyroBackfill,
-    @JsonKey(name: 'backfill_for') String? backfillFor,
-    @JsonKey(toJson: _nestedToJson) ResendInfo? resend,
-    @JsonKey(name: 'collection_mode') required String collectionMode,
-    @JsonKey(name: 'gyro_mode') required String gyroMode,
-    @JsonKey(name: 'on_body') bool? onBody,
-    @JsonKey(name: 'wear_state') String? wearState,
-    @JsonKey(name: 'missing_reason') String? missingReason,
-    @JsonKey(name: 'watch_battery_pct') int? watchBatteryPct,
-    @JsonKey(name: 'phone_received_at_ms') int? phoneReceivedAtMs,
-  }) = _SensorBatch;
+/// 서버 `/sensor/batches` 로 올리는 배치(IMU·심박)의 공통 모양. 재전송 큐와 접수 결과 처리가 이것만 본다.
+abstract interface class SensorUpload {
+  String get batchId;
 
-  factory SensorBatch.fromJson(Map<String, dynamic> json) =>
-      _$SensorBatchFromJson(json);
-}
+  int get seq;
 
-@freezed
-abstract class SensorDroppedRecord with _$SensorDroppedRecord {
-  const factory SensorDroppedRecord({
-    @Default('imu_dropped') String stream,
-    @JsonKey(name: 'session_id') required String sessionId,
-    @JsonKey(name: 'from_seq') required int fromSeq,
-    @JsonKey(name: 'to_seq') required int toSeq,
-    required String reason,
-    @JsonKey(name: 'ts_ms') required int tsMs,
-  }) = _SensorDroppedRecord;
-
-  factory SensorDroppedRecord.fromJson(Map<String, dynamic> json) =>
-      _$SensorDroppedRecordFromJson(json);
-}
-
-/// 로컬 EventChannel 이 두 종류를 한 스트림으로 흘리므로 `stream` 값으로 가른다.
-@freezed
-sealed class SensorMessage with _$SensorMessage {
-  const factory SensorMessage.batch(SensorBatch batch) = SensorMessageBatch;
-
-  const factory SensorMessage.dropped(SensorDroppedRecord record) =
-      SensorMessageDropped;
-
-  /// freezed 의 runtimeType 기반 union JSON 대신 `stream` 값으로 분기하므로 static 이다.
-  static SensorMessage fromJson(Map<String, dynamic> json) =>
-      json['stream'] == 'imu_dropped'
-          ? SensorMessage.dropped(SensorDroppedRecord.fromJson(json))
-          : SensorMessage.batch(SensorBatch.fromJson(json));
+  Map<String, dynamic> toJson();
 }
 
 /// `explicitToJson` 대체 — 클래스 단위 `@JsonSerializable` 은 freezed 추상 클래스에서 생성이 실패한다.
-Map<String, dynamic>? _nestedToJson(dynamic value) =>
+Map<String, dynamic>? nestedToJson(dynamic value) =>
     value?.toJson() as Map<String, dynamic>?;
+
+List<Map<String, dynamic>> listToJson(List<dynamic> values) =>
+    values.map((value) => value.toJson() as Map<String, dynamic>).toList();

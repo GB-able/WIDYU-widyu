@@ -75,6 +75,7 @@
                 <action android:name="com.google.android.gms.wearable.DATA_CHANGED" />
                 <data android:scheme="wear" android:host="*" android:pathPrefix="/heart_rate" />
                 <data android:scheme="wear" android:host="*" android:pathPrefix="/imu" />
+                <data android:scheme="wear" android:host="*" android:pathPrefix="/hr" />
             </intent-filter>
         </service>
     </application>

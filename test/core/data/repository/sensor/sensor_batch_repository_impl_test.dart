@@ -4,7 +4,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:widyu/core/data/repository/sensor/sensor_batch_repository_impl.dart';
 import 'package:widyu/core/data/source/sensor/sensor_batch_local_data_source.dart';
 import 'package:widyu/core/data/source/sensor/sensor_batch_remote_data_source.dart';
+import 'package:widyu/core/model/heartRate/heart_rate_batch.dart';
 import 'package:widyu/core/model/sensor/sensor_batch.dart';
+import 'package:widyu/core/model/sensor/sensor_dropped_record.dart';
+import 'package:widyu/core/model/sensor/sensor_message.dart';
 import 'package:widyu/core/model/sensor/sensor_result.dart';
 
 void main() {
@@ -71,7 +74,8 @@ void main() {
 
     expect(remote.resent, [batch, secondBatch]);
     // 같은 batch_id 로 resend 를 붙여 보내면 서버가 4003 으로 거절한다.
-    expect(remote.resent.every((batch) => batch.resend == null), isTrue);
+    expect(remote.resent.every((batch) => batch.toJson()['resend'] == null),
+        isTrue);
 
     remote.connection.add(true);
     await _settle();
@@ -216,7 +220,7 @@ void main() {
 
       final resent = remote.resent.single;
       expect(resent.batchId, batch.batchId);
-      expect(resent.resend, isNull);
+      expect(resent.toJson()['resend'], isNull);
       expect(resent, batch);
       repository.stopObserveSensorBatches();
     });
@@ -245,6 +249,20 @@ void main() {
     remote.connection.add(true);
     await _settle();
     expect(remote.resent, isEmpty);
+  });
+
+  test('심박 배치도 같은 경로로 전송·결과 대기·REST 원문 재전송을 거친다', () async {
+    remote.sendSucceeds = false;
+    final batch = _heartRateBatch(7);
+
+    local.addHeartRate(batch);
+    await _settle();
+    remote.connection.add(true);
+    await _settle();
+
+    expect(remote.sent, [batch]);
+    expect(remote.resent, [batch]);
+    expect(remote.resent.single.toJson()['stream'], 'hr');
   });
 }
 
@@ -290,6 +308,9 @@ class _LocalDataSource implements SensorBatchLocalDataSource {
 
   void add(SensorBatch batch) => _controller.add(SensorMessage.batch(batch));
 
+  void addHeartRate(HeartRateBatch batch) =>
+      _controller.add(SensorMessage.heartRate(batch));
+
   void addDropped(SensorDroppedRecord record) =>
       _controller.add(SensorMessage.dropped(record));
 
@@ -302,8 +323,8 @@ class _LocalDataSource implements SensorBatchLocalDataSource {
 class _RemoteDataSource implements SensorBatchRemoteDataSource {
   final connection = StreamController<bool>.broadcast();
   final resultController = StreamController<SensorResult>.broadcast();
-  final sent = <SensorBatch>[];
-  final resent = <SensorBatch>[];
+  final sent = <SensorUpload>[];
+  final resent = <SensorUpload>[];
   final dropped = <SensorDroppedRecord>[];
   bool sendSucceeds = true;
   ResendOutcome outcome = ResendOutcome.stored;
@@ -317,7 +338,7 @@ class _RemoteDataSource implements SensorBatchRemoteDataSource {
   Stream<SensorResult> get results => resultController.stream;
 
   @override
-  bool sendBatch(SensorBatch batch) {
+  bool sendBatch(SensorUpload batch) {
     sent.add(batch);
     return sendSucceeds;
   }
@@ -329,7 +350,7 @@ class _RemoteDataSource implements SensorBatchRemoteDataSource {
   }
 
   @override
-  Future<ResendOutcome> resendBatch(SensorBatch batch) {
+  Future<ResendOutcome> resendBatch(SensorUpload batch) {
     resent.add(batch);
     if (throwNextResend) {
       throwNextResend = false;
@@ -345,3 +366,21 @@ class _RemoteDataSource implements SensorBatchRemoteDataSource {
     resultController.close();
   }
 }
+
+HeartRateBatch _heartRateBatch(int seq) => HeartRateBatch(
+      batchId: 'hr-$seq',
+      deviceId: 'device-1',
+      sessionId: 'hr-session-1',
+      seq: seq,
+      clock: const ClockInfo(
+        bootId: 'boot-1',
+        clockMappingId: 'mapping-1',
+        anchorElapsedNs: '123456789012345',
+        anchorEpochMs: 1758000000000,
+        uncertaintyMs: 1,
+      ),
+      samples: const [
+        HeartRateSample(bpm: 72, tsMs: 1758000000000, accuracy: 'HIGH'),
+      ],
+      onBody: true,
+    );

@@ -4,7 +4,7 @@ import 'dart:developer';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:widyu/core/data/source/sensor/sensor_batch_local_data_source.dart';
-import 'package:widyu/core/model/sensor/sensor_batch.dart';
+import 'package:widyu/core/model/sensor/sensor_message.dart';
 
 class SensorBatchLocalDataSourceImpl implements SensorBatchLocalDataSource {
   static const _eventChannel = EventChannel('com.gbable.widu/sensor_batch');
@@ -20,11 +20,13 @@ class SensorBatchLocalDataSourceImpl implements SensorBatchLocalDataSource {
     try {
       final message =
           SensorMessage.fromJson(jsonDecode(raw) as Map<String, dynamic>);
+      final receivedAt = DateTime.now().millisecondsSinceEpoch;
       return switch (message) {
         SensorMessageBatch(:final batch) => SensorMessage.batch(
-            batch.copyWith(
-              phoneReceivedAtMs: DateTime.now().millisecondsSinceEpoch,
-            ),
+            batch.copyWith(phoneReceivedAtMs: receivedAt),
+          ),
+        SensorMessageHeartRate(:final batch) => SensorMessage.heartRate(
+            batch.copyWith(phoneReceivedAtMs: receivedAt),
           ),
         SensorMessageDropped() => message,
       };

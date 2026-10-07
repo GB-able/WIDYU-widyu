@@ -81,10 +81,7 @@ Future<bool> onIosBackground(ServiceInstance service) async {
     socketClient: socketClient,
     heartRateRepository: HeartRateRepositoryImpl(
       localDataSource: HeartRateLocalDataSourceImpl(),
-      remoteDataSource: HeartRateRemoteDataSourceImpl(
-        socketClient: socketClient,
-        apiClient: apiClient,
-      ),
+      remoteDataSource: HeartRateRemoteDataSourceImpl(apiClient: apiClient),
     ),
     locationRepository: LocationRepositoryImpl(
       localDataSource: LocationLocalDataSourceImpl(),
