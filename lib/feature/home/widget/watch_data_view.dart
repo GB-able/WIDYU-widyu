@@ -3,9 +3,9 @@ part of '../home_screen.dart';
 class _WatchDataView extends StatelessWidget {
   final bool isLoading;
   final bool isWearing;
-  final int heartRate;
+  final int? heartRate;
   final HeartRateStatus status;
-  final DateTime measuredAt;
+  final DateTime? measuredAt;
   final VoidCallback onHeartRateClick;
 
   const _WatchDataView({
@@ -121,8 +121,10 @@ class _WatchDataView extends StatelessWidget {
                                         padding: const EdgeInsets.symmetric(
                                             vertical: 6),
                                         child: Text(
-                                          DateFormat('HH:mm')
-                                              .format(measuredAt),
+                                          measuredAt == null
+                                              ? '-'
+                                              : DateFormat('HH:mm')
+                                                  .format(measuredAt!),
                                           style: MyTypo.helper3
                                               .copyWith(color: MyColor.grey700),
                                         ),
@@ -136,7 +138,7 @@ class _WatchDataView extends StatelessWidget {
                                     spacing: 4,
                                     children: [
                                       Text(
-                                        heartRate.toString(),
+                                        heartRate?.toString() ?? '-',
                                         style: MyTypo.title2,
                                       ),
                                       Text(

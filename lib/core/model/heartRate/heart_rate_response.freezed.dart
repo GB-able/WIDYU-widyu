@@ -16,8 +16,10 @@ T _$identity<T>(T value) => value;
 mixin _$HeartRateResponse {
   int get memberId;
   String get heartRateStatus;
-  int get heartRate;
-  DateTime get measuredAt;
+
+  /// 아직 판정된 심박이 없으면(상태 UNKNOWN) 서버가 null 로 준다.
+  int? get heartRate;
+  DateTime? get measuredAt;
 
   /// Create a copy of HeartRateResponse
   /// with the given fields replaced by the non-null parameter values.
@@ -65,8 +67,8 @@ abstract mixin class $HeartRateResponseCopyWith<$Res> {
   $Res call(
       {int memberId,
       String heartRateStatus,
-      int heartRate,
-      DateTime measuredAt});
+      int? heartRate,
+      DateTime? measuredAt});
 }
 
 /// @nodoc
@@ -84,8 +86,8 @@ class _$HeartRateResponseCopyWithImpl<$Res>
   $Res call({
     Object? memberId = null,
     Object? heartRateStatus = null,
-    Object? heartRate = null,
-    Object? measuredAt = null,
+    Object? heartRate = freezed,
+    Object? measuredAt = freezed,
   }) {
     return _then(_self.copyWith(
       memberId: null == memberId
@@ -96,14 +98,14 @@ class _$HeartRateResponseCopyWithImpl<$Res>
           ? _self.heartRateStatus
           : heartRateStatus // ignore: cast_nullable_to_non_nullable
               as String,
-      heartRate: null == heartRate
+      heartRate: freezed == heartRate
           ? _self.heartRate
           : heartRate // ignore: cast_nullable_to_non_nullable
-              as int,
-      measuredAt: null == measuredAt
+              as int?,
+      measuredAt: freezed == measuredAt
           ? _self.measuredAt
           : measuredAt // ignore: cast_nullable_to_non_nullable
-              as DateTime,
+              as DateTime?,
     ));
   }
 }
@@ -201,8 +203,8 @@ extension HeartRateResponsePatterns on HeartRateResponse {
 
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>(
-    TResult Function(int memberId, String heartRateStatus, int heartRate,
-            DateTime measuredAt)?
+    TResult Function(int memberId, String heartRateStatus, int? heartRate,
+            DateTime? measuredAt)?
         $default, {
     required TResult orElse(),
   }) {
@@ -231,8 +233,8 @@ extension HeartRateResponsePatterns on HeartRateResponse {
 
   @optionalTypeArgs
   TResult when<TResult extends Object?>(
-    TResult Function(int memberId, String heartRateStatus, int heartRate,
-            DateTime measuredAt)
+    TResult Function(int memberId, String heartRateStatus, int? heartRate,
+            DateTime? measuredAt)
         $default,
   ) {
     final _that = this;
@@ -259,8 +261,8 @@ extension HeartRateResponsePatterns on HeartRateResponse {
 
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>(
-    TResult? Function(int memberId, String heartRateStatus, int heartRate,
-            DateTime measuredAt)?
+    TResult? Function(int memberId, String heartRateStatus, int? heartRate,
+            DateTime? measuredAt)?
         $default,
   ) {
     final _that = this;
@@ -280,8 +282,8 @@ class _HeartRateResponse implements HeartRateResponse {
   const _HeartRateResponse(
       {required this.memberId,
       required this.heartRateStatus,
-      required this.heartRate,
-      required this.measuredAt});
+      this.heartRate,
+      this.measuredAt});
   factory _HeartRateResponse.fromJson(Map<String, dynamic> json) =>
       _$HeartRateResponseFromJson(json);
 
@@ -289,10 +291,12 @@ class _HeartRateResponse implements HeartRateResponse {
   final int memberId;
   @override
   final String heartRateStatus;
+
+  /// 아직 판정된 심박이 없으면(상태 UNKNOWN) 서버가 null 로 준다.
   @override
-  final int heartRate;
+  final int? heartRate;
   @override
-  final DateTime measuredAt;
+  final DateTime? measuredAt;
 
   /// Create a copy of HeartRateResponse
   /// with the given fields replaced by the non-null parameter values.
@@ -346,8 +350,8 @@ abstract mixin class _$HeartRateResponseCopyWith<$Res>
   $Res call(
       {int memberId,
       String heartRateStatus,
-      int heartRate,
-      DateTime measuredAt});
+      int? heartRate,
+      DateTime? measuredAt});
 }
 
 /// @nodoc
@@ -365,8 +369,8 @@ class __$HeartRateResponseCopyWithImpl<$Res>
   $Res call({
     Object? memberId = null,
     Object? heartRateStatus = null,
-    Object? heartRate = null,
-    Object? measuredAt = null,
+    Object? heartRate = freezed,
+    Object? measuredAt = freezed,
   }) {
     return _then(_HeartRateResponse(
       memberId: null == memberId
@@ -377,14 +381,14 @@ class __$HeartRateResponseCopyWithImpl<$Res>
           ? _self.heartRateStatus
           : heartRateStatus // ignore: cast_nullable_to_non_nullable
               as String,
-      heartRate: null == heartRate
+      heartRate: freezed == heartRate
           ? _self.heartRate
           : heartRate // ignore: cast_nullable_to_non_nullable
-              as int,
-      measuredAt: null == measuredAt
+              as int?,
+      measuredAt: freezed == measuredAt
           ? _self.measuredAt
           : measuredAt // ignore: cast_nullable_to_non_nullable
-              as DateTime,
+              as DateTime?,
     ));
   }
 }

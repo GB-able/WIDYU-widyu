@@ -10,8 +10,10 @@ _HeartRateResponse _$HeartRateResponseFromJson(Map<String, dynamic> json) =>
     _HeartRateResponse(
       memberId: (json['memberId'] as num).toInt(),
       heartRateStatus: json['heartRateStatus'] as String,
-      heartRate: (json['heartRate'] as num).toInt(),
-      measuredAt: DateTime.parse(json['measuredAt'] as String),
+      heartRate: (json['heartRate'] as num?)?.toInt(),
+      measuredAt: json['measuredAt'] == null
+          ? null
+          : DateTime.parse(json['measuredAt'] as String),
     );
 
 Map<String, dynamic> _$HeartRateResponseToJson(_HeartRateResponse instance) =>
@@ -19,5 +21,5 @@ Map<String, dynamic> _$HeartRateResponseToJson(_HeartRateResponse instance) =>
       'memberId': instance.memberId,
       'heartRateStatus': instance.heartRateStatus,
       'heartRate': instance.heartRate,
-      'measuredAt': instance.measuredAt.toIso8601String(),
+      'measuredAt': instance.measuredAt?.toIso8601String(),
     };
