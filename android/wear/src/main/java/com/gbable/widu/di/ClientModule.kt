@@ -1,6 +1,7 @@
 package com.gbable.widu.di
 
 import android.content.Context
+import android.hardware.SensorManager
 import com.google.android.gms.wearable.DataClient
 import com.google.android.gms.wearable.MessageClient
 import com.google.android.gms.wearable.Wearable
@@ -25,4 +26,10 @@ object ClientModule {
     fun provideMessageClient(
         @ApplicationContext context: Context,
     ): MessageClient = Wearable.getMessageClient(context)
+
+    @Provides
+    @Singleton
+    fun provideSensorManager(
+        @ApplicationContext context: Context,
+    ): SensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
 }

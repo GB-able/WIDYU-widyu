@@ -15,6 +15,7 @@ import androidx.health.services.client.data.ExerciseType
 import androidx.health.services.client.data.ExerciseUpdate
 import com.gbable.widu.data.model.MeasureResult
 import com.gbable.widu.data.util.latestHeartRate
+import com.gbable.widu.data.util.toReading
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.channels.trySendBlocking
 import kotlinx.coroutines.flow.Flow
@@ -48,7 +49,18 @@ class HeartRateLocalDataSourceImpl @Inject constructor(
                         availability: Availability,
                     ) {
                         if (dataType == DataType.HEART_RATE_BPM && availability is DataTypeAvailability) {
-                            trySendBlocking(MeasureResult.Availability(availability == DataTypeAvailability.AVAILABLE))
+                            trySendBlocking(
+                                MeasureResult.Availability(
+                                    isAvailable = availability == DataTypeAvailability.AVAILABLE,
+                                    // 그 외 사유(초기화 중·신호 불량)는 착용 여부를 말해 주지 않는다.
+                                    isOnBody =
+                                        when (availability) {
+                                            DataTypeAvailability.AVAILABLE -> true
+                                            DataTypeAvailability.UNAVAILABLE_DEVICE_OFF_BODY -> false
+                                            else -> null
+                                        },
+                                ),
+                            )
                         }
                     }
 
@@ -58,9 +70,8 @@ class HeartRateLocalDataSourceImpl @Inject constructor(
                             return
                         }
                         val heartRateData = update.latestMetrics.getData(DataType.HEART_RATE_BPM)
-                        heartRateData.latestHeartRate()?.let { heartRate ->
-                            trySendBlocking(MeasureResult.HeartRate(heartRate))
-                        }
+                        if (heartRateData.isEmpty()) return
+                        trySendBlocking(MeasureResult.HeartRate(heartRateData.latestHeartRate(), heartRateData.map { it.toReading() }))
                     }
 
                     override fun onRegistered() {}

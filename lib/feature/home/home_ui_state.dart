@@ -17,9 +17,9 @@ abstract class HomeUiState with _$HomeUiState {
     required List<NotificationUiModel> notifications,
     required String name,
     required bool isWearing,
-    required int heartRate,
+    int? heartRate,
     required HeartRateStatus heartRateStatus,
-    required DateTime measuredAt,
+    DateTime? measuredAt,
     required List<String> thumbnails,
     required MedicationStatus medicationStatus,
     required int stepCount,
@@ -45,7 +45,7 @@ abstract class HomeUiState with _$HomeUiState {
   NotificationUiModel? get notification =>
       notifications.isEmpty ? null : notifications.first;
 
-  factory HomeUiState.init() => HomeUiState(
+  factory HomeUiState.init() => const HomeUiState(
         isUserLoading: false,
         isHeartRateLoading: false,
         isNotificationLoading: false,
@@ -53,11 +53,9 @@ abstract class HomeUiState with _$HomeUiState {
         notifications: [],
         name: '',
         isWearing: false,
-        heartRate: 0,
         heartRateStatus: HeartRateStatus.unknown,
-        measuredAt: DateTime.now(),
         thumbnails: [],
-        medicationStatus: const MedicationStatus.unknown(),
+        medicationStatus: MedicationStatus.unknown(),
         stepCount: 0,
         stepGoal: 0,
         healthSchedulePlace: null,

@@ -56,12 +56,17 @@ class LocalNotificationManager {
     if (launchDetails?.didNotificationLaunchApp ?? false) {
       _hasInitialLaunch = true;
       _initialPayload = launchDetails?.notificationResponse?.payload;
-      debugPrint('[LocalNotificationManager] 알림으로 앱 실행: $_initialPayload');
+      // 서버가 내려준 payload 원문은 디버그 빌드에서만 남긴다(법적 요건 L1).
+      if (kDebugMode) {
+        debugPrint('[LocalNotificationManager] 알림으로 앱 실행: $_initialPayload');
+      }
     }
   }
 
   static void _onNotificationTapped(NotificationResponse response) {
-    debugPrint('[LocalNotificationManager] 알림 탭: ${response.payload}');
+    if (kDebugMode) {
+      debugPrint('[LocalNotificationManager] 알림 탭: ${response.payload}');
+    }
     _notificationTapped.add(response.payload);
   }
 

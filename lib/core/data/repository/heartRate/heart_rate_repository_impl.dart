@@ -6,7 +6,6 @@ import 'package:widyu/core/data/repository/heartRate/heart_rate_repository.dart'
 import 'package:widyu/core/data/source/heartRate/heart_rate_local_data_source.dart';
 import 'package:widyu/core/data/source/heartRate/heart_rate_remote_data_source.dart';
 import 'package:widyu/core/model/api/api_result.dart';
-import 'package:widyu/core/model/heartRate/heart_rate_request.dart';
 import 'package:widyu/core/model/heartRate/heart_rate_response.dart';
 import 'package:widyu/core/utils/extensions/api_result_extension.dart';
 
@@ -15,26 +14,26 @@ class HeartRateRepositoryImpl implements HeartRateRepository {
   final HeartRateRemoteDataSource _remoteDataSource;
   StreamSubscription? _heartRates;
 
+  static const _statusRefreshInterval = Duration(seconds: 15);
+
   HeartRateRepositoryImpl({
     required HeartRateLocalDataSource localDataSource,
     required HeartRateRemoteDataSource remoteDataSource,
   })  : _localDataSource = localDataSource,
         _remoteDataSource = remoteDataSource;
 
+  /// 심박 원본은 워치가 만든 v2 배치로 센서 배치 경로가 올린다. 새 경로는 판정을 방송하지 않으므로
+  /// 심박이 들어오는 동안 판정 상태를 조회해 워치 화면에 전달한다.
   @override
   void observeHeartRate() {
     _heartRates?.cancel();
     _heartRates = _localDataSource
         .getHeartRates()
-        .bufferCount(15)
-        .map((heartRates) => HeartRateRequest(heartRates: heartRates))
+        .throttleTime(_statusRefreshInterval)
         .listen(
-      (request) async {
-        _remoteDataSource.sendHeartRates(request);
-        await _sendHeartRateStatus();
-      },
-      onError: (e) => log("Stream Error: $e"),
-    );
+          (_) => _sendHeartRateStatus(),
+          onError: (e) => log("Stream Error: $e"),
+        );
   }
 
   @override

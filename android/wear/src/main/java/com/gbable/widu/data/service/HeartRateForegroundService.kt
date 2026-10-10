@@ -8,8 +8,10 @@ import android.os.Build
 import android.os.IBinder
 import android.util.Log
 import androidx.core.app.ServiceCompat
+import com.gbable.widu.BuildConfig
 import com.gbable.widu.data.model.MeasureResult
 import com.gbable.widu.data.repository.HeartRateRepository
+import com.gbable.widu.data.repository.ImuRepository
 import com.gbable.widu.presentation.util.WidyuNotificationManager
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -28,11 +30,15 @@ class HeartRateForegroundService : Service() {
     lateinit var repository: HeartRateRepository
 
     @Inject
+    lateinit var imuRepository: ImuRepository
+
+    @Inject
     lateinit var notificationManager: WidyuNotificationManager
 
     private val serviceScope: CoroutineScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
     private var isRunning: Boolean = false
     private var job: Job? = null
+    private var imuJob: Job? = null
 
     override fun onStartCommand(
         intent: Intent?,
@@ -77,18 +83,34 @@ class HeartRateForegroundService : Service() {
                 .catch { Log.e("Widyu", "Service Measurement Error", it) }
                 .onEach { result ->
                     when (result) {
-                        is MeasureResult.Availability -> Unit
-                        is MeasureResult.HeartRate -> Log.d("Widyu", "Service Heart Rate: ${result.value}")
+                        is MeasureResult.Availability -> {
+                            Unit
+                        }
+
+                        is MeasureResult.HeartRate -> {
+                            if (BuildConfig.DEBUG) Log.d("Widyu", "Service Heart Rate: ${result.value}")
+                        }
+
                         is MeasureResult.SessionSuperseded -> {
                             notificationManager.showRestartNotification()
                         }
                     }
+                }.launchIn(serviceScope)
+
+        imuJob =
+            imuRepository
+                .batches()
+                .catch { Log.e("Widyu", "IMU collection error", it) }
+                .onEach { batch ->
+                    if (BuildConfig.DEBUG) Log.d("Widyu", "IMU batch seq=${batch.seq} n=${batch.acc?.values?.size}")
                 }.launchIn(serviceScope)
     }
 
     override fun onDestroy() {
         job?.cancel()
         job = null
+        imuJob?.cancel()
+        imuJob = null
         isRunning = false
         super.onDestroy()
     }
@@ -100,7 +122,6 @@ class HeartRateForegroundService : Service() {
 
         fun newIntent(context: Context): Intent = Intent(context, HeartRateForegroundService::class.java)
 
-        fun restartSessionIntent(context: Context): Intent =
-            newIntent(context).apply { action = ACTION_RESTART_SESSION }
+        fun restartSessionIntent(context: Context): Intent = newIntent(context).apply { action = ACTION_RESTART_SESSION }
     }
 }

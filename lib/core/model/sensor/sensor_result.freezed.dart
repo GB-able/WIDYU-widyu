@@ -3,7 +3,7 @@
 // ignore_for_file: type=lint
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
-part of 'heart_rate_request.dart';
+part of 'sensor_result.dart';
 
 // **************************************************************************
 // FreezedGenerator
@@ -13,75 +13,86 @@ part of 'heart_rate_request.dart';
 T _$identity<T>(T value) => value;
 
 /// @nodoc
-mixin _$HeartRateRequest {
-  List<HeartRate> get heartRates;
+mixin _$SensorResult {
+  String get batchId;
+  int get seq;
+  String get result;
 
-  /// Create a copy of HeartRateRequest
+  /// Create a copy of SensorResult
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
   @pragma('vm:prefer-inline')
-  $HeartRateRequestCopyWith<HeartRateRequest> get copyWith =>
-      _$HeartRateRequestCopyWithImpl<HeartRateRequest>(
-          this as HeartRateRequest, _$identity);
+  $SensorResultCopyWith<SensorResult> get copyWith =>
+      _$SensorResultCopyWithImpl<SensorResult>(
+          this as SensorResult, _$identity);
 
-  /// Serializes this HeartRateRequest to a JSON map.
+  /// Serializes this SensorResult to a JSON map.
   Map<String, dynamic> toJson();
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is HeartRateRequest &&
-            const DeepCollectionEquality()
-                .equals(other.heartRates, heartRates));
+            other is SensorResult &&
+            (identical(other.batchId, batchId) || other.batchId == batchId) &&
+            (identical(other.seq, seq) || other.seq == seq) &&
+            (identical(other.result, result) || other.result == result));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, const DeepCollectionEquality().hash(heartRates));
+  int get hashCode => Object.hash(runtimeType, batchId, seq, result);
 
   @override
   String toString() {
-    return 'HeartRateRequest(heartRates: $heartRates)';
+    return 'SensorResult(batchId: $batchId, seq: $seq, result: $result)';
   }
 }
 
 /// @nodoc
-abstract mixin class $HeartRateRequestCopyWith<$Res> {
-  factory $HeartRateRequestCopyWith(
-          HeartRateRequest value, $Res Function(HeartRateRequest) _then) =
-      _$HeartRateRequestCopyWithImpl;
+abstract mixin class $SensorResultCopyWith<$Res> {
+  factory $SensorResultCopyWith(
+          SensorResult value, $Res Function(SensorResult) _then) =
+      _$SensorResultCopyWithImpl;
   @useResult
-  $Res call({List<HeartRate> heartRates});
+  $Res call({String batchId, int seq, String result});
 }
 
 /// @nodoc
-class _$HeartRateRequestCopyWithImpl<$Res>
-    implements $HeartRateRequestCopyWith<$Res> {
-  _$HeartRateRequestCopyWithImpl(this._self, this._then);
+class _$SensorResultCopyWithImpl<$Res> implements $SensorResultCopyWith<$Res> {
+  _$SensorResultCopyWithImpl(this._self, this._then);
 
-  final HeartRateRequest _self;
-  final $Res Function(HeartRateRequest) _then;
+  final SensorResult _self;
+  final $Res Function(SensorResult) _then;
 
-  /// Create a copy of HeartRateRequest
+  /// Create a copy of SensorResult
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? heartRates = null,
+    Object? batchId = null,
+    Object? seq = null,
+    Object? result = null,
   }) {
     return _then(_self.copyWith(
-      heartRates: null == heartRates
-          ? _self.heartRates
-          : heartRates // ignore: cast_nullable_to_non_nullable
-              as List<HeartRate>,
+      batchId: null == batchId
+          ? _self.batchId
+          : batchId // ignore: cast_nullable_to_non_nullable
+              as String,
+      seq: null == seq
+          ? _self.seq
+          : seq // ignore: cast_nullable_to_non_nullable
+              as int,
+      result: null == result
+          ? _self.result
+          : result // ignore: cast_nullable_to_non_nullable
+              as String,
     ));
   }
 }
 
-/// Adds pattern-matching-related methods to [HeartRateRequest].
-extension HeartRateRequestPatterns on HeartRateRequest {
+/// Adds pattern-matching-related methods to [SensorResult].
+extension SensorResultPatterns on SensorResult {
   /// A variant of `map` that fallback to returning `orElse`.
   ///
   /// It is equivalent to doing:
@@ -96,12 +107,12 @@ extension HeartRateRequestPatterns on HeartRateRequest {
 
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>(
-    TResult Function(_HeartRateRequest value)? $default, {
+    TResult Function(_SensorResult value)? $default, {
     required TResult orElse(),
   }) {
     final _that = this;
     switch (_that) {
-      case _HeartRateRequest() when $default != null:
+      case _SensorResult() when $default != null:
         return $default(_that);
       case _:
         return orElse();
@@ -123,11 +134,11 @@ extension HeartRateRequestPatterns on HeartRateRequest {
 
   @optionalTypeArgs
   TResult map<TResult extends Object?>(
-    TResult Function(_HeartRateRequest value) $default,
+    TResult Function(_SensorResult value) $default,
   ) {
     final _that = this;
     switch (_that) {
-      case _HeartRateRequest():
+      case _SensorResult():
         return $default(_that);
       case _:
         throw StateError('Unexpected subclass');
@@ -148,11 +159,11 @@ extension HeartRateRequestPatterns on HeartRateRequest {
 
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>(
-    TResult? Function(_HeartRateRequest value)? $default,
+    TResult? Function(_SensorResult value)? $default,
   ) {
     final _that = this;
     switch (_that) {
-      case _HeartRateRequest() when $default != null:
+      case _SensorResult() when $default != null:
         return $default(_that);
       case _:
         return null;
@@ -173,13 +184,13 @@ extension HeartRateRequestPatterns on HeartRateRequest {
 
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>(
-    TResult Function(List<HeartRate> heartRates)? $default, {
+    TResult Function(String batchId, int seq, String result)? $default, {
     required TResult orElse(),
   }) {
     final _that = this;
     switch (_that) {
-      case _HeartRateRequest() when $default != null:
-        return $default(_that.heartRates);
+      case _SensorResult() when $default != null:
+        return $default(_that.batchId, _that.seq, _that.result);
       case _:
         return orElse();
     }
@@ -200,12 +211,12 @@ extension HeartRateRequestPatterns on HeartRateRequest {
 
   @optionalTypeArgs
   TResult when<TResult extends Object?>(
-    TResult Function(List<HeartRate> heartRates) $default,
+    TResult Function(String batchId, int seq, String result) $default,
   ) {
     final _that = this;
     switch (_that) {
-      case _HeartRateRequest():
-        return $default(_that.heartRates);
+      case _SensorResult():
+        return $default(_that.batchId, _that.seq, _that.result);
       case _:
         throw StateError('Unexpected subclass');
     }
@@ -225,12 +236,12 @@ extension HeartRateRequestPatterns on HeartRateRequest {
 
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>(
-    TResult? Function(List<HeartRate> heartRates)? $default,
+    TResult? Function(String batchId, int seq, String result)? $default,
   ) {
     final _that = this;
     switch (_that) {
-      case _HeartRateRequest() when $default != null:
-        return $default(_that.heartRates);
+      case _SensorResult() when $default != null:
+        return $default(_that.batchId, _that.seq, _that.result);
       case _:
         return null;
     }
@@ -239,31 +250,30 @@ extension HeartRateRequestPatterns on HeartRateRequest {
 
 /// @nodoc
 @JsonSerializable()
-class _HeartRateRequest implements HeartRateRequest {
-  const _HeartRateRequest({required final List<HeartRate> heartRates})
-      : _heartRates = heartRates;
-  factory _HeartRateRequest.fromJson(Map<String, dynamic> json) =>
-      _$HeartRateRequestFromJson(json);
+class _SensorResult implements SensorResult {
+  const _SensorResult(
+      {required this.batchId, required this.seq, required this.result});
+  factory _SensorResult.fromJson(Map<String, dynamic> json) =>
+      _$SensorResultFromJson(json);
 
-  final List<HeartRate> _heartRates;
   @override
-  List<HeartRate> get heartRates {
-    if (_heartRates is EqualUnmodifiableListView) return _heartRates;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(_heartRates);
-  }
+  final String batchId;
+  @override
+  final int seq;
+  @override
+  final String result;
 
-  /// Create a copy of HeartRateRequest
+  /// Create a copy of SensorResult
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
   @pragma('vm:prefer-inline')
-  _$HeartRateRequestCopyWith<_HeartRateRequest> get copyWith =>
-      __$HeartRateRequestCopyWithImpl<_HeartRateRequest>(this, _$identity);
+  _$SensorResultCopyWith<_SensorResult> get copyWith =>
+      __$SensorResultCopyWithImpl<_SensorResult>(this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$HeartRateRequestToJson(
+    return _$SensorResultToJson(
       this,
     );
   }
@@ -272,53 +282,63 @@ class _HeartRateRequest implements HeartRateRequest {
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _HeartRateRequest &&
-            const DeepCollectionEquality()
-                .equals(other._heartRates, _heartRates));
+            other is _SensorResult &&
+            (identical(other.batchId, batchId) || other.batchId == batchId) &&
+            (identical(other.seq, seq) || other.seq == seq) &&
+            (identical(other.result, result) || other.result == result));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType, const DeepCollectionEquality().hash(_heartRates));
+  int get hashCode => Object.hash(runtimeType, batchId, seq, result);
 
   @override
   String toString() {
-    return 'HeartRateRequest(heartRates: $heartRates)';
+    return 'SensorResult(batchId: $batchId, seq: $seq, result: $result)';
   }
 }
 
 /// @nodoc
-abstract mixin class _$HeartRateRequestCopyWith<$Res>
-    implements $HeartRateRequestCopyWith<$Res> {
-  factory _$HeartRateRequestCopyWith(
-          _HeartRateRequest value, $Res Function(_HeartRateRequest) _then) =
-      __$HeartRateRequestCopyWithImpl;
+abstract mixin class _$SensorResultCopyWith<$Res>
+    implements $SensorResultCopyWith<$Res> {
+  factory _$SensorResultCopyWith(
+          _SensorResult value, $Res Function(_SensorResult) _then) =
+      __$SensorResultCopyWithImpl;
   @override
   @useResult
-  $Res call({List<HeartRate> heartRates});
+  $Res call({String batchId, int seq, String result});
 }
 
 /// @nodoc
-class __$HeartRateRequestCopyWithImpl<$Res>
-    implements _$HeartRateRequestCopyWith<$Res> {
-  __$HeartRateRequestCopyWithImpl(this._self, this._then);
+class __$SensorResultCopyWithImpl<$Res>
+    implements _$SensorResultCopyWith<$Res> {
+  __$SensorResultCopyWithImpl(this._self, this._then);
 
-  final _HeartRateRequest _self;
-  final $Res Function(_HeartRateRequest) _then;
+  final _SensorResult _self;
+  final $Res Function(_SensorResult) _then;
 
-  /// Create a copy of HeartRateRequest
+  /// Create a copy of SensorResult
   /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
   $Res call({
-    Object? heartRates = null,
+    Object? batchId = null,
+    Object? seq = null,
+    Object? result = null,
   }) {
-    return _then(_HeartRateRequest(
-      heartRates: null == heartRates
-          ? _self._heartRates
-          : heartRates // ignore: cast_nullable_to_non_nullable
-              as List<HeartRate>,
+    return _then(_SensorResult(
+      batchId: null == batchId
+          ? _self.batchId
+          : batchId // ignore: cast_nullable_to_non_nullable
+              as String,
+      seq: null == seq
+          ? _self.seq
+          : seq // ignore: cast_nullable_to_non_nullable
+              as int,
+      result: null == result
+          ? _self.result
+          : result // ignore: cast_nullable_to_non_nullable
+              as String,
     ));
   }
 }

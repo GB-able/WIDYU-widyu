@@ -21,9 +21,9 @@ mixin _$HomeUiState {
   List<NotificationUiModel> get notifications;
   String get name;
   bool get isWearing;
-  int get heartRate;
+  int? get heartRate;
   HeartRateStatus get heartRateStatus;
-  DateTime get measuredAt;
+  DateTime? get measuredAt;
   List<String> get thumbnails;
   MedicationStatus get medicationStatus;
   int get stepCount;
@@ -121,9 +121,9 @@ abstract mixin class $HomeUiStateCopyWith<$Res> {
       List<NotificationUiModel> notifications,
       String name,
       bool isWearing,
-      int heartRate,
+      int? heartRate,
       HeartRateStatus heartRateStatus,
-      DateTime measuredAt,
+      DateTime? measuredAt,
       List<String> thumbnails,
       MedicationStatus medicationStatus,
       int stepCount,
@@ -154,9 +154,9 @@ class _$HomeUiStateCopyWithImpl<$Res> implements $HomeUiStateCopyWith<$Res> {
     Object? notifications = null,
     Object? name = null,
     Object? isWearing = null,
-    Object? heartRate = null,
+    Object? heartRate = freezed,
     Object? heartRateStatus = null,
-    Object? measuredAt = null,
+    Object? measuredAt = freezed,
     Object? thumbnails = null,
     Object? medicationStatus = null,
     Object? stepCount = null,
@@ -194,18 +194,18 @@ class _$HomeUiStateCopyWithImpl<$Res> implements $HomeUiStateCopyWith<$Res> {
           ? _self.isWearing
           : isWearing // ignore: cast_nullable_to_non_nullable
               as bool,
-      heartRate: null == heartRate
+      heartRate: freezed == heartRate
           ? _self.heartRate
           : heartRate // ignore: cast_nullable_to_non_nullable
-              as int,
+              as int?,
       heartRateStatus: null == heartRateStatus
           ? _self.heartRateStatus
           : heartRateStatus // ignore: cast_nullable_to_non_nullable
               as HeartRateStatus,
-      measuredAt: null == measuredAt
+      measuredAt: freezed == measuredAt
           ? _self.measuredAt
           : measuredAt // ignore: cast_nullable_to_non_nullable
-              as DateTime,
+              as DateTime?,
       thumbnails: null == thumbnails
           ? _self.thumbnails
           : thumbnails // ignore: cast_nullable_to_non_nullable
@@ -349,9 +349,9 @@ extension HomeUiStatePatterns on HomeUiState {
             List<NotificationUiModel> notifications,
             String name,
             bool isWearing,
-            int heartRate,
+            int? heartRate,
             HeartRateStatus heartRateStatus,
-            DateTime measuredAt,
+            DateTime? measuredAt,
             List<String> thumbnails,
             MedicationStatus medicationStatus,
             int stepCount,
@@ -411,9 +411,9 @@ extension HomeUiStatePatterns on HomeUiState {
             List<NotificationUiModel> notifications,
             String name,
             bool isWearing,
-            int heartRate,
+            int? heartRate,
             HeartRateStatus heartRateStatus,
-            DateTime measuredAt,
+            DateTime? measuredAt,
             List<String> thumbnails,
             MedicationStatus medicationStatus,
             int stepCount,
@@ -471,9 +471,9 @@ extension HomeUiStatePatterns on HomeUiState {
             List<NotificationUiModel> notifications,
             String name,
             bool isWearing,
-            int heartRate,
+            int? heartRate,
             HeartRateStatus heartRateStatus,
-            DateTime measuredAt,
+            DateTime? measuredAt,
             List<String> thumbnails,
             MedicationStatus medicationStatus,
             int stepCount,
@@ -521,9 +521,9 @@ class _HomeUiState extends HomeUiState {
       required final List<NotificationUiModel> notifications,
       required this.name,
       required this.isWearing,
-      required this.heartRate,
+      this.heartRate,
       required this.heartRateStatus,
-      required this.measuredAt,
+      this.measuredAt,
       required final List<String> thumbnails,
       required this.medicationStatus,
       required this.stepCount,
@@ -556,11 +556,11 @@ class _HomeUiState extends HomeUiState {
   @override
   final bool isWearing;
   @override
-  final int heartRate;
+  final int? heartRate;
   @override
   final HeartRateStatus heartRateStatus;
   @override
-  final DateTime measuredAt;
+  final DateTime? measuredAt;
   final List<String> _thumbnails;
   @override
   List<String> get thumbnails {
@@ -674,9 +674,9 @@ abstract mixin class _$HomeUiStateCopyWith<$Res>
       List<NotificationUiModel> notifications,
       String name,
       bool isWearing,
-      int heartRate,
+      int? heartRate,
       HeartRateStatus heartRateStatus,
-      DateTime measuredAt,
+      DateTime? measuredAt,
       List<String> thumbnails,
       MedicationStatus medicationStatus,
       int stepCount,
@@ -708,9 +708,9 @@ class __$HomeUiStateCopyWithImpl<$Res> implements _$HomeUiStateCopyWith<$Res> {
     Object? notifications = null,
     Object? name = null,
     Object? isWearing = null,
-    Object? heartRate = null,
+    Object? heartRate = freezed,
     Object? heartRateStatus = null,
-    Object? measuredAt = null,
+    Object? measuredAt = freezed,
     Object? thumbnails = null,
     Object? medicationStatus = null,
     Object? stepCount = null,
@@ -748,18 +748,18 @@ class __$HomeUiStateCopyWithImpl<$Res> implements _$HomeUiStateCopyWith<$Res> {
           ? _self.isWearing
           : isWearing // ignore: cast_nullable_to_non_nullable
               as bool,
-      heartRate: null == heartRate
+      heartRate: freezed == heartRate
           ? _self.heartRate
           : heartRate // ignore: cast_nullable_to_non_nullable
-              as int,
+              as int?,
       heartRateStatus: null == heartRateStatus
           ? _self.heartRateStatus
           : heartRateStatus // ignore: cast_nullable_to_non_nullable
               as HeartRateStatus,
-      measuredAt: null == measuredAt
+      measuredAt: freezed == measuredAt
           ? _self.measuredAt
           : measuredAt // ignore: cast_nullable_to_non_nullable
-              as DateTime,
+              as DateTime?,
       thumbnails: null == thumbnails
           ? _self._thumbnails
           : thumbnails // ignore: cast_nullable_to_non_nullable
