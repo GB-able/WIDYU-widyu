@@ -3,7 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/widgets.dart';
 import 'package:widyu/core/data/provider/point_provider.dart';
-import 'package:widyu/core/data/repository/goal/goal_repository.dart';
+import 'package:widyu/core/data/repository/goal/medication_repository.dart';
 import 'package:widyu/core/data/repository/heartRate/heart_rate_repository.dart';
 import 'package:widyu/core/data/repository/home/home_repository.dart';
 import 'package:widyu/core/data/repository/location/location_repository.dart';
@@ -31,7 +31,7 @@ class HomeViewModel with ChangeNotifier {
   final NotificationRepository _notificationRepository;
   final HeartRateRepository _heartRateRepository;
   final LocationRepository _locationRepository;
-  final GoalRepository _goalRepository;
+  final MedicationRepository _medicationRepository;
   final PointProvider _pointProvider;
 
   HomeUiState _uiState = HomeUiState.init();
@@ -58,14 +58,14 @@ class HomeViewModel with ChangeNotifier {
     required NotificationRepository notificationRepository,
     required HeartRateRepository heartRateRepository,
     required LocationRepository locationRepository,
-    required GoalRepository goalRepository,
+    required MedicationRepository medicationRepository,
     required PointProvider pointProvider,
   })  : _homeRepository = homeRepository,
         _heartRateRepository = heartRateRepository,
         _notificationRepository = notificationRepository,
         _myPageRepository = myPageRepository,
         _locationRepository = locationRepository,
-        _goalRepository = goalRepository,
+        _medicationRepository = medicationRepository,
         _pointProvider = pointProvider {
     unawaited(_fetchNotification());
     unawaited(_fetchUser());
@@ -130,7 +130,7 @@ class HomeViewModel with ChangeNotifier {
 
     _isVerifyingMedication = true;
     try {
-      final result = await _goalRepository.verifyMedication(
+      final result = await _medicationRepository.verifyMedication(
         scheduleId: scheduleId,
         proofImage: proofImage,
       );

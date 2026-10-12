@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
@@ -11,6 +10,7 @@ import 'package:widyu/core/data/provider/point_provider.dart';
 import 'package:widyu/core/data/provider/step_provider.dart';
 import 'package:widyu/core/data/repository/goal/goal_repository.dart';
 import 'package:widyu/core/data/repository/location/location_repository.dart';
+import 'package:widyu/core/model/goal/medication/medication_point_result.dart';
 import 'package:widyu/core/model/goal/walk/walk.dart';
 import 'package:widyu/core/model/goal/weekly_goal_status_response.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
@@ -78,7 +78,7 @@ class _GoalScreenState extends State<GoalScreen> {
         showToast('이번 주 달성 현황을 불러오지 못했어요.');
       case VerifyMedicationFailure(:final message):
         showToast(message);
-      case VerifyMeidcineSuccess(:final earnedPoint, :final existingPoint):
+      case VerifyMedicationSuccess(:final earnedPoint, :final existingPoint):
         showDialog(
             context: context,
             builder: (context) => MedicationRewardDialog(
@@ -136,7 +136,8 @@ class _GoalScreenState extends State<GoalScreen> {
                               child: _GoalContent(
                                 state: uiState.cards,
                                 onRetry: viewModel.refresh,
-                                onTakePhoto: viewModel.verifyMedication,
+                                onMedicationVerified:
+                                    viewModel.onMedicationVerified,
                                 findRoute: viewModel.findRoute,
                               ),
                             ),

@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:widyu/core/model/goal/medication/medication.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
@@ -12,6 +11,8 @@ import 'package:widyu/core/utils/extensions/duration_extension.dart';
 import 'package:widyu/core/utils/extensions/string_extension.dart';
 import 'package:widyu/feature/goal/_widget/icon_tile.dart';
 import 'package:widyu/feature/goal/main/goal_screen.dart';
+import 'package:widyu/core/utils/medication_verification_launcher.dart';
+import 'package:widyu/core/model/goal/medication/medication_point_result.dart';
 
 const _boxHeight = 100.0;
 const _boxRadius = 10.0;
@@ -34,13 +35,13 @@ class MedicationCard extends StatelessWidget {
     required this.medicine,
     required this.proofPhoto,
     required this.verifyRemaining,
-    required this.onTakePhoto,
+    required this.onVerified,
   });
 
   final Medication medicine;
   final File? proofPhoto;
   final Duration verifyRemaining;
-  final ValueChanged<File> onTakePhoto;
+  final ValueChanged<MedicationPointResult> onVerified;
 
   _VerifyState _resolveState(DateTime now) {
     final isDone = proofPhoto != null || medicine.proofImage != null;
@@ -99,7 +100,11 @@ class MedicationCard extends StatelessWidget {
               proofImage: medicine.proofImage,
               proofPhoto: proofPhoto,
               verifyRemaining: verifyRemaining,
-              onTakePhoto: onTakePhoto,
+              onOpenVerification: () async {
+                final result = await openMedicationForSchedule(
+                    context, medicine.medicineScheduleId, DateTime.now());
+                if (result != null) onVerified(result);
+              },
             ),
           ),
           // Padding(
@@ -120,7 +125,7 @@ class _VerifyCard extends StatelessWidget {
     required this.proofImage,
     required this.proofPhoto,
     required this.verifyRemaining,
-    required this.onTakePhoto,
+    required this.onOpenVerification,
   });
 
   final _VerifyState state;
@@ -129,16 +134,7 @@ class _VerifyCard extends StatelessWidget {
   final String? proofImage;
   final File? proofPhoto;
   final Duration verifyRemaining;
-  final ValueChanged<File> onTakePhoto;
-
-  Future<void> _pickPhoto() async {
-    final picked = await ImagePicker().pickImage(
-      source: ImageSource.camera,
-      imageQuality: 80,
-    );
-    if (picked == null) return;
-    onTakePhoto(File(picked.path));
-  }
+  final VoidCallback onOpenVerification;
 
   @override
   Widget build(BuildContext context) {
@@ -154,7 +150,7 @@ class _VerifyCard extends StatelessWidget {
           _VerifyState.open => _VerifyPhotoBox(
               doseCount: doseCount,
               verifyRemaining: verifyRemaining,
-              onTap: _pickPhoto,
+              onTap: onOpenVerification,
             ),
           _VerifyState.openDone || _VerifyState.expiredDone => _VerifyDoneBox(
               proofImage: proofImage,

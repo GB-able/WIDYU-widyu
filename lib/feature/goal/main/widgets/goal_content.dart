@@ -4,13 +4,13 @@ class _GoalContent extends StatelessWidget {
   const _GoalContent({
     required this.state,
     required this.onRetry,
-    required this.onTakePhoto,
+    required this.onMedicationVerified,
     required this.findRoute,
   });
 
   final GoalCardsState state;
   final VoidCallback onRetry;
-  final ValueChanged<File> onTakePhoto;
+  final ValueChanged<MedicationPointResult> onMedicationVerified;
   final VoidCallback findRoute;
 
   int _stepsOf(BuildContext context, Walk walk) => math.max(
@@ -52,7 +52,7 @@ class _GoalContent extends StatelessWidget {
                       medicine: medicine,
                       proofPhoto: proofPhoto,
                       verifyRemaining: verifyRemaining,
-                      onTakePhoto: onTakePhoto)
+                      onVerified: onMedicationVerified)
                   : const GoalEmptyCard(type: GoalType.medicine),
               walk != null
                   ? WalkCard(

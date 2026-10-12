@@ -12,8 +12,8 @@ class VerifyMedicationFailure extends GoalUiEvent {
   final String message;
 }
 
-class VerifyMeidcineSuccess extends GoalUiEvent {
-  const VerifyMeidcineSuccess(this.earnedPoint, this.existingPoint);
+class VerifyMedicationSuccess extends GoalUiEvent {
+  const VerifyMedicationSuccess(this.earnedPoint, this.existingPoint);
 
   final int earnedPoint;
   final int existingPoint;

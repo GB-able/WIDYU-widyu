@@ -13,6 +13,7 @@ enum AppRoute {
   contact("/my/contact"),
   management("/my/management"),
   notification("/my/notification"),
+  medicationVerify("/medication/verify"),
   ;
 
   final String path;

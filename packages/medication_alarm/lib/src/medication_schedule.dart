@@ -1,53 +1,5 @@
-/// Wire contract: schedule IDs identify daily rules. A dose is identified by
-/// `<scheduleId>:<local YYYY-MM-DD>`, independently of schedule revisions.
-class MedicationScheduleRule {
-  const MedicationScheduleRule({
-    required this.scheduleId,
-    required this.hour,
-    required this.minute,
-    required this.doseCount,
-    this.enabled = true,
-  });
-
-  final int scheduleId;
-  final int hour;
-  final int minute;
-  final double doseCount;
-  final bool enabled;
-
-  factory MedicationScheduleRule.fromJson(Map<String, dynamic> json) {
-    final time = (json['alarmTime'] as String).split(':');
-    final id = json['scheduleId'] as int;
-    final hour = int.parse(time[0]);
-    final minute = int.parse(time[1]);
-    final dose = (json['doseCount'] as num).toDouble();
-    if (time.length != 2 ||
-        id <= 0 ||
-        hour < 0 ||
-        hour > 23 ||
-        minute < 0 ||
-        minute > 59 ||
-        !dose.isFinite ||
-        dose <= 0) {
-      throw const FormatException('Invalid medication schedule');
-    }
-    return MedicationScheduleRule(
-      scheduleId: id,
-      hour: hour,
-      minute: minute,
-      doseCount: dose,
-      enabled: json['enabled'] as bool? ?? true,
-    );
-  }
-
-  Map<String, dynamic> toJson() => {
-        'scheduleId': scheduleId,
-        'alarmTime':
-            '${hour.toString().padLeft(2, '0')}:${minute.toString().padLeft(2, '0')}',
-        'doseCount': doseCount,
-        'enabled': enabled,
-      };
-}
+import 'medication_occurrence.dart';
+import 'medication_schedule_rule.dart';
 
 class MedicationSchedule {
   const MedicationSchedule({
@@ -62,7 +14,7 @@ class MedicationSchedule {
   final String timeZone;
   final List<MedicationScheduleRule> schedules;
 
-  /// Complete snapshot of completed/cancelled doses in the requested period.
+  /// 요청 기간 내 완료·취소된 복용 회차의 전체 스냅샷
   final Set<String> excludedOccurrenceIds;
 
   factory MedicationSchedule.fromJson(Map<String, dynamic> json) {
@@ -73,8 +25,8 @@ class MedicationSchedule {
       throw const FormatException('Incomplete alarm snapshot');
     }
     final schedules = (json['schedules'] as List)
-        .map((e) =>
-            MedicationScheduleRule.fromJson(Map<String, dynamic>.from(e as Map)))
+        .map((e) => MedicationScheduleRule.fromJson(
+            Map<String, dynamic>.from(e as Map)))
         .toList();
     if (schedules.map((e) => e.scheduleId).toSet().length != schedules.length) {
       throw const FormatException('Duplicate schedule ID');
@@ -100,8 +52,7 @@ class MedicationSchedule {
         'excludedOccurrenceIds': excludedOccurrenceIds.toList()..sort(),
       };
 
-  /// Use calendar dates, never 24-hour increments (DST changes day length).
-  /// This method runs in the device's current local timezone.
+  /// [timeZone] 필드가 아니라 기기의 현재 로컬 타임존 기준으로 동작
   List<Map<String, dynamic>> groups(DateTime now, {int days = 30}) {
     final byTime = <int, List<Map<String, dynamic>>>{};
     for (var day = 0; day < days; day++) {
@@ -110,22 +61,16 @@ class MedicationSchedule {
             now.year, now.month, now.day + day, schedule.hour, schedule.minute);
         if (!at.isAfter(now)) continue;
         final date = localDate(at);
-        final id = '${schedule.scheduleId}:$date';
+        final id = MedicationOccurrence(
+                scheduleId: schedule.scheduleId, localDate: date)
+            .id;
         if (excludedOccurrenceIds.contains(id)) continue;
-        final midnight = DateTime(at.year, at.month, at.day);
-        final end = DateTime(at.year, at.month, at.day, 23, 59);
-        final opens = at.subtract(const Duration(minutes: 30));
-        final closes = at.add(const Duration(minutes: 30));
         final occurrence = <String, dynamic>{
           'occurrenceId': id,
           'scheduleId': schedule.scheduleId,
           'localDate': date,
           'timeZone': timeZone,
           'scheduledAt': at.millisecondsSinceEpoch,
-          'opensAt': (opens.isBefore(midnight) ? midnight : opens)
-              .millisecondsSinceEpoch,
-          'closesAt':
-              (closes.isAfter(end) ? end : closes).millisecondsSinceEpoch,
           'doseCount': schedule.doseCount,
         };
         byTime.putIfAbsent(at.millisecondsSinceEpoch, () => []).add(occurrence);

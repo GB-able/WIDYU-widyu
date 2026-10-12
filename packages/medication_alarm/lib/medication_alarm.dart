@@ -2,10 +2,10 @@ import 'dart:async';
 
 import 'package:flutter/services.dart';
 
+export 'src/medication_occurrence.dart';
 export 'src/medication_schedule.dart';
+export 'src/medication_schedule_rule.dart';
 
-/// The native store owns the session fence, revision, completion ledger and OS
-/// registration state. All engines (including FCM) share that store.
 class MedicationAlarm {
   static const _channel = MethodChannel('com.widyu/medication_alarm');
   static const _events = EventChannel('com.widyu/medication_alarm/events');

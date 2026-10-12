@@ -13,6 +13,8 @@ import 'package:widyu/core/data/repository/auth/auth_repository.dart';
 import 'package:widyu/core/data/repository/auth/auth_repository_impl.dart';
 import 'package:widyu/core/data/repository/goal/goal_repository.dart';
 import 'package:widyu/core/data/repository/goal/goal_repository_impl.dart';
+import 'package:widyu/core/data/repository/goal/medication_repository.dart';
+import 'package:widyu/core/data/repository/goal/medication_repository_impl.dart';
 import 'package:widyu/core/data/repository/goal/walk_repository.dart';
 import 'package:widyu/core/data/repository/goal/walk_repository_impl.dart';
 import 'package:widyu/core/data/repository/heartRate/heart_rate_repository.dart';
@@ -55,6 +57,7 @@ import 'package:widyu/core/data/source/notification/notification_remote_data_sou
 import 'package:widyu/core/data/source/notification/notification_remote_data_source_impl.dart';
 import 'package:widyu/core/data/source/point/point_remote_data_source.dart';
 import 'package:widyu/core/data/source/point/point_remote_data_source_impl.dart';
+import 'package:widyu/core/notification/medication_push_manager.dart';
 import 'package:widyu/core/network/api_client.dart';
 import 'package:widyu/core/network/socket_client.dart';
 import 'package:widyu/core/ui/theme/theme.dart';
@@ -105,6 +108,12 @@ Future<void> _bootstrap() async {
   }
 
   try {
+    await initializeMedicationPush();
+  } catch (e, stack) {
+    debugPrint('[main] 복약 푸시 초기화 실패: $e\n$stack');
+  }
+
+  try {
     await initializeDateFormatting('ko_KR');
   } catch (e, stack) {
     debugPrint('[main] initializeDateFormatting 실패: $e\n$stack');
@@ -136,12 +145,13 @@ Future<void> _bootstrap() async {
             remoteDataSource: remote,
           ),
         ),
-        ProxyProvider2<GoalRemoteDataSource, MedicationRemoteDataSource,
-            GoalRepository>(
-          update: (_, goal, medication, __) => GoalRepositoryImpl(
-            goalRemoteDataSource: goal,
-            medicationRemoteDataSource: medication,
-          ),
+        ProxyProvider<GoalRemoteDataSource, GoalRepository>(
+          update: (_, goal, __) =>
+              GoalRepositoryImpl(goalRemoteDataSource: goal),
+        ),
+        ProxyProvider<MedicationRemoteDataSource, MedicationRepository>(
+          update: (_, medication, __) =>
+              MedicationRepositoryImpl(remoteDataSource: medication),
         ),
         ProxyProvider<ApiClient, AuthRemoteDataSource>(
           update: (_, apiClient, __) =>

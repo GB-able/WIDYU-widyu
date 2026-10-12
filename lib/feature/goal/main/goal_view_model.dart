@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:flutter/widgets.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -56,7 +55,7 @@ class GoalViewModel with ChangeNotifier {
     final home = await homeFuture;
     final weekly = await weeklyFuture;
 
-    unawaited(_pointProvider.ensureLoaded());
+    unawaited(_pointProvider.refresh());
 
     switch (home) {
       case Success<GoalHomeResponse>():
@@ -65,7 +64,8 @@ class GoalViewModel with ChangeNotifier {
             medicine?.verifyRemainingAt(DateTime.now()) ?? Duration.zero;
 
         // 서버가 아는 오늘 걸음 수를 센서 카운터의 기준점으로 삼는다.
-        _stepProvider.applyServerSteps(home.data.walk?.actual ?? 0);
+        _stepProvider.applyServerSteps(home.data.walk?.actual ?? 0,
+            date: _stepProvider.today);
 
         _uiState = _uiState.copyWith(
           cards: GoalCardsState.data(
@@ -151,43 +151,11 @@ class GoalViewModel with ChangeNotifier {
     });
   }
 
-  Future<void> verifyMedication(File photo) async {
-    final cards = _cards;
-    final medicine = cards?.medicine;
-    if (cards == null || medicine == null) return;
-
-    final scheduleId = medicine.medicineScheduleId;
-
-    _updateCards(cards.copyWith(
-      medicine: medicine.copyWith(takenCount: medicine.takenCount + 1),
-      verifyStatus: MedicationVerifyStatus.verified,
-      proofPhoto: photo,
-    ));
-    // 인증 완료여도 마감 시각에 카드가 한 번 더 바뀌므로 타이머는 계속 돌린다.
-    _startCountdownIfNeeded();
-    notifyListeners();
-
-    final result = await _repository.verifyMedication(
-      scheduleId: scheduleId,
-      proofImage: photo,
+  void onMedicationVerified(MedicationPointResult result) {
+    _uiEvent.add(
+      VerifyMedicationSuccess(result.earnedPoints, result.currentPoints),
     );
-
-    switch (result) {
-      case Success<MedicationPointResult>():
-        _pointProvider
-            .sync(result.data.currentPoints + result.data.earnedPoints);
-        _uiEvent.add(VerifyMeidcineSuccess(
-          result.data.earnedPoints,
-          result.data.currentPoints,
-        ));
-        return;
-      case Failure<MedicationPointResult>():
-        // 실패하면 인증 전 상태로 되돌리고 카운트다운을 다시 돌린다.
-        _updateCards(cards);
-        _startCountdownIfNeeded();
-        _uiEvent.add(VerifyMedicationFailure(result.message));
-        notifyListeners();
-    }
+    refresh();
   }
 
   Future<void> findRoute() async {

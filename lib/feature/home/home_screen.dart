@@ -12,7 +12,7 @@ import 'package:provider/provider.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:widyu/app/routes/app_route.dart';
 import 'package:widyu/core/data/provider/point_provider.dart';
-import 'package:widyu/core/data/repository/goal/goal_repository.dart';
+import 'package:widyu/core/data/repository/goal/medication_repository.dart';
 import 'package:widyu/core/data/repository/heartRate/heart_rate_repository.dart';
 import 'package:widyu/core/data/repository/home/home_repository.dart';
 import 'package:widyu/core/data/repository/location/location_repository.dart';
@@ -111,7 +111,7 @@ class HomeScreen extends StatelessWidget {
           notificationRepository: context.read<NotificationRepository>(),
           heartRateRepository: context.read<HeartRateRepository>(),
           locationRepository: context.read<LocationRepository>(),
-          goalRepository: context.read<GoalRepository>(),
+          medicationRepository: context.read<MedicationRepository>(),
           pointProvider: context.read<PointProvider>(),
         );
       },

@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:dio/dio.dart';
+import 'package:medication_alarm/medication_alarm.dart';
 import 'package:widyu/core/data/source/goal/medication_remote_data_source.dart';
 import 'package:widyu/core/model/api/api_response.dart';
 import 'package:widyu/core/model/goal/medication/medication_point_result.dart';
@@ -40,5 +41,16 @@ class MedicationRemoteDataSourceImpl extends MedicationRemoteDataSource {
     } catch (e) {
       throw Exception("약 복용 인증에 실패했습니다: $e");
     }
+  }
+
+  @override
+  Future<ApiResponse<MedicationSchedule>> fetchMedicationSchedule(
+      String memberId) async {
+    final response = await _apiClient.req(
+      path: '$_path/alarm-sync',
+      method: HttpMethod.get,
+    );
+    return response.toApiResponse((json) =>
+        MedicationSchedule.fromJson({'memberId': memberId, ...json}));
   }
 }
