@@ -6,6 +6,7 @@ import 'package:skeletonizer/skeletonizer.dart';
 import 'package:widyu/app/routes/app_route.dart';
 import 'package:widyu/core/data/provider/point_provider.dart';
 import 'package:widyu/core/data/repository/auth/auth_repository.dart';
+import 'package:widyu/core/notification/fcm_token_service.dart';
 import 'package:widyu/core/data/repository/myPage/my_page_repository.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
@@ -50,6 +51,7 @@ class MyPageScreen extends StatelessWidget {
         repository: context.read<MyPageRepository>(),
         authRepository: context.read<AuthRepository>(),
         pointProvider: context.read<PointProvider>(),
+        fcmTokenService: context.read<FcmTokenService>(),
       ),
       builder: (context, child) {
         final uiEvent = context.read<MyPageViewModel>().uiEvent;

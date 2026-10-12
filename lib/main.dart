@@ -9,8 +9,6 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:provider/provider.dart';
 import 'package:widyu/app/routes/custom_router.dart';
 import 'package:widyu/background_service.dart';
-import 'package:widyu/core/data/provider/point_provider.dart';
-import 'package:widyu/core/data/provider/step_provider.dart';
 import 'package:widyu/core/data/repository/auth/auth_repository.dart';
 import 'package:widyu/core/data/repository/auth/auth_repository_impl.dart';
 import 'package:widyu/core/data/repository/goal/goal_repository.dart';
@@ -59,7 +57,6 @@ import 'package:widyu/core/data/source/point/point_remote_data_source.dart';
 import 'package:widyu/core/data/source/point/point_remote_data_source_impl.dart';
 import 'package:widyu/core/network/api_client.dart';
 import 'package:widyu/core/network/socket_client.dart';
-import 'package:widyu/core/network/token_manager.dart';
 import 'package:widyu/core/ui/theme/theme.dart';
 import 'package:widyu/core/utils/app_service_controller.dart';
 import 'package:widyu/core/notification/local_notification_manager.dart';
@@ -116,7 +113,6 @@ Future<void> _bootstrap() async {
   runApp(
     MultiProvider(
       providers: [
-        Provider<TokenManager>(create: (_) => TokenManager()),
         Provider<AppServiceController>(create: (_) => AppServiceController()),
         Provider<ApiClient>(create: (_) => ApiClient()),
         Provider<SocketClient>(create: (_) => SocketClient()),
@@ -220,17 +216,6 @@ Future<void> _bootstrap() async {
         ProxyProvider<PointRemoteDataSource, PointRepository>(
             update: (_, remote, __) =>
                 PointRepositoryImpl(remoteDataSource: remote)),
-        ChangeNotifierProvider<PointProvider>(
-          create: (context) => PointProvider(
-            repository: context.read<PointRepository>(),
-          ),
-        ),
-        ChangeNotifierProvider<StepProvider>(
-          create: (context) => StepProvider(
-            repository: context.read<WalkRepository>(),
-            pointProvider: context.read<PointProvider>(),
-          ),
-        ),
       ],
       child: const App(),
     ),
