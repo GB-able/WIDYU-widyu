@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -62,6 +63,7 @@ import 'package:widyu/core/network/token_manager.dart';
 import 'package:widyu/core/ui/theme/theme.dart';
 import 'package:widyu/core/utils/app_service_controller.dart';
 import 'package:widyu/core/utils/local_notification_manager.dart';
+import 'package:widyu/firebase_options.dart';
 
 void main() {
   runZonedGuarded(_bootstrap, (error, stack) {
@@ -83,6 +85,14 @@ Future<void> _bootstrap() async {
     await dotenv.load(fileName: ".env");
   } catch (e, stack) {
     debugPrint('[main] dotenv.load 실패: $e\n$stack');
+  }
+
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+  } catch (e, stack) {
+    debugPrint('[main] Firebase.initializeApp 실패: $e\n$stack');
   }
 
   try {
