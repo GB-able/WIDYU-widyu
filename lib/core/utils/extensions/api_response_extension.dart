@@ -22,4 +22,14 @@ extension ApiResponseExtension on Response {
       data: items,
     );
   }
+
+  ApiResponse<List<T>> toApiResponsePrimitives<T>() {
+    final raw = data as Map<String, dynamic>;
+    return ApiResponse<List<T>>(
+      statusCode: statusCode,
+      code: raw['code'] as String,
+      message: raw['message'] as String,
+      data: (raw['data'] as List<dynamic>? ?? []).cast<T>(),
+    );
+  }
 }
