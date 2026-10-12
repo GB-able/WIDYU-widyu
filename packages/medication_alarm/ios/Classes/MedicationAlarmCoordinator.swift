@@ -40,10 +40,10 @@ final class MedicationAlarmCoordinator {
                 self.enqueue {
                     do {
                         var state = try self.load()
-                        guard let plan = state["plan"] as? [String: Any], state["sessionId"] != nil else {
+                        guard let medicationSchedule = state["schedule"] as? [String: Any], state["sessionId"] != nil else {
                             task.setTaskCompleted(success: true); return
                         }
-                        state["groups"] = self.expand(plan, memberId: state["memberId"] as! String)
+                        state["groups"] = self.expand(medicationSchedule, memberId: state["memberId"] as! String)
                         try self.save(state)
                         _ = try await self.reconcile()
                         self.scheduleRefresh()
@@ -138,19 +138,19 @@ final class MedicationAlarmCoordinator {
             var state = try load(); state["capabilities"] = await capabilities(); return state
         case "activeGroup": return try activeGroup()
         case "clearSession": try await clear(); return nil
-        case "applyPlan":
+        case "applySchedule":
             var state = try load(); try requireSession(state, args)
-            guard let plan = args["plan"] as? [String: Any], plan["complete"] as? Bool == true,
-                let revision = plan["revision"] as? Int,
+            guard let medicationSchedule = args["schedule"] as? [String: Any], medicationSchedule["complete"] as? Bool == true,
+                let revision = medicationSchedule["revision"] as? Int,
                 let groups = args["groups"] as? [[String: Any]],
-                plan["memberId"] as? String == state["memberId"] as? String
+                medicationSchedule["memberId"] as? String == state["memberId"] as? String
             else { throw AlarmBridgeError.invalid("INVALID_SNAPSHOT") }
-            guard plan["timeZone"] as? String == TimeZone.current.identifier else { throw AlarmBridgeError.invalid("TIMEZONE_CHANGED") }
+            guard medicationSchedule["timeZone"] as? String == TimeZone.current.identifier else { throw AlarmBridgeError.invalid("TIMEZONE_CHANGED") }
             guard revision >= (state["revision"] as? Int ?? -1) else { throw AlarmBridgeError.invalid("STALE_REVISION") }
             let history = ((state["history"] as? [[String: Any]] ?? []) + (state["groups"] as? [[String: Any]] ?? []))
                 .filter { (($0["scheduledAt"] as? NSNumber)?.doubleValue ?? 0) > Date().timeIntervalSince1970 * 1000 - 24 * 60 * 60 * 1000 }
             state["history"] = Array(Dictionary(history.map { ($0["groupId"] as! String, $0) }, uniquingKeysWith: { _, new in new }).values)
-            state["revision"] = revision; state["plan"] = plan; state["groups"] = groups
+            state["revision"] = revision; state["schedule"] = medicationSchedule; state["groups"] = groups
             try save(state)
             scheduleRefresh()
             return try await reconcile()
@@ -199,8 +199,8 @@ final class MedicationAlarmCoordinator {
         let authorized = caps["authorized"] as? Bool == true
         let now = Date().timeIntervalSince1970 * 1000
         let completed = Set(state["completed"] as? [String] ?? [])
-        let plan = state["plan"] as? [String: Any] ?? [:]
-        let excluded = completed.union(plan["excludedOccurrenceIds"] as? [String] ?? [])
+        let medicationSchedule = state["schedule"] as? [String: Any] ?? [:]
+        let excluded = completed.union(medicationSchedule["excludedOccurrenceIds"] as? [String] ?? [])
         let all = (state["groups"] as? [[String: Any]] ?? []).compactMap { group -> [String: Any]? in
             guard let at = group["scheduledAt"] as? NSNumber, at.doubleValue > now else { return nil }
             let remaining = (group["occurrences"] as? [[String: Any]] ?? []).filter { !excluded.contains($0["occurrenceId"] as? String ?? "") }
@@ -230,7 +230,7 @@ final class MedicationAlarmCoordinator {
         let previous = state["scheduled"] as? [[String: Any]] ?? []
         let previousByID = Dictionary(uniqueKeysWithValues: previous.map { (alarmID($0["groupId"] as! String), $0) })
         let history = (state["history"] as? [[String: Any]] ?? []) + (state["groups"] as? [[String: Any]] ?? [])
-        let rules = plan["schedules"] as? [[String: Any]] ?? []
+        let rules = medicationSchedule["schedules"] as? [[String: Any]] ?? []
         let validRinging = Set(history.filter { group in
             (group["occurrences"] as? [[String: Any]] ?? []).contains { occurrence in
                 !excluded.contains(occurrence["occurrenceId"] as? String ?? "") && rules.contains { rule in
@@ -258,7 +258,7 @@ final class MedicationAlarmCoordinator {
                 failures.append(["groupId": group["groupId"]!, "code": String(describing: error)])
             }
         }
-        let hasSchedules = (plan["schedules"] as? [[String: Any]] ?? []).contains { $0["enabled"] as? Bool == true }
+        let hasSchedules = (medicationSchedule["schedules"] as? [[String: Any]] ?? []).contains { $0["enabled"] as? Bool == true }
         let through: Double? = hasSchedules ? coverageEnd : nil
         let needsRefill = hasSchedules && (through ?? now) - now < 3 * 24 * 60 * 60 * 1000
         let status: [String: Any] = [
@@ -438,14 +438,14 @@ final class MedicationAlarmCoordinator {
         let components = Calendar.current.dateComponents([.hour, .minute], from: Date(timeIntervalSince1970: millis.doubleValue / 1000))
         return String(format: "%02d:%02d", components.hour!, components.minute!)
     }
-    private func expand(_ plan: [String: Any], memberId: String) -> [[String: Any]] {
+    private func expand(_ medicationSchedule: [String: Any], memberId: String) -> [[String: Any]] {
         var calendar = Calendar(identifier: .gregorian); calendar.timeZone = .current
         let now = Date()
-        let excluded = Set(plan["excludedOccurrenceIds"] as? [String] ?? [])
+        let excluded = Set(medicationSchedule["excludedOccurrenceIds"] as? [String] ?? [])
         var grouped = [Int64: [[String: Any]]]()
         for day in 0..<30 {
             let date = calendar.date(byAdding: .day, value: day, to: calendar.startOfDay(for: now))!
-            for rule in plan["schedules"] as? [[String: Any]] ?? [] where rule["enabled"] as? Bool == true {
+            for rule in medicationSchedule["schedules"] as? [[String: Any]] ?? [] where rule["enabled"] as? Bool == true {
                 let time = (rule["alarmTime"] as! String).split(separator: ":").compactMap { Int($0) }
                 var components = calendar.dateComponents([.year, .month, .day], from: date)
                 components.hour = time[0]; components.minute = time[1]

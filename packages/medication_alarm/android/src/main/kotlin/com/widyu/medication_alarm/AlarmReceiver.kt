@@ -14,8 +14,10 @@ class AlarmReceiver : BroadcastReceiver() {
         }
         val group = AlarmScheduler(context).fired(id) ?: return
         try {
-            ContextCompat.startForegroundService(context, Intent(context, AlarmPlaybackService::class.java)
-                .putExtra("groupId", group.getString("groupId")))
+            ContextCompat.startForegroundService(
+                context, Intent(context, AlarmPlaybackService::class.java)
+                    .putExtra("groupId", group.getString("groupId"))
+            )
         } catch (e: Exception) {
             synchronized(AlarmStore.lock) {
                 val state = AlarmStore.read(context)

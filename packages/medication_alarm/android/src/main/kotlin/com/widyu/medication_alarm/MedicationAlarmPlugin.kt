@@ -33,11 +33,13 @@ class MedicationAlarmPlugin : FlutterPlugin, MethodChannel.MethodCallHandler,
         eventChannel = EventChannel(binding.binaryMessenger, "com.widyu/medication_alarm/events")
         eventChannel.setStreamHandler(this)
     }
+
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
         channel.setMethodCallHandler(null)
         eventChannel.setStreamHandler(null)
         onCancel(null)
     }
+
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
         try {
             val scheduler = AlarmScheduler(context)
@@ -48,30 +50,69 @@ class MedicationAlarmPlugin : FlutterPlugin, MethodChannel.MethodCallHandler,
                         val activity = requireNotNull(binding?.activity) { "FOREGROUND_REQUIRED" }
                         val caps = scheduler.capabilities()
                         if (Build.VERSION.SDK_INT >= 33 && !caps.getBoolean("notifications")) {
-                            activity.requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), 4819)
+                            activity.requestPermissions(
+                                arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+                                4819
+                            )
                         } else if (!caps.getBoolean("authorized")) openSettings(activity, "exact")
                         scheduler.capabilities()
                     }
-                    "openSettings" -> { openSettings(requireNotNull(binding?.activity), call.argument<String>("kind") ?: "app"); null }
+
+                    "openSettings" -> {
+                        openSettings(
+                            requireNotNull(binding?.activity),
+                            call.argument<String>("kind") ?: "app"
+                        ); null
+                    }
+
                     "activate" -> scheduler.activate(requireNotNull(call.argument<String>("memberId")))
                     "state" -> AlarmStore.read(context).also {
                         it.put("capabilities", scheduler.capabilities())
                         AlarmStore.write(context, it)
                     }
-                    "activeGroup" -> AlarmStore.read(context).optJSONObject("activeGroup") ?: JSONObject()
-                    "applyPlan" -> scheduler.apply(requireNotNull(call.argument<String>("sessionId")), JSONObject(call.argument<Map<*, *>>("plan")!!))
-                    "complete" -> scheduler.complete(requireNotNull(call.argument<String>("sessionId")), call.argument<List<String>>("occurrenceIds")!!.toSet())
-                    "stop" -> { stop(context, requireNotNull(call.argument<String>("groupId"))); null }
-                    "clearSession" -> { scheduler.clear(); null }
-                    "pendingLaunch" -> AlarmStore.objects(AlarmStore.array(AlarmStore.read(context), "launches")).firstOrNull() ?: JSONObject()
+
+                    "activeGroup" -> AlarmStore.read(context).optJSONObject("activeGroup")
+                        ?: JSONObject()
+
+                    "applySchedule" -> scheduler.apply(
+                        requireNotNull(call.argument<String>("sessionId")),
+                        JSONObject(call.argument<Map<*, *>>("schedule")!!)
+                    )
+
+                    "complete" -> scheduler.complete(
+                        requireNotNull(call.argument<String>("sessionId")),
+                        call.argument<List<String>>("occurrenceIds")!!.toSet()
+                    )
+
+                    "stop" -> {
+                        stop(context, requireNotNull(call.argument<String>("groupId"))); null
+                    }
+
+                    "clearSession" -> {
+                        scheduler.clear(); null
+                    }
+
+                    "pendingLaunch" -> AlarmStore.objects(
+                        AlarmStore.array(
+                            AlarmStore.read(context),
+                            "launches"
+                        )
+                    ).firstOrNull() ?: JSONObject()
+
                     "acknowledgeLaunch" -> {
                         val state = AlarmStore.read(context)
-                        state.put("launches", JSONArray(AlarmStore.objects(AlarmStore.array(state, "launches"))
-                            .filter { it.getString("eventId") != call.argument<String>("eventId") }))
+                        state.put(
+                            "launches", JSONArray(
+                                AlarmStore.objects(AlarmStore.array(state, "launches"))
+                                    .filter { it.getString("eventId") != call.argument<String>("eventId") })
+                        )
                         AlarmStore.write(context, state)
                         null
                     }
-                    else -> { result.notImplemented(); return }
+
+                    else -> {
+                        result.notImplemented(); return
+                    }
                 }
             }
             result.success(if (value is JSONObject) AlarmStore.map(value) else value)
@@ -79,6 +120,7 @@ class MedicationAlarmPlugin : FlutterPlugin, MethodChannel.MethodCallHandler,
             result.error("MEDICATION_ALARM", e.message, null)
         }
     }
+
     private fun openSettings(activity: Activity, kind: String) {
         val action = when {
             kind == "exact" && Build.VERSION.SDK_INT >= 31 -> Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM
@@ -87,32 +129,49 @@ class MedicationAlarmPlugin : FlutterPlugin, MethodChannel.MethodCallHandler,
         }
         activity.startActivity(Intent(action, Uri.parse("package:${context.packageName}")))
     }
+
     override fun onAttachedToActivity(binding: ActivityPluginBinding) {
         this.binding = binding
         binding.addOnNewIntentListener(this)
         emit()
     }
+
     override fun onDetachedFromActivity() {
         binding?.removeOnNewIntentListener(this)
         binding = null
     }
+
     override fun onDetachedFromActivityForConfigChanges() = onDetachedFromActivity()
-    override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) = onAttachedToActivity(binding)
-    override fun onNewIntent(intent: Intent): Boolean { emit(); return false }
-    override fun onListen(arguments: Any?, events: EventChannel.EventSink) { sink = events; sinks.add(events) }
-    override fun onCancel(arguments: Any?) { sink?.let { sinks.remove(it) }; sink = null }
+    override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) =
+        onAttachedToActivity(binding)
+
+    override fun onNewIntent(intent: Intent): Boolean {
+        emit(); return false
+    }
+
+    override fun onListen(arguments: Any?, events: EventChannel.EventSink) {
+        sink = events; sinks.add(events)
+    }
+
+    override fun onCancel(arguments: Any?) {
+        sink?.let { sinks.remove(it) }; sink = null
+    }
 
     companion object {
         private val sinks = CopyOnWriteArraySet<EventChannel.EventSink>()
-        fun emit() { Handler(Looper.getMainLooper()).post { sinks.forEach { it.success(null) } } }
-        internal fun stop(context: android.content.Context, groupId: String) = synchronized(AlarmStore.lock) {
-            val state = AlarmStore.read(context)
-            if (state.optJSONObject("activeGroup")?.optString("groupId") == groupId) {
-                state.remove("activeGroup")
-                AlarmStore.write(context, state)
-                context.stopService(Intent(context, AlarmPlaybackService::class.java))
-                emit()
-            }
+        fun emit() {
+            Handler(Looper.getMainLooper()).post { sinks.forEach { it.success(null) } }
         }
+
+        internal fun stop(context: android.content.Context, groupId: String) =
+            synchronized(AlarmStore.lock) {
+                val state = AlarmStore.read(context)
+                if (state.optJSONObject("activeGroup")?.optString("groupId") == groupId) {
+                    state.remove("activeGroup")
+                    AlarmStore.write(context, state)
+                    context.stopService(Intent(context, AlarmPlaybackService::class.java))
+                    emit()
+                }
+            }
     }
 }

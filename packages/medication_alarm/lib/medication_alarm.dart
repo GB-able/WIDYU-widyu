@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/services.dart';
 
-export 'src/alarm_plan.dart';
+export 'src/medication_schedule.dart';
 
 /// The native store owns the session fence, revision, completion ledger and OS
 /// registration state. All engines (including FCM) share that store.
@@ -26,14 +26,14 @@ class MedicationAlarm {
       _map('activate', {'memberId': memberId});
   Future<Map<String, dynamic>> state() => _map('state');
   Future<Map<String, dynamic>> activeGroup() => _map('activeGroup');
-  Future<Map<String, dynamic>> applyPlan({
+  Future<Map<String, dynamic>> applySchedule({
     required String sessionId,
-    required Map<String, dynamic> plan,
+    required Map<String, dynamic> schedule,
     required List<Map<String, dynamic>> groups,
   }) =>
-      _map('applyPlan', {
+      _map('applySchedule', {
         'sessionId': sessionId,
-        'plan': plan,
+        'schedule': schedule,
         'groups': groups,
       });
   Future<Map<String, dynamic>> complete({

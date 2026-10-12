@@ -3,71 +3,85 @@ package com.widyu.medication_alarm
 import android.app.Activity
 import android.app.KeyguardManager
 import android.content.Intent
-import android.graphics.Color
 import android.graphics.Typeface
-import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.view.Gravity
 import android.view.WindowManager
 import android.widget.Button
 import android.widget.ImageView
-import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
 import org.json.JSONObject
-import java.time.ZonedDateTime
-import java.time.format.DateTimeFormatter
-import java.util.Locale
 
 class AlarmActivity : Activity() {
-    private val orange = Color.rgb(255, 119, 15)
     private var group: JSONObject? = null
     private var verifying = false
     private val handler = Handler(Looper.getMainLooper())
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        if (Build.VERSION.SDK_INT >= 27) { setShowWhenLocked(true); setTurnScreenOn(true) }
-        else window.addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED or WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON)
+        if (Build.VERSION.SDK_INT >= 27) {
+            setShowWhenLocked(true); setTurnScreenOn(true)
+        } else window.addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED or WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON)
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        WindowCompat.getInsetsController(window, window.decorView).apply {
+            isAppearanceLightStatusBars = false
+            isAppearanceLightNavigationBars = false
+        }
+        if (Build.VERSION.SDK_INT >= 33) onBackInvokedDispatcher.registerOnBackInvokedCallback(
+            android.window.OnBackInvokedDispatcher.PRIORITY_DEFAULT
+        ) { }
         showAlarm()
     }
-    override fun onNewIntent(intent: Intent) { super.onNewIntent(intent); setIntent(intent); showAlarm() }
+
+    @Deprecated("Deprecated in Java")
+    override fun onBackPressed() {
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent); setIntent(intent); showAlarm()
+    }
+
     private fun showAlarm() {
         val state = synchronized(AlarmStore.lock) { AlarmStore.read(this) }
         val id = intent.getStringExtra("groupId")
         group = state.optJSONObject("activeGroup")?.takeIf { it.optString("groupId") == id }
-            ?: AlarmStore.objects(AlarmStore.array(state, "scheduled")).firstOrNull { it.optString("groupId") == id }
-        if (group == null) { finish(); return }
-        val content = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL; gravity = Gravity.CENTER_HORIZONTAL
-            setPadding(dp(32), dp(40), dp(32), dp(28))
-            background = GradientDrawable(GradientDrawable.Orientation.TL_BR,
-                intArrayOf(Color.rgb(31, 28, 32), Color.rgb(14, 13, 18), Color.rgb(36, 29, 34)))
+            ?: AlarmStore.objects(AlarmStore.array(state, "scheduled"))
+                .firstOrNull { it.optString("groupId") == id }
+        if (group == null) {
+            finish(); return
         }
-        val now = ZonedDateTime.now()
-        content.addView(text(now.format(DateTimeFormatter.ofPattern("M월 d일 (E)", Locale.KOREAN)), 16f, Color.LTGRAY))
-        content.addView(text(now.format(DateTimeFormatter.ofPattern("HH:mm")), 54f, Color.WHITE))
-        content.addView(text("위듀", 27f, orange))
-        content.addView(android.view.View(this), LinearLayout.LayoutParams(1, 0, 1f))
-        val mascot = ImageView(this).apply {
-            contentDescription = "약을 든 위듀 캐릭터"
-            try { assets.open("flutter_assets/assets/images/img_238_medicine.png").use {
-                setImageDrawable(android.graphics.drawable.Drawable.createFromStream(it, null))
-            } } catch (_: Exception) { }
-            scaleType = ImageView.ScaleType.FIT_CENTER
+        setContentView(R.layout.alarm_activity)
+        val root = findViewById<android.view.View>(R.id.medication_alarm_root)
+        ViewCompat.setOnApplyWindowInsetsListener(root) { view, insets ->
+            val bars =
+                insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout())
+            view.setPadding(bars.left, bars.top, bars.right, bars.bottom)
+            WindowInsetsCompat.CONSUMED
         }
-        content.addView(mascot, LinearLayout.LayoutParams(dp(185), dp(185)))
-        val dose = AlarmStore.objects(group!!.getJSONArray("occurrences")).sumOf { it.getDouble("doseCount") }
-        content.addView(text("${AlarmPlaybackService.doseLabel(dose)}정", 28f, orange))
-        content.addView(text("복용하실 시간이에요!", 21f, Color.WHITE).apply { setPadding(0, dp(12), 0, dp(24)) })
-        content.addView(button("인증하러 가기", orange) { openVerification() }, LinearLayout.LayoutParams(-1, dp(60)))
-        content.addView(android.view.View(this), LinearLayout.LayoutParams(1, 0, 1.3f))
-        content.addView(button("중단", Color.rgb(48, 48, 48)) {
+        findViewById<ImageView>(R.id.medication_alarm_logo).setImageDrawable(asset("images/img_64_logo_medicine.png"))
+        findViewById<ImageView>(R.id.medication_alarm_mascot).setImageDrawable(asset("images/img_93_mascot_medicine.png"))
+        val bold = font("Pretendard-Bold.otf")
+        val semibold = font("Pretendard-SemiBold.otf")
+        val dose = AlarmStore.objects(group!!.getJSONArray("occurrences"))
+            .sumOf { it.getDouble("doseCount") }
+        findViewById<TextView>(R.id.medication_alarm_dose).apply {
+            text = "${AlarmPlaybackService.doseLabel(dose)}정"; typeface = bold
+        }
+        listOf(
+            R.id.medication_alarm_message,
+            R.id.medication_alarm_verify,
+            R.id.medication_alarm_stop
+        )
+            .forEach { findViewById<TextView>(it).typeface = semibold }
+        findViewById<Button>(R.id.medication_alarm_verify).setOnClickListener { openVerification() }
+        findViewById<Button>(R.id.medication_alarm_stop).setOnClickListener {
             MedicationAlarmPlugin.stop(this, group!!.getString("groupId")); finish()
-        }, LinearLayout.LayoutParams(dp(108), dp(48)))
-        setContentView(content)
+        }
         if (intent.getBooleanExtra("verify", false)) openVerification()
         // Close an already-visible activity after completion, timeout or remote deletion.
         handler.removeCallbacksAndMessages(null)
@@ -80,6 +94,7 @@ class AlarmActivity : Activity() {
             }
         }, 1000)
     }
+
     private fun openVerification() {
         if (verifying) return
         verifying = true
@@ -92,22 +107,36 @@ class AlarmActivity : Activity() {
             if (launchIntent != null) startActivity(launchIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP))
             finish()
         }
+
         val keyguard = getSystemService(KeyguardManager::class.java)
-        if (keyguard.isKeyguardLocked) keyguard.requestDismissKeyguard(this, object : KeyguardManager.KeyguardDismissCallback() {
-            override fun onDismissSucceeded() = launch()
-            override fun onDismissCancelled() { verifying = false }
-            override fun onDismissError() { verifying = false }
-        }) else launch()
+        if (keyguard.isKeyguardLocked) keyguard.requestDismissKeyguard(
+            this,
+            object : KeyguardManager.KeyguardDismissCallback() {
+                override fun onDismissSucceeded() = launch()
+                override fun onDismissCancelled() {
+                    verifying = false
+                }
+
+                override fun onDismissError() {
+                    verifying = false
+                }
+            }) else launch()
     }
-    private fun text(label: String, size: Float, color: Int) = TextView(this).apply {
-        text = label; textSize = size; setTextColor(color); gravity = Gravity.CENTER
-        typeface = Typeface.create("sans-serif-medium", Typeface.BOLD)
+
+    private fun asset(path: String) = try {
+        assets.open("flutter_assets/assets/$path")
+            .use { android.graphics.drawable.Drawable.createFromStream(it, null) }
+    } catch (_: Exception) {
+        null
     }
-    private fun button(label: String, color: Int, action: () -> Unit) = Button(this).apply {
-        text = label; textSize = 18f; setTextColor(Color.WHITE); isAllCaps = false
-        background = GradientDrawable().apply { setColor(color); cornerRadius = dp(32).toFloat() }
-        setOnClickListener { action() }
+
+    private fun font(name: String) = try {
+        Typeface.createFromAsset(assets, "flutter_assets/assets/fonts/$name")
+    } catch (_: Exception) {
+        Typeface.DEFAULT_BOLD
     }
-    private fun dp(value: Int) = (value * resources.displayMetrics.density).toInt()
-    override fun onDestroy() { handler.removeCallbacksAndMessages(null); super.onDestroy() }
+
+    override fun onDestroy() {
+        handler.removeCallbacksAndMessages(null); super.onDestroy()
+    }
 }

@@ -1,7 +1,7 @@
 /// Wire contract: schedule IDs identify daily rules. A dose is identified by
 /// `<scheduleId>:<local YYYY-MM-DD>`, independently of schedule revisions.
-class MedicationSchedule {
-  const MedicationSchedule({
+class MedicationScheduleRule {
+  const MedicationScheduleRule({
     required this.scheduleId,
     required this.hour,
     required this.minute,
@@ -15,7 +15,7 @@ class MedicationSchedule {
   final double doseCount;
   final bool enabled;
 
-  factory MedicationSchedule.fromJson(Map<String, dynamic> json) {
+  factory MedicationScheduleRule.fromJson(Map<String, dynamic> json) {
     final time = (json['alarmTime'] as String).split(':');
     final id = json['scheduleId'] as int;
     final hour = int.parse(time[0]);
@@ -31,12 +31,12 @@ class MedicationSchedule {
         dose <= 0) {
       throw const FormatException('Invalid medication schedule');
     }
-    return MedicationSchedule(
+    return MedicationScheduleRule(
       scheduleId: id,
       hour: hour,
       minute: minute,
       doseCount: dose,
-      enabled: json['enabled'] as bool,
+      enabled: json['enabled'] as bool? ?? true,
     );
   }
 
@@ -49,8 +49,8 @@ class MedicationSchedule {
       };
 }
 
-class MedicationAlarmPlan {
-  const MedicationAlarmPlan({
+class MedicationSchedule {
+  const MedicationSchedule({
     required this.memberId,
     required this.revision,
     required this.timeZone,
@@ -60,31 +60,34 @@ class MedicationAlarmPlan {
   final String memberId;
   final int revision;
   final String timeZone;
-  final List<MedicationSchedule> schedules;
+  final List<MedicationScheduleRule> schedules;
 
   /// Complete snapshot of completed/cancelled doses in the requested period.
   final Set<String> excludedOccurrenceIds;
 
-  factory MedicationAlarmPlan.fromJson(Map<String, dynamic> json) {
-    if (json['complete'] != true ||
+  factory MedicationSchedule.fromJson(Map<String, dynamic> json) {
+    if (json['complete'] == false ||
+        json['memberId'] == null ||
         (json['revision'] as int) < 0 ||
         (json['timeZone'] as String).isEmpty) {
       throw const FormatException('Incomplete alarm snapshot');
     }
     final schedules = (json['schedules'] as List)
         .map((e) =>
-            MedicationSchedule.fromJson(Map<String, dynamic>.from(e as Map)))
+            MedicationScheduleRule.fromJson(Map<String, dynamic>.from(e as Map)))
         .toList();
     if (schedules.map((e) => e.scheduleId).toSet().length != schedules.length) {
       throw const FormatException('Duplicate schedule ID');
     }
-    return MedicationAlarmPlan(
+    return MedicationSchedule(
       memberId: json['memberId'].toString(),
       revision: json['revision'] as int,
       timeZone: json['timeZone'] as String,
       schedules: schedules,
       excludedOccurrenceIds:
-          (json['excludedOccurrenceIds'] as List).cast<String>().toSet(),
+          ((json['excludedOccurrenceIds'] ?? json['completed'] ?? []) as List)
+              .map((e) => e.toString())
+              .toSet(),
     );
   }
 
