@@ -1,5 +1,4 @@
 import 'package:flutter/widgets.dart';
-import 'package:medication_alarm/medication_alarm.dart';
 import 'package:provider/provider.dart';
 import 'package:widyu/core/data/provider/medication_alarm_provider.dart';
 import 'package:widyu/core/data/provider/point_provider.dart';
@@ -41,7 +40,6 @@ class UserSessionScope extends StatelessWidget {
         ChangeNotifierProvider<MedicationAlarmProvider>(
           create: (context) => MedicationAlarmProvider(
             repository: context.read<MedicationRepository>(),
-            native: MedicationAlarm(),
             currentMember: authenticatedMedicationMember,
           ),
         ),

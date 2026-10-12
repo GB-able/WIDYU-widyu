@@ -4,9 +4,9 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:medication_alarm/medication_alarm.dart';
 import 'package:widyu/core/data/provider/medication_alarm_provider.dart';
 import 'package:widyu/core/data/repository/goal/medication_repository_impl.dart';
+import 'package:widyu/core/data/source/goal/medication_alarm_local_data_source_impl.dart';
 import 'package:widyu/core/data/source/goal/medication_remote_data_source_impl.dart';
 import 'package:widyu/core/network/api_client.dart';
 import 'package:widyu/core/network/token_manager.dart';
@@ -35,8 +35,8 @@ MedicationAlarmProvider createMedicationAlarmProvider() =>
     MedicationAlarmProvider(
       repository: MedicationRepositoryImpl(
         remoteDataSource: MedicationRemoteDataSourceImpl(apiClient: ApiClient()),
+        localDataSource: MedicationAlarmLocalDataSourceImpl(),
       ),
-      native: MedicationAlarm(),
       currentMember: authenticatedMedicationMember,
     );
 

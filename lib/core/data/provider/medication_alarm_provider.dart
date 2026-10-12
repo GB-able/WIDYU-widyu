@@ -16,30 +16,30 @@ typedef _Session = ({
 class MedicationAlarmProvider extends ChangeNotifier {
   MedicationAlarmProvider({
     required MedicationRepository repository,
-    required MedicationAlarm native,
     required Future<String?> Function() currentMember,
   })  : _repository = repository,
-        _native = native,
         _currentMember = currentMember;
 
   final MedicationRepository _repository;
-  final MedicationAlarm _native;
   final Future<String?> Function() _currentMember;
   Map<String, dynamic> state = {};
   bool _disposed = false;
   Future<void>? _syncing;
   bool _syncAgain = false;
 
-  Future<void> activate(String member) => _native.activate(member);
-  Future<Map<String, dynamic>> capabilities() => _native.capabilities();
-  Future<Map<String, dynamic>> activeGroup() => _native.activeGroup();
-  Future<void> stop(String groupId) => _native.stop(groupId);
-  Future<Map<String, dynamic>> pendingLaunch() => _native.pendingLaunch();
+  Stream<void> get changes => _repository.alarmChanges;
+  Future<void> activate(String member) => _repository.activateAlarm(member);
+  Future<Map<String, dynamic>> capabilities() =>
+      _repository.alarmCapabilities();
+  Future<Map<String, dynamic>> activeGroup() => _repository.activeAlarmGroup();
+  Future<void> stop(String groupId) => _repository.stopAlarm(groupId);
+  Future<Map<String, dynamic>> pendingLaunch() =>
+      _repository.pendingAlarmLaunch();
   Future<void> acknowledgeLaunch(String eventId) =>
-      _native.acknowledgeLaunch(eventId);
+      _repository.acknowledgeAlarmLaunch(eventId);
 
   Future<void> refreshState() async {
-    final value = await _native.state();
+    final value = await _repository.alarmState();
     if (_disposed) return;
     state = value;
     notifyListeners();
@@ -76,8 +76,8 @@ class MedicationAlarmProvider extends ChangeNotifier {
         };
       } catch (_) {
         if (state['schedule'] is Map) {
-          await _apply(session, Map<String, dynamic>.from(state['schedule'] as Map),
-              timeZone);
+          await _apply(session,
+              Map<String, dynamic>.from(state['schedule'] as Map), timeZone);
         }
         rethrow;
       }
@@ -101,8 +101,9 @@ class MedicationAlarmProvider extends ChangeNotifier {
 
   Future<Map<String, dynamic>> _apply(
       String session, Map<String, dynamic> json, String timeZone) {
-    final schedule = MedicationSchedule.fromJson({...json, 'timeZone': timeZone});
-    return _native.applySchedule(
+    final schedule =
+        MedicationSchedule.fromJson({...json, 'timeZone': timeZone});
+    return _repository.applyAlarmSchedule(
         sessionId: session,
         schedule: schedule.toJson(),
         groups: schedule.groups(DateTime.now()));
@@ -110,7 +111,7 @@ class MedicationAlarmProvider extends ChangeNotifier {
 
   Future<_Session?> _session() async {
     final member = await _currentMember();
-    final state = await _native.state();
+    final state = await _repository.alarmState();
     final session = state['sessionId'];
     if (member == null || state['memberId'] != member || session is! String) {
       return null;
@@ -128,8 +129,8 @@ class MedicationAlarmProvider extends ChangeNotifier {
       Failure(:final message) => throw StateError(message),
     };
     if ((await _session())?.session != current.session) return point;
-    await _native
-        .complete(sessionId: current.session, occurrenceIds: [occurrence.id]);
+    await _repository.completeAlarm(
+        sessionId: current.session, occurrenceIds: [occurrence.id]);
     await refreshState();
     unawaited(sync());
     return point;

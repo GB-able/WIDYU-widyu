@@ -6,7 +6,6 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
-import 'package:medication_alarm/medication_alarm.dart';
 import 'package:provider/provider.dart';
 import 'package:widyu/app/routes/app_route.dart';
 import 'package:widyu/core/notification/medication_push_manager.dart';
@@ -38,7 +37,7 @@ class _MedicationSessionScopeState extends State<MedicationSessionScope>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    subscriptions.add(MedicationAlarm.changes.listen((_) async {
+    subscriptions.add(service.changes.listen((_) async {
       try {
         await service.refreshState();
         unawaited(drainLaunch());

@@ -1,6 +1,6 @@
+import 'package:widyu/core/data/source/goal/medication_alarm_local_data_source_impl.dart';
 import 'package:widyu/core/storage/secure_storage.dart';
 import 'package:widyu/core/storage/storage_key.dart';
-import 'package:medication_alarm/medication_alarm.dart';
 
 enum TokenType { none, access, temporary }
 
@@ -54,7 +54,7 @@ class TokenManager {
 
   Future<void> removeToken() async {
     // Invalidate native sessions before an in-flight background sync can finish.
-    try { await MedicationAlarm().clearSession(); } catch (_) { }
+    try { await MedicationAlarmLocalDataSourceImpl().clearSession(); } catch (_) { }
     await Future.wait([
       _secureStorage.storage.delete(key: StorageKey.widyuAccessToken.name),
       _secureStorage.storage.delete(key: StorageKey.widyuRefreshToken.name),

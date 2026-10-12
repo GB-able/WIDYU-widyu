@@ -35,6 +35,8 @@ import 'package:widyu/core/data/source/auth/auth_remote_data_source.dart';
 import 'package:widyu/core/data/source/auth/auth_remote_data_source_impl.dart';
 import 'package:widyu/core/data/source/goal/goal_remote_data_source.dart';
 import 'package:widyu/core/data/source/goal/goal_remote_data_source_impl.dart';
+import 'package:widyu/core/data/source/goal/medication_alarm_local_data_source.dart';
+import 'package:widyu/core/data/source/goal/medication_alarm_local_data_source_impl.dart';
 import 'package:widyu/core/data/source/goal/medication_remote_data_source.dart';
 import 'package:widyu/core/data/source/goal/medication_remote_data_source_impl.dart';
 import 'package:widyu/core/data/source/goal/walk_local_data_source.dart';
@@ -149,9 +151,14 @@ Future<void> _bootstrap() async {
           update: (_, goal, __) =>
               GoalRepositoryImpl(goalRemoteDataSource: goal),
         ),
-        ProxyProvider<MedicationRemoteDataSource, MedicationRepository>(
-          update: (_, medication, __) =>
-              MedicationRepositoryImpl(remoteDataSource: medication),
+        Provider<MedicationAlarmLocalDataSource>(
+            create: (_) => MedicationAlarmLocalDataSourceImpl()),
+        ProxyProvider2<MedicationAlarmLocalDataSource,
+            MedicationRemoteDataSource, MedicationRepository>(
+          update: (_, local, remote, __) => MedicationRepositoryImpl(
+            localDataSource: local,
+            remoteDataSource: remote,
+          ),
         ),
         ProxyProvider<ApiClient, AuthRemoteDataSource>(
           update: (_, apiClient, __) =>
