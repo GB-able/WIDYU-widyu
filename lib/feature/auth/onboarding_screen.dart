@@ -7,7 +7,7 @@ import 'package:widyu/core/ui/theme/typos.dart';
 import 'package:widyu/core/ui/widgets/widyu_asset_image.dart';
 import 'package:widyu/core/ui/widgets/widyu_text_button.dart';
 
-import '../../core/utils/local_notification_manager.dart';
+import '../../core/notification/local_notification_manager.dart';
 import '../../core/utils/location_service_manager.dart';
 
 class OnboardingScreen extends StatefulWidget {

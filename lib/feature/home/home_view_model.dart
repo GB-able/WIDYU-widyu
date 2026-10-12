@@ -92,7 +92,7 @@ class HomeViewModel with ChangeNotifier {
     );
     notifyListeners();
 
-    final result = await _notificationRepository.markAsRead(notificationId);
+    final result = await _notificationRepository.readNotification(notificationId);
     if (result is Success) return;
 
     final current = [..._uiState.notifications];

@@ -10,5 +10,9 @@ abstract class NotificationRemoteDataSource {
 
   Future<ApiResponse<NotificationPage>> fetchNotificationPage(int? cursor);
 
-  Future<ApiResponse<void>> markAsRead(int notificationId);
+  Future<ApiResponse<void>> readNotification(int notificationId);
+
+  Future<ApiResponse<void>> registerFcmToken(String token);
+
+  Future<ApiResponse<void>> deactivateFcmToken(String token);
 }

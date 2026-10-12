@@ -86,7 +86,14 @@ class LocalNotificationManager {
       return enabled ?? false;
     }
 
-    return true;
+    if (Platform.isIOS) {
+      final settings = await _plugin
+          .resolvePlatformSpecificImplementation<
+              IOSFlutterLocalNotificationsPlugin>()
+          ?.checkPermissions();
+      return settings?.isEnabled ?? false;
+    }
+    return false;
   }
 
   static Future<bool> requestPermission() async {

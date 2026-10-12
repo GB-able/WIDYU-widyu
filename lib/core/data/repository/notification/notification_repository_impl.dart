@@ -28,6 +28,14 @@ class NotificationRepositoryImpl implements NotificationRepository {
       _remoteDataSource.fetchNotificationPage(cursor).toApiResult();
 
   @override
-  Future<ApiResult<void>> markAsRead(int notificationId) async =>
-      _remoteDataSource.markAsRead(notificationId).toApiResult();
+  Future<ApiResult<void>> readNotification(int notificationId) async =>
+      _remoteDataSource.readNotification(notificationId).toApiResult();
+
+  @override
+  Future<ApiResult<void>> registerFcmToken(String token) async =>
+      _remoteDataSource.registerFcmToken(token).toApiResult();
+
+  @override
+  Future<ApiResult<void>> deactivateFcmToken(String token) async =>
+      _remoteDataSource.deactivateFcmToken(token).toApiResult();
 }
