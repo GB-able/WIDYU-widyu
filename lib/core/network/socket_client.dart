@@ -68,34 +68,47 @@ class SocketClient {
       final token = await provider();
       if (!_wantConnection) return;
       if (token == null) {
-        log('Socket token issue failed.');
+        _log('Socket token issue failed.');
         _scheduleReconnect();
         return;
       }
-      _stompClient = StompClient(
+      // 재연결하며 정리한 옛 클라이언트의 콜백이 늦게 와도 새 연결을 끊지 않도록, 현재 클라이언트의 것만 처리한다.
+      late final StompClient client;
+      bool isCurrent() => identical(_stompClient, client);
+      client = StompClient(
         config: StompConfig.sockJS(
           url: '$_baseUrl$_socketPrefix?token=$token',
           reconnectDelay: Duration.zero,
           onConnect: (StompFrame frame) {
-            log('Socket connected.');
+            if (!isCurrent()) return;
+            _log('Socket connected.');
             _reconnectDelay = _initialReconnectDelay;
             _subscribeSensorResult();
             _subscribeErrors();
             _connectionStateController.add(true);
           },
           onWebSocketError: (dynamic error) {
-            log('WebSocket Error: ${error.toString()}');
-            _onLost();
+            if (!isCurrent()) return;
+            _onLost('websocket error: $error');
           },
           onStompError: (StompFrame frame) {
-            if (kDebugMode) log('STOMP Error: ${frame.body}');
-            _onLost();
+            if (!isCurrent()) return;
+            // 서버가 ERROR 프레임을 보내면 연결을 끊는다. 본문에 요청 값이 섞일 수 있어 디버그에서만 싣는다.
+            _onLost(kDebugMode
+                ? 'stomp error: ${frame.headers['message']} ${frame.body}'
+                : 'stomp error');
           },
-          onDisconnect: (StompFrame frame) => _onLost(),
-          onWebSocketDone: _onLost,
+          onDisconnect: (StompFrame frame) {
+            if (isCurrent()) _onLost('disconnected');
+          },
+          onWebSocketDone: () {
+            if (isCurrent()) _onLost('websocket closed');
+          },
+          onDebugMessage: kDebugMode ? _logStompFrame : (_) {},
         ),
       );
-      _stompClient!.activate();
+      _stompClient = client;
+      client.activate();
     } finally {
       _activating = false;
     }
@@ -104,11 +117,13 @@ class SocketClient {
   void _scheduleReconnect() {
     if (!_wantConnection || _reconnectTimer != null) return;
     final delay = _reconnectDelay;
-    log('Socket reconnect in ${delay.inSeconds}s.');
+    _log('Socket reconnect in ${delay.inSeconds}s.');
     _reconnectTimer = Timer(delay, () {
       _reconnectTimer = null;
-      _stompClient?.deactivate();
+      // 현재 클라이언트에서 먼저 떼어 낸 뒤 정리해야 그 정리에서 나온 콜백이 무시된다.
+      final old = _stompClient;
       _stompClient = null;
+      old?.deactivate();
       _activate();
     });
     final next = delay * 2;
@@ -123,7 +138,7 @@ class SocketClient {
 
   bool sendSensorBatch(Map<String, dynamic> json) {
     if (!_isSensorSubscribed) {
-      log('Sensor result not subscribed yet, cannot send sensor batch.');
+      _log('Sensor result not subscribed yet, cannot send sensor batch.');
       return false;
     }
     return _send(
@@ -155,14 +170,15 @@ class SocketClient {
     _errorUnsubscribe = client.subscribe(
       destination: _errorDestination,
       callback: (StompFrame frame) {
-        log('Socket error message received');
-        if (kDebugMode) log('Socket error body: ${frame.body}');
+        _log('Socket error message received');
+        if (kDebugMode) _log('Socket error body: ${frame.body}');
       },
     );
   }
 
   /// 연결이 끊기면 서버 쪽 구독도 함께 사라지므로 재연결 시 다시 구독한다.
-  void _onLost() {
+  void _onLost([String? reason]) {
+    if (reason != null) _log('Socket lost: $reason');
     _sensorResultUnsubscribe = null;
     _errorUnsubscribe = null;
     _connectionStateController.add(false);
@@ -175,7 +191,7 @@ class SocketClient {
     String label,
   ) {
     if (!_isConnected) {
-      log("Socket Client is not connected, cannot send $label.");
+      _log("Socket Client is not connected, cannot send $label.");
       return false;
     }
 
@@ -188,7 +204,7 @@ class SocketClient {
       );
       return true;
     } catch (e) {
-      log("Failed to send $label: $e");
+      _log("Failed to send $label: $e");
       return false;
     }
   }
@@ -200,8 +216,20 @@ class SocketClient {
     _reconnectDelay = _initialReconnectDelay;
     _sensorResultUnsubscribe?.call();
     _errorUnsubscribe?.call();
-    _stompClient?.deactivate();
+    final old = _stompClient;
     _stompClient = null;
+    old?.deactivate();
     _onLost();
+  }
+
+  /// `dart:developer` 의 log 는 logcat 에 남지 않아 끊김 원인을 볼 수 없다. 값이 없는 연결 상태만 싣는다.
+  static void _log(String message) => debugPrint('[Socket] $message');
+
+  /// 끊김 원인 추적용(디버그 전용). 매초 나가는 배치 SEND 프레임은 너무 많아 머리만 남긴다.
+  static void _logStompFrame(String frame) {
+    final line = frame.replaceAll('\n', ' ');
+    final isSend = line.startsWith('>>> SEND');
+    debugPrint(
+        '[STOMP] ${line.length > 200 || isSend ? '${line.substring(0, line.length < 120 ? line.length : 120)}…' : line}');
   }
 }
