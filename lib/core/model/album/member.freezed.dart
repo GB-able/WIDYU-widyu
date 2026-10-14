@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$Member {
   @JsonKey(name: 'memberId')
-  int get id;
+  int? get id;
   String get name;
   String? get profileImage;
 
@@ -56,7 +56,7 @@ abstract mixin class $MemberCopyWith<$Res> {
       _$MemberCopyWithImpl;
   @useResult
   $Res call(
-      {@JsonKey(name: 'memberId') int id, String name, String? profileImage});
+      {@JsonKey(name: 'memberId') int? id, String name, String? profileImage});
 }
 
 /// @nodoc
@@ -71,15 +71,15 @@ class _$MemberCopyWithImpl<$Res> implements $MemberCopyWith<$Res> {
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? id = null,
+    Object? id = freezed,
     Object? name = null,
     Object? profileImage = freezed,
   }) {
     return _then(_self.copyWith(
-      id: null == id
+      id: freezed == id
           ? _self.id
           : id // ignore: cast_nullable_to_non_nullable
-              as int,
+              as int?,
       name: null == name
           ? _self.name
           : name // ignore: cast_nullable_to_non_nullable
@@ -185,7 +185,7 @@ extension MemberPatterns on Member {
 
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>(
-    TResult Function(@JsonKey(name: 'memberId') int id, String name,
+    TResult Function(@JsonKey(name: 'memberId') int? id, String name,
             String? profileImage)?
         $default, {
     required TResult orElse(),
@@ -214,7 +214,7 @@ extension MemberPatterns on Member {
 
   @optionalTypeArgs
   TResult when<TResult extends Object?>(
-    TResult Function(@JsonKey(name: 'memberId') int id, String name,
+    TResult Function(@JsonKey(name: 'memberId') int? id, String name,
             String? profileImage)
         $default,
   ) {
@@ -241,7 +241,7 @@ extension MemberPatterns on Member {
 
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>(
-    TResult? Function(@JsonKey(name: 'memberId') int id, String name,
+    TResult? Function(@JsonKey(name: 'memberId') int? id, String name,
             String? profileImage)?
         $default,
   ) {
@@ -259,14 +259,14 @@ extension MemberPatterns on Member {
 @JsonSerializable()
 class _Member implements Member {
   const _Member(
-      {@JsonKey(name: 'memberId') required this.id,
+      {@JsonKey(name: 'memberId') this.id,
       required this.name,
       this.profileImage});
   factory _Member.fromJson(Map<String, dynamic> json) => _$MemberFromJson(json);
 
   @override
   @JsonKey(name: 'memberId')
-  final int id;
+  final int? id;
   @override
   final String name;
   @override
@@ -315,7 +315,7 @@ abstract mixin class _$MemberCopyWith<$Res> implements $MemberCopyWith<$Res> {
   @override
   @useResult
   $Res call(
-      {@JsonKey(name: 'memberId') int id, String name, String? profileImage});
+      {@JsonKey(name: 'memberId') int? id, String name, String? profileImage});
 }
 
 /// @nodoc
@@ -330,15 +330,15 @@ class __$MemberCopyWithImpl<$Res> implements _$MemberCopyWith<$Res> {
   @override
   @pragma('vm:prefer-inline')
   $Res call({
-    Object? id = null,
+    Object? id = freezed,
     Object? name = null,
     Object? profileImage = freezed,
   }) {
     return _then(_Member(
-      id: null == id
+      id: freezed == id
           ? _self.id
           : id // ignore: cast_nullable_to_non_nullable
-              as int,
+              as int?,
       name: null == name
           ? _self.name
           : name // ignore: cast_nullable_to_non_nullable

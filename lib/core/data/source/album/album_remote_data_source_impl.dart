@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:widyu/core/data/source/album/album_remote_data_source.dart';
-import 'package:widyu/core/model/album/album_comment.dart';
+import 'package:widyu/core/model/album/comment.dart';
 import 'package:widyu/core/model/album/album_comment_create_request.dart';
 import 'package:widyu/core/model/album/album_comment_update_request.dart';
 import 'package:widyu/core/model/album/album_unlock.dart';
@@ -224,7 +224,7 @@ class AlbumRemoteDataSourceImpl extends AlbumRemoteDataSource {
   }
 
   @override
-  Future<ApiResponse<AlbumComment>> createComment({
+  Future<ApiResponse<Comment>> createComment({
     required int albumId,
     required AlbumCommentCreateRequest request,
   }) async {
@@ -234,14 +234,14 @@ class AlbumRemoteDataSourceImpl extends AlbumRemoteDataSource {
         method: HttpMethod.post,
         body: request.toJson().compact,
       );
-      return response.toApiResponse(AlbumComment.fromJson);
+      return response.toApiResponse(Comment.fromJson);
     } catch (e) {
       throw Exception("댓글 작성에 실패했습니다: $e");
     }
   }
 
   @override
-  Future<ApiResponse<AlbumComment>> updateComment({
+  Future<ApiResponse<Comment>> updateComment({
     required int commentId,
     required AlbumCommentUpdateRequest request,
   }) async {
@@ -251,7 +251,7 @@ class AlbumRemoteDataSourceImpl extends AlbumRemoteDataSource {
         method: HttpMethod.put,
         body: request.toJson(),
       );
-      return response.toApiResponse(AlbumComment.fromJson);
+      return response.toApiResponse(Comment.fromJson);
     } catch (e) {
       throw Exception("댓글 수정에 실패했습니다: $e");
     }

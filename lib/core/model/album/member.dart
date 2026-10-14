@@ -6,7 +6,7 @@ part 'member.g.dart';
 @freezed
 abstract class Member with _$Member {
   const factory Member({
-    @JsonKey(name: 'memberId') required int id,
+    @JsonKey(name: 'memberId') int? id,
     required String name,
     String? profileImage,
   }) = _Member;

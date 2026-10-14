@@ -7,7 +7,7 @@ part of 'member.dart';
 // **************************************************************************
 
 _Member _$MemberFromJson(Map<String, dynamic> json) => _Member(
-      id: (json['memberId'] as num).toInt(),
+      id: (json['memberId'] as num?)?.toInt(),
       name: json['name'] as String,
       profileImage: json['profileImage'] as String?,
     );

@@ -17,6 +17,7 @@ mixin _$Comment {
   int get commentId;
   String get content;
   DateTime get createdAt;
+  @JsonKey(readValue: _readAuthor)
   Member get author;
   bool get canEdit;
   List<Comment>? get replies;
@@ -66,7 +67,7 @@ abstract mixin class $CommentCopyWith<$Res> {
       {int commentId,
       String content,
       DateTime createdAt,
-      Member author,
+      @JsonKey(readValue: _readAuthor) Member author,
       bool canEdit,
       List<Comment>? replies});
 
@@ -224,8 +225,13 @@ extension CommentPatterns on Comment {
 
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>(
-    TResult Function(int commentId, String content, DateTime createdAt,
-            Member author, bool canEdit, List<Comment>? replies)?
+    TResult Function(
+            int commentId,
+            String content,
+            DateTime createdAt,
+            @JsonKey(readValue: _readAuthor) Member author,
+            bool canEdit,
+            List<Comment>? replies)?
         $default, {
     required TResult orElse(),
   }) {
@@ -254,8 +260,13 @@ extension CommentPatterns on Comment {
 
   @optionalTypeArgs
   TResult when<TResult extends Object?>(
-    TResult Function(int commentId, String content, DateTime createdAt,
-            Member author, bool canEdit, List<Comment>? replies)
+    TResult Function(
+            int commentId,
+            String content,
+            DateTime createdAt,
+            @JsonKey(readValue: _readAuthor) Member author,
+            bool canEdit,
+            List<Comment>? replies)
         $default,
   ) {
     final _that = this;
@@ -282,8 +293,13 @@ extension CommentPatterns on Comment {
 
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>(
-    TResult? Function(int commentId, String content, DateTime createdAt,
-            Member author, bool canEdit, List<Comment>? replies)?
+    TResult? Function(
+            int commentId,
+            String content,
+            DateTime createdAt,
+            @JsonKey(readValue: _readAuthor) Member author,
+            bool canEdit,
+            List<Comment>? replies)?
         $default,
   ) {
     final _that = this;
@@ -304,8 +320,8 @@ class _Comment implements Comment {
       {required this.commentId,
       required this.content,
       required this.createdAt,
-      required this.author,
-      required this.canEdit,
+      @JsonKey(readValue: _readAuthor) required this.author,
+      this.canEdit = false,
       final List<Comment>? replies})
       : _replies = replies;
   factory _Comment.fromJson(Map<String, dynamic> json) =>
@@ -318,8 +334,10 @@ class _Comment implements Comment {
   @override
   final DateTime createdAt;
   @override
+  @JsonKey(readValue: _readAuthor)
   final Member author;
   @override
+  @JsonKey()
   final bool canEdit;
   final List<Comment>? _replies;
   @override
@@ -382,7 +400,7 @@ abstract mixin class _$CommentCopyWith<$Res> implements $CommentCopyWith<$Res> {
       {int commentId,
       String content,
       DateTime createdAt,
-      Member author,
+      @JsonKey(readValue: _readAuthor) Member author,
       bool canEdit,
       List<Comment>? replies});
 

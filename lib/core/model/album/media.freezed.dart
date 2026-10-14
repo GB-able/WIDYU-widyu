@@ -20,6 +20,7 @@ mixin _$Media {
   int? get duration;
   String? get thumbnailUrl;
   String get createdAt;
+  int get price;
 
   /// Create a copy of Media
   /// with the given fields replaced by the non-null parameter values.
@@ -44,17 +45,18 @@ mixin _$Media {
             (identical(other.thumbnailUrl, thumbnailUrl) ||
                 other.thumbnailUrl == thumbnailUrl) &&
             (identical(other.createdAt, createdAt) ||
-                other.createdAt == createdAt));
+                other.createdAt == createdAt) &&
+            (identical(other.price, price) || other.price == price));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(
-      runtimeType, id, postId, type, duration, thumbnailUrl, createdAt);
+      runtimeType, id, postId, type, duration, thumbnailUrl, createdAt, price);
 
   @override
   String toString() {
-    return 'Media(id: $id, postId: $postId, type: $type, duration: $duration, thumbnailUrl: $thumbnailUrl, createdAt: $createdAt)';
+    return 'Media(id: $id, postId: $postId, type: $type, duration: $duration, thumbnailUrl: $thumbnailUrl, createdAt: $createdAt, price: $price)';
   }
 }
 
@@ -69,7 +71,8 @@ abstract mixin class $MediaCopyWith<$Res> {
       MediaType type,
       int? duration,
       String? thumbnailUrl,
-      String createdAt});
+      String createdAt,
+      int price});
 }
 
 /// @nodoc
@@ -90,6 +93,7 @@ class _$MediaCopyWithImpl<$Res> implements $MediaCopyWith<$Res> {
     Object? duration = freezed,
     Object? thumbnailUrl = freezed,
     Object? createdAt = null,
+    Object? price = null,
   }) {
     return _then(_self.copyWith(
       id: null == id
@@ -116,6 +120,10 @@ class _$MediaCopyWithImpl<$Res> implements $MediaCopyWith<$Res> {
           ? _self.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
               as String,
+      price: null == price
+          ? _self.price
+          : price // ignore: cast_nullable_to_non_nullable
+              as int,
     ));
   }
 }
@@ -214,7 +222,7 @@ extension MediaPatterns on Media {
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>(
     TResult Function(int id, int postId, MediaType type, int? duration,
-            String? thumbnailUrl, String createdAt)?
+            String? thumbnailUrl, String createdAt, int price)?
         $default, {
     required TResult orElse(),
   }) {
@@ -222,7 +230,7 @@ extension MediaPatterns on Media {
     switch (_that) {
       case _Media() when $default != null:
         return $default(_that.id, _that.postId, _that.type, _that.duration,
-            _that.thumbnailUrl, _that.createdAt);
+            _that.thumbnailUrl, _that.createdAt, _that.price);
       case _:
         return orElse();
     }
@@ -244,14 +252,14 @@ extension MediaPatterns on Media {
   @optionalTypeArgs
   TResult when<TResult extends Object?>(
     TResult Function(int id, int postId, MediaType type, int? duration,
-            String? thumbnailUrl, String createdAt)
+            String? thumbnailUrl, String createdAt, int price)
         $default,
   ) {
     final _that = this;
     switch (_that) {
       case _Media():
         return $default(_that.id, _that.postId, _that.type, _that.duration,
-            _that.thumbnailUrl, _that.createdAt);
+            _that.thumbnailUrl, _that.createdAt, _that.price);
       case _:
         throw StateError('Unexpected subclass');
     }
@@ -272,14 +280,14 @@ extension MediaPatterns on Media {
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>(
     TResult? Function(int id, int postId, MediaType type, int? duration,
-            String? thumbnailUrl, String createdAt)?
+            String? thumbnailUrl, String createdAt, int price)?
         $default,
   ) {
     final _that = this;
     switch (_that) {
       case _Media() when $default != null:
         return $default(_that.id, _that.postId, _that.type, _that.duration,
-            _that.thumbnailUrl, _that.createdAt);
+            _that.thumbnailUrl, _that.createdAt, _that.price);
       case _:
         return null;
     }
@@ -295,7 +303,8 @@ class _Media implements Media {
       required this.type,
       required this.duration,
       required this.thumbnailUrl,
-      required this.createdAt});
+      required this.createdAt,
+      required this.price});
   factory _Media.fromJson(Map<String, dynamic> json) => _$MediaFromJson(json);
 
   @override
@@ -310,6 +319,8 @@ class _Media implements Media {
   final String? thumbnailUrl;
   @override
   final String createdAt;
+  @override
+  final int price;
 
   /// Create a copy of Media
   /// with the given fields replaced by the non-null parameter values.
@@ -339,17 +350,18 @@ class _Media implements Media {
             (identical(other.thumbnailUrl, thumbnailUrl) ||
                 other.thumbnailUrl == thumbnailUrl) &&
             (identical(other.createdAt, createdAt) ||
-                other.createdAt == createdAt));
+                other.createdAt == createdAt) &&
+            (identical(other.price, price) || other.price == price));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(
-      runtimeType, id, postId, type, duration, thumbnailUrl, createdAt);
+      runtimeType, id, postId, type, duration, thumbnailUrl, createdAt, price);
 
   @override
   String toString() {
-    return 'Media(id: $id, postId: $postId, type: $type, duration: $duration, thumbnailUrl: $thumbnailUrl, createdAt: $createdAt)';
+    return 'Media(id: $id, postId: $postId, type: $type, duration: $duration, thumbnailUrl: $thumbnailUrl, createdAt: $createdAt, price: $price)';
   }
 }
 
@@ -365,7 +377,8 @@ abstract mixin class _$MediaCopyWith<$Res> implements $MediaCopyWith<$Res> {
       MediaType type,
       int? duration,
       String? thumbnailUrl,
-      String createdAt});
+      String createdAt,
+      int price});
 }
 
 /// @nodoc
@@ -386,6 +399,7 @@ class __$MediaCopyWithImpl<$Res> implements _$MediaCopyWith<$Res> {
     Object? duration = freezed,
     Object? thumbnailUrl = freezed,
     Object? createdAt = null,
+    Object? price = null,
   }) {
     return _then(_Media(
       id: null == id
@@ -412,6 +426,10 @@ class __$MediaCopyWithImpl<$Res> implements _$MediaCopyWith<$Res> {
           ? _self.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
               as String,
+      price: null == price
+          ? _self.price
+          : price // ignore: cast_nullable_to_non_nullable
+              as int,
     ));
   }
 }

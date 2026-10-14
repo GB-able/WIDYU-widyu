@@ -10,8 +10,9 @@ _Comment _$CommentFromJson(Map<String, dynamic> json) => _Comment(
       commentId: (json['commentId'] as num).toInt(),
       content: json['content'] as String,
       createdAt: DateTime.parse(json['createdAt'] as String),
-      author: Member.fromJson(json['author'] as Map<String, dynamic>),
-      canEdit: json['canEdit'] as bool,
+      author:
+          Member.fromJson(_readAuthor(json, 'author') as Map<String, dynamic>),
+      canEdit: json['canEdit'] as bool? ?? false,
       replies: (json['replies'] as List<dynamic>?)
           ?.map((e) => Comment.fromJson(e as Map<String, dynamic>))
           .toList(),

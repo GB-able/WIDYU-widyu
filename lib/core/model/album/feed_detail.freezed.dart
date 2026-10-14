@@ -20,10 +20,9 @@ mixin _$FeedDetail {
   List<String> get mediaUrls;
   int get likeCount;
   int get commentCount;
-  int get viewCount;
-  int? get price;
+  int get price;
   Member get author;
-  List<Viewer> get viewers;
+  List<Member> get viewers;
   List<Comment> get comments;
   DateTime get createdAt;
   bool get canEdit;
@@ -50,8 +49,6 @@ mixin _$FeedDetail {
                 other.likeCount == likeCount) &&
             (identical(other.commentCount, commentCount) ||
                 other.commentCount == commentCount) &&
-            (identical(other.viewCount, viewCount) ||
-                other.viewCount == viewCount) &&
             (identical(other.price, price) || other.price == price) &&
             (identical(other.author, author) || other.author == author) &&
             const DeepCollectionEquality().equals(other.viewers, viewers) &&
@@ -70,7 +67,6 @@ mixin _$FeedDetail {
       const DeepCollectionEquality().hash(mediaUrls),
       likeCount,
       commentCount,
-      viewCount,
       price,
       author,
       const DeepCollectionEquality().hash(viewers),
@@ -80,7 +76,7 @@ mixin _$FeedDetail {
 
   @override
   String toString() {
-    return 'FeedDetail(albumId: $albumId, content: $content, mediaUrls: $mediaUrls, likeCount: $likeCount, commentCount: $commentCount, viewCount: $viewCount, price: $price, author: $author, viewers: $viewers, comments: $comments, createdAt: $createdAt, canEdit: $canEdit)';
+    return 'FeedDetail(albumId: $albumId, content: $content, mediaUrls: $mediaUrls, likeCount: $likeCount, commentCount: $commentCount, price: $price, author: $author, viewers: $viewers, comments: $comments, createdAt: $createdAt, canEdit: $canEdit)';
   }
 }
 
@@ -96,10 +92,9 @@ abstract mixin class $FeedDetailCopyWith<$Res> {
       List<String> mediaUrls,
       int likeCount,
       int commentCount,
-      int viewCount,
-      int? price,
+      int price,
       Member author,
-      List<Viewer> viewers,
+      List<Member> viewers,
       List<Comment> comments,
       DateTime createdAt,
       bool canEdit});
@@ -124,8 +119,7 @@ class _$FeedDetailCopyWithImpl<$Res> implements $FeedDetailCopyWith<$Res> {
     Object? mediaUrls = null,
     Object? likeCount = null,
     Object? commentCount = null,
-    Object? viewCount = null,
-    Object? price = freezed,
+    Object? price = null,
     Object? author = null,
     Object? viewers = null,
     Object? comments = null,
@@ -153,14 +147,10 @@ class _$FeedDetailCopyWithImpl<$Res> implements $FeedDetailCopyWith<$Res> {
           ? _self.commentCount
           : commentCount // ignore: cast_nullable_to_non_nullable
               as int,
-      viewCount: null == viewCount
-          ? _self.viewCount
-          : viewCount // ignore: cast_nullable_to_non_nullable
-              as int,
-      price: freezed == price
+      price: null == price
           ? _self.price
           : price // ignore: cast_nullable_to_non_nullable
-              as int?,
+              as int,
       author: null == author
           ? _self.author
           : author // ignore: cast_nullable_to_non_nullable
@@ -168,7 +158,7 @@ class _$FeedDetailCopyWithImpl<$Res> implements $FeedDetailCopyWith<$Res> {
       viewers: null == viewers
           ? _self.viewers
           : viewers // ignore: cast_nullable_to_non_nullable
-              as List<Viewer>,
+              as List<Member>,
       comments: null == comments
           ? _self.comments
           : comments // ignore: cast_nullable_to_non_nullable
@@ -294,10 +284,9 @@ extension FeedDetailPatterns on FeedDetail {
             List<String> mediaUrls,
             int likeCount,
             int commentCount,
-            int viewCount,
-            int? price,
+            int price,
             Member author,
-            List<Viewer> viewers,
+            List<Member> viewers,
             List<Comment> comments,
             DateTime createdAt,
             bool canEdit)?
@@ -313,7 +302,6 @@ extension FeedDetailPatterns on FeedDetail {
             _that.mediaUrls,
             _that.likeCount,
             _that.commentCount,
-            _that.viewCount,
             _that.price,
             _that.author,
             _that.viewers,
@@ -346,10 +334,9 @@ extension FeedDetailPatterns on FeedDetail {
             List<String> mediaUrls,
             int likeCount,
             int commentCount,
-            int viewCount,
-            int? price,
+            int price,
             Member author,
-            List<Viewer> viewers,
+            List<Member> viewers,
             List<Comment> comments,
             DateTime createdAt,
             bool canEdit)
@@ -364,7 +351,6 @@ extension FeedDetailPatterns on FeedDetail {
             _that.mediaUrls,
             _that.likeCount,
             _that.commentCount,
-            _that.viewCount,
             _that.price,
             _that.author,
             _that.viewers,
@@ -396,10 +382,9 @@ extension FeedDetailPatterns on FeedDetail {
             List<String> mediaUrls,
             int likeCount,
             int commentCount,
-            int viewCount,
-            int? price,
+            int price,
             Member author,
-            List<Viewer> viewers,
+            List<Member> viewers,
             List<Comment> comments,
             DateTime createdAt,
             bool canEdit)?
@@ -414,7 +399,6 @@ extension FeedDetailPatterns on FeedDetail {
             _that.mediaUrls,
             _that.likeCount,
             _that.commentCount,
-            _that.viewCount,
             _that.price,
             _that.author,
             _that.viewers,
@@ -436,10 +420,9 @@ class _FeedDetail extends FeedDetail {
       required final List<String> mediaUrls,
       required this.likeCount,
       required this.commentCount,
-      this.viewCount = 0,
-      this.price,
+      required this.price,
       required this.author,
-      final List<Viewer> viewers = const [],
+      final List<Member> viewers = const [],
       final List<Comment> comments = const [],
       required this.createdAt,
       required this.canEdit})
@@ -468,16 +451,13 @@ class _FeedDetail extends FeedDetail {
   @override
   final int commentCount;
   @override
-  @JsonKey()
-  final int viewCount;
-  @override
-  final int? price;
+  final int price;
   @override
   final Member author;
-  final List<Viewer> _viewers;
+  final List<Member> _viewers;
   @override
   @JsonKey()
-  List<Viewer> get viewers {
+  List<Member> get viewers {
     if (_viewers is EqualUnmodifiableListView) return _viewers;
     // ignore: implicit_dynamic_type
     return EqualUnmodifiableListView(_viewers);
@@ -525,8 +505,6 @@ class _FeedDetail extends FeedDetail {
                 other.likeCount == likeCount) &&
             (identical(other.commentCount, commentCount) ||
                 other.commentCount == commentCount) &&
-            (identical(other.viewCount, viewCount) ||
-                other.viewCount == viewCount) &&
             (identical(other.price, price) || other.price == price) &&
             (identical(other.author, author) || other.author == author) &&
             const DeepCollectionEquality().equals(other._viewers, _viewers) &&
@@ -545,7 +523,6 @@ class _FeedDetail extends FeedDetail {
       const DeepCollectionEquality().hash(_mediaUrls),
       likeCount,
       commentCount,
-      viewCount,
       price,
       author,
       const DeepCollectionEquality().hash(_viewers),
@@ -555,7 +532,7 @@ class _FeedDetail extends FeedDetail {
 
   @override
   String toString() {
-    return 'FeedDetail(albumId: $albumId, content: $content, mediaUrls: $mediaUrls, likeCount: $likeCount, commentCount: $commentCount, viewCount: $viewCount, price: $price, author: $author, viewers: $viewers, comments: $comments, createdAt: $createdAt, canEdit: $canEdit)';
+    return 'FeedDetail(albumId: $albumId, content: $content, mediaUrls: $mediaUrls, likeCount: $likeCount, commentCount: $commentCount, price: $price, author: $author, viewers: $viewers, comments: $comments, createdAt: $createdAt, canEdit: $canEdit)';
   }
 }
 
@@ -573,10 +550,9 @@ abstract mixin class _$FeedDetailCopyWith<$Res>
       List<String> mediaUrls,
       int likeCount,
       int commentCount,
-      int viewCount,
-      int? price,
+      int price,
       Member author,
-      List<Viewer> viewers,
+      List<Member> viewers,
       List<Comment> comments,
       DateTime createdAt,
       bool canEdit});
@@ -602,8 +578,7 @@ class __$FeedDetailCopyWithImpl<$Res> implements _$FeedDetailCopyWith<$Res> {
     Object? mediaUrls = null,
     Object? likeCount = null,
     Object? commentCount = null,
-    Object? viewCount = null,
-    Object? price = freezed,
+    Object? price = null,
     Object? author = null,
     Object? viewers = null,
     Object? comments = null,
@@ -631,14 +606,10 @@ class __$FeedDetailCopyWithImpl<$Res> implements _$FeedDetailCopyWith<$Res> {
           ? _self.commentCount
           : commentCount // ignore: cast_nullable_to_non_nullable
               as int,
-      viewCount: null == viewCount
-          ? _self.viewCount
-          : viewCount // ignore: cast_nullable_to_non_nullable
-              as int,
-      price: freezed == price
+      price: null == price
           ? _self.price
           : price // ignore: cast_nullable_to_non_nullable
-              as int?,
+              as int,
       author: null == author
           ? _self.author
           : author // ignore: cast_nullable_to_non_nullable
@@ -646,7 +617,7 @@ class __$FeedDetailCopyWithImpl<$Res> implements _$FeedDetailCopyWith<$Res> {
       viewers: null == viewers
           ? _self._viewers
           : viewers // ignore: cast_nullable_to_non_nullable
-              as List<Viewer>,
+              as List<Member>,
       comments: null == comments
           ? _self._comments
           : comments // ignore: cast_nullable_to_non_nullable

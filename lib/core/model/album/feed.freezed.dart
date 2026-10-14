@@ -20,16 +20,12 @@ mixin _$Feed {
   String get content;
   List<String> get mediaUrls;
   List<String> get thumbnailUrls;
-  String? get primaryMediaType;
-  int get mediaCount;
-  int get photoCount;
-  int get videoCount;
   int get likeCount;
   int get commentCount;
-  List<Viewer> get viewers;
+  List<Member> get viewers;
   DateTime get createdAt;
   bool get canEdit;
-  String? get videoDuration;
+  int get price;
 
   /// Create a copy of Feed
   /// with the given fields replaced by the non-null parameter values.
@@ -55,14 +51,6 @@ mixin _$Feed {
             const DeepCollectionEquality().equals(other.mediaUrls, mediaUrls) &&
             const DeepCollectionEquality()
                 .equals(other.thumbnailUrls, thumbnailUrls) &&
-            (identical(other.primaryMediaType, primaryMediaType) ||
-                other.primaryMediaType == primaryMediaType) &&
-            (identical(other.mediaCount, mediaCount) ||
-                other.mediaCount == mediaCount) &&
-            (identical(other.photoCount, photoCount) ||
-                other.photoCount == photoCount) &&
-            (identical(other.videoCount, videoCount) ||
-                other.videoCount == videoCount) &&
             (identical(other.likeCount, likeCount) ||
                 other.likeCount == likeCount) &&
             (identical(other.commentCount, commentCount) ||
@@ -71,8 +59,7 @@ mixin _$Feed {
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt) &&
             (identical(other.canEdit, canEdit) || other.canEdit == canEdit) &&
-            (identical(other.videoDuration, videoDuration) ||
-                other.videoDuration == videoDuration));
+            (identical(other.price, price) || other.price == price));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -85,20 +72,16 @@ mixin _$Feed {
       content,
       const DeepCollectionEquality().hash(mediaUrls),
       const DeepCollectionEquality().hash(thumbnailUrls),
-      primaryMediaType,
-      mediaCount,
-      photoCount,
-      videoCount,
       likeCount,
       commentCount,
       const DeepCollectionEquality().hash(viewers),
       createdAt,
       canEdit,
-      videoDuration);
+      price);
 
   @override
   String toString() {
-    return 'Feed(albumId: $albumId, authorName: $authorName, authorProfileImage: $authorProfileImage, content: $content, mediaUrls: $mediaUrls, thumbnailUrls: $thumbnailUrls, primaryMediaType: $primaryMediaType, mediaCount: $mediaCount, photoCount: $photoCount, videoCount: $videoCount, likeCount: $likeCount, commentCount: $commentCount, viewers: $viewers, createdAt: $createdAt, canEdit: $canEdit, videoDuration: $videoDuration)';
+    return 'Feed(albumId: $albumId, authorName: $authorName, authorProfileImage: $authorProfileImage, content: $content, mediaUrls: $mediaUrls, thumbnailUrls: $thumbnailUrls, likeCount: $likeCount, commentCount: $commentCount, viewers: $viewers, createdAt: $createdAt, canEdit: $canEdit, price: $price)';
   }
 }
 
@@ -114,16 +97,12 @@ abstract mixin class $FeedCopyWith<$Res> {
       String content,
       List<String> mediaUrls,
       List<String> thumbnailUrls,
-      String? primaryMediaType,
-      int mediaCount,
-      int photoCount,
-      int videoCount,
       int likeCount,
       int commentCount,
-      List<Viewer> viewers,
+      List<Member> viewers,
       DateTime createdAt,
       bool canEdit,
-      String? videoDuration});
+      int price});
 }
 
 /// @nodoc
@@ -144,16 +123,12 @@ class _$FeedCopyWithImpl<$Res> implements $FeedCopyWith<$Res> {
     Object? content = null,
     Object? mediaUrls = null,
     Object? thumbnailUrls = null,
-    Object? primaryMediaType = freezed,
-    Object? mediaCount = null,
-    Object? photoCount = null,
-    Object? videoCount = null,
     Object? likeCount = null,
     Object? commentCount = null,
     Object? viewers = null,
     Object? createdAt = null,
     Object? canEdit = null,
-    Object? videoDuration = freezed,
+    Object? price = null,
   }) {
     return _then(_self.copyWith(
       albumId: null == albumId
@@ -180,22 +155,6 @@ class _$FeedCopyWithImpl<$Res> implements $FeedCopyWith<$Res> {
           ? _self.thumbnailUrls
           : thumbnailUrls // ignore: cast_nullable_to_non_nullable
               as List<String>,
-      primaryMediaType: freezed == primaryMediaType
-          ? _self.primaryMediaType
-          : primaryMediaType // ignore: cast_nullable_to_non_nullable
-              as String?,
-      mediaCount: null == mediaCount
-          ? _self.mediaCount
-          : mediaCount // ignore: cast_nullable_to_non_nullable
-              as int,
-      photoCount: null == photoCount
-          ? _self.photoCount
-          : photoCount // ignore: cast_nullable_to_non_nullable
-              as int,
-      videoCount: null == videoCount
-          ? _self.videoCount
-          : videoCount // ignore: cast_nullable_to_non_nullable
-              as int,
       likeCount: null == likeCount
           ? _self.likeCount
           : likeCount // ignore: cast_nullable_to_non_nullable
@@ -207,7 +166,7 @@ class _$FeedCopyWithImpl<$Res> implements $FeedCopyWith<$Res> {
       viewers: null == viewers
           ? _self.viewers
           : viewers // ignore: cast_nullable_to_non_nullable
-              as List<Viewer>,
+              as List<Member>,
       createdAt: null == createdAt
           ? _self.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
@@ -216,10 +175,10 @@ class _$FeedCopyWithImpl<$Res> implements $FeedCopyWith<$Res> {
           ? _self.canEdit
           : canEdit // ignore: cast_nullable_to_non_nullable
               as bool,
-      videoDuration: freezed == videoDuration
-          ? _self.videoDuration
-          : videoDuration // ignore: cast_nullable_to_non_nullable
-              as String?,
+      price: null == price
+          ? _self.price
+          : price // ignore: cast_nullable_to_non_nullable
+              as int,
     ));
   }
 }
@@ -324,16 +283,12 @@ extension FeedPatterns on Feed {
             String content,
             List<String> mediaUrls,
             List<String> thumbnailUrls,
-            String? primaryMediaType,
-            int mediaCount,
-            int photoCount,
-            int videoCount,
             int likeCount,
             int commentCount,
-            List<Viewer> viewers,
+            List<Member> viewers,
             DateTime createdAt,
             bool canEdit,
-            String? videoDuration)?
+            int price)?
         $default, {
     required TResult orElse(),
   }) {
@@ -347,16 +302,12 @@ extension FeedPatterns on Feed {
             _that.content,
             _that.mediaUrls,
             _that.thumbnailUrls,
-            _that.primaryMediaType,
-            _that.mediaCount,
-            _that.photoCount,
-            _that.videoCount,
             _that.likeCount,
             _that.commentCount,
             _that.viewers,
             _that.createdAt,
             _that.canEdit,
-            _that.videoDuration);
+            _that.price);
       case _:
         return orElse();
     }
@@ -384,16 +335,12 @@ extension FeedPatterns on Feed {
             String content,
             List<String> mediaUrls,
             List<String> thumbnailUrls,
-            String? primaryMediaType,
-            int mediaCount,
-            int photoCount,
-            int videoCount,
             int likeCount,
             int commentCount,
-            List<Viewer> viewers,
+            List<Member> viewers,
             DateTime createdAt,
             bool canEdit,
-            String? videoDuration)
+            int price)
         $default,
   ) {
     final _that = this;
@@ -406,16 +353,12 @@ extension FeedPatterns on Feed {
             _that.content,
             _that.mediaUrls,
             _that.thumbnailUrls,
-            _that.primaryMediaType,
-            _that.mediaCount,
-            _that.photoCount,
-            _that.videoCount,
             _that.likeCount,
             _that.commentCount,
             _that.viewers,
             _that.createdAt,
             _that.canEdit,
-            _that.videoDuration);
+            _that.price);
       case _:
         throw StateError('Unexpected subclass');
     }
@@ -442,16 +385,12 @@ extension FeedPatterns on Feed {
             String content,
             List<String> mediaUrls,
             List<String> thumbnailUrls,
-            String? primaryMediaType,
-            int mediaCount,
-            int photoCount,
-            int videoCount,
             int likeCount,
             int commentCount,
-            List<Viewer> viewers,
+            List<Member> viewers,
             DateTime createdAt,
             bool canEdit,
-            String? videoDuration)?
+            int price)?
         $default,
   ) {
     final _that = this;
@@ -464,16 +403,12 @@ extension FeedPatterns on Feed {
             _that.content,
             _that.mediaUrls,
             _that.thumbnailUrls,
-            _that.primaryMediaType,
-            _that.mediaCount,
-            _that.photoCount,
-            _that.videoCount,
             _that.likeCount,
             _that.commentCount,
             _that.viewers,
             _that.createdAt,
             _that.canEdit,
-            _that.videoDuration);
+            _that.price);
       case _:
         return null;
     }
@@ -490,16 +425,12 @@ class _Feed implements Feed {
       required this.content,
       required final List<String> mediaUrls,
       required final List<String> thumbnailUrls,
-      required this.primaryMediaType,
-      required this.mediaCount,
-      required this.photoCount,
-      required this.videoCount,
       required this.likeCount,
       required this.commentCount,
-      required final List<Viewer> viewers,
+      required final List<Member> viewers,
       required this.createdAt,
       required this.canEdit,
-      this.videoDuration})
+      required this.price})
       : _mediaUrls = mediaUrls,
         _thumbnailUrls = thumbnailUrls,
         _viewers = viewers;
@@ -530,20 +461,12 @@ class _Feed implements Feed {
   }
 
   @override
-  final String? primaryMediaType;
-  @override
-  final int mediaCount;
-  @override
-  final int photoCount;
-  @override
-  final int videoCount;
-  @override
   final int likeCount;
   @override
   final int commentCount;
-  final List<Viewer> _viewers;
+  final List<Member> _viewers;
   @override
-  List<Viewer> get viewers {
+  List<Member> get viewers {
     if (_viewers is EqualUnmodifiableListView) return _viewers;
     // ignore: implicit_dynamic_type
     return EqualUnmodifiableListView(_viewers);
@@ -554,7 +477,7 @@ class _Feed implements Feed {
   @override
   final bool canEdit;
   @override
-  final String? videoDuration;
+  final int price;
 
   /// Create a copy of Feed
   /// with the given fields replaced by the non-null parameter values.
@@ -586,14 +509,6 @@ class _Feed implements Feed {
                 .equals(other._mediaUrls, _mediaUrls) &&
             const DeepCollectionEquality()
                 .equals(other._thumbnailUrls, _thumbnailUrls) &&
-            (identical(other.primaryMediaType, primaryMediaType) ||
-                other.primaryMediaType == primaryMediaType) &&
-            (identical(other.mediaCount, mediaCount) ||
-                other.mediaCount == mediaCount) &&
-            (identical(other.photoCount, photoCount) ||
-                other.photoCount == photoCount) &&
-            (identical(other.videoCount, videoCount) ||
-                other.videoCount == videoCount) &&
             (identical(other.likeCount, likeCount) ||
                 other.likeCount == likeCount) &&
             (identical(other.commentCount, commentCount) ||
@@ -602,8 +517,7 @@ class _Feed implements Feed {
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt) &&
             (identical(other.canEdit, canEdit) || other.canEdit == canEdit) &&
-            (identical(other.videoDuration, videoDuration) ||
-                other.videoDuration == videoDuration));
+            (identical(other.price, price) || other.price == price));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -616,20 +530,16 @@ class _Feed implements Feed {
       content,
       const DeepCollectionEquality().hash(_mediaUrls),
       const DeepCollectionEquality().hash(_thumbnailUrls),
-      primaryMediaType,
-      mediaCount,
-      photoCount,
-      videoCount,
       likeCount,
       commentCount,
       const DeepCollectionEquality().hash(_viewers),
       createdAt,
       canEdit,
-      videoDuration);
+      price);
 
   @override
   String toString() {
-    return 'Feed(albumId: $albumId, authorName: $authorName, authorProfileImage: $authorProfileImage, content: $content, mediaUrls: $mediaUrls, thumbnailUrls: $thumbnailUrls, primaryMediaType: $primaryMediaType, mediaCount: $mediaCount, photoCount: $photoCount, videoCount: $videoCount, likeCount: $likeCount, commentCount: $commentCount, viewers: $viewers, createdAt: $createdAt, canEdit: $canEdit, videoDuration: $videoDuration)';
+    return 'Feed(albumId: $albumId, authorName: $authorName, authorProfileImage: $authorProfileImage, content: $content, mediaUrls: $mediaUrls, thumbnailUrls: $thumbnailUrls, likeCount: $likeCount, commentCount: $commentCount, viewers: $viewers, createdAt: $createdAt, canEdit: $canEdit, price: $price)';
   }
 }
 
@@ -646,16 +556,12 @@ abstract mixin class _$FeedCopyWith<$Res> implements $FeedCopyWith<$Res> {
       String content,
       List<String> mediaUrls,
       List<String> thumbnailUrls,
-      String? primaryMediaType,
-      int mediaCount,
-      int photoCount,
-      int videoCount,
       int likeCount,
       int commentCount,
-      List<Viewer> viewers,
+      List<Member> viewers,
       DateTime createdAt,
       bool canEdit,
-      String? videoDuration});
+      int price});
 }
 
 /// @nodoc
@@ -676,16 +582,12 @@ class __$FeedCopyWithImpl<$Res> implements _$FeedCopyWith<$Res> {
     Object? content = null,
     Object? mediaUrls = null,
     Object? thumbnailUrls = null,
-    Object? primaryMediaType = freezed,
-    Object? mediaCount = null,
-    Object? photoCount = null,
-    Object? videoCount = null,
     Object? likeCount = null,
     Object? commentCount = null,
     Object? viewers = null,
     Object? createdAt = null,
     Object? canEdit = null,
-    Object? videoDuration = freezed,
+    Object? price = null,
   }) {
     return _then(_Feed(
       albumId: null == albumId
@@ -712,22 +614,6 @@ class __$FeedCopyWithImpl<$Res> implements _$FeedCopyWith<$Res> {
           ? _self._thumbnailUrls
           : thumbnailUrls // ignore: cast_nullable_to_non_nullable
               as List<String>,
-      primaryMediaType: freezed == primaryMediaType
-          ? _self.primaryMediaType
-          : primaryMediaType // ignore: cast_nullable_to_non_nullable
-              as String?,
-      mediaCount: null == mediaCount
-          ? _self.mediaCount
-          : mediaCount // ignore: cast_nullable_to_non_nullable
-              as int,
-      photoCount: null == photoCount
-          ? _self.photoCount
-          : photoCount // ignore: cast_nullable_to_non_nullable
-              as int,
-      videoCount: null == videoCount
-          ? _self.videoCount
-          : videoCount // ignore: cast_nullable_to_non_nullable
-              as int,
       likeCount: null == likeCount
           ? _self.likeCount
           : likeCount // ignore: cast_nullable_to_non_nullable
@@ -739,7 +625,7 @@ class __$FeedCopyWithImpl<$Res> implements _$FeedCopyWith<$Res> {
       viewers: null == viewers
           ? _self._viewers
           : viewers // ignore: cast_nullable_to_non_nullable
-              as List<Viewer>,
+              as List<Member>,
       createdAt: null == createdAt
           ? _self.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
@@ -748,10 +634,10 @@ class __$FeedCopyWithImpl<$Res> implements _$FeedCopyWith<$Res> {
           ? _self.canEdit
           : canEdit // ignore: cast_nullable_to_non_nullable
               as bool,
-      videoDuration: freezed == videoDuration
-          ? _self.videoDuration
-          : videoDuration // ignore: cast_nullable_to_non_nullable
-              as String?,
+      price: null == price
+          ? _self.price
+          : price // ignore: cast_nullable_to_non_nullable
+              as int,
     ));
   }
 }

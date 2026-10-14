@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:widyu/core/model/album/album_comment.dart';
+import 'package:widyu/core/model/album/comment.dart';
 import 'package:widyu/core/model/album/album_comment_create_request.dart';
 import 'package:widyu/core/model/album/album_comment_update_request.dart';
 import 'package:widyu/core/model/album/album_unlock.dart';
@@ -49,12 +49,12 @@ abstract class AlbumRemoteDataSource {
 
   Future<ApiResponse<void>> unlikeFeed(int albumId);
 
-  Future<ApiResponse<AlbumComment>> createComment({
+  Future<ApiResponse<Comment>> createComment({
     required int albumId,
     required AlbumCommentCreateRequest request,
   });
 
-  Future<ApiResponse<AlbumComment>> updateComment({
+  Future<ApiResponse<Comment>> updateComment({
     required int commentId,
     required AlbumCommentUpdateRequest request,
   });

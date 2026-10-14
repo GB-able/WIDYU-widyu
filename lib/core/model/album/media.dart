@@ -17,6 +17,7 @@ abstract class Media with _$Media {
     required int? duration,
     required String? thumbnailUrl,
     required String createdAt,
+    required int price,
   }) = _Media;
 
   factory Media.fromJson(Map<String, dynamic> json) => _$MediaFromJson(json);

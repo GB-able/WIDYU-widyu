@@ -1,6 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:widyu/core/model/album/feed_base.dart';
-import 'package:widyu/core/model/album/viewer.dart';
+import 'package:widyu/core/model/album/member.dart';
 
 part 'feed.freezed.dart';
 part 'feed.g.dart';
@@ -14,16 +14,12 @@ abstract class Feed with _$Feed implements FeedBase {
     required String content,
     required List<String> mediaUrls,
     required List<String> thumbnailUrls,
-    required String? primaryMediaType,
-    required int mediaCount,
-    required int photoCount,
-    required int videoCount,
     required int likeCount,
     required int commentCount,
-    required List<Viewer> viewers,
+    required List<Member> viewers,
     required DateTime createdAt,
     required bool canEdit,
-    String? videoDuration,
+    required int price,
   }) = _Feed;
 
   factory Feed.fromJson(Map<String, dynamic> json) => _$FeedFromJson(json);

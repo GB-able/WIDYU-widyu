@@ -13,6 +13,7 @@ _Media _$MediaFromJson(Map<String, dynamic> json) => _Media(
       duration: (json['duration'] as num?)?.toInt(),
       thumbnailUrl: json['thumbnailUrl'] as String?,
       createdAt: json['createdAt'] as String,
+      price: (json['price'] as num).toInt(),
     );
 
 Map<String, dynamic> _$MediaToJson(_Media instance) => <String, dynamic>{
@@ -22,6 +23,7 @@ Map<String, dynamic> _$MediaToJson(_Media instance) => <String, dynamic>{
       'duration': instance.duration,
       'thumbnailUrl': instance.thumbnailUrl,
       'createdAt': instance.createdAt,
+      'price': instance.price,
     };
 
 const _$MediaTypeEnumMap = {

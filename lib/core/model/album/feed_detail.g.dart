@@ -13,11 +13,10 @@ _FeedDetail _$FeedDetailFromJson(Map<String, dynamic> json) => _FeedDetail(
           (json['mediaUrls'] as List<dynamic>).map((e) => e as String).toList(),
       likeCount: (json['likeCount'] as num).toInt(),
       commentCount: (json['commentCount'] as num).toInt(),
-      viewCount: (json['viewCount'] as num?)?.toInt() ?? 0,
-      price: (json['price'] as num?)?.toInt(),
+      price: (json['price'] as num).toInt(),
       author: Member.fromJson(json['author'] as Map<String, dynamic>),
       viewers: (json['viewers'] as List<dynamic>?)
-              ?.map((e) => Viewer.fromJson(e as Map<String, dynamic>))
+              ?.map((e) => Member.fromJson(e as Map<String, dynamic>))
               .toList() ??
           const [],
       comments: (json['comments'] as List<dynamic>?)
@@ -35,7 +34,6 @@ Map<String, dynamic> _$FeedDetailToJson(_FeedDetail instance) =>
       'mediaUrls': instance.mediaUrls,
       'likeCount': instance.likeCount,
       'commentCount': instance.commentCount,
-      'viewCount': instance.viewCount,
       'price': instance.price,
       'author': instance.author,
       'viewers': instance.viewers,

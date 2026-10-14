@@ -1,4 +1,4 @@
-import 'package:widyu/core/model/album/viewer.dart';
+import 'package:widyu/core/model/album/member.dart';
 
 abstract interface class FeedBase {
   int get albumId;
@@ -8,7 +8,8 @@ abstract interface class FeedBase {
   List<String> get mediaUrls;
   int get likeCount;
   int get commentCount;
-  List<Viewer> get viewers;
+  List<Member> get viewers;
   DateTime get createdAt;
   bool get canEdit;
+  int get price;
 }
