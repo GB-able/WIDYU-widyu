@@ -29,33 +29,47 @@ class GoalViewModel with ChangeNotifier {
   final _uiEvent = StreamController<GoalUiEvent>.broadcast();
   Stream<GoalUiEvent> get uiEvent => _uiEvent.stream;
 
-  GoalViewModel(
-      {required GoalRepository repository,
-      required PointProvider pointProvider,
-      required StepProvider stepProvider,
-      required LocationRepository locationRepository})
-      : _repository = repository,
+  GoalViewModel({
+    required GoalRepository repository,
+    required PointProvider pointProvider,
+    required StepProvider stepProvider,
+    required LocationRepository locationRepository,
+  })  : _repository = repository,
         _pointProvider = pointProvider,
         _stepProvider = stepProvider,
         _locationRepository = locationRepository {
     unawaited(_stepProvider.start());
-    refresh();
+    unawaited(refresh());
   }
 
-  Future<void> refresh() async {
-    _countdownTimer?.cancel();
-    _uiState = _uiState.copyWith(
-      cards: const GoalCardsState.loading(),
-      isWeeklyLoading: true,
-    );
-    notifyListeners();
+  @override
+  void notifyListeners() {
+    if (!_uiEvent.isClosed) super.notifyListeners();
+  }
 
-    final homeFuture = _repository.fetchGoalHome();
-    final weeklyFuture = _repository.fetchWeeklyStatus();
-    final home = await homeFuture;
-    final weekly = await weeklyFuture;
+  void _emit(GoalUiEvent event) {
+    if (!_uiEvent.isClosed) _uiEvent.add(event);
+  }
 
+  Future<void> refresh({bool showLoading = true}) async {
+    final requestedDay = _stepProvider.today;
+    if (showLoading) {
+      _countdownTimer?.cancel();
+      _uiState = _uiState.copyWith(
+        cards: const GoalCardsState.loading(),
+        isWeeklyLoading: true,
+      );
+      notifyListeners();
+    }
+
+    final results = await Future.wait<Object>([
+      _repository.fetchGoalHome(),
+      _repository.fetchWeeklyStatus(),
+    ]);
+    if (_uiEvent.isClosed) return;
     unawaited(_pointProvider.refresh());
+    final home = results[0] as ApiResult<GoalHomeResponse>;
+    final weekly = results[1] as ApiResult<List<GoalRateStatus>>;
 
     switch (home) {
       case Success<GoalHomeResponse>():
@@ -63,9 +77,10 @@ class GoalViewModel with ChangeNotifier {
         final remaining =
             medicine?.verifyRemainingAt(DateTime.now()) ?? Duration.zero;
 
-        // 서버가 아는 오늘 걸음 수를 센서 카운터의 기준점으로 삼는다.
-        _stepProvider.applyServerSteps(home.data.walk?.actual ?? 0,
-            date: _stepProvider.today);
+        final walk = home.data.walk;
+        if (walk != null) {
+          _stepProvider.applyServerSteps(walk.actual, date: requestedDay);
+        }
 
         _uiState = _uiState.copyWith(
           cards: GoalCardsState.data(
@@ -73,7 +88,6 @@ class GoalViewModel with ChangeNotifier {
             walk: home.data.walk,
             hospital: home.data.hospital,
             verifyRemaining: remaining,
-            // 이미 인증한 회차면 남은 시간과 무관하게 완료로 본다.
             verifyStatus: medicine?.proofImage != null
                 ? MedicationVerifyStatus.verified
                 : remaining > Duration.zero
@@ -82,9 +96,9 @@ class GoalViewModel with ChangeNotifier {
           ),
         );
       case Failure<GoalHomeResponse>():
-        _uiState = _uiState.copyWith(
-          cards: const GoalCardsState.error(),
-        );
+        if (showLoading || _uiState.cards is GoalCardsLoading) {
+          _uiState = _uiState.copyWith(cards: const GoalCardsState.error());
+        }
     }
 
     switch (weekly) {
@@ -96,11 +110,10 @@ class GoalViewModel with ChangeNotifier {
       case Failure<List<GoalRateStatus>>():
         _uiState = _uiState.copyWith(
           isWeeklyLoading: false,
-          weeklyStatuses: const [],
+          weeklyStatuses: showLoading ? const [] : _uiState.weeklyStatuses,
         );
-        // 카드 에러뷰가 이미 실패를 말하고 있으면 토스트를 겹치지 않는다.
-        if (_uiState.cards is! GoalCardsError) {
-          _uiEvent.add(const FetchWeeklyStatusFailure());
+        if (showLoading && _uiState.cards is! GoalCardsError) {
+          _emit(const FetchWeeklyStatusFailure());
         }
     }
 
@@ -137,12 +150,14 @@ class GoalViewModel with ChangeNotifier {
       final remaining = medicine.verifyRemainingAt(now);
 
       if (medicine.isVerifyExpiredAt(now)) {
-        _updateCards(cards.copyWith(
-          verifyRemaining: Duration.zero,
-          verifyStatus: cards.verifyStatus == MedicationVerifyStatus.verified
-              ? MedicationVerifyStatus.verified
-              : MedicationVerifyStatus.expired,
-        ));
+        _updateCards(
+          cards.copyWith(
+            verifyRemaining: Duration.zero,
+            verifyStatus: cards.verifyStatus == MedicationVerifyStatus.verified
+                ? MedicationVerifyStatus.verified
+                : MedicationVerifyStatus.expired,
+          ),
+        );
         _countdownTimer?.cancel();
       } else {
         _updateCards(cards.copyWith(verifyRemaining: remaining));
@@ -152,10 +167,8 @@ class GoalViewModel with ChangeNotifier {
   }
 
   void onMedicationVerified(MedicationPointResult result) {
-    _uiEvent.add(
-      VerifyMedicationSuccess(result.earnedPoints, result.currentPoints),
-    );
-    refresh();
+    _emit(VerifyMedicationSuccess(result.earnedPoints, result.currentPoints));
+    unawaited(refresh(showLoading: false));
   }
 
   Future<void> findRoute() async {
@@ -182,8 +195,10 @@ class GoalViewModel with ChangeNotifier {
           'api': '1',
           'query': address,
         });
-        final launched =
-            await launchUrl(uri, mode: LaunchMode.externalApplication);
+        final launched = await launchUrl(
+          uri,
+          mode: LaunchMode.externalApplication,
+        );
         if (!launched) {
           throw Exception("다른 지도 맵 열기 실패");
         }

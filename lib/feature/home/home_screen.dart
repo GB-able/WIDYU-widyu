@@ -11,8 +11,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:widyu/app/routes/app_route.dart';
-import 'package:widyu/core/data/provider/point_provider.dart';
-import 'package:widyu/core/data/repository/goal/medication_repository.dart';
+import 'package:widyu/core/data/provider/step_provider.dart';
 import 'package:widyu/core/data/repository/heartRate/heart_rate_repository.dart';
 import 'package:widyu/core/data/repository/home/home_repository.dart';
 import 'package:widyu/core/data/repository/location/location_repository.dart';
@@ -32,6 +31,7 @@ import 'package:widyu/core/utils/show_toast.dart';
 import 'package:widyu/feature/home/home_ui_event.dart';
 import 'package:widyu/feature/home/home_ui_state.dart';
 import 'package:widyu/feature/home/home_view_model.dart';
+import 'package:widyu/core/utils/medication_verification_launcher.dart';
 
 part 'widget/album_card.dart';
 part 'widget/carousel_card_shell.dart';
@@ -44,7 +44,6 @@ part 'widget/home_greeting_view.dart';
 part 'widget/medication_card.dart';
 part 'widget/mesh_gradient_background.dart';
 part 'widget/notification_view.dart';
-part 'widget/reward_dialog.dart';
 part 'widget/spring_bounce.dart';
 part 'widget/walking_card.dart';
 part 'widget/watch_data_view.dart';
@@ -69,21 +68,6 @@ class HomeScreen extends StatelessWidget {
 
   void _handleEvent(BuildContext context, HomeUiEvent event) {
     switch (event) {
-      case VerifyMedicationSuccess(:final earnedPoint, :final totalPoint):
-        showDialog(
-          context: context,
-          builder: (_) =>
-              _RewardDialog(point: earnedPoint, totalPoint: totalPoint),
-        );
-      case VerifyMedicationFailure(:final message):
-        showToast(message);
-      case RequestCameraPermissionFailure():
-        showToast('카메라 권한이 필요해요.');
-      case RequestCameraPermissionPermanentlyFailure():
-        showToast('설정에서 카메라 권한을 허용해 주세요.');
-        AppSettings.openAppSettings();
-      case OpenCameraFailure():
-        showToast('카메라를 실행할 수 없어요. 잠시 후 다시 시도해 주세요.');
       case HealthSchedulePlaceUnavailable():
         showToast('일정 장소 정보가 없어요.');
       case OpenKakaoMapFailure():
@@ -111,96 +95,104 @@ class HomeScreen extends StatelessWidget {
           notificationRepository: context.read<NotificationRepository>(),
           heartRateRepository: context.read<HeartRateRepository>(),
           locationRepository: context.read<LocationRepository>(),
-          medicationRepository: context.read<MedicationRepository>(),
-          pointProvider: context.read<PointProvider>(),
+          stepProvider: context.read<StepProvider>(),
         );
       },
       builder: (context, child) {
         final viewModel = context.read<HomeViewModel>();
-        final uiState =
-            context.select<HomeViewModel, HomeUiState>((vm) => vm.uiState);
+        final uiState = context.select<HomeViewModel, HomeUiState>(
+          (vm) => vm.uiState,
+        );
         final notification = uiState.notification;
 
         return UiEventListener(
-          stream: viewModel.uiEvent,
-          onEvent: (event) => _handleEvent(context, event),
-          child: Scaffold(
-            backgroundColor: MyColor.grey100,
-            extendBodyBehindAppBar: true,
-            appBar: const _HomeAppBar(),
-            body: Stack(
-              children: [
-                const Positioned(
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  child: WidyuAssetImage(
-                    name: 'img_375_home_background.png',
-                    fit: BoxFit.fitWidth,
+            stream: viewModel.uiEvent,
+            onEvent: (event) => _handleEvent(context, event),
+            child: Scaffold(
+              backgroundColor: MyColor.grey100,
+              extendBodyBehindAppBar: true,
+              appBar: const _HomeAppBar(),
+              body: Stack(
+                children: [
+                  const Positioned(
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    child: WidyuAssetImage(
+                      name: 'img_375_home_background.png',
+                      fit: BoxFit.fitWidth,
+                    ),
                   ),
-                ),
-                Positioned(
-                  top: _carouselTop(context),
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  child: _CarouselMenu(
-                    isLoading: uiState.isSeniorCardLoading,
-                    hasGoal: uiState.hasGoal,
-                    thumbanils: uiState.thumbnails,
-                    medicationStatus: uiState.medicationStatus,
-                    hasStepGoal: uiState.hasStepGoal,
-                    stepProgress: uiState.stepProgress,
-                    hasHealthSchedule: uiState.hasHealthSchedule,
-                    onCameraTap: viewModel.takeMedicationPhoto,
-                    onRouteTap: viewModel.openHealthScheduleRoute,
-                  ),
-                ),
-                Padding(
-                  padding: EdgeInsets.only(
-                    top: MediaQuery.of(context).padding.top + kToolbarHeight,
-                  ),
-                  child: Column(
-                    spacing: 24,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            if (notification == null)
-                              const SizedBox(height: 28)
-                            else ...[
-                              _NotificationView(
-                                id: notification.notificationId,
-                                icon: notification.icon,
-                                description: notification.description,
-                                onTap: viewModel.markNotificationAsRead,
-                              ),
-                              const SizedBox(height: 10),
-                            ],
-                            _HomeGreetingView(
-                              isLoading: uiState.isUserLoading,
-                              name: uiState.name,
-                            ),
-                            const SizedBox(height: 26),
-                            _WatchDataView(
-                              isLoading: uiState.isHeartRateLoading,
-                              isWearing: uiState.isWearing,
-                              heartRate: uiState.heartRate,
-                              status: uiState.heartRateStatus,
-                              measuredAt: uiState.measuredAt,
-                              onHeartRateClick: viewModel.fetchHeartRate,
-                            ),
-                          ],
-                        ),
+                  Positioned(
+                    top: _carouselTop(context),
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    child: _CarouselMenu(
+                      isLoading: uiState.isSeniorCardLoading,
+                      hasGoal: uiState.hasGoal,
+                      thumbanils: uiState.thumbnails,
+                      medicationStatus: uiState.medicationStatus,
+                      hasStepGoal: uiState.hasStepGoal,
+                      stepProgress: uiState.stepProgressOf(
+                        context.select<StepProvider, int>((p) => p.steps),
                       ),
-                    ],
+                      hasHealthSchedule: uiState.hasHealthSchedule,
+                      onCameraTap: () {
+                        final id = viewModel.medicationScheduleId;
+                        if (id != null) {
+                          openMedicationForSchedule(
+                              context, id, DateTime.now());
+                        }
+                      },
+                      onRouteTap: viewModel.openHealthScheduleRoute,
+                    ),
                   ),
-                ),
-              ],
+                  Padding(
+                    padding: EdgeInsets.only(
+                      top: MediaQuery.of(context).padding.top + kToolbarHeight,
+                    ),
+                    child: Column(
+                      spacing: 24,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              if (notification == null)
+                                const SizedBox(height: 28)
+                              else ...[
+                                _NotificationView(
+                                  id: notification.notificationId,
+                                  icon: notification.icon,
+                                  description: notification.description,
+                                  onTap: viewModel.markNotificationAsRead,
+                                ),
+                                const SizedBox(height: 10),
+                              ],
+                              _HomeGreetingView(
+                                isLoading: uiState.isUserLoading,
+                                name: uiState.name,
+                              ),
+                              const SizedBox(height: 26),
+                              _WatchDataView(
+                                isLoading: uiState.isHeartRateLoading,
+                                isWearing: uiState.isWearing,
+                                heartRate: uiState.heartRate,
+                                status: uiState.heartRateStatus,
+                                measuredAt: uiState.measuredAt,
+                                onHeartRateClick: viewModel.fetchHeartRate,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
         );
       },
     );

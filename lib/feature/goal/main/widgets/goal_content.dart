@@ -13,17 +13,19 @@ class _GoalContent extends StatelessWidget {
   final ValueChanged<MedicationPointResult> onMedicationVerified;
   final VoidCallback findRoute;
 
-  int _stepsOf(BuildContext context, Walk walk) => math.max(
-        walk.actual,
-        context.select<StepProvider, int>((provider) => provider.steps),
-      );
+  int _stepsOf(BuildContext context) =>
+      context.select<StepProvider, int>((provider) => provider.steps);
 
   @override
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
       padding: EdgeInsets.fromLTRB(
-          16, 24, 16, 100 + MediaQuery.of(context).padding.bottom),
+        16,
+        24,
+        16,
+        100 + MediaQuery.of(context).padding.bottom,
+      ),
       decoration: const BoxDecoration(
         color: MyColor.grey100,
         borderRadius: BorderRadius.only(
@@ -52,11 +54,11 @@ class _GoalContent extends StatelessWidget {
                       medicine: medicine,
                       proofPhoto: proofPhoto,
                       verifyRemaining: verifyRemaining,
-                      onVerified: onMedicationVerified)
+                      onVerified: onMedicationVerified,
+                    )
                   : const GoalEmptyCard(type: GoalType.medicine),
               walk != null
-                  ? WalkCard(
-                      walk: walk.copyWith(actual: _stepsOf(context, walk)))
+                  ? WalkCard(walk: walk.copyWith(actual: _stepsOf(context)))
                   : const GoalEmptyCard(type: GoalType.walk),
               hospital != null
                   ? HospitalCard(

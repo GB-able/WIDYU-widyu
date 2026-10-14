@@ -22,7 +22,6 @@ abstract class HomeUiState with _$HomeUiState {
     required DateTime measuredAt,
     required List<String> thumbnails,
     required MedicationStatus medicationStatus,
-    required int stepCount,
     required int stepGoal,
     required String? healthSchedulePlace,
     required double? healthScheduleLatitude,
@@ -42,7 +41,8 @@ abstract class HomeUiState with _$HomeUiState {
   bool get hasHealthSchedule => healthSchedulePlace?.isNotEmpty ?? false;
 
   /// 목표 대비 진행률(%)
-  double get stepProgress => hasStepGoal ? (stepCount / stepGoal) * 100 : 0.0;
+  double stepProgressOf(int steps) =>
+      hasStepGoal ? (steps / stepGoal) * 100 : 0.0;
 
   /// 최상단에 나타날 알림
   NotificationUiModel? get notification =>
@@ -61,7 +61,6 @@ abstract class HomeUiState with _$HomeUiState {
         measuredAt: DateTime.now(),
         thumbnails: [],
         medicationStatus: const MedicationStatus.unknown(),
-        stepCount: 0,
         stepGoal: 0,
         healthSchedulePlace: null,
         healthScheduleLatitude: null,

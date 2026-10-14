@@ -22,13 +22,11 @@ class StepProvider with ChangeNotifier, WidgetsBindingObserver {
   bool _disposed = false;
   bool _observing = false;
   bool _tracking = false;
-  int _syncRevision = 0;
 
   String get today => DateTime.now().walkDate;
   int get steps => _date == today ? _steps ?? 0 : 0;
   bool get hasTodaySteps => _date == today && _steps != null;
   bool get isTracking => !_disposed && _tracking;
-  int get syncRevision => _syncRevision;
 
   Future<void> start() {
     if (_disposed || _tracking) return Future.value();
@@ -107,7 +105,6 @@ class StepProvider with ChangeNotifier, WidgetsBindingObserver {
         _steps = result.steps;
         _hasHealthSteps = true;
       }
-      if (result.uploaded > 0) _syncRevision++;
       notifyListeners();
     } catch (error) {
       debugPrint('[StepProvider] 걸음수 동기화가 보류되었습니다: ${error.runtimeType}');
