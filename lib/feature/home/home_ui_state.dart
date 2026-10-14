@@ -27,6 +27,9 @@ abstract class HomeUiState with _$HomeUiState {
     required String? healthSchedulePlace,
     required double? healthScheduleLatitude,
     required double? healthScheduleLongitude,
+
+    /// 약 복용 인증 사진을 업로드하는 중인지 여부
+    required bool isVerifyingMedication,
   }) = _HomeUiState;
 
   /// 목표 유무
@@ -61,5 +64,6 @@ abstract class HomeUiState with _$HomeUiState {
         healthSchedulePlace: null,
         healthScheduleLatitude: null,
         healthScheduleLongitude: null,
+        isVerifyingMedication: false,
       );
 }
