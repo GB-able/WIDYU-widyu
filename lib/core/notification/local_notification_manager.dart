@@ -5,7 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 /// FCM 메시지를 수신했을 때 로컬 푸시를 띄우기 위한 범용 래퍼.
-/// 알림 표시/취소, 권한 요청, 알림 탭 처리(콜드 스타트 포함)를 담당한다.
+/// 알림 표시/취소, 알림 탭 처리(콜드 스타트 포함)를 담당한다.
 class LocalNotificationManager {
   LocalNotificationManager._();
 
@@ -31,7 +31,7 @@ class LocalNotificationManager {
     await _plugin.initialize(
       settings: const InitializationSettings(
         android: AndroidInitializationSettings('@mipmap/ic_launcher'),
-        // 권한은 requestPermission() 에서 명시적으로 요청한다.
+        // 초기화 시점에는 권한을 요청하지 않는다.
         iOS: DarwinInitializationSettings(
           requestAlertPermission: false,
           requestBadgePermission: false,
@@ -57,12 +57,17 @@ class LocalNotificationManager {
     if (launchDetails?.didNotificationLaunchApp ?? false) {
       _hasInitialLaunch = true;
       _initialPayload = launchDetails?.notificationResponse?.payload;
-      debugPrint('[LocalNotificationManager] 알림으로 앱 실행: $_initialPayload');
+      // 서버가 내려준 payload 원문은 디버그 빌드에서만 남긴다(법적 요건 L1).
+      if (kDebugMode) {
+        debugPrint('[LocalNotificationManager] 알림으로 앱 실행: $_initialPayload');
+      }
     }
   }
 
   static void _onNotificationTapped(NotificationResponse response) {
-    debugPrint('[LocalNotificationManager] 알림 탭: ${response.payload}');
+    if (kDebugMode) {
+      debugPrint('[LocalNotificationManager] 알림 탭: ${response.payload}');
+    }
     _notificationTapped.add(response.payload);
   }
 

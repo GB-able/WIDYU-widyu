@@ -32,10 +32,7 @@ class LocationLocalDataSourceImpl extends LocationLocalDataSource {
           );
     return Geolocator.getPositionStream(locationSettings: locationSetting)
         .map((position) {
-      return UserLocation(
-        latitude: position.latitude,
-        longitude: position.longitude,
-      );
+      return _toUserLocation(position);
     });
   }
 
@@ -46,10 +43,7 @@ class LocationLocalDataSourceImpl extends LocationLocalDataSource {
     try {
       if (!await Geolocator.isLocationServiceEnabled()) return null;
 
-      var permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
-      }
+      final permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied ||
           permission == LocationPermission.deniedForever) {
         return null;
@@ -64,13 +58,22 @@ class LocationLocalDataSourceImpl extends LocationLocalDataSource {
         ),
       );
 
-      return UserLocation(
-        latitude: position.latitude,
-        longitude: position.longitude,
-      );
+      return _toUserLocation(position);
     } catch (e) {
       log('현재 위치 조회 실패: $e');
       return null;
     }
   }
+
+  UserLocation _toUserLocation(Position position) => UserLocation(
+        latitude: position.latitude,
+        longitude: position.longitude,
+        measuredAt: position.timestamp.millisecondsSinceEpoch,
+        accuracyM: position.accuracy,
+        speedMps: position.speed,
+        speedAccuracyMps: position.speedAccuracy,
+        headingDeg: position.heading,
+        altitudeM: position.altitude,
+        isMock: position.isMocked,
+      );
 }

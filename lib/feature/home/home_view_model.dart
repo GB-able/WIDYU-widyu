@@ -15,7 +15,12 @@ import 'package:widyu/core/model/home/senior_card.dart';
 import 'package:widyu/core/model/location/user_location.dart';
 import 'package:widyu/core/model/myPage/user/user.dart';
 import 'package:widyu/core/model/notification/notification_page.dart';
+import 'package:widyu/core/model/permission/permission_recovery_prompt.dart';
+import 'package:widyu/core/model/permission/permission_type.dart';
+import 'package:widyu/core/utils/background_location_notice_controller.dart';
 import 'package:widyu/core/utils/kakao_map_launcher.dart';
+import 'package:widyu/core/utils/permission_manager.dart';
+import 'package:widyu/core/utils/permission_recovery_controller.dart';
 import 'package:widyu/feature/home/home_ui_event.dart';
 import 'package:widyu/feature/home/home_ui_state.dart';
 import 'package:widyu/feature/home/notification_ui_model.dart';
@@ -27,6 +32,16 @@ class HomeViewModel with ChangeNotifier {
   final HeartRateRepository _heartRateRepository;
   final LocationRepository _locationRepository;
   final StepProvider _stepProvider;
+  final PermissionRecoveryController _permissionRecoveryController;
+
+  /// 소유권은 main.dart 의 Provider 에 있으므로 여기서 dispose 하지 않는다.
+  final BackgroundLocationNoticeController _noticeController;
+  final Future<bool> Function({
+    required UserLocation destination,
+    UserLocation? start,
+    String? destinationName,
+    required KakaoMapRouteType routeType,
+  }) _openRoute;
 
   HomeUiState _uiState = HomeUiState.init();
   HomeUiState get uiState => _uiState;
@@ -51,22 +66,38 @@ class HomeViewModel with ChangeNotifier {
     required HeartRateRepository heartRateRepository,
     required LocationRepository locationRepository,
     required StepProvider stepProvider,
+    PermissionRecoveryController? permissionRecoveryController,
+    BackgroundLocationNoticeController? noticeController,
+    Future<bool> Function({
+      required UserLocation destination,
+      UserLocation? start,
+      String? destinationName,
+      required KakaoMapRouteType routeType,
+    })? openRoute,
   })  : _homeRepository = homeRepository,
         _heartRateRepository = heartRateRepository,
         _notificationRepository = notificationRepository,
         _myPageRepository = myPageRepository,
         _locationRepository = locationRepository,
-        _stepProvider = stepProvider {
+        _stepProvider = stepProvider,
+        _permissionRecoveryController =
+            permissionRecoveryController ?? PermissionRecoveryController(),
+        _noticeController =
+            noticeController ?? BackgroundLocationNoticeController(),
+        _openRoute = openRoute ?? KakaoMapLauncher.openRoute {
     unawaited(_fetchNotification());
     unawaited(_fetchUser());
     unawaited(_observeWatchConnection());
     unawaited(fetchHeartRate());
     unawaited(_fetchSeniorCard());
+    unawaited(_evaluateBackgroundLocationNotice());
     _medicationTicker = Timer.periodic(
       const Duration(seconds: 30),
       (_) => _applyMedicationStatus(),
     );
   }
+
+  bool get _isDisposed => _uiEvent.isClosed;
 
   @override
   void notifyListeners() {
@@ -75,6 +106,18 @@ class HomeViewModel with ChangeNotifier {
 
   void _emit(HomeUiEvent event) {
     if (!_uiEvent.isClosed) _uiEvent.add(event);
+  }
+
+  Future<void> _evaluateBackgroundLocationNotice() async {
+    final shouldShow = await _noticeController.claimNoticeIfNeeded();
+    if (shouldShow) _emit(const ShowBackgroundLocationNotice());
+  }
+
+  Future<void> openBackgroundLocationSettings() async {
+    final result = await _noticeController.openSettingsAndRecheck();
+    if (result == PermissionSettingsResult.launchFailed) {
+      _emit(const BackgroundLocationSettingsLaunchFailure());
+    }
   }
 
   Future<void> markNotificationAsRead(int notificationId) async {
@@ -101,8 +144,9 @@ class HomeViewModel with ChangeNotifier {
 
   /// 건강 일정 장소로 향하는 카카오맵 길찾기를 연다.
   /// 현재 위치를 못 얻어도 목적지만으로 길찾기를 열 수 있으므로 위치 실패는 막지 않는다.
-  Future<void> openHealthScheduleRoute() async {
-    if (_isOpeningRoute) return;
+  Future<void> openHealthScheduleRoute(
+      {PermissionRecoveryPrompt? showPrompt}) async {
+    if (_isOpeningRoute || _isDisposed) return;
 
     final latitude = _uiState.healthScheduleLatitude;
     final longitude = _uiState.healthScheduleLongitude;
@@ -113,8 +157,11 @@ class HomeViewModel with ChangeNotifier {
 
     _isOpeningRoute = true;
     try {
-      final current = await _locationRepository.getCurrentLocation();
-      final isOpened = await KakaoMapLauncher.openRoute(
+      final current = await _resolveRouteStart(
+        showPrompt ?? _cancelPermissionPrompt,
+      );
+      if (_isDisposed) return;
+      final isOpened = await _openRoute(
         destination: UserLocation(latitude: latitude, longitude: longitude),
         start: current,
         destinationName: _uiState.healthSchedulePlace,
@@ -125,6 +172,37 @@ class HomeViewModel with ChangeNotifier {
       _isOpeningRoute = false;
     }
   }
+
+  Future<UserLocation?> _resolveRouteStart(
+    PermissionRecoveryPrompt showPrompt,
+  ) async {
+    final permission = await _permissionRecoveryController.ensurePermission(
+      PermissionType.location,
+      showPrompt: showPrompt,
+    );
+    if (_isDisposed) return null;
+
+    switch (permission) {
+      case PermissionRequestResult.granted:
+        return _locationRepository.getCurrentLocation();
+      case PermissionRequestResult.settingsLaunchFailed:
+        _emit(const LocationPermissionSettingsLaunchFailure());
+      case PermissionRequestResult.denied:
+      case PermissionRequestResult.permanentlyDenied:
+      case PermissionRequestResult.restricted:
+      case PermissionRequestResult.unsupported:
+        _emit(const LocationPermissionUnavailable());
+      case PermissionRequestResult.canceled:
+        break;
+    }
+    return null;
+  }
+
+  static Future<PermissionRecoveryAction> _cancelPermissionPrompt(
+    PermissionType _,
+    PermissionRecoveryMode __,
+  ) async =>
+      PermissionRecoveryAction.cancel;
 
   Future<void> fetchHeartRate() async {
     _uiState = _uiState.copyWith(isHeartRateLoading: true);
@@ -242,6 +320,7 @@ class HomeViewModel with ChangeNotifier {
 
   @override
   void dispose() {
+    _permissionRecoveryController.dispose();
     _watchConnection?.cancel();
     _medicationTicker?.cancel();
     _uiEvent.close();

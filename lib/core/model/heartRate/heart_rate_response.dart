@@ -8,8 +8,9 @@ abstract class HeartRateResponse with _$HeartRateResponse {
   const factory HeartRateResponse({
     required int memberId,
     required String heartRateStatus,
-    required int heartRate,
-    required DateTime measuredAt,
+    /// 아직 판정된 심박이 없으면(상태 UNKNOWN) 서버가 null 로 준다.
+    int? heartRate,
+    DateTime? measuredAt,
   }) = _HeartRateResponse;
 
   factory HeartRateResponse.fromJson(Map<String, dynamic> json) =>

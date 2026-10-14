@@ -47,6 +47,8 @@ import 'package:widyu/core/data/source/goal/walk_local_data_source.dart';
 import 'package:widyu/core/data/source/goal/walk_local_data_source_impl.dart';
 import 'package:widyu/core/data/source/goal/walk_remote_data_source.dart';
 import 'package:widyu/core/data/source/goal/walk_remote_data_source_impl.dart';
+import 'package:widyu/core/data/source/device/device_local_data_source.dart';
+import 'package:widyu/core/data/source/device/device_local_data_source_impl.dart';
 import 'package:widyu/core/data/source/heartRate/heart_rate_local_data_source.dart';
 import 'package:widyu/core/data/source/heartRate/heart_rate_local_data_source_impl.dart';
 import 'package:widyu/core/data/source/heartRate/heart_rate_remote_data_source.dart';
@@ -65,12 +67,14 @@ import 'package:widyu/core/data/source/point/point_remote_data_source.dart';
 import 'package:widyu/core/data/source/point/point_remote_data_source_impl.dart';
 import 'package:widyu/core/notification/medication_push_manager.dart';
 import 'package:widyu/core/network/api_client.dart';
+import 'package:widyu/core/network/token_manager.dart';
 import 'package:widyu/core/network/socket_client.dart';
 import 'package:widyu/core/ui/theme/theme.dart';
 import 'package:widyu/core/utils/app_service_controller.dart';
 import 'package:widyu/core/notification/local_notification_manager.dart';
 import 'package:widyu/firebase_options.dart';
 import 'package:widyu/walk_background_service.dart';
+import 'package:widyu/core/utils/background_location_notice_controller.dart';
 
 void main() {
   runZonedGuarded(_bootstrap, (error, stack) {
@@ -130,7 +134,14 @@ Future<void> _bootstrap() async {
   runApp(
     MultiProvider(
       providers: [
-        Provider<AppServiceController>(create: (_) => AppServiceController()),
+        Provider<TokenManager>(create: (_) => TokenManager()),
+        ChangeNotifierProvider<AppServiceController>(
+          create: (_) => AppServiceController(),
+        ),
+        Provider<BackgroundLocationNoticeController>(
+          create: (_) => BackgroundLocationNoticeController(),
+          dispose: (_, controller) => controller.dispose(),
+        ),
         Provider<ApiClient>(create: (_) => ApiClient()),
         Provider<SocketClient>(create: (_) => SocketClient()),
         ProxyProvider<ApiClient, MedicationRemoteDataSource>(
@@ -186,6 +197,9 @@ Future<void> _bootstrap() async {
         Provider<HeartRateLocalDataSource>(
           create: (_) => HeartRateLocalDataSourceImpl(),
         ),
+        Provider<DeviceLocalDataSource>(
+          create: (_) => DeviceLocalDataSourceImpl(),
+        ),
         Provider<LocationLocalDataSource>(
           create: (_) => LocationLocalDataSourceImpl(),
         ),
@@ -193,12 +207,9 @@ Future<void> _bootstrap() async {
           update: (_, socketClient, __) =>
               LocationRemoteDataSourceImpl(socketClient: socketClient),
         ),
-        ProxyProvider2<SocketClient, ApiClient, HeartRateRemoteDataSource>(
-          update: (_, socketClient, apiClient, __) =>
-              HeartRateRemoteDataSourceImpl(
-            socketClient: socketClient,
-            apiClient: apiClient,
-          ),
+        ProxyProvider<ApiClient, HeartRateRemoteDataSource>(
+          update: (_, apiClient, __) =>
+              HeartRateRemoteDataSourceImpl(apiClient: apiClient),
         ),
         ProxyProvider<ApiClient, AlbumRemoteDataSource>(
           update: (_, apiClient, __) =>
@@ -234,11 +245,14 @@ Future<void> _bootstrap() async {
             remoteDataSource: remote,
           ),
         ),
-        ProxyProvider2<LocationLocalDataSource, LocationRemoteDataSource,
-            LocationRepository>(
-          update: (_, local, remote, __) => LocationRepositoryImpl(
+        ProxyProvider4<LocationLocalDataSource, LocationRemoteDataSource,
+            AuthLocalDataSource, DeviceLocalDataSource, LocationRepository>(
+          update: (_, local, remote, authLocal, deviceLocal, __) =>
+              LocationRepositoryImpl(
             localDataSource: local,
             remoteDataSource: remote,
+            authLocalDataSource: authLocal,
+            deviceLocalDataSource: deviceLocal,
           ),
         ),
         ProxyProvider<PointRemoteDataSource, PointRepository>(
@@ -262,14 +276,28 @@ class App extends StatefulWidget {
   State<App> createState() => _AppState();
 }
 
-class _AppState extends State<App> {
+class _AppState extends State<App> with WidgetsBindingObserver {
   late final AppServiceController _serviceController;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _serviceController = context.read<AppServiceController>();
-    _serviceController.start();
+    unawaited(_serviceController.start());
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      unawaited(_serviceController.refresh());
+    }
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
   }
 
   @override

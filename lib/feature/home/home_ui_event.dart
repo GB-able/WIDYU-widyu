@@ -32,3 +32,21 @@ class HealthSchedulePlaceUnavailable extends HomeUiEvent {
 class OpenKakaoMapFailure extends HomeUiEvent {
   const OpenKakaoMapFailure();
 }
+
+class LocationPermissionUnavailable extends HomeUiEvent {
+  const LocationPermissionUnavailable();
+}
+
+class LocationPermissionSettingsLaunchFailure extends HomeUiEvent {
+  const LocationPermissionSettingsLaunchFailure();
+}
+
+/// 위치 '항상 허용' 안내를 노출해야 하는 경우
+class ShowBackgroundLocationNotice extends HomeUiEvent {
+  const ShowBackgroundLocationNotice();
+}
+
+/// 위치 '항상 허용' 안내에서 설정 화면을 열지 못한 경우
+class BackgroundLocationSettingsLaunchFailure extends HomeUiEvent {
+  const BackgroundLocationSettingsLaunchFailure();
+}

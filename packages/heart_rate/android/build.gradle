@@ -1,4 +1,4 @@
-group 'com.example.widyu.heart_rate'
+group 'com.gbable.widu.heart_rate'
 version '1.0-SNAPSHOT'
 
 buildscript {
@@ -18,7 +18,7 @@ apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 
 android {
-    namespace "com.example.widyu.heart_rate"
+    namespace "com.gbable.widu.heart_rate"
     compileSdk 34
 
     defaultConfig {

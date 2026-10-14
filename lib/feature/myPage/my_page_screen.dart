@@ -21,6 +21,7 @@ import 'package:widyu/feature/myPage/my_page_ui_state.dart';
 import 'package:widyu/feature/myPage/my_page_view_model.dart';
 
 part 'widget/header_content.dart';
+part 'widget/my_page_app_bar.dart';
 part 'widget/information_menu_view.dart';
 part 'widget/management_menu_view.dart';
 part 'widget/my_page_header.dart';
@@ -62,19 +63,7 @@ class MyPageScreen extends StatelessWidget {
           stream: uiEvent,
           onEvent: (event) => _handleEvent(context, event),
           child: Scaffold(
-            appBar: AppBar(
-              toolbarHeight: 52,
-              backgroundColor: MyColor.orange400,
-              systemOverlayStyle: const SystemUiOverlayStyle(
-                statusBarColor: Colors.transparent,
-                statusBarBrightness: Brightness.light,
-              ),
-              title: Text(
-                "내 정보",
-                style: MyTypo.title4.copyWith(color: MyColor.grey800),
-              ),
-              centerTitle: true,
-            ),
+            appBar: const _MyPageAppBar(),
             body: Column(
               children: [
                 _MyPageHeader(

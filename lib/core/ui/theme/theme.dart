@@ -15,7 +15,7 @@ class MyTheme {
         systemNavigationBarColor: Colors.white,
         systemNavigationBarIconBrightness: Brightness.dark,
       ),
-      toolbarHeight: 44,
+      toolbarHeight: 52,
       elevation: 0,
     ),
     progressIndicatorTheme: const ProgressIndicatorThemeData(

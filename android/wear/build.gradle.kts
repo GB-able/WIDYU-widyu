@@ -13,11 +13,11 @@ buildscript {
 }
 
 android {
-    namespace = "com.example.widyu"
+    namespace = "com.gbable.widu"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.example.widyu"
+        applicationId = "com.gbable.widu"
         minSdk = 30
         targetSdk = 36
         versionCode = 1
@@ -46,12 +46,17 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.14"
     }
     hilt {
         enableAggregatingTask = false
+    }
+    testOptions {
+        unitTests.isReturnDefaultValues = true
+        unitTests.all { it.useJUnitPlatform() }
     }
 }
 
@@ -92,4 +97,11 @@ dependencies {
 
     // Google Mobile Service
     implementation("com.google.android.gms:play-services-wearable:19.0.0")
+
+    // Test
+    testImplementation(platform("org.junit:junit-bom:5.11.4"))
+    testImplementation("org.junit.jupiter:junit-jupiter")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    testImplementation("io.kotest:kotest-assertions-core-jvm:5.9.1")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test-jvm:1.10.1")
 }

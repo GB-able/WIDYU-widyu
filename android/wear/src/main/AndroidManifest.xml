@@ -45,6 +45,19 @@
             android:exported="false"
             android:foregroundServiceType="health" />
 
+        <service
+            android:name=".data.service.ImuConfigListenerService"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.google.android.gms.wearable.DATA_CHANGED" />
+
+                <data
+                    android:host="*"
+                    android:pathPrefix="/imu/config"
+                    android:scheme="wear" />
+            </intent-filter>
+        </service>
+
         <receiver
             android:name=".presentation.receiver.WearBootReceiver"
             android:enabled="true"

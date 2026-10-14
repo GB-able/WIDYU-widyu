@@ -264,7 +264,7 @@ class _NotificationPage implements NotificationPage {
   const _NotificationPage(
       {required final List<Notification> notifications,
       required this.hasNext,
-      required this.nextCursor})
+      this.nextCursor})
       : _notifications = notifications;
   factory _NotificationPage.fromJson(Map<String, dynamic> json) =>
       _$NotificationPageFromJson(json);

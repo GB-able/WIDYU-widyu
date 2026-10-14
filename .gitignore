@@ -68,3 +68,5 @@ ios/Runner/GoogleService-Info.plist
 lib/firebase_options.dart
 firebase.json
 
+# Docs
+docs/

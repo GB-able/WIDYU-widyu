@@ -22,7 +22,7 @@ import flutter_background_service_ios
     if #available(iOS 10.0, *) {
       UNUserNotificationCenter.current().delegate = self as? UNUserNotificationCenterDelegate
     }
-    SwiftFlutterBackgroundServicePlugin.taskIdentifier = "com.example.widyu.refresh"
+    SwiftFlutterBackgroundServicePlugin.taskIdentifier = "com.gbable.widu.refresh"
     UIApplication.shared.setMinimumBackgroundFetchInterval(UIApplication.backgroundFetchIntervalMinimum)
 
     if let controller = window?.rootViewController as? FlutterViewController {

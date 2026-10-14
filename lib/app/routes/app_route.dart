@@ -1,5 +1,6 @@
 enum AppRoute {
   splash("/splash"),
+  permission("/permission"),
   onboarding("/onboarding"),
   login("/login"),
 

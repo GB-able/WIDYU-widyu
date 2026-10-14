@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:widyu/core/network/logger_interceptor.dart';
 import 'package:widyu/core/network/token_interceptor.dart';
@@ -20,7 +21,8 @@ class ApiClient {
         baseUrl: '$baseUrl$apiPrefix',
         validateStatus: (status) => status != null);
     dio.interceptors.add(TokenInterceptor());
-    dio.interceptors.add(LoggerInterceptor());
+    // 통신 본문·인증 헤더는 디버그 빌드에서만 남긴다(법적 요건 L1).
+    if (kDebugMode) dio.interceptors.add(LoggerInterceptor());
   }
 
   Future<Response> req({
