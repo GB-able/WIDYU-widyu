@@ -75,9 +75,15 @@ class SensorBatchRepositoryImpl implements SensorBatchRepository {
         _send(batch);
       case SensorMessageHeartRate(:final batch):
         _send(batch);
-      // 폐기 레코드는 재전송 대상이 아니다 — 서버 수용 여부가 미정이라 실패는 기록만 한다.
+      // 폐기 레코드는 결과가 오지 않아 보내지는 대로 지운다. 못 보내면 남겨 두어 다음 기동 때 다시 보낸다.
       case SensorMessageDropped(:final record):
-        if (!_remoteDataSource.sendDropped(record)) {
+        if (_remoteDataSource.sendDropped(record)) {
+          _localDataSource.consume(
+            stream: record.stream,
+            sessionId: record.sessionId,
+            seq: record.fromSeq,
+          );
+        } else {
           log('Sensor dropped record send failed: '
               'session=${record.sessionId} '
               'seq=${record.fromSeq}..${record.toSeq}');
@@ -98,12 +104,21 @@ class SensorBatchRepositoryImpl implements SensorBatchRepository {
     if (result.result == SensorResult.rejected) {
       log('Sensor batch rejected seq=${removed?.batch.seq ?? result.seq}');
     }
+    if (removed != null) _consume(removed.batch);
   }
+
+  /// 서버가 최종 판정(저장·중복·거절)을 내린 배치만 워치 Data Layer 에서 지운다.
+  void _consume(SensorUpload batch) => _localDataSource.consume(
+        stream: batch.stream,
+        sessionId: batch.sessionId,
+        seq: batch.seq,
+      );
 
   void _addPending(SensorUpload batch) {
     if (_pending.length >= _queueMax) {
       final oldest = _pending.keys.first;
       final dropped = _pending.remove(oldest);
+      // Data Layer 에는 남아 있어 다음 기동 때 다시 흘러온다.
       log('Sensor batch ack wait full; dropped oldest seq=${dropped?.batch.seq}');
     }
     _pending[batch.batchId] = (batch: batch, sentAt: DateTime.now());
@@ -123,6 +138,7 @@ class SensorBatchRepositoryImpl implements SensorBatchRepository {
   void _enqueue(SensorUpload batch) {
     if (_queue.length == _queueMax) {
       final dropped = _queue.removeFirst();
+      // Data Layer 에는 남아 있어 다음 기동 때 다시 흘러온다.
       log('Sensor batch resend queue full; dropped oldest seq=${dropped.seq}');
     }
     _queue.addLast(batch);
@@ -140,6 +156,7 @@ class SensorBatchRepositoryImpl implements SensorBatchRepository {
         if (outcome == ResendOutcome.rejected) {
           log('Sensor batch rejected seq=${batch.seq}');
         }
+        _consume(batch);
         // await 사이에 큐가 바뀌었을 수 있으므로 같은 객체일 때만 뺀다.
         if (_queue.isNotEmpty && identical(_queue.first, batch)) {
           _queue.removeFirst();
@@ -163,6 +180,8 @@ class SensorBatchRepositoryImpl implements SensorBatchRepository {
     _connection = null;
     _results?.cancel();
     _results = null;
+    // 지우지 않은 항목은 다음 구독 때 네이티브가 Data Layer 에서 다시 흘려준다. 남겨 두면 두 번 보낸다.
     _pending.clear();
+    _queue.clear();
   }
 }

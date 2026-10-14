@@ -31,11 +31,10 @@ class HeartRateListenerService : WearableListenerService() {
                             consume(item)
                             return@forEach
                         }
-                        // Flutter 엔진이 죽어 있으면 남겨 두어 엔진이 살아난 뒤 다시 읽게 한다.
-                        // 워치 쪽 10분 상한이 오래된 것부터 정리하므로 무한히 쌓이지는 않는다.
+                        // 넘긴 뒤에도 지우지 않는다. Flutter 가 서버 결과를 받고 지운다(재부팅해도 남아 있게).
+                        // 엔진이 죽어 있으면 그대로 두었다가 엔진이 살아난 뒤 다시 읽게 한다.
                         if (HeartRatePlugin.sendSensorBatch(json)) {
                             Log.d(TAG, "Sensor item delivered path=$path")
-                            consume(item)
                         } else {
                             Log.w(TAG, "No Flutter sink, keeping sensor item path=$path")
                         }

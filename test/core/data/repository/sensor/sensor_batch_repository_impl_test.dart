@@ -190,6 +190,7 @@ void main() {
       await tester.pump(const Duration(seconds: 1));
 
       expect(remote.resent, isEmpty);
+      expect(local.consumed, ['imu_watch/session-1/1']);
       repository.stopObserveSensorBatches();
     });
 
@@ -238,6 +239,46 @@ void main() {
 
       expect(remote.resent, [batch]);
     });
+  });
+
+  test('서버 판정 전에는 Data Layer 항목을 지우지 않고, REST 판정 뒤에 지운다', () async {
+    remote.sendSucceeds = false;
+    remote.outcome = ResendOutcome.retryLater;
+    local.add(_batch(1));
+    local.addHeartRate(_heartRateBatch(2));
+    await _settle();
+    remote.connection.add(true);
+    await _settle();
+    expect(local.consumed, isEmpty);
+
+    remote.outcome = ResendOutcome.stored;
+    remote.connection.add(true);
+    await _settle();
+    expect(local.consumed, ['imu_watch/session-1/1', 'hr/hr-session-1/2']);
+  });
+
+  test('구독을 멈추면 메모리 대기열을 비운다 — 다음 구독 때 Data Layer 에서 다시 흘러온다', () async {
+    remote.sendSucceeds = false;
+    local.add(_batch(1));
+    await _settle();
+
+    repository.stopObserveSensorBatches();
+    repository.observeSensorBatches();
+    remote.connection.add(true);
+    await _settle();
+
+    expect(remote.resent, isEmpty);
+  });
+
+  test('폐기 레코드는 보내지면 지우고, 못 보내면 남겨 둔다', () async {
+    local.addDropped(_dropped());
+    await _settle();
+    expect(local.consumed, ['imu_dropped/session-1/10']);
+
+    remote.sendSucceeds = false;
+    local.addDropped(_dropped());
+    await _settle();
+    expect(local.consumed, hasLength(1));
   });
 
   test('폐기 레코드는 즉시 보내고 실패해도 대기열에 쌓지 않는다', () async {
@@ -316,6 +357,16 @@ class _LocalDataSource implements SensorBatchLocalDataSource {
 
   @override
   Stream<SensorMessage> getSensorBatches() => _controller.stream;
+
+  final consumed = <String>[];
+
+  @override
+  void consume({
+    required String stream,
+    required String sessionId,
+    required int seq,
+  }) =>
+      consumed.add('$stream/$sessionId/$seq');
 
   void dispose() => _controller.close();
 }

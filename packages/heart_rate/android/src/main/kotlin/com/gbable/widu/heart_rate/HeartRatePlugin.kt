@@ -28,6 +28,7 @@ class HeartRatePlugin :
     private var eventChannel: EventChannel? = null
     private var sensorBatchChannel: EventChannel? = null
     private var sensorConfigChannel: MethodChannel? = null
+    private var sensorBatchAckChannel: MethodChannel? = null
     private lateinit var nodeClient: NodeClient
     private lateinit var messageClient: MessageClient
     private var applicationContext: Context? = null
@@ -81,6 +82,17 @@ class HeartRatePlugin :
                     }
                 }
             }
+        sensorBatchAckChannel =
+            MethodChannel(binding.binaryMessenger, SENSOR_BATCH_ACK_CHANNEL).apply {
+                setMethodCallHandler { call, result ->
+                    if (call.method == "consume") {
+                        consumeSensorItem(call)
+                        result.success(null)
+                    } else {
+                        result.notImplemented()
+                    }
+                }
+            }
     }
 
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
@@ -91,6 +103,7 @@ class HeartRatePlugin :
         sensorBatchChannel?.setStreamHandler(null)
         methodChannel?.setMethodCallHandler(null)
         sensorConfigChannel?.setMethodCallHandler(null)
+        sensorBatchAckChannel?.setMethodCallHandler(null)
     }
 
     override fun onMethodCall(
@@ -131,7 +144,7 @@ class HeartRatePlugin :
         sensorBatchSink = null
     }
 
-    /** 엔진이 없던 동안 남겨 둔 센서 DataItem(IMU·심박)을 seq 오름차순으로 넘기고 지운다. */
+    /** 남아 있는 센서 DataItem(IMU·심박)을 seq 오름차순으로 넘긴다. 지우는 건 서버 결과를 받은 Flutter 가 한다. */
     private fun drainPendingImuItems() {
         val context = applicationContext ?: return
         val dataClient = Wearable.getDataClient(context)
@@ -144,18 +157,34 @@ class HeartRatePlugin :
                             buffer
                                 .mapNotNull { item ->
                                     val json = sensorItemToJson(item) ?: return@mapNotNull null
-                                    Triple(sensorItemSeq(item), item.uri, json)
+                                    sensorItemSeq(item) to json
                                 }.sortedBy { it.first }
                         } finally {
                             buffer.release()
                         }
                     if (pending.isEmpty()) return@addOnSuccessListener
                     Log.d("Widyu", "Replaying ${pending.size} pending sensor items under $prefix")
-                    pending.forEach { (_, uri, json) ->
-                        if (sendSensorBatch(json)) dataClient.deleteDataItems(uri)
-                    }
+                    pending.forEach { (_, json) -> sendSensorBatch(json) }
                 }.addOnFailureListener { Log.w("Widyu", "Failed to read pending sensor items", it) }
         }
+    }
+
+    /** 서버가 판정을 내린 항목을 지운다. 경로 규칙(`<prefix><session_id>/<seq>`)은 워치가 정한 것이다. */
+    private fun consumeSensorItem(call: MethodCall) {
+        val context = applicationContext ?: return
+        val prefix =
+            when (call.argument<String>("stream")) {
+                IMU_STREAM -> IMU_BATCH_PREFIX
+                HR_STREAM -> HR_BATCH_PREFIX
+                IMU_DROPPED_STREAM -> IMU_DROPPED_PREFIX
+                else -> return
+            }
+        val sessionId = call.argument<String>("session_id") ?: return
+        val seq = call.argument<Number>("seq")?.toLong() ?: return
+        Wearable
+            .getDataClient(context)
+            .deleteDataItems(Uri.parse("wear://*$prefix$sessionId/$seq"))
+            .addOnFailureListener { Log.w("Widyu", "Failed to consume sensor item", it) }
     }
 
     /** 키 이름은 워치와의 계약이므로 바꾸지 않는다. 늦게 반영되면 의미가 없어 setUrgent() 로 보낸다. */
@@ -198,6 +227,10 @@ class HeartRatePlugin :
         private const val HEART_RATE_STATUS_KEY = "heartRateStatus"
         private const val HEART_RATE_STATUS_PATH = "/heart_rate_status"
         private const val SENSOR_CONFIG_CHANNEL = "com.gbable.widu/sensor_config"
+        private const val SENSOR_BATCH_ACK_CHANNEL = "com.gbable.widu/sensor_batch_ack"
+        private const val IMU_STREAM = "imu_watch"
+        private const val HR_STREAM = "hr"
+        private const val IMU_DROPPED_STREAM = "imu_dropped"
         private const val IMU_CONFIG_PATH = "/imu/config"
         private const val IMU_PREFIX = "/imu/"
         private const val IMU_BATCH_PREFIX = "/imu/batch/"

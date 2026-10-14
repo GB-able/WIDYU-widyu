@@ -111,7 +111,11 @@ abstract class ResendInfo with _$ResendInfo {
 
 /// 서버 `/sensor/batches` 로 올리는 배치(IMU·심박)의 공통 모양. 재전송 큐와 접수 결과 처리가 이것만 본다.
 abstract interface class SensorUpload {
+  String get stream;
+
   String get batchId;
+
+  String get sessionId;
 
   int get seq;
 

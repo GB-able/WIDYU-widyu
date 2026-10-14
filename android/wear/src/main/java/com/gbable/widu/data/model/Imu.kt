@@ -11,7 +11,8 @@ data class ImuConfig(
     val backfillPreSec: Int = 2,
     val backfillPostSec: Int = 10,
     val anchorIntervalMin: Int = 10,
-    val queueMinutes: Int = 10,
+    /** 폰도 이 항목을 서버 결과 전까지 지우지 않으므로 폰 오프라인 보관 한도(계약 §1, 30분 이상)와 같다. */
+    val queueMinutes: Int = 30,
     /** 이 배수의 seq 마다 큐 길이를 정리한다. */
     val trimEverySeq: Int = 30,
     val clockJumpToleranceMs: Double = 50.0,
