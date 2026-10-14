@@ -10,7 +10,7 @@ class _GoalLoadingWidget extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Spacer(flex: 2),
-          CircularProgressIndicator(color: MyColor.secondary),
+          CircularProgressIndicator(),
           Spacer(flex: 3),
         ],
       ),
