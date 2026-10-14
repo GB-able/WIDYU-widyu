@@ -1,8 +1,10 @@
 import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
+import 'package:widyu/core/data/provider/album_provider.dart';
 import 'package:widyu/core/data/provider/medication_alarm_provider.dart';
 import 'package:widyu/core/data/provider/point_provider.dart';
 import 'package:widyu/core/data/provider/step_provider.dart';
+import 'package:widyu/core/data/repository/album/album_repository.dart';
 import 'package:widyu/core/data/repository/goal/walk_repository.dart';
 import 'package:widyu/core/data/repository/goal/medication_repository.dart';
 import 'package:widyu/core/data/repository/notification/notification_repository.dart';
@@ -41,6 +43,12 @@ class UserSessionScope extends StatelessWidget {
           create: (context) => MedicationAlarmProvider(
             repository: context.read<MedicationRepository>(),
             currentMember: authenticatedMedicationMember,
+          ),
+        ),
+        ChangeNotifierProvider<AlbumProvider>(
+          create: (context) => AlbumProvider(
+            repository: context.read<AlbumRepository>(),
+            pointProvider: context.read<PointProvider>(),
           ),
         ),
       ],

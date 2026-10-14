@@ -9,6 +9,8 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:provider/provider.dart';
 import 'package:widyu/app/routes/custom_router.dart';
 import 'package:widyu/background_service.dart';
+import 'package:widyu/core/data/repository/album/album_repository.dart';
+import 'package:widyu/core/data/repository/album/album_repository_impl.dart';
 import 'package:widyu/core/data/repository/auth/auth_repository.dart';
 import 'package:widyu/core/data/repository/auth/auth_repository_impl.dart';
 import 'package:widyu/core/data/repository/goal/goal_repository.dart';
@@ -29,6 +31,8 @@ import 'package:widyu/core/data/repository/notification/notification_repository.
 import 'package:widyu/core/data/repository/notification/notification_repository_impl.dart';
 import 'package:widyu/core/data/repository/point/point_repository.dart';
 import 'package:widyu/core/data/repository/point/point_repository_impl.dart';
+import 'package:widyu/core/data/source/album/album_remote_data_source.dart';
+import 'package:widyu/core/data/source/album/album_remote_data_source_impl.dart';
 import 'package:widyu/core/data/source/auth/auth_local_data_source.dart';
 import 'package:widyu/core/data/source/auth/auth_local_data_source_impl.dart';
 import 'package:widyu/core/data/source/auth/auth_remote_data_source.dart';
@@ -196,9 +200,14 @@ Future<void> _bootstrap() async {
             apiClient: apiClient,
           ),
         ),
+        ProxyProvider<ApiClient, AlbumRemoteDataSource>(
+          update: (_, apiClient, __) =>
+              AlbumRemoteDataSourceImpl(apiClient: apiClient),
+        ),
         ProxyProvider<ApiClient, PointRemoteDataSource>(
-            update: (_, apiClient, __) =>
-                PointRemoteDataSourceImpl(apiClient: apiClient)),
+          update: (_, apiClient, __) =>
+              PointRemoteDataSourceImpl(apiClient: apiClient),
+        ),
         ProxyProvider2<AuthRemoteDataSource, AuthLocalDataSource,
             AuthRepository>(
           update: (_, remote, local, __) => AuthRepositoryImpl(
@@ -233,8 +242,13 @@ Future<void> _bootstrap() async {
           ),
         ),
         ProxyProvider<PointRemoteDataSource, PointRepository>(
-            update: (_, remote, __) =>
-                PointRepositoryImpl(remoteDataSource: remote)),
+          update: (_, remote, __) =>
+              PointRepositoryImpl(remoteDataSource: remote),
+        ),
+        ProxyProvider<AlbumRemoteDataSource, AlbumRepository>(
+          update: (_, remote, __) =>
+              AlbumRepositoryImpl(remoteDataSource: remote),
+        ),
       ],
       child: const App(),
     ),
