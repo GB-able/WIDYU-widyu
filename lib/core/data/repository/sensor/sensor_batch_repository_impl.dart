@@ -17,11 +17,13 @@ class SensorBatchRepositoryImpl implements SensorBatchRepository {
     int queueMax = SensorBatchConfig.queueMax,
     Duration retryInterval = SensorBatchConfig.retryInterval,
     Duration ackTimeout = SensorBatchConfig.ackTimeout,
+    Duration maxAckWait = SensorBatchConfig.maxAckWait,
   })  : _localDataSource = localDataSource,
         _remoteDataSource = remoteDataSource,
         _queueMax = queueMax,
         _retryInterval = retryInterval,
-        _ackTimeout = ackTimeout {
+        _ackTimeout = ackTimeout,
+        _maxAckWait = maxAckWait {
     assert(queueMax > 0, 'queueMax must be positive');
     assert(!retryInterval.isNegative && retryInterval > Duration.zero,
         'retryInterval must be positive');
@@ -32,6 +34,7 @@ class SensorBatchRepositoryImpl implements SensorBatchRepository {
   final int _queueMax;
   final Duration _retryInterval;
   final Duration _ackTimeout;
+  final Duration _maxAckWait;
   final ListQueue<SensorUpload> _queue = ListQueue();
 
   /// 결과를 기다리는 배치. 삽입 순서를 쓰므로 LinkedHashMap 기본 구현에 의존한다.
@@ -42,6 +45,7 @@ class SensorBatchRepositoryImpl implements SensorBatchRepository {
   Timer? _retryTimer;
   bool _active = false;
   bool _isResending = false;
+  DateTime? _lastResultAt;
 
   @override
   void observeSensorBatches() {
@@ -62,8 +66,15 @@ class SensorBatchRepositoryImpl implements SensorBatchRepository {
       }
     });
     _retryTimer = Timer.periodic(_retryInterval, (_) {
-      final deadline = DateTime.now().subtract(_ackTimeout);
-      _flushPending((sentAt) => !sentAt.isAfter(deadline));
+      // 결과가 계속 오고 있으면 서버가 몰린 배치를 처리하는 중이다. 이때 REST 로 넘기면 같은 배치를 두 번 보낸다.
+      final now = DateTime.now();
+      final lastResultAt = _lastResultAt;
+      final stalled =
+          lastResultAt == null || now.difference(lastResultAt) >= _ackTimeout;
+      _flushPending((sentAt) {
+        final waited = now.difference(sentAt);
+        return waited >= _maxAckWait || (stalled && waited >= _ackTimeout);
+      });
       _resendQueued();
     });
   }
@@ -99,12 +110,22 @@ class SensorBatchRepositoryImpl implements SensorBatchRepository {
     }
   }
 
+  /// 결과가 늦게 와서 이미 REST 대기열로 넘어간 배치도 여기서 빼야 REST 가 다시 보내지 않는다.
   void _onResult(SensorResult result) {
-    final removed = _pending.remove(result.batchId);
+    _lastResultAt = DateTime.now();
+    final removed =
+        _pending.remove(result.batchId)?.batch ?? _removeQueued(result.batchId);
     if (result.result == SensorResult.rejected) {
-      log('Sensor batch rejected seq=${removed?.batch.seq ?? result.seq}');
+      log('Sensor batch rejected seq=${removed?.seq ?? result.seq}');
     }
-    if (removed != null) _consume(removed.batch);
+    if (removed != null) _consume(removed);
+  }
+
+  SensorUpload? _removeQueued(String batchId) {
+    final batch =
+        _queue.where((queued) => queued.batchId == batchId).firstOrNull;
+    if (batch != null) _queue.remove(batch);
+    return batch;
   }
 
   /// 서버가 최종 판정(저장·중복·거절)을 내린 배치만 워치 Data Layer 에서 지운다.

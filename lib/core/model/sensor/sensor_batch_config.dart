@@ -7,4 +7,7 @@ class SensorBatchConfig {
 
   /// STOMP 로 보낸 배치의 결과를 이 시간까지 못 받으면 REST 재전송 큐로 넘긴다.
   static const ackTimeout = Duration(seconds: 10);
+
+  /// 다른 배치의 결과는 계속 오는데 이 배치만 결과가 없을 때, 여기까지 기다린 뒤 REST 로 넘긴다.
+  static const maxAckWait = Duration(minutes: 2);
 }

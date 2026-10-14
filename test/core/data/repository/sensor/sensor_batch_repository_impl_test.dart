@@ -20,6 +20,7 @@ void main() {
     int queueMax = 2,
     Duration retryInterval = const Duration(hours: 1),
     Duration ackTimeout = Duration.zero,
+    Duration maxAckWait = const Duration(minutes: 2),
   }) {
     repository.stopObserveSensorBatches();
     return repository = SensorBatchRepositoryImpl(
@@ -28,6 +29,7 @@ void main() {
       queueMax: queueMax,
       retryInterval: retryInterval,
       ackTimeout: ackTimeout,
+      maxAckWait: maxAckWait,
     )..observeSensorBatches();
   }
 
@@ -224,6 +226,70 @@ void main() {
       expect(resent.toJson()['resend'], isNull);
       expect(resent, batch);
       repository.stopObserveSensorBatches();
+    });
+
+    // 실제 시각을 쓰므로 간격을 넉넉히 벌려 둔다.
+    test('결과가 계속 오는 동안에는 ack 대기가 길어져도 REST 로 넘기지 않는다', () async {
+      build(
+        queueMax: 10,
+        retryInterval: const Duration(milliseconds: 20),
+        ackTimeout: const Duration(milliseconds: 150),
+      );
+      final batches = [for (var seq = 1; seq <= 6; seq++) _batch(seq)];
+      batches.forEach(local.add);
+      await _settle();
+
+      for (final batch in batches) {
+        await Future<void>.delayed(const Duration(milliseconds: 50));
+        remote.resultController.add(
+          SensorResult(batchId: batch.batchId, seq: batch.seq, result: 'STORED'),
+        );
+      }
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+
+      expect(remote.resent, isEmpty);
+      expect(local.consumed, hasLength(6));
+    });
+
+    test('다른 배치 결과만 계속 오면 maxAckWait 뒤에 그 배치를 REST 로 넘긴다', () async {
+      build(
+        retryInterval: const Duration(milliseconds: 20),
+        ackTimeout: const Duration(milliseconds: 150),
+        maxAckWait: const Duration(milliseconds: 300),
+        queueMax: 20,
+      );
+      local.add(_batch(1));
+      await _settle();
+
+      for (var seq = 2; seq <= 10; seq++) {
+        await Future<void>.delayed(const Duration(milliseconds: 50));
+        final batch = _batch(seq);
+        local.add(batch);
+        await _settle();
+        remote.resultController.add(
+          SensorResult(batchId: batch.batchId, seq: seq, result: 'STORED'),
+        );
+      }
+
+      expect(remote.resent.map((batch) => batch.seq), [1]);
+    });
+
+    test('REST 대기열로 넘어간 뒤 결과가 오면 대기열에서 빼고 지운다', () async {
+      final batch = _batch(1);
+      local.add(batch);
+      await _settle();
+      remote.connection.add(false);
+      await _settle();
+
+      remote.resultController.add(
+        SensorResult(batchId: batch.batchId, seq: batch.seq, result: 'STORED'),
+      );
+      await _settle();
+      remote.connection.add(true);
+      await _settle();
+
+      expect(remote.resent, isEmpty);
+      expect(local.consumed, ['imu_watch/session-1/1']);
     });
 
     test('연결이 끊기면 ack 대기 중인 배치를 모두 대기열로 옮긴다', () async {
