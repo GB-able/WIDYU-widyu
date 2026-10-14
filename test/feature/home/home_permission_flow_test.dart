@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:widyu/core/data/repository/heartRate/heart_rate_repository.dart';
@@ -7,8 +8,8 @@ import 'package:widyu/core/data/repository/location/location_repository.dart';
 import 'package:widyu/core/data/repository/myPage/my_page_repository.dart';
 import 'package:widyu/core/data/repository/notification/notification_repository.dart';
 import 'package:widyu/core/model/api/api_result.dart';
-import 'package:widyu/core/model/camera/camera_capture_result.dart';
 import 'package:widyu/core/model/heartRate/heart_rate_response.dart';
+import 'package:widyu/core/model/home/medication_verification.dart';
 import 'package:widyu/core/model/home/senior_card.dart';
 import 'package:widyu/core/model/location/user_location.dart';
 import 'package:widyu/core/model/myPage/user/user.dart';
@@ -22,22 +23,45 @@ import 'package:widyu/feature/home/home_ui_event.dart';
 import 'package:widyu/feature/home/home_view_model.dart';
 
 class _Home extends Fake implements HomeRepository {
+  int? scheduleId = 7;
+  int fetches = 0;
+  final verifications = <(int, String)>[];
+  final verification = Completer<ApiResult<MedicationVerification>>();
+
   @override
-  Future<ApiResult<SeniorCard>> fetchSeniorCard() async =>
-      const ApiResult.success(SeniorCard(
-        heartRate: null,
-        medicine: null,
-        albums: [],
-        healthSchedule: HealthSchedule(
-          scheduleName: null,
-          dday: null,
-          scheduledAt: null,
-          placeAddress: '병원',
-          latitude: 37,
-          longitude: 127,
-        ),
-        walk: null,
-      ));
+  Future<ApiResult<MedicationVerification>> verifyMedication(
+    int scheduleId,
+    File image,
+  ) {
+    verifications.add((scheduleId, image.path));
+    return verification.future;
+  }
+
+  @override
+  Future<ApiResult<SeniorCard>> fetchSeniorCard() async {
+    fetches++;
+    return ApiResult.success(SeniorCard(
+      heartRate: null,
+      medicine: MedicationSummary(
+        medicineScheduleId: scheduleId,
+        todayTakenCount: null,
+        todayTotalCount: null,
+        nextDoseCount: 2,
+        nextAlarmTime: null,
+        scheduleStatuses: const [],
+      ),
+      albums: [],
+      healthSchedule: const HealthSchedule(
+        scheduleName: null,
+        dday: null,
+        scheduledAt: null,
+        placeAddress: '병원',
+        latitude: 37,
+        longitude: 127,
+      ),
+      walk: null,
+    ));
+  }
 }
 
 class _MyPage extends Fake implements MyPageRepository {
@@ -74,10 +98,11 @@ class _Location extends Fake implements LocationRepository {
 }
 
 class _Harness {
+  final home = _Home();
   final location = _Location();
   final events = <HomeUiEvent>[];
   final starts = <UserLocation?>[];
-  int photos = 0;
+  int get photos => events.whereType<NavigateToMedicationCamera>().length;
   bool disposed = false;
   late HomeViewModel vm;
 
@@ -85,11 +110,10 @@ class _Harness {
     PermissionRequestResult permission = PermissionRequestResult.granted,
     PermissionSettingsResult settings = PermissionSettingsResult.granted,
     Future<PermissionRequestResult> Function()? readPermission,
-    Future<CameraCaptureResult> Function()? capture,
     BackgroundLocationNoticeController? noticeController,
   }) async {
     vm = HomeViewModel(
-      homeRepository: _Home(),
+      homeRepository: home,
       myPageRepository: _MyPage(),
       notificationRepository: _Notification(),
       heartRateRepository: _HeartRate(),
@@ -104,10 +128,6 @@ class _Harness {
           BackgroundLocationNoticeController(
             foregroundPermissionReader: () async => false,
           ),
-      takePhoto: () {
-        photos++;
-        return capture?.call() ?? Future.value(const CameraCaptureSuccess('x'));
-      },
       openRoute: ({
         required UserLocation destination,
         UserLocation? start,
@@ -138,13 +158,26 @@ class _Harness {
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  test('카메라는 허용 시 한 번 촬영하고 성공을 알린다', () async {
+  test('카메라는 허용 시 일정 ID와 약 개수를 담아 촬영 화면 이동을 알린다', () async {
     final h = _Harness();
     await h.initialize();
     await h.vm.takeMedicationPhoto();
     await Future<void>.delayed(Duration.zero);
-    expect(h.photos, 1);
-    expect(h.events.single, isA<TakeMedicationPhotoSuccess>());
+    expect(
+      h.events.single,
+      isA<NavigateToMedicationCamera>()
+          .having((it) => it.scheduleId, 'scheduleId', 7)
+          .having((it) => it.doseCount, 'doseCount', 2),
+    );
+  });
+
+  test('복용 일정 ID가 없으면 촬영 화면으로 이동하지 않는다', () async {
+    final h = _Harness();
+    h.home.scheduleId = null;
+    await h.initialize();
+    await h.vm.takeMedicationPhoto();
+    await Future<void>.delayed(Duration.zero);
+    expect(h.events.single, isA<MedicationScheduleUnavailable>());
   });
 
   test('카메라 거절은 촬영을 막고 권한 안내만 보낸다', () async {
@@ -238,19 +271,19 @@ void main() {
     expect(h.starts, [origin]);
   });
 
-  test('중복 촬영을 막고 촬영 취소 후에는 다시 시도할 수 있다', () async {
+  test('권한 확인 중 중복 탭을 막고 끝난 뒤에는 다시 시도할 수 있다', () async {
     final h = _Harness();
-    final capture = Completer<CameraCaptureResult>();
-    await h.initialize(capture: () => capture.future);
+    final permission = Completer<PermissionRequestResult>();
+    await h.initialize(readPermission: () => permission.future);
     final first = h.vm.takeMedicationPhoto();
-    await Future<void>.delayed(Duration.zero);
     await h.vm.takeMedicationPhoto();
-    expect(h.photos, 1);
-    capture.complete(const CameraCaptureCanceled());
+    permission.complete(PermissionRequestResult.granted);
     await first;
+    await Future<void>.delayed(Duration.zero);
+    expect(h.photos, 1);
     await h.vm.takeMedicationPhoto();
+    await Future<void>.delayed(Duration.zero);
     expect(h.photos, 2);
-    expect(h.events, isEmpty);
   });
 
   test('위치 조회 중 중복 실행과 화면 종료 후 지도 실행을 막는다', () async {
@@ -305,5 +338,49 @@ void main() {
     permission.complete(PermissionRequestResult.granted);
     await first;
     expect(h.photos, 0);
+  });
+
+  test('인증 성공 시 리워드를 알리고 카드를 다시 불러온다', () async {
+    final h = _Harness();
+    await h.initialize();
+    final fetches = h.home.fetches;
+    final verify = h.vm.verifyMedication(7, '/tmp/pill.jpg');
+    h.home.verification.complete(const ApiResult.success(
+      MedicationVerification(earnedPoints: 100, currentPoints: 700),
+    ));
+    await verify;
+    await Future<void>.delayed(Duration.zero);
+    expect(h.home.verifications, [(7, '/tmp/pill.jpg')]);
+    expect(
+      h.events.single,
+      isA<ShowMedicationReward>()
+          .having((it) => it.earnedPoints, 'earnedPoints', 100)
+          .having((it) => it.currentPoints, 'currentPoints', 700),
+    );
+    expect(h.home.fetches, fetches + 1);
+  });
+
+  test('인증 실패 시 실패를 알린다', () async {
+    final h = _Harness();
+    await h.initialize();
+    h.home.verification.complete(const ApiResult.failure('error'));
+    await h.vm.verifyMedication(7, '/tmp/pill.jpg');
+    await Future<void>.delayed(Duration.zero);
+    expect(h.events.single, isA<VerifyMedicationFailure>());
+  });
+
+  test('인증 업로드 중에는 로딩 상태이고 다시 촬영하거나 중복 업로드하지 않는다', () async {
+    final h = _Harness();
+    await h.initialize();
+    final verify = h.vm.verifyMedication(7, '/tmp/pill.jpg');
+    expect(h.vm.uiState.isVerifyingMedication, isTrue);
+    await h.vm.verifyMedication(7, '/tmp/pill.jpg');
+    await h.vm.takeMedicationPhoto();
+    await Future<void>.delayed(Duration.zero);
+    expect(h.home.verifications.length, 1);
+    expect(h.photos, 0);
+    h.home.verification.complete(const ApiResult.failure('error'));
+    await verify;
+    expect(h.vm.uiState.isVerifyingMedication, isFalse);
   });
 }

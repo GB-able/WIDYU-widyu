@@ -50,6 +50,7 @@ part 'widget/health_schedule_card.dart';
 part 'widget/walking_card.dart';
 part 'widget/album_card.dart';
 part 'widget/reward_dialog.dart';
+part 'widget/verifying_overlay.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -69,17 +70,41 @@ class HomeScreen extends StatelessWidget {
     await viewModel.openBackgroundLocationSettings();
   }
 
+  Future<void> _openMedicationCamera(
+      BuildContext context, int scheduleId, int? doseCount) async {
+    final viewModel = context.read<HomeViewModel>();
+    final imagePath = await context.push<String>(
+      Uri(
+        path: AppRoute.medicationCamera.path,
+        queryParameters: {
+          if (doseCount != null) 'doseCount': '$doseCount',
+        },
+      ).toString(),
+    );
+    if (imagePath == null) return;
+    // 화면은 바로 홈으로 돌아오고, 결과는 ShowMedicationReward 로 받는다.
+    unawaited(viewModel.verifyMedication(scheduleId, imagePath));
+  }
+
   bool _isCurrentRoute(BuildContext context) =>
       ModalRoute.of(context)?.isCurrent ?? true;
 
   void _handleEvent(BuildContext context, HomeUiEvent event) {
     switch (event) {
-      case TakeMedicationPhotoSuccess():
-        // 추후 서버 연결 필요
+      case NavigateToMedicationCamera(:final scheduleId, :final doseCount):
+        unawaited(_openMedicationCamera(context, scheduleId, doseCount));
+      case ShowMedicationReward(:final earnedPoints, :final currentPoints):
         showDialog(
           context: context,
-          builder: (_) => const _RewardDialog(point: 100, totalPoint: 600),
+          builder: (_) => _RewardDialog(
+            point: earnedPoints,
+            totalPoint: currentPoints,
+          ),
         );
+      case VerifyMedicationFailure():
+        showToast('약 복용 인증에 실패했어요. 잠시 후 다시 시도해 주세요.');
+      case MedicationScheduleUnavailable():
+        showToast('복용 일정 정보를 불러오지 못했어요.');
       case RequestCameraPermissionFailure():
         showToast('카메라 권한이 필요해요.');
       case CameraPermissionSettingsGranted():
@@ -88,8 +113,6 @@ class HomeScreen extends StatelessWidget {
         showToast('카메라 권한이 아직 필요해요.');
       case CameraPermissionSettingsLaunchFailure():
         showToast('설정 화면을 열지 못했어요.');
-      case OpenCameraFailure():
-        showToast('카메라를 실행할 수 없어요. 잠시 후 다시 시도해 주세요.');
       case HealthSchedulePlaceUnavailable():
         showToast('일정 장소 정보가 없어요.');
       case OpenKakaoMapFailure():
@@ -137,109 +160,115 @@ class HomeScreen extends StatelessWidget {
         return UiEventListener(
           stream: viewModel.uiEvent,
           onEvent: (event) => _handleEvent(context, event),
-          child: Scaffold(
-            backgroundColor: MyColor.grey100,
-            extendBodyBehindAppBar: true,
-            appBar: const _HomeAppBar(),
-            body: LayoutBuilder(
-              builder: (context, constraints) {
-                // 배경 이미지가 시트의 둥근 모서리 영역까지 덮도록 높이를 잡는다.
-                final backgroundHeight = constraints.maxHeight -
-                    _CarouselMenu.sheetHeightOf(context) +
-                    _CarouselMenu.sheetRadius;
+          child: _VerifyingOverlay(
+            isVisible: uiState.isVerifyingMedication,
+            child: Scaffold(
+              backgroundColor: MyColor.grey100,
+              extendBodyBehindAppBar: true,
+              appBar: const _HomeAppBar(),
+              body: LayoutBuilder(
+                builder: (context, constraints) {
+                  // 배경 이미지가 시트의 둥근 모서리 영역까지 덮도록 높이를 잡는다.
+                  final backgroundHeight = constraints.maxHeight -
+                      _CarouselMenu.sheetHeightOf(context) +
+                      _CarouselMenu.sheetRadius;
 
-                return Stack(
-                  children: [
-                    Positioned(
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      height: backgroundHeight,
-                      child: const WidyuAssetImage(
-                        name: 'img_home_background.png',
-                        fit: BoxFit.cover,
-                        alignment: Alignment.topCenter,
+                  return Stack(
+                    children: [
+                      Positioned(
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        height: backgroundHeight,
+                        child: const WidyuAssetImage(
+                          name: 'img_home_background.png',
+                          fit: BoxFit.cover,
+                          alignment: Alignment.topCenter,
+                        ),
                       ),
-                    ),
-                    CustomScrollView(
-                      slivers: [
-                        SliverFillRemaining(
-                          hasScrollBody: false,
-                          child: Padding(
-                            padding: EdgeInsets.only(
-                              top: Scaffold.of(context).appBarMaxHeight!,
-                            ),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 16),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      if (notification == null)
-                                        const SizedBox(height: 28)
-                                      else ...[
-                                        _NotificationView(
-                                          id: notification.notificationId,
-                                          icon: notification.icon,
-                                          description: notification.description,
-                                          onTap:
-                                              viewModel.markNotificationAsRead,
+                      CustomScrollView(
+                        slivers: [
+                          SliverFillRemaining(
+                            hasScrollBody: false,
+                            child: Padding(
+                              padding: EdgeInsets.only(
+                                top: Scaffold.of(context).appBarMaxHeight!,
+                              ),
+                              child: Column(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 16),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        if (notification == null)
+                                          const SizedBox(height: 28)
+                                        else ...[
+                                          _NotificationView(
+                                            id: notification.notificationId,
+                                            icon: notification.icon,
+                                            description:
+                                                notification.description,
+                                            onTap: viewModel
+                                                .markNotificationAsRead,
+                                          ),
+                                          const SizedBox(height: 10),
+                                        ],
+                                        _HomeGreetingView(
+                                          isLoading: uiState.isUserLoading,
+                                          name: uiState.name,
                                         ),
-                                        const SizedBox(height: 10),
+                                        const SizedBox(height: 26),
+                                        _WatchDataView(
+                                          isLoading: uiState.isHeartRateLoading,
+                                          isWearing: uiState.isWearing,
+                                          heartRate: uiState.heartRate,
+                                          status: uiState.heartRateStatus,
+                                          measuredAt: uiState.measuredAt,
+                                          onHeartRateClick:
+                                              viewModel.fetchHeartRate,
+                                        ),
                                       ],
-                                      _HomeGreetingView(
-                                        isLoading: uiState.isUserLoading,
-                                        name: uiState.name,
-                                      ),
-                                      const SizedBox(height: 26),
-                                      _WatchDataView(
-                                        isLoading: uiState.isHeartRateLoading,
-                                        isWearing: uiState.isWearing,
-                                        heartRate: uiState.heartRate,
-                                        status: uiState.heartRateStatus,
-                                        measuredAt: uiState.measuredAt,
-                                        onHeartRateClick:
-                                            viewModel.fetchHeartRate,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 24),
-                                  child: _CarouselMenu(
-                                    isLoading: uiState.isSeniorCardLoading,
-                                    hasGoal: uiState.hasGoal,
-                                    thumbanils: uiState.thumbnails,
-                                    medicationStatus: uiState.medicationStatus,
-                                    hasStepGoal: uiState.hasStepGoal,
-                                    stepProgress: uiState.stepProgress,
-                                    onCameraTap: () =>
-                                        viewModel.takeMedicationPhoto(
-                                      showPrompt: (type, mode) =>
-                                          showPermissionRecoveryPrompt(
-                                              context, type, mode),
-                                    ),
-                                    onRouteTap: () =>
-                                        viewModel.openHealthScheduleRoute(
-                                      showPrompt: (type, mode) =>
-                                          showPermissionRecoveryPrompt(
-                                              context, type, mode),
                                     ),
                                   ),
-                                ),
-                              ],
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 24),
+                                    child: _CarouselMenu(
+                                      isLoading: uiState.isSeniorCardLoading,
+                                      hasGoal: uiState.hasGoal,
+                                      thumbanils: uiState.thumbnails,
+                                      medicationStatus:
+                                          uiState.medicationStatus,
+                                      hasStepGoal: uiState.hasStepGoal,
+                                      stepProgress: uiState.stepProgress,
+                                      onCameraTap: () =>
+                                          viewModel.takeMedicationPhoto(
+                                        showPrompt: (type, mode) =>
+                                            showPermissionRecoveryPrompt(
+                                                context, type, mode),
+                                      ),
+                                      onRouteTap: () =>
+                                          viewModel.openHealthScheduleRoute(
+                                        showPrompt: (type, mode) =>
+                                            showPermissionRecoveryPrompt(
+                                                context, type, mode),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ],
-                );
-              },
+                        ],
+                      ),
+                    ],
+                  );
+                },
+              ),
             ),
           ),
         );

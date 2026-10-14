@@ -39,12 +39,34 @@ class CameraPermissionSettingsLaunchFailure extends HomeUiEvent {
   const CameraPermissionSettingsLaunchFailure();
 }
 
-class OpenCameraFailure extends HomeUiEvent {
-  const OpenCameraFailure();
+/// 카메라 권한이 준비되어 약 촬영 화면으로 이동해야 하는 경우
+class NavigateToMedicationCamera extends HomeUiEvent {
+  final int scheduleId;
+
+  /// 이번 회차에 복용할 약 개수
+  final int? doseCount;
+
+  const NavigateToMedicationCamera(this.scheduleId, {this.doseCount});
 }
 
-class TakeMedicationPhotoSuccess extends HomeUiEvent {
-  const TakeMedicationPhotoSuccess();
+/// 약 복용 인증에 성공해 리워드를 보여줘야 하는 경우
+class ShowMedicationReward extends HomeUiEvent {
+  final int earnedPoints;
+  final int currentPoints;
+
+  const ShowMedicationReward({
+    required this.earnedPoints,
+    required this.currentPoints,
+  });
+}
+
+class VerifyMedicationFailure extends HomeUiEvent {
+  const VerifyMedicationFailure();
+}
+
+/// 복용 일정 ID가 없어 인증할 수 없는 경우
+class MedicationScheduleUnavailable extends HomeUiEvent {
+  const MedicationScheduleUnavailable();
 }
 
 /// 일정 장소 좌표가 없어 길찾기를 열 수 없는 경우

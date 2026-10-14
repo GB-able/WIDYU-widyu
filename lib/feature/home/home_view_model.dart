@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/widgets.dart';
 import 'package:widyu/core/data/repository/heartRate/heart_rate_repository.dart';
@@ -7,7 +8,6 @@ import 'package:widyu/core/data/repository/location/location_repository.dart';
 import 'package:widyu/core/data/repository/myPage/my_page_repository.dart';
 import 'package:widyu/core/data/repository/notification/notification_repository.dart';
 import 'package:widyu/core/model/api/api_result.dart';
-import 'package:widyu/core/model/camera/camera_capture_result.dart';
 import 'package:widyu/core/model/heartRate/heart_rate_response.dart';
 import 'package:widyu/core/model/heartRate/heart_rate_status.dart';
 import 'package:widyu/core/model/home/medication_status.dart';
@@ -18,7 +18,6 @@ import 'package:widyu/core/model/notification/notification_page.dart';
 import 'package:widyu/core/model/permission/permission_type.dart';
 import 'package:widyu/core/model/permission/permission_recovery_prompt.dart';
 import 'package:widyu/core/utils/background_location_notice_controller.dart';
-import 'package:widyu/core/utils/camera_manager.dart';
 import 'package:widyu/core/utils/kakao_map_launcher.dart';
 import 'package:widyu/core/utils/permission_manager.dart';
 import 'package:widyu/core/utils/permission_recovery_controller.dart';
@@ -45,7 +44,6 @@ class HomeViewModel with ChangeNotifier {
 
   /// 소유권은 main.dart 의 Provider 에 있으므로 여기서 dispose 하지 않는다.
   final BackgroundLocationNoticeController _noticeController;
-  final Future<CameraCaptureResult> Function() _takePhoto;
   final Future<bool> Function({
     required UserLocation destination,
     UserLocation? start,
@@ -78,7 +76,6 @@ class HomeViewModel with ChangeNotifier {
     required LocationRepository locationRepository,
     PermissionRecoveryController? permissionRecoveryController,
     BackgroundLocationNoticeController? noticeController,
-    Future<CameraCaptureResult> Function()? takePhoto,
     Future<bool> Function({
       required UserLocation destination,
       UserLocation? start,
@@ -94,7 +91,6 @@ class HomeViewModel with ChangeNotifier {
             permissionRecoveryController ?? PermissionRecoveryController(),
         _noticeController =
             noticeController ?? BackgroundLocationNoticeController(),
-        _takePhoto = takePhoto ?? CameraManager.takePhoto,
         _openRoute = openRoute ?? KakaoMapLauncher.openRoute {
     unawaited(_fetchNotification());
     unawaited(_fetchUser());
@@ -148,7 +144,12 @@ class HomeViewModel with ChangeNotifier {
 
   Future<void> takeMedicationPhoto(
       {PermissionRecoveryPrompt? showPrompt}) async {
-    if (_isDisposed || _isTakingMedicationPhoto) return;
+    // 업로드 중에 다시 촬영해 같은 회차를 두 번 인증하는 것을 막는다
+    if (_isDisposed ||
+        _isTakingMedicationPhoto ||
+        _uiState.isVerifyingMedication) {
+      return;
+    }
     _isTakingMedicationPhoto = true;
     try {
       final outcome = await _resolveCameraPermission(
@@ -157,7 +158,13 @@ class HomeViewModel with ChangeNotifier {
       if (_isDisposed) return;
       switch (outcome) {
         case _CameraPermissionOutcome.ready:
-          await _captureMedicationPhoto();
+          final scheduleId = _medicine?.medicineScheduleId;
+          _uiEvent.add(scheduleId == null
+              ? const MedicationScheduleUnavailable()
+              : NavigateToMedicationCamera(
+                  scheduleId,
+                  doseCount: _medicine?.nextDoseCount,
+                ));
         case _CameraPermissionOutcome.settingsGranted:
           _uiEvent.add(const CameraPermissionSettingsGranted());
         case _CameraPermissionOutcome.denied:
@@ -171,6 +178,31 @@ class HomeViewModel with ChangeNotifier {
       }
     } finally {
       _isTakingMedicationPhoto = false;
+    }
+  }
+
+  /// 촬영 화면에서 돌아온 사진으로 복용을 인증한다.
+  Future<void> verifyMedication(int scheduleId, String imagePath) async {
+    if (_isDisposed || _uiState.isVerifyingMedication) return;
+    _uiState = _uiState.copyWith(isVerifyingMedication: true);
+    notifyListeners();
+
+    final result =
+        await _homeRepository.verifyMedication(scheduleId, File(imagePath));
+    if (_isDisposed) return;
+
+    // 로딩을 먼저 걷어낸 뒤 결과를 알려 다이얼로그와 겹치지 않게 한다.
+    _uiState = _uiState.copyWith(isVerifyingMedication: false);
+    notifyListeners();
+    switch (result) {
+      case Success(:final data):
+        _uiEvent.add(ShowMedicationReward(
+          earnedPoints: data.earnedPoints,
+          currentPoints: data.currentPoints,
+        ));
+        unawaited(_fetchSeniorCard());
+      case Failure():
+        _uiEvent.add(const VerifyMedicationFailure());
     }
   }
 
@@ -205,19 +237,6 @@ class HomeViewModel with ChangeNotifier {
         _CameraPermissionOutcome.settingsLaunchFailed,
       PermissionRequestResult.canceled => _CameraPermissionOutcome.canceled,
     };
-  }
-
-  Future<void> _captureMedicationPhoto() async {
-    final result = await _takePhoto();
-    if (_isDisposed) return;
-    switch (result) {
-      case CameraCaptureSuccess():
-        _uiEvent.add(const TakeMedicationPhotoSuccess());
-      case CameraCaptureCanceled():
-        break;
-      case CameraCaptureFailure():
-        _uiEvent.add(const OpenCameraFailure());
-    }
   }
 
   /// 건강 일정 장소로 향하는 카카오맵 길찾기를 연다.

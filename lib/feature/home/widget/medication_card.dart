@@ -58,7 +58,11 @@ class _MedicationCard extends StatelessWidget {
             totalCount
           ),
         MedicationCompleted(:final totalCount) => (totalCount, totalCount),
-        MedicationMissed() || MedicationNone() || MedicationUnknown() => null,
+        MedicationMissed(:final takenCount, :final totalCount) => (
+            takenCount,
+            totalCount
+          ),
+        MedicationNone() || MedicationUnknown() => null,
       };
 
   /// 카운트다운 목표 시각과 시간 자리 표시 여부
@@ -71,11 +75,9 @@ class _MedicationCard extends StatelessWidget {
   String? get _badgeLabel => switch (medicationStatus) {
         MedicationAvailable() => null,
         MedicationUpcoming() => '예정',
-        MedicationCompleted() => '완료',
-        MedicationMissed() ||
-        MedicationNone() ||
-        MedicationUnknown() =>
-          '인증 불가능',
+        // 오늘 일정이 모두 지나면 미복용분이 있어도 완료로 표시
+        MedicationCompleted() || MedicationMissed() => '완료',
+        MedicationNone() || MedicationUnknown() => '인증 불가능',
       };
 
   bool get _isDimmed => _badgeLabel != null;
