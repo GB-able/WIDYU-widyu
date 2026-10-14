@@ -55,3 +55,6 @@ app.*.map.json
 # Claude
 CLAUDE.md
 AGENTS.md
+
+# Docs
+docs/
