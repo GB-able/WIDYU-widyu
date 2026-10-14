@@ -1,19 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:widyu/app/routes/user_session_scope.dart';
+import 'package:photo_manager/photo_manager.dart';
 import 'package:widyu/app/routes/app_route.dart';
 import 'package:widyu/app/routes/custom_page.dart';
+import 'package:widyu/app/routes/extra/edit_post_extra.dart';
+import 'package:widyu/app/routes/extra/photo_preview_extra.dart';
 import 'package:widyu/app/routes/tab_reloader.dart';
+import 'package:widyu/app/routes/user_session_scope.dart';
 import 'package:widyu/core/network/token_manager.dart';
 import 'package:widyu/core/ui/widgets/bot_nav.dart';
+import 'package:widyu/feature/album/album_screen.dart';
+import 'package:widyu/feature/album/manage_post/manage_post_screen.dart';
+import 'package:widyu/feature/album/post/post_screen.dart';
+import 'package:widyu/feature/album/preview/photo_preview_screen.dart';
+import 'package:widyu/feature/album/select_photo/select_photo_screen.dart';
 import 'package:widyu/feature/auth/login_screen.dart';
 import 'package:widyu/feature/auth/onboarding_screen.dart';
 import 'package:widyu/feature/contact/contact_screen.dart';
 import 'package:widyu/feature/goal/main/goal_screen.dart';
-import 'package:widyu/feature/home/home_screen.dart';
-import 'package:widyu/feature/management/management_screen.dart';
 import 'package:widyu/feature/goal/medication/medication_session_scope.dart';
 import 'package:widyu/feature/goal/medication/medication_verification_screen.dart';
+import 'package:widyu/feature/home/home_screen.dart';
+import 'package:widyu/feature/management/management_screen.dart';
 import 'package:widyu/feature/myPage/my_page_screen.dart';
 import 'package:widyu/feature/notification_setting/notification_setting_screen.dart';
 import 'package:widyu/feature/point/point_screen.dart';
@@ -107,7 +115,7 @@ class CustomRouter {
                   CustomGoRoute.staticRoute(
                     route: AppRoute.album,
                     builder: (context, state) =>
-                        TabReloader.wrap(index: 2, child: const Placeholder()),
+                        TabReloader.wrap(index: 2, child: const AlbumScreen()),
                   ),
                 ],
               ),
@@ -148,6 +156,30 @@ class CustomRouter {
           CustomGoRoute.slideRoute(
             route: AppRoute.notification,
             builder: (_, __) => const NotificationSettingScreen(),
+          ),
+          CustomGoRoute.slideRoute(
+            route: AppRoute.post,
+            builder: (_, state) => PostScreen(albumId: state.extra as int),
+          ),
+          CustomGoRoute.closeRoute(
+            route: AppRoute.selectPhoto,
+            builder: (_, __) => const SelectPhotoScreen(),
+          ),
+          CustomGoRoute.slideRoute(
+            route: AppRoute.photoPreview,
+            builder: (_, state) =>
+                PhotoPreviewScreen(extra: state.extra as PhotoPreviewExtra),
+          ),
+          CustomGoRoute.slideRoute(
+            route: AppRoute.managePost,
+            builder: (_, state) {
+              final extra = state.extra;
+              return extra is EditPostExtra
+                  ? ManagePostScreen.modify(extra: extra)
+                  : ManagePostScreen.create(
+                      photos: (extra as List).cast<AssetEntity>(),
+                    );
+            },
           ),
         ],
       ),

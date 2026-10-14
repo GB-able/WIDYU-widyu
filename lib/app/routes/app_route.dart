@@ -8,6 +8,11 @@ enum AppRoute {
   album("/album"),
   my("/my"),
 
+  post("/album/post"),
+  selectPhoto("/album/select-photo"),
+  photoPreview("/album/select-photo/preview"),
+  managePost("/album/manage-post"),
+
   profile("/my/profile"),
   point("/my/point"),
   contact("/my/contact"),
