@@ -66,6 +66,7 @@ import 'package:widyu/core/ui/theme/theme.dart';
 import 'package:widyu/core/utils/app_service_controller.dart';
 import 'package:widyu/core/notification/local_notification_manager.dart';
 import 'package:widyu/firebase_options.dart';
+import 'package:widyu/walk_background_service.dart';
 
 void main() {
   runZonedGuarded(_bootstrap, (error, stack) {
@@ -104,21 +105,22 @@ Future<void> _bootstrap() async {
   }
 
   try {
-    await LocalNotificationManager.initialize();
-  } catch (e, stack) {
-    debugPrint('[main] LocalNotificationManager.initialize 실패: $e\n$stack');
-  }
-
-  try {
-    await initializeMedicationPush();
-  } catch (e, stack) {
-    debugPrint('[main] 복약 푸시 초기화 실패: $e\n$stack');
+    await initializeWalkService();
+  } catch (e) {
+    debugPrint('[main] 걸음수 백그라운드 초기화 실패: ${e.runtimeType}');
   }
 
   try {
     await initializeDateFormatting('ko_KR');
   } catch (e, stack) {
     debugPrint('[main] initializeDateFormatting 실패: $e\n$stack');
+  }
+
+  try {
+    await initializeMedicationPush();
+    await LocalNotificationManager.initialize();
+  } catch (e, stack) {
+    debugPrint('[main] 알림 초기화 실패: $e\n$stack');
   }
 
   runApp(
