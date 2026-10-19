@@ -38,11 +38,6 @@ class ManagePostScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final safeAreaHeight = MediaQuery.of(context).size.height -
-        MediaQuery.of(context).padding.top -
-        MediaQuery.of(context).padding.bottom;
-    final contentHeight = safeAreaHeight - 566;
-
     return ChangeNotifierProvider(
       create: (context) => ManagePostViewModel(
         repository: context.read<AlbumRepository>(),
@@ -72,7 +67,6 @@ class ManagePostScreen extends StatelessWidget {
           ),
           body: SafeArea(
             child: Column(
-              spacing: 24,
               children: [
                 Expanded(
                   child: LayoutBuilder(
@@ -94,11 +88,8 @@ class ManagePostScreen extends StatelessWidget {
                                 ),
                                 Expanded(
                                   child: Container(
-                                    constraints: BoxConstraints(
-                                      minHeight: contentHeight < 240
-                                          ? 240
-                                          : contentHeight,
-                                      maxHeight: contentHeight,
+                                    constraints: const BoxConstraints(
+                                      minHeight: 240,
                                     ),
                                     decoration: BoxDecoration(
                                       color: MyColor.white,
@@ -134,7 +125,7 @@ class ManagePostScreen extends StatelessWidget {
                                     16,
                                     4,
                                     16,
-                                    24,
+                                    4,
                                   ),
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.end,

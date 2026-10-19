@@ -49,8 +49,7 @@ class PostViewModel extends ChangeNotifier {
           name: data.author.name.isEmpty
               ? (_uiState.me?.name ?? "")
               : data.author.name,
-          profileImage:
-              data.author.profileImage ?? _uiState.me?.profileImage,
+          profileImage: data.author.profileImage ?? _uiState.me?.profileImage,
         ),
       );
 
