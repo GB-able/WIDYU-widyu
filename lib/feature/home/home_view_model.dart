@@ -55,6 +55,7 @@ class HomeViewModel with ChangeNotifier {
   Timer? _medicationTicker;
   MedicationSummary? _medicine;
   int? get medicationScheduleId => _medicine?.medicineScheduleId;
+  int? get medicationDoseCount => _medicine?.nextDoseCount;
 
   // 중복 탭으로 카카오맵이 두 번 열리는 것을 막는다
   bool _isOpeningRoute = false;

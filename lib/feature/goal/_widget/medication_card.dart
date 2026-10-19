@@ -102,7 +102,8 @@ class MedicationCard extends StatelessWidget {
               verifyRemaining: verifyRemaining,
               onOpenVerification: () async {
                 final result = await openMedicationForSchedule(
-                    context, medicine.medicineScheduleId, DateTime.now());
+                    context, medicine.medicineScheduleId, DateTime.now(),
+                    doseCount: medicine.nextDoseCount);
                 if (result != null) onVerified(result);
               },
             ),

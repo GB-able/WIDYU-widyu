@@ -172,7 +172,8 @@ class HomeScreen extends StatelessWidget {
                     onCameraTap: () {
                       final id = viewModel.medicationScheduleId;
                       if (id != null) {
-                        openMedicationForSchedule(context, id, DateTime.now());
+                        openMedicationForSchedule(context, id, DateTime.now(),
+                            doseCount: viewModel.medicationDoseCount);
                       }
                     },
                     onRouteTap: () => viewModel.openHealthScheduleRoute(

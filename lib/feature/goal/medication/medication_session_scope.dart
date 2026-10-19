@@ -126,7 +126,7 @@ class _MedicationSessionScopeState extends State<MedicationSessionScope>
       });
       if (verify) {
         final result = await context.push<MedicationPointResult>(
-            AppRoute.medicationVerify.path,
+            AppRoute.medicationCamera.path,
             extra: group);
         if (result != null && mounted) showReward(result);
       }
@@ -168,7 +168,7 @@ class _MedicationSessionScopeState extends State<MedicationSessionScope>
       unawaited(service.stop(group['groupId'] as String));
       if (!mounted) return;
       final result = await context.push<MedicationPointResult>(
-          AppRoute.medicationVerify.path,
+          AppRoute.medicationCamera.path,
           extra: launch['group']);
       await service.acknowledgeLaunch(eventId);
       if (result != null && mounted) showReward(result);

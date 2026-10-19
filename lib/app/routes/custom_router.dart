@@ -19,7 +19,7 @@ import 'package:widyu/feature/auth/onboarding_screen.dart';
 import 'package:widyu/feature/contact/contact_screen.dart';
 import 'package:widyu/feature/goal/main/goal_screen.dart';
 import 'package:widyu/feature/goal/medication/medication_session_scope.dart';
-import 'package:widyu/feature/goal/medication/medication_verification_screen.dart';
+import 'package:widyu/feature/medication_camera/medication_camera_screen.dart';
 import 'package:widyu/feature/home/home_screen.dart';
 import 'package:widyu/feature/management/management_screen.dart';
 import 'package:widyu/feature/myPage/my_page_screen.dart';
@@ -91,10 +91,10 @@ class CustomRouter {
           child: MedicationSessionScope(child: child),
         ),
         routes: [
-          CustomGoRoute.slideRoute(
-            route: AppRoute.medicationVerify,
+          CustomGoRoute.closeRoute(
+            route: AppRoute.medicationCamera,
             builder: (_, state) => state.extra is Map
-                ? MedicationVerificationScreen(
+                ? MedicationCameraScreen(
                     group: Map<String, dynamic>.from(state.extra as Map))
                 : const Scaffold(
                     body: Center(child: Text('복용 정보를 확인할 수 없어요.'))),
