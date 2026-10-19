@@ -21,7 +21,12 @@ class _PhotoItem extends StatelessWidget {
           child: Stack(
             fit: StackFit.expand,
             children: [
-              AssetEntityImage(asset, fit: BoxFit.cover),
+              AssetEntityImage(
+                asset,
+                isOriginal: false,
+                thumbnailSize: const ThumbnailSize.square(300),
+                fit: BoxFit.cover,
+              ),
               Positioned(
                 top: 2,
                 right: 2,
