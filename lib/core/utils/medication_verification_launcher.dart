@@ -10,12 +10,13 @@ Future<MedicationPointResult?> openMedicationForSchedule(
     BuildContext context, int scheduleId, DateTime date,
     {int? doseCount}) async {
   final service = context.read<MedicationAlarmProvider>();
-  final caps = await service.capabilities();
+  try {
+    await service.refreshState();
+  } catch (_) {}
   if (!context.mounted) return null;
-  return context.push<MedicationPointResult>(AppRoute.medicationCamera.path,
-      extra: {
+  return context
+      .push<MedicationPointResult>(AppRoute.medicationCamera.path, extra: {
     'memberId': service.state['memberId'],
-    'timeZone': caps['timeZone'],
     'occurrences': [
       {
         'scheduleId': scheduleId,
