@@ -36,9 +36,12 @@ class _PhotoItem extends StatelessWidget {
                       decoration: BoxDecoration(
                         color: isSelected
                             ? MyColor.primary
-                            : MyColor.black.withValues(alpha: 0.4),
+                            : const Color(0x6616161D),
                         shape: BoxShape.circle,
-                        border: Border.all(color: MyColor.white, width: 1.5),
+                        border: Border.all(
+                          color: MyColor.white,
+                          width: 1.5,
+                        ),
                       ),
                       child: isSelected
                           ? Text(
