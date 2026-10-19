@@ -10,6 +10,7 @@ import 'package:widyu/core/data/repository/notification/notification_repository.
 import 'package:widyu/core/model/api/api_result.dart';
 import 'package:widyu/core/model/heartRate/heart_rate_response.dart';
 import 'package:widyu/core/model/heartRate/heart_rate_status.dart';
+import 'package:widyu/core/model/goal/medication/medication_point_result.dart';
 import 'package:widyu/core/model/home/medication_status.dart';
 import 'package:widyu/core/model/home/senior_card.dart';
 import 'package:widyu/core/model/location/user_location.dart';
@@ -103,6 +104,11 @@ class HomeViewModel with ChangeNotifier {
   @override
   void notifyListeners() {
     if (!_uiEvent.isClosed) super.notifyListeners();
+  }
+
+  void onMedicationVerified(MedicationPointResult result) {
+    _emit(ShowMedicationReward(result));
+    unawaited(_fetchSeniorCard());
   }
 
   void _emit(HomeUiEvent event) {

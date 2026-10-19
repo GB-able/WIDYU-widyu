@@ -24,6 +24,7 @@ import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
 import 'package:widyu/core/ui/widgets/bot_nav.dart';
 import 'package:widyu/core/ui/widgets/icon_widget.dart';
+import 'package:widyu/core/ui/widgets/medication_reward_dialog.dart';
 import 'package:widyu/core/ui/widgets/ui_event_listener.dart';
 import 'package:widyu/core/ui/widgets/widyu_asset_image.dart';
 import 'package:widyu/core/ui/widgets/widyu_icon.dart';
@@ -112,6 +113,14 @@ class HomeScreen extends StatelessWidget {
         showToast('사용자 정보를 불러오지 못했어요.');
       case FetchSeniorCardFailure():
         showToast('카드를 불러오지 못했어요.');
+      case ShowMedicationReward(:final result):
+        showDialog(
+          context: context,
+          builder: (_) => MedicationRewardDialog(
+            earnedPoint: result.earnedPoints,
+            currentPoint: result.currentPoints,
+          ),
+        );
     }
   }
 
@@ -169,12 +178,13 @@ class HomeScreen extends StatelessWidget {
                       context.select<StepProvider, int>((p) => p.steps),
                     ),
                     hasHealthSchedule: uiState.hasHealthSchedule,
-                    onCameraTap: () {
+                    onCameraTap: () async {
                       final id = viewModel.medicationScheduleId;
-                      if (id != null) {
-                        openMedicationForSchedule(context, id, DateTime.now(),
-                            doseCount: viewModel.medicationDoseCount);
-                      }
+                      if (id == null) return;
+                      final result = await openMedicationForSchedule(
+                          context, id, DateTime.now(),
+                          doseCount: viewModel.medicationDoseCount);
+                      if (result != null) viewModel.onMedicationVerified(result);
                     },
                     onRouteTap: () => viewModel.openHealthScheduleRoute(
                       showPrompt: (type, mode) =>

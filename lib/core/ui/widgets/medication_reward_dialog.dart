@@ -9,10 +9,10 @@ import 'package:widyu/core/ui/widgets/widyu_text_button.dart';
 
 class MedicationRewardDialog extends StatelessWidget {
   const MedicationRewardDialog(
-      {super.key, required this.earnedPoint, required this.existingPoint});
+      {super.key, required this.earnedPoint, required this.currentPoint});
 
   final int earnedPoint;
-  final int existingPoint;
+  final int currentPoint;
 
   @override
   Widget build(BuildContext context) {
@@ -67,7 +67,7 @@ class MedicationRewardDialog extends StatelessWidget {
                       ),
                       const Spacer(),
                       Text(
-                        '${existingPoint + earnedPoint}P',
+                        '${currentPoint}P',
                         style: MyTypo.title2.copyWith(color: MyColor.grey600),
                       )
                     ],
@@ -77,7 +77,10 @@ class MedicationRewardDialog extends StatelessWidget {
                 Material(
                   type: MaterialType.transparency,
                   child: WidyuTextButton(
-                    onTap: () => context.go(AppRoute.goal.path),
+                    onTap: () {
+                      context.go(AppRoute.goal.path);
+                      Navigator.of(context).pop();
+                    },
                     text: '목표로 이동하기',
                     enable: true,
                   ),

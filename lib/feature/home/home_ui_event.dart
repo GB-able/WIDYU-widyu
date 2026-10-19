@@ -1,3 +1,5 @@
+import 'package:widyu/core/model/goal/medication/medication_point_result.dart';
+
 sealed class HomeUiEvent {
   const HomeUiEvent();
 }
@@ -49,4 +51,10 @@ class ShowBackgroundLocationNotice extends HomeUiEvent {
 /// 위치 '항상 허용' 안내에서 설정 화면을 열지 못한 경우
 class BackgroundLocationSettingsLaunchFailure extends HomeUiEvent {
   const BackgroundLocationSettingsLaunchFailure();
+}
+
+class ShowMedicationReward extends HomeUiEvent {
+  const ShowMedicationReward(this.result);
+
+  final MedicationPointResult result;
 }

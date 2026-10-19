@@ -58,12 +58,12 @@ class _GoalScreenState extends State<GoalScreen> {
         showToast('이번 주 달성 현황을 불러오지 못했어요.');
       case VerifyMedicationFailure(:final message):
         showToast(message);
-      case VerifyMedicationSuccess(:final earnedPoint, :final existingPoint):
+      case VerifyMedicationSuccess(:final earnedPoint, :final currentPoint):
         showDialog(
           context: context,
           builder: (context) => MedicationRewardDialog(
             earnedPoint: earnedPoint,
-            existingPoint: existingPoint,
+            currentPoint: currentPoint,
           ),
         );
     }

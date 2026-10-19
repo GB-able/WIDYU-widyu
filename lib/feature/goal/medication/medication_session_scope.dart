@@ -181,7 +181,7 @@ class _MedicationSessionScopeState extends State<MedicationSessionScope>
         context: context,
         builder: (_) => MedicationRewardDialog(
           earnedPoint: result.earnedPoints,
-          existingPoint: result.currentPoints,
+          currentPoint: result.currentPoints,
         ),
       );
 
