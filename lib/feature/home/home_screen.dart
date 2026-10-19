@@ -71,6 +71,15 @@ class HomeScreen extends StatelessWidget {
     await viewModel.openBackgroundLocationSettings();
   }
 
+  Future<void> _openMedicationCamera(
+      BuildContext context, int scheduleId, int? doseCount) async {
+    final viewModel = context.read<HomeViewModel>();
+    final result = await openMedicationForSchedule(
+        context, scheduleId, DateTime.now(),
+        doseCount: doseCount);
+    if (result != null) viewModel.onMedicationVerified(result);
+  }
+
   bool _isCurrentRoute(BuildContext context) =>
       ModalRoute.of(context)?.isCurrent ?? true;
 
@@ -98,6 +107,18 @@ class HomeScreen extends StatelessWidget {
         showToast('사용자 정보를 불러오지 못했어요.');
       case FetchSeniorCardFailure():
         showToast('카드를 불러오지 못했어요.');
+      case NavigateToMedicationCamera(:final scheduleId, :final doseCount):
+        unawaited(_openMedicationCamera(context, scheduleId, doseCount));
+      case MedicationScheduleUnavailable():
+        showToast('복용 일정 정보를 불러오지 못했어요.');
+      case RequestCameraPermissionFailure():
+        showToast('카메라 권한이 필요해요.');
+      case CameraPermissionSettingsGranted():
+        showToast('카메라 권한이 허용되었어요. 다시 촬영해 주세요.');
+      case CameraPermissionSettingsDenied():
+        showToast('카메라 권한이 아직 필요해요.');
+      case CameraPermissionSettingsLaunchFailure():
+        showToast('설정 화면을 열지 못했어요.');
       case ShowMedicationReward(:final result):
         showDialog(
           context: context,
@@ -217,14 +238,12 @@ class HomeScreen extends StatelessWidget {
                                     ),
                                     hasHealthSchedule:
                                         uiState.hasHealthSchedule,
-                                    onCameraTap: () async {
-                                      final id = viewModel.medicationScheduleId;
-                                      if (id == null) return;
-                                      final result = await openMedicationForSchedule(
-                                          context, id, DateTime.now(),
-                                          doseCount: viewModel.medicationDoseCount);
-                                      if (result != null) viewModel.onMedicationVerified(result);
-                                    },
+                                    onCameraTap: () =>
+                                        viewModel.takeMedicationPhoto(
+                                      showPrompt: (type, mode) =>
+                                          showPermissionRecoveryPrompt(
+                                              context, type, mode),
+                                    ),
                                     onRouteTap: () =>
                                         viewModel.openHealthScheduleRoute(
                                       showPrompt: (type, mode) =>

@@ -10,6 +10,7 @@ import 'package:widyu/core/data/repository/myPage/my_page_repository.dart';
 import 'package:widyu/core/data/repository/notification/notification_repository.dart';
 import 'package:widyu/core/model/api/api_result.dart';
 import 'package:widyu/core/model/heartRate/heart_rate_response.dart';
+import 'package:widyu/core/model/goal/medication/medication_point_result.dart';
 import 'package:widyu/core/model/home/senior_card.dart';
 import 'package:widyu/core/model/location/user_location.dart';
 import 'package:widyu/core/model/myPage/user/user.dart';
@@ -24,9 +25,11 @@ import 'package:widyu/feature/home/home_view_model.dart';
 
 class _Home extends Fake implements HomeRepository {
   int? scheduleId = 7;
+  int fetches = 0;
 
   @override
   Future<ApiResult<SeniorCard>> fetchSeniorCard() async {
+    fetches++;
     return ApiResult.success(SeniorCard(
       heartRate: null,
       medicine: MedicationSummary(
@@ -91,6 +94,7 @@ class _Harness {
   final location = _Location();
   final events = <HomeUiEvent>[];
   final starts = <UserLocation?>[];
+  int get photos => events.whereType<NavigateToMedicationCamera>().length;
   bool disposed = false;
   late HomeViewModel vm;
 
@@ -147,6 +151,76 @@ class _Harness {
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
+  test('카메라는 허용 시 일정 ID와 약 개수를 담아 촬영 화면 이동을 알린다', () async {
+    final h = _Harness();
+    await h.initialize();
+    await h.vm.takeMedicationPhoto();
+    await Future<void>.delayed(Duration.zero);
+    expect(
+      h.events.single,
+      isA<NavigateToMedicationCamera>()
+          .having((it) => it.scheduleId, 'scheduleId', 7)
+          .having((it) => it.doseCount, 'doseCount', 2),
+    );
+  });
+
+  test('복용 일정 ID가 없으면 촬영 화면으로 이동하지 않는다', () async {
+    final h = _Harness();
+    h.home.scheduleId = null;
+    await h.initialize();
+    await h.vm.takeMedicationPhoto();
+    await Future<void>.delayed(Duration.zero);
+    expect(h.events.single, isA<MedicationScheduleUnavailable>());
+  });
+
+  test('카메라 거절은 촬영을 막고 권한 안내만 보낸다', () async {
+    final h = _Harness();
+    await h.initialize(permission: PermissionRequestResult.denied);
+    await h.vm.takeMedicationPhoto();
+    await Future<void>.delayed(Duration.zero);
+    expect(h.photos, 0);
+    expect(h.events.single, isA<RequestCameraPermissionFailure>());
+  });
+
+  test('설정에서 카메라를 허용해도 자동 촬영하지 않는다', () async {
+    final h = _Harness();
+    await h.initialize(permission: PermissionRequestResult.permanentlyDenied);
+    await h.vm.takeMedicationPhoto(
+      showPrompt: (_, __) async => PermissionRecoveryAction.openSettings,
+    );
+    await Future<void>.delayed(Duration.zero);
+    expect(h.photos, 0);
+    expect(h.events.single, isA<CameraPermissionSettingsGranted>());
+  });
+
+  test('카메라 설정 안내 취소는 촬영과 실패 안내를 하지 않는다', () async {
+    final h = _Harness();
+    await h.initialize(permission: PermissionRequestResult.permanentlyDenied);
+    await h.vm.takeMedicationPhoto();
+    expect(h.photos, 0);
+    expect(h.events, isEmpty);
+  });
+
+  for (final entry in {
+    PermissionSettingsResult.denied: CameraPermissionSettingsDenied,
+    PermissionSettingsResult.launchFailed:
+        CameraPermissionSettingsLaunchFailure,
+  }.entries) {
+    test('카메라 설정 ${entry.key.name} 결과를 구분하고 촬영하지 않는다', () async {
+      final h = _Harness();
+      await h.initialize(
+        permission: PermissionRequestResult.permanentlyDenied,
+        settings: entry.key,
+      );
+      await h.vm.takeMedicationPhoto(
+        showPrompt: (_, __) async => PermissionRecoveryAction.openSettings,
+      );
+      await Future<void>.delayed(Duration.zero);
+      expect(h.photos, 0);
+      expect(h.events.single.runtimeType, entry.value);
+    });
+  }
+
   test('지도는 위치 권한 거절 시 현재 위치 조회 없이 목적지만 연다', () async {
     final h = _Harness();
     await h.initialize(permission: PermissionRequestResult.denied);
@@ -188,6 +262,21 @@ void main() {
     await h.vm.openHealthScheduleRoute();
     expect(h.location.reads, 1);
     expect(h.starts, [origin]);
+  });
+
+  test('권한 확인 중 중복 탭을 막고 끝난 뒤에는 다시 시도할 수 있다', () async {
+    final h = _Harness();
+    final permission = Completer<PermissionRequestResult>();
+    await h.initialize(readPermission: () => permission.future);
+    final first = h.vm.takeMedicationPhoto();
+    await h.vm.takeMedicationPhoto();
+    permission.complete(PermissionRequestResult.granted);
+    await first;
+    await Future<void>.delayed(Duration.zero);
+    expect(h.photos, 1);
+    await h.vm.takeMedicationPhoto();
+    await Future<void>.delayed(Duration.zero);
+    expect(h.photos, 2);
   });
 
   test('위치 조회 중 중복 실행과 화면 종료 후 지도 실행을 막는다', () async {
@@ -232,4 +321,29 @@ void main() {
       );
     });
   }
+
+  test('권한 확인 중 화면이 종료되면 카메라를 열지 않는다', () async {
+    final h = _Harness();
+    final permission = Completer<PermissionRequestResult>();
+    await h.initialize(readPermission: () => permission.future);
+    final first = h.vm.takeMedicationPhoto();
+    h.dispose();
+    permission.complete(PermissionRequestResult.granted);
+    await first;
+    expect(h.photos, 0);
+  });
+
+  test('인증 성공 시 리워드를 알리고 카드를 다시 불러온다', () async {
+    final h = _Harness();
+    await h.initialize();
+    final fetches = h.home.fetches;
+    const result = MedicationPointResult(earnedPoints: 100, currentPoints: 700);
+    h.vm.onMedicationVerified(result);
+    await Future<void>.delayed(Duration.zero);
+    expect(
+      h.events.single,
+      isA<ShowMedicationReward>().having((it) => it.result, 'result', result),
+    );
+    expect(h.home.fetches, fetches + 1);
+  });
 }

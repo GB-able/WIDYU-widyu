@@ -26,6 +26,15 @@ import 'package:widyu/feature/home/home_ui_event.dart';
 import 'package:widyu/feature/home/home_ui_state.dart';
 import 'package:widyu/feature/home/notification_ui_model.dart';
 
+enum _CameraPermissionOutcome {
+  ready,
+  settingsGranted,
+  denied,
+  settingsDenied,
+  canceled,
+  settingsLaunchFailed,
+}
+
 class HomeViewModel with ChangeNotifier {
   final HomeRepository _homeRepository;
   final MyPageRepository _myPageRepository;
@@ -55,11 +64,10 @@ class HomeViewModel with ChangeNotifier {
   // 갱신용 타이머
   Timer? _medicationTicker;
   MedicationSummary? _medicine;
-  int? get medicationScheduleId => _medicine?.medicineScheduleId;
-  int? get medicationDoseCount => _medicine?.nextDoseCount;
 
   // 중복 탭으로 카카오맵이 두 번 열리는 것을 막는다
   bool _isOpeningRoute = false;
+  bool _isTakingMedicationPhoto = false;
 
   HomeViewModel({
     required HomeRepository homeRepository,
@@ -104,6 +112,73 @@ class HomeViewModel with ChangeNotifier {
   @override
   void notifyListeners() {
     if (!_uiEvent.isClosed) super.notifyListeners();
+  }
+
+  Future<void> takeMedicationPhoto(
+      {PermissionRecoveryPrompt? showPrompt}) async {
+    if (_isDisposed || _isTakingMedicationPhoto) return;
+    _isTakingMedicationPhoto = true;
+    try {
+      final outcome = await _resolveCameraPermission(
+        showPrompt ?? _cancelPermissionPrompt,
+      );
+      if (_isDisposed) return;
+      switch (outcome) {
+        case _CameraPermissionOutcome.ready:
+          final scheduleId = _medicine?.medicineScheduleId;
+          _emit(scheduleId == null
+              ? const MedicationScheduleUnavailable()
+              : NavigateToMedicationCamera(
+                  scheduleId,
+                  doseCount: _medicine?.nextDoseCount,
+                ));
+        case _CameraPermissionOutcome.settingsGranted:
+          _emit(const CameraPermissionSettingsGranted());
+        case _CameraPermissionOutcome.denied:
+          _emit(const RequestCameraPermissionFailure());
+        case _CameraPermissionOutcome.settingsDenied:
+          _emit(const CameraPermissionSettingsDenied());
+        case _CameraPermissionOutcome.settingsLaunchFailed:
+          _emit(const CameraPermissionSettingsLaunchFailure());
+        case _CameraPermissionOutcome.canceled:
+          break;
+      }
+    } finally {
+      _isTakingMedicationPhoto = false;
+    }
+  }
+
+  Future<_CameraPermissionOutcome> _resolveCameraPermission(
+    PermissionRecoveryPrompt showPrompt,
+  ) async {
+    var openedSettings = false;
+    final permission = await _permissionRecoveryController.ensurePermission(
+      PermissionType.camera,
+      showPrompt: (type, mode) async {
+        final action = await showPrompt(type, mode);
+        if (mode == PermissionRecoveryMode.settings &&
+            action == PermissionRecoveryAction.openSettings) {
+          openedSettings = true;
+        }
+        return action;
+      },
+    );
+
+    return switch (permission) {
+      PermissionRequestResult.granted => openedSettings
+          ? _CameraPermissionOutcome.settingsGranted
+          : _CameraPermissionOutcome.ready,
+      PermissionRequestResult.denied ||
+      PermissionRequestResult.permanentlyDenied ||
+      PermissionRequestResult.restricted ||
+      PermissionRequestResult.unsupported =>
+        openedSettings
+            ? _CameraPermissionOutcome.settingsDenied
+            : _CameraPermissionOutcome.denied,
+      PermissionRequestResult.settingsLaunchFailed =>
+        _CameraPermissionOutcome.settingsLaunchFailed,
+      PermissionRequestResult.canceled => _CameraPermissionOutcome.canceled,
+    };
   }
 
   void onMedicationVerified(MedicationPointResult result) {

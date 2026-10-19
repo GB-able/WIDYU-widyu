@@ -53,6 +53,33 @@ class BackgroundLocationSettingsLaunchFailure extends HomeUiEvent {
   const BackgroundLocationSettingsLaunchFailure();
 }
 
+class RequestCameraPermissionFailure extends HomeUiEvent {
+  const RequestCameraPermissionFailure();
+}
+
+class CameraPermissionSettingsGranted extends HomeUiEvent {
+  const CameraPermissionSettingsGranted();
+}
+
+class CameraPermissionSettingsDenied extends HomeUiEvent {
+  const CameraPermissionSettingsDenied();
+}
+
+class CameraPermissionSettingsLaunchFailure extends HomeUiEvent {
+  const CameraPermissionSettingsLaunchFailure();
+}
+
+class NavigateToMedicationCamera extends HomeUiEvent {
+  final int scheduleId;
+  final int? doseCount;
+
+  const NavigateToMedicationCamera(this.scheduleId, {this.doseCount});
+}
+
+class MedicationScheduleUnavailable extends HomeUiEvent {
+  const MedicationScheduleUnavailable();
+}
+
 class ShowMedicationReward extends HomeUiEvent {
   const ShowMedicationReward(this.result);
 
