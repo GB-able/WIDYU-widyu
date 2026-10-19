@@ -112,6 +112,11 @@ class SelectPhotoViewModel extends ChangeNotifier {
     final paths = await PhotoManager.getAssetPathList(
       onlyAll: true,
       type: filter.type,
+      filterOption: FilterOptionGroup(
+        orders: [
+          const OrderOption(type: OrderOptionType.createDate, asc: false),
+        ],
+      ),
     );
     if (paths.isEmpty) {
       _paths[filter] = null;
@@ -151,7 +156,14 @@ class SelectPhotoViewModel extends ChangeNotifier {
 
       final prev = _assets[filter] ?? const <AssetEntity>[];
       final ids = prev.map((e) => e.id).toSet();
-      _assets[filter] = [...prev, ...loaded.where((e) => !ids.contains(e.id))];
+      _assets[filter] = [
+        ...prev,
+        ...loaded.where(
+          (e) =>
+              (e.type == AssetType.image || e.type == AssetType.video) &&
+              !ids.contains(e.id),
+        ),
+      ];
     } catch (e) {
       debugPrint(e.toString());
     } finally {
