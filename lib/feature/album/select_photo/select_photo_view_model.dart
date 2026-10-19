@@ -6,6 +6,7 @@ import 'package:widyu/core/utils/show_toast.dart';
 
 const _maxVideoDurationSeconds = 60;
 const _pageSize = 100;
+const _maxSelectCount = 8;
 
 enum PhotoFilter {
   all(label: "전체", type: RequestType.common),
@@ -182,6 +183,10 @@ class SelectPhotoViewModel extends ChangeNotifier {
     if (index >= 0) {
       _selected.removeAt(index);
     } else {
+      if (_selected.length >= _maxSelectCount) {
+        showToast("최대 $_maxSelectCount개까지 선택 가능합니다");
+        return false;
+      }
       if (asset.type == AssetType.video &&
           asset.duration > _maxVideoDurationSeconds) {
         showToast("영상은 최대 1분길이만 선택 가능합니다");
@@ -195,6 +200,10 @@ class SelectPhotoViewModel extends ChangeNotifier {
 
   Future<void> captureFromCamera() async {
     if (_isCapturing) return;
+    if (_selected.length >= _maxSelectCount) {
+      showToast("최대 $_maxSelectCount개까지 선택 가능합니다");
+      return;
+    }
 
     if (!hasCameraPermission) {
       await requestCameraPermission();
