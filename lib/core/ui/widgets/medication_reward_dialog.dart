@@ -78,8 +78,9 @@ class MedicationRewardDialog extends StatelessWidget {
                   type: MaterialType.transparency,
                   child: WidyuTextButton(
                     onTap: () {
-                      context.go(AppRoute.goal.path);
+                      final router = GoRouter.of(context);
                       Navigator.of(context).pop();
+                      router.go(AppRoute.goal.path);
                     },
                     text: '목표로 이동하기',
                     enable: true,
