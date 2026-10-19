@@ -56,21 +56,6 @@ part 'widget/watch_data_view.dart';
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
-  static const _backgroundRatio = 427 / 375;
-  static const _backgroundOverlap = 65.0;
-
-  double _carouselTop(BuildContext context) {
-    final size = MediaQuery.sizeOf(context);
-    final required = _CarouselMenu.minHeight +
-        BotNav.height +
-        MediaQuery.paddingOf(context).bottom;
-
-    return min(
-      size.width * _backgroundRatio - _backgroundOverlap,
-      size.height - required,
-    );
-  }
-
   static String get _backgroundLocationNoticeDescription => Platform.isIOS
       ? '앱을 사용하지 않는 동안에 보호자에게 내 위치를\n공유하려면 설정>위치에서 \'항상\'으로 설정해 주세요.'
       : '앱을 사용하지 않는 동안에 보호자에게 내 위치를\n공유하려면 설정>권한에서 위치 권한을\n 항상 허용으로 설정해 주세요.';
@@ -152,89 +137,111 @@ class HomeScreen extends StatelessWidget {
             backgroundColor: MyColor.grey100,
             extendBodyBehindAppBar: true,
             appBar: const _HomeAppBar(),
-            body: Stack(
-              children: [
-                const Positioned(
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  child: WidyuAssetImage(
-                    name: 'img_375_home_background.png',
-                    fit: BoxFit.fitWidth,
-                  ),
-                ),
-                Positioned(
-                  top: _carouselTop(context),
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  child: _CarouselMenu(
-                    isLoading: uiState.isSeniorCardLoading,
-                    hasGoal: uiState.hasGoal,
-                    thumbanils: uiState.thumbnails,
-                    medicationStatus: uiState.medicationStatus,
-                    hasStepGoal: uiState.hasStepGoal,
-                    stepProgress: uiState.stepProgressOf(
-                      context.select<StepProvider, int>((p) => p.steps),
-                    ),
-                    hasHealthSchedule: uiState.hasHealthSchedule,
-                    onCameraTap: () async {
-                      final id = viewModel.medicationScheduleId;
-                      if (id == null) return;
-                      final result = await openMedicationForSchedule(
-                          context, id, DateTime.now(),
-                          doseCount: viewModel.medicationDoseCount);
-                      if (result != null) viewModel.onMedicationVerified(result);
-                    },
-                    onRouteTap: () => viewModel.openHealthScheduleRoute(
-                      showPrompt: (type, mode) =>
-                          showPermissionRecoveryPrompt(context, type, mode),
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: EdgeInsets.only(
-                    top: MediaQuery.of(context).padding.top + kToolbarHeight,
-                  ),
-                  child: Column(
-                    spacing: 24,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            if (notification == null)
-                              const SizedBox(height: 28)
-                            else ...[
-                              _NotificationView(
-                                id: notification.notificationId,
-                                icon: notification.icon,
-                                description: notification.description,
-                                onTap: viewModel.markNotificationAsRead,
-                              ),
-                              const SizedBox(height: 10),
-                            ],
-                            _HomeGreetingView(
-                              isLoading: uiState.isUserLoading,
-                              name: uiState.name,
-                            ),
-                            const SizedBox(height: 26),
-                            _WatchDataView(
-                              isLoading: uiState.isHeartRateLoading,
-                              isWearing: uiState.isWearing,
-                              heartRate: uiState.heartRate,
-                              status: uiState.heartRateStatus,
-                              measuredAt: uiState.measuredAt,
-                              onHeartRateClick: viewModel.fetchHeartRate,
-                            ),
-                          ],
-                        ),
+            body: LayoutBuilder(
+              builder: (context, constraints) {
+                final backgroundHeight = constraints.maxHeight -
+                    _CarouselMenu.sheetHeightOf(context) +
+                    _CarouselMenu.sheetRadius;
+
+                return Stack(
+                  children: [
+                    Positioned(
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      height: backgroundHeight,
+                      child: const WidyuAssetImage(
+                        name: 'img_375_home_background.png',
+                        fit: BoxFit.cover,
+                        alignment: Alignment.topCenter,
                       ),
-                    ],
-                  ),
-                ),
-              ],
+                    ),
+                    CustomScrollView(
+                      slivers: [
+                        SliverFillRemaining(
+                          hasScrollBody: false,
+                          child: Padding(
+                            padding: EdgeInsets.only(
+                              top: Scaffold.of(context).appBarMaxHeight!,
+                            ),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 16),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      if (notification == null)
+                                        const SizedBox(height: 28)
+                                      else ...[
+                                        _NotificationView(
+                                          id: notification.notificationId,
+                                          icon: notification.icon,
+                                          description: notification.description,
+                                          onTap:
+                                              viewModel.markNotificationAsRead,
+                                        ),
+                                        const SizedBox(height: 10),
+                                      ],
+                                      _HomeGreetingView(
+                                        isLoading: uiState.isUserLoading,
+                                        name: uiState.name,
+                                      ),
+                                      const SizedBox(height: 26),
+                                      _WatchDataView(
+                                        isLoading: uiState.isHeartRateLoading,
+                                        isWearing: uiState.isWearing,
+                                        heartRate: uiState.heartRate,
+                                        status: uiState.heartRateStatus,
+                                        measuredAt: uiState.measuredAt,
+                                        onHeartRateClick:
+                                            viewModel.fetchHeartRate,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 24),
+                                  child: _CarouselMenu(
+                                    isLoading: uiState.isSeniorCardLoading,
+                                    hasGoal: uiState.hasGoal,
+                                    thumbanils: uiState.thumbnails,
+                                    medicationStatus: uiState.medicationStatus,
+                                    hasStepGoal: uiState.hasStepGoal,
+                                    stepProgress: uiState.stepProgressOf(
+                                      context.select<StepProvider, int>(
+                                          (p) => p.steps),
+                                    ),
+                                    hasHealthSchedule:
+                                        uiState.hasHealthSchedule,
+                                    onCameraTap: () async {
+                                      final id = viewModel.medicationScheduleId;
+                                      if (id == null) return;
+                                      final result = await openMedicationForSchedule(
+                                          context, id, DateTime.now(),
+                                          doseCount: viewModel.medicationDoseCount);
+                                      if (result != null) viewModel.onMedicationVerified(result);
+                                    },
+                                    onRouteTap: () =>
+                                        viewModel.openHealthScheduleRoute(
+                                      showPrompt: (type, mode) =>
+                                          showPermissionRecoveryPrompt(
+                                              context, type, mode),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                );
+              },
             ),
           ),
         );

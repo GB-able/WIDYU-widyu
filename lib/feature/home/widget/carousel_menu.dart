@@ -3,10 +3,6 @@ part of '../home_screen.dart';
 enum _CarouselCard { medication, healthSchedule, walking, album }
 
 class _CarouselMenu extends StatefulWidget {
-  static const minHeight = _CarouselMenuState._carouselTopPadding +
-      _CarouselMenuState._carouselCardMinHeight +
-      _CarouselMenuState._carouselIndicatorArea;
-
   final bool isLoading;
   final bool hasGoal;
   final List<String> thumbanils;
@@ -29,6 +25,15 @@ class _CarouselMenu extends StatefulWidget {
     required this.onRouteTap,
   });
 
+  static const sheetRadius = _CarouselMenuState._sheetRadius;
+
+  static double sheetHeightOf(BuildContext context) =>
+      _CarouselMenuState._carouselTopPadding +
+      _CarouselMenuState._carouselCardMaxHeight +
+      _CarouselMenuState._carouselIndicatorArea +
+      BotNav.height +
+      MediaQuery.paddingOf(context).bottom;
+
   @override
   State<_CarouselMenu> createState() => _CarouselMenuState();
 }
@@ -45,13 +50,13 @@ class _CarouselMenuState extends State<_CarouselMenu> {
   static const _carouselCardGap = 52.0;
   static const _carouselCardWidth = 220.0;
   static const _carouselCardMaxHeight = 278.0;
+  static const _sheetRadius = 40.0;
 
   static const _carouselIndicatorGap = 20.0;
   static const _carouselIndicatorSize = 6.0;
   static const _carouselBottomPadding = 16.0;
   static const _carouselIndicatorArea =
       _carouselIndicatorGap + _carouselIndicatorSize + _carouselBottomPadding;
-  static const _carouselCardMinHeight = 200.0;
 
   /// 현재 중앙에 있는 페이지
   int _currentPage = _carouselInitialPage;
@@ -113,16 +118,15 @@ class _CarouselMenuState extends State<_CarouselMenu> {
 
     return Container(
       width: double.infinity,
-      clipBehavior: Clip.antiAlias,
       padding: EdgeInsets.only(
         top: _carouselTopPadding,
-        bottom: BotNav.height + MediaQuery.paddingOf(context).bottom,
+        bottom: BotNav.height + MediaQuery.paddingOf(context).bottom + 16,
       ),
       decoration: const BoxDecoration(
         color: MyColor.grey100,
         borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(40),
-          topRight: Radius.circular(40),
+          topLeft: Radius.circular(_sheetRadius),
+          topRight: Radius.circular(_sheetRadius),
         ),
       ),
       child: _content(controller, cards),
@@ -130,86 +134,75 @@ class _CarouselMenuState extends State<_CarouselMenu> {
   }
 
   Widget _content(PageController controller, List<_CarouselCard> cards) {
+    const cardHeight = _carouselCardMaxHeight;
+    const contentHeight = cardHeight + _carouselIndicatorArea;
+
     // 로딩
     if (widget.isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return const SizedBox(
+        height: contentHeight,
+        child: Center(child: CircularProgressIndicator()),
+      );
     }
 
     // 목표가 존재하지 않음
-    if (!widget.hasGoal) return const Center(child: _CarouselEmptyView());
+    if (!widget.hasGoal) {
+      return const SizedBox(
+        height: contentHeight,
+        child: _CarouselEmptyView(),
+      );
+    }
 
     return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
-        Expanded(
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final cardHeight = (constraints.maxHeight -
-                      _carouselIndicatorGap -
-                      _carouselIndicatorSize)
-                  .clamp(0.0, _carouselCardMaxHeight);
+        SizedBox(
+          height: cardHeight,
+          child: PageView.builder(
+            controller: controller,
+            clipBehavior: Clip.none,
+            onPageChanged: (index) => setState(() => _currentPage = index),
+            itemBuilder: (context, index) {
+              return AnimatedBuilder(
+                animation: controller,
+                builder: (context, child) {
+                  final page = controller.hasClients && controller.page != null
+                      ? controller.page!
+                      : controller.initialPage.toDouble();
+                  final delta = (page - index).clamp(-1.0, 1.0);
 
-              return Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  SizedBox(
+                  return Transform.translate(
+                    offset: Offset(0, delta * delta * _carouselArcOffset),
+                    child: Transform.rotate(
+                      angle: -delta * _carouselMaxAngle,
+                      alignment: Alignment.topCenter,
+                      child: child,
+                    ),
+                  );
+                },
+                child: Align(
+                  alignment: Alignment.topCenter,
+                  child: SizedBox(
+                    width: _carouselCardWidth,
                     height: cardHeight,
-                    child: PageView.builder(
-                      controller: controller,
-                      clipBehavior: Clip.none,
-                      onPageChanged: (index) =>
-                          setState(() => _currentPage = index),
-                      itemBuilder: (context, index) {
-                        return AnimatedBuilder(
-                          animation: controller,
-                          builder: (context, child) {
-                            final page =
-                                controller.hasClients && controller.page != null
-                                    ? controller.page!
-                                    : controller.initialPage.toDouble();
-                            final delta = (page - index).clamp(-1.0, 1.0);
-
-                            return Transform.translate(
-                              offset: Offset(
-                                0,
-                                delta * delta * _carouselArcOffset,
-                              ),
-                              child: Transform.rotate(
-                                angle: -delta * _carouselMaxAngle,
-                                alignment: Alignment.topCenter,
-                                child: child,
-                              ),
-                            );
-                          },
-                          child: Align(
-                            alignment: Alignment.topCenter,
-                            child: SizedBox(
-                              width: _carouselCardWidth,
-                              height: cardHeight,
-                              child: GestureDetector(
-                                onTap: () => controller.animateToPage(
-                                  index,
-                                  duration: const Duration(
-                                    milliseconds: 300,
-                                  ),
-                                  curve: Curves.easeOut,
-                                ),
-                                child: _cardAt(index, cards),
-                              ),
-                            ),
-                          ),
-                        );
-                      },
+                    child: GestureDetector(
+                      onTap: () => controller.animateToPage(
+                        index,
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeOut,
+                      ),
+                      child: _cardAt(index, cards),
                     ),
                   ),
-                  const SizedBox(height: _carouselIndicatorGap),
-                  _CarouselIndicator(
-                    count: cards.length,
-                    currentIndex: _indexAt(_currentPage, cards.length),
-                  ),
-                ],
+                ),
               );
             },
           ),
+        ),
+        const SizedBox(height: _carouselIndicatorGap),
+        _CarouselIndicator(
+          count: cards.length,
+          currentIndex: _indexAt(_currentPage, cards.length),
         ),
         const SizedBox(height: _carouselBottomPadding),
       ],
@@ -228,13 +221,14 @@ class _CarouselEmptyView extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
       child: Column(
-        mainAxisSize: MainAxisSize.min,
         children: [
-          const WidyuAssetImage(
-            name: 'img_card_character.png',
-            width: _characterWidth,
-            height: _characterHeight,
-            fit: BoxFit.contain,
+          const Expanded(
+            child: WidyuAssetImage(
+              name: 'img_card_character.png',
+              width: _characterWidth,
+              height: _characterHeight,
+              fit: BoxFit.contain,
+            ),
           ),
           const SizedBox(height: 16),
           Text(
