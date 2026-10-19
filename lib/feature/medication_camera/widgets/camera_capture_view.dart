@@ -126,9 +126,9 @@ class _CameraCaptureViewState extends State<_CameraCaptureView>
                   child: Text.rich(
                     TextSpan(
                       children: doseLabel == null
-                          ? const [TextSpan(text: '복용하신 약을 촬영해주세요')]
+                          ? const [TextSpan(text: '복용하실 약을 촬영해주세요')]
                           : [
-                              const TextSpan(text: '복용하신 약 '),
+                              const TextSpan(text: '복용하실 약 '),
                               WidgetSpan(
                                 alignment: PlaceholderAlignment.middle,
                                 child: Text(
