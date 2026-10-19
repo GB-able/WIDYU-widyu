@@ -16,7 +16,7 @@ class MedicationScheduleRule {
 
   factory MedicationScheduleRule.fromJson(Map<String, dynamic> json) {
     final time = (json['alarmTime'] as String).split(':');
-    if (time.length != 2) {
+    if (time.length != 2 && time.length != 3) {
       throw const FormatException('Invalid medication schedule');
     }
     final id = json['scheduleId'] as int;
