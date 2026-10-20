@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:photo_manager_image_provider/photo_manager_image_provider.dart';
+import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
 import 'package:widyu/app/routes/app_route.dart';
-import 'package:widyu/app/routes/extra/photo_preview_extra.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
 import 'package:widyu/core/ui/widgets/custom_app_bar.dart';
@@ -18,9 +18,9 @@ part 'widgets/image_preview.dart';
 part 'widgets/video_preview.dart';
 
 class PhotoPreviewScreen extends StatefulWidget {
-  const PhotoPreviewScreen({super.key, required this.extra});
+  const PhotoPreviewScreen({super.key, required this.initialIndex});
 
-  final PhotoPreviewExtra extra;
+  final int initialIndex;
 
   @override
   State<PhotoPreviewScreen> createState() => _PhotoPreviewScreenState();
@@ -28,12 +28,13 @@ class PhotoPreviewScreen extends StatefulWidget {
 
 class _PhotoPreviewScreenState extends State<PhotoPreviewScreen> {
   late final PageController _pageCtrl = PageController(
-    initialPage: widget.extra.initialIndex,
+    initialPage: widget.initialIndex,
   );
-  late int _currIdx = widget.extra.initialIndex;
+  late int _currIdx = widget.initialIndex;
   int _activePointers = 0;
 
-  SelectPhotoViewModel get _viewModel => widget.extra.viewModel;
+  late final SelectPhotoViewModel _viewModel =
+      context.read<SelectPhotoViewModel>();
 
   void _onPointerDown(PointerDownEvent _) {
     setState(() => _activePointers++);
@@ -111,7 +112,7 @@ class _PhotoPreviewScreenState extends State<PhotoPreviewScreen> {
                       ),
                       Positioned(
                         top: 4,
-                        right: 20,
+                        right: 16,
                         child: GestureDetector(
                           onTap: () => _viewModel.toggleSelection(media),
                           child: ClipOval(
