@@ -10,6 +10,8 @@ abstract class MedicationRepository {
     required File proofImage,
   });
 
+  Stream<void> get medicationChanges;
+
   Future<ApiResult<MedicationSchedule>> fetchMedicationSchedule(
       String memberId);
 

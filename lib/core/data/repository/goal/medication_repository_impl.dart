@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:medication_alarm/medication_alarm.dart';
@@ -11,6 +12,7 @@ import 'package:widyu/core/utils/extensions/api_result_extension.dart';
 class MedicationRepositoryImpl extends MedicationRepository {
   final MedicationRemoteDataSource _remoteDataSource;
   final MedicationAlarmLocalDataSource _localDataSource;
+  final _medicationChanges = StreamController<void>.broadcast();
 
   MedicationRepositoryImpl({
     required MedicationRemoteDataSource remoteDataSource,
@@ -22,9 +24,15 @@ class MedicationRepositoryImpl extends MedicationRepository {
   Future<ApiResult<MedicationPointResult>> verifyMedication({
     required int scheduleId,
     required File proofImage,
-  }) async =>
-      await _remoteDataSource.verifyMedication(
-          scheduleId: scheduleId, proofImages: [proofImage]).toApiResult();
+  }) async {
+    final result = await _remoteDataSource.verifyMedication(
+        scheduleId: scheduleId, proofImages: [proofImage]).toApiResult();
+    if (result is Success) _medicationChanges.add(null);
+    return result;
+  }
+
+  @override
+  Stream<void> get medicationChanges => _medicationChanges.stream;
 
   @override
   Future<ApiResult<MedicationSchedule>> fetchMedicationSchedule(

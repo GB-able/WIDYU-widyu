@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:widyu/core/data/provider/point_provider.dart';
 import 'package:widyu/core/data/provider/walk_provider.dart';
 import 'package:widyu/core/data/repository/goal/goal_repository.dart';
+import 'package:widyu/core/data/repository/goal/medication_repository.dart';
 import 'package:widyu/core/data/repository/location/location_repository.dart';
 import 'package:widyu/core/model/api/api_result.dart';
 import 'package:widyu/core/model/goal/goal_home_response.dart';
@@ -22,6 +23,7 @@ class GoalViewModel with ChangeNotifier {
   final WalkProvider _stepProvider;
   final LocationRepository _locationRepository;
   Timer? _countdownTimer;
+  late final StreamSubscription<void> _medicationChanges;
 
   GoalUiState _uiState = const GoalUiState();
   GoalUiState get uiState => _uiState;
@@ -34,12 +36,15 @@ class GoalViewModel with ChangeNotifier {
     required PointProvider pointProvider,
     required WalkProvider stepProvider,
     required LocationRepository locationRepository,
+    required MedicationRepository medicationRepository,
   })  : _repository = repository,
         _pointProvider = pointProvider,
         _stepProvider = stepProvider,
         _locationRepository = locationRepository {
     unawaited(_stepProvider.start());
     unawaited(refresh());
+    _medicationChanges = medicationRepository.medicationChanges
+        .listen((_) => unawaited(refresh(showLoading: false)));
   }
 
   @override
@@ -168,7 +173,6 @@ class GoalViewModel with ChangeNotifier {
 
   void onMedicationVerified(MedicationPointResult result) {
     _emit(VerifyMedicationSuccess(result.earnedPoints, result.currentPoints));
-    unawaited(refresh(showLoading: false));
   }
 
   Future<void> findRoute() async {
@@ -211,6 +215,7 @@ class GoalViewModel with ChangeNotifier {
   @override
   void dispose() {
     _countdownTimer?.cancel();
+    _medicationChanges.cancel();
     _uiEvent.close();
     super.dispose();
   }

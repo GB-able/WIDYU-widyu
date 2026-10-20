@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/widgets.dart';
 import 'package:widyu/core/data/provider/walk_provider.dart';
+import 'package:widyu/core/data/repository/goal/medication_repository.dart';
 import 'package:widyu/core/data/repository/heartRate/heart_rate_repository.dart';
 import 'package:widyu/core/data/repository/home/home_repository.dart';
 import 'package:widyu/core/data/repository/location/location_repository.dart';
@@ -60,6 +61,7 @@ class HomeViewModel with ChangeNotifier {
   Stream<HomeUiEvent> get uiEvent => _uiEvent.stream;
 
   StreamSubscription? _watchConnection;
+  late final StreamSubscription<void> _medicationChanges;
 
   // 갱신용 타이머
   Timer? _medicationTicker;
@@ -76,6 +78,7 @@ class HomeViewModel with ChangeNotifier {
     required HeartRateRepository heartRateRepository,
     required LocationRepository locationRepository,
     required WalkProvider stepProvider,
+    required MedicationRepository medicationRepository,
     PermissionRecoveryController? permissionRecoveryController,
     BackgroundLocationNoticeController? noticeController,
     Future<bool> Function({
@@ -101,6 +104,8 @@ class HomeViewModel with ChangeNotifier {
     unawaited(fetchHeartRate());
     unawaited(_fetchSeniorCard());
     unawaited(_evaluateBackgroundLocationNotice());
+    _medicationChanges = medicationRepository.medicationChanges
+        .listen((_) => unawaited(_fetchSeniorCard()));
     _medicationTicker = Timer.periodic(
       const Duration(seconds: 30),
       (_) => _applyMedicationStatus(),
@@ -183,7 +188,6 @@ class HomeViewModel with ChangeNotifier {
 
   void onMedicationVerified(MedicationPointResult result) {
     _emit(ShowMedicationReward(result));
-    unawaited(_fetchSeniorCard());
   }
 
   void _emit(HomeUiEvent event) {
@@ -404,6 +408,7 @@ class HomeViewModel with ChangeNotifier {
   void dispose() {
     _permissionRecoveryController.dispose();
     _watchConnection?.cancel();
+    _medicationChanges.cancel();
     _medicationTicker?.cancel();
     _uiEvent.close();
     super.dispose();
