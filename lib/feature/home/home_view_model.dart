@@ -66,6 +66,7 @@ class HomeViewModel with ChangeNotifier {
   // 갱신용 타이머
   Timer? _medicationTicker;
   MedicationSummary? _medicine;
+  String? _seniorCardDay;
 
   // 중복 탭으로 카카오맵이 두 번 열리는 것을 막는다
   bool _isOpeningRoute = false;
@@ -108,7 +109,13 @@ class HomeViewModel with ChangeNotifier {
         .listen((_) => unawaited(_fetchSeniorCard()));
     _medicationTicker = Timer.periodic(
       const Duration(seconds: 30),
-      (_) => _applyMedicationStatus(),
+      (_) {
+        if (_seniorCardDay != _stepProvider.today) {
+          unawaited(_fetchSeniorCard());
+        } else {
+          _applyMedicationStatus();
+        }
+      },
     );
   }
 
@@ -342,6 +349,7 @@ class HomeViewModel with ChangeNotifier {
 
   Future<void> _fetchSeniorCard() async {
     final requestedDay = _stepProvider.today;
+    _seniorCardDay = requestedDay;
     _uiState = _uiState.copyWith(isSeniorCardLoading: true);
     notifyListeners();
 

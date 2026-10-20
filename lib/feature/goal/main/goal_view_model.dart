@@ -23,6 +23,8 @@ class GoalViewModel with ChangeNotifier {
   final WalkProvider _stepProvider;
   final LocationRepository _locationRepository;
   Timer? _countdownTimer;
+  Timer? _dayTimer;
+  String? _loadedDay;
   late final StreamSubscription<void> _medicationChanges;
 
   GoalUiState _uiState = const GoalUiState();
@@ -45,6 +47,11 @@ class GoalViewModel with ChangeNotifier {
     unawaited(refresh());
     _medicationChanges = medicationRepository.medicationChanges
         .listen((_) => unawaited(refresh(showLoading: false)));
+    _dayTimer = Timer.periodic(const Duration(seconds: 30), (_) {
+      if (_loadedDay != _stepProvider.today) {
+        unawaited(refresh(showLoading: false));
+      }
+    });
   }
 
   @override
@@ -58,6 +65,7 @@ class GoalViewModel with ChangeNotifier {
 
   Future<void> refresh({bool showLoading = true}) async {
     final requestedDay = _stepProvider.today;
+    _loadedDay = requestedDay;
     if (showLoading) {
       _countdownTimer?.cancel();
       _uiState = _uiState.copyWith(
@@ -215,6 +223,7 @@ class GoalViewModel with ChangeNotifier {
   @override
   void dispose() {
     _countdownTimer?.cancel();
+    _dayTimer?.cancel();
     _medicationChanges.cancel();
     _uiEvent.close();
     super.dispose();

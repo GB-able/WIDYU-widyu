@@ -5,7 +5,6 @@ import 'package:provider/provider.dart';
 import 'package:widyu/app/routes/app_route.dart';
 import 'package:widyu/app/routes/custom_page.dart';
 import 'package:widyu/app/routes/extra/edit_post_extra.dart';
-import 'package:widyu/app/routes/tab_reloader.dart';
 import 'package:widyu/app/routes/user_session_scope.dart';
 import 'package:widyu/core/network/token_manager.dart';
 import 'package:widyu/core/ui/widgets/bot_nav.dart';
@@ -106,8 +105,7 @@ class CustomRouter {
                 routes: [
                   CustomGoRoute.staticRoute(
                     route: AppRoute.home,
-                    builder: (context, state) =>
-                        TabReloader.wrap(index: 0, child: const HomeScreen()),
+                    builder: (context, state) => const HomeScreen(),
                   ),
                 ],
               ),
@@ -115,8 +113,7 @@ class CustomRouter {
                 routes: [
                   CustomGoRoute.staticRoute(
                     route: AppRoute.goal,
-                    builder: (context, state) =>
-                        TabReloader.wrap(index: 1, child: const GoalScreen()),
+                    builder: (context, state) => const GoalScreen(),
                   ),
                 ],
               ),
@@ -124,8 +121,7 @@ class CustomRouter {
                 routes: [
                   CustomGoRoute.staticRoute(
                     route: AppRoute.album,
-                    builder: (context, state) =>
-                        TabReloader.wrap(index: 2, child: const AlbumScreen()),
+                    builder: (context, state) => const AlbumScreen(),
                   ),
                 ],
               ),
@@ -133,8 +129,7 @@ class CustomRouter {
                 routes: [
                   CustomGoRoute.staticRoute(
                     route: AppRoute.my,
-                    builder: (context, state) =>
-                        TabReloader.wrap(index: 3, child: const MyPageScreen()),
+                    builder: (context, state) => const MyPageScreen(),
                   ),
                 ],
               ),

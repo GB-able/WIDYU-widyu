@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:widyu/app/routes/app_route.dart';
-import 'package:widyu/app/routes/tab_reloader.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
 import 'package:widyu/core/ui/widgets/icon_widget.dart';
@@ -45,7 +44,6 @@ class BotNav extends StatelessWidget {
                 navigationShell
                     .currentIndex, // [NOTICE] 같은 탭을 다시 누르면 해당 탭의 첫 화면으로 이동
           );
-          TabReloader.reload(index);
         },
         backgroundColor: Colors.transparent,
         type: BottomNavigationBarType.fixed,

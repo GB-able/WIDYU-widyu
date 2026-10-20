@@ -13,6 +13,7 @@ class MedicationRepositoryImpl extends MedicationRepository {
   final MedicationRemoteDataSource _remoteDataSource;
   final MedicationAlarmLocalDataSource _localDataSource;
   final _medicationChanges = StreamController<void>.broadcast();
+  int? _scheduleRevision;
 
   MedicationRepositoryImpl({
     required MedicationRemoteDataSource remoteDataSource,
@@ -36,8 +37,18 @@ class MedicationRepositoryImpl extends MedicationRepository {
 
   @override
   Future<ApiResult<MedicationSchedule>> fetchMedicationSchedule(
-          String memberId) =>
-      _remoteDataSource.fetchMedicationSchedule(memberId).toApiResult();
+      String memberId) async {
+    final result =
+        await _remoteDataSource.fetchMedicationSchedule(memberId).toApiResult();
+    if (result case Success(:final data)) {
+      final previous = _scheduleRevision;
+      _scheduleRevision = data.revision;
+      if (previous != null && previous != data.revision) {
+        _medicationChanges.add(null);
+      }
+    }
+    return result;
+  }
 
   @override
   Stream<void> get alarmChanges => _localDataSource.changes;
