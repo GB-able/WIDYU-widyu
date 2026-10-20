@@ -4,6 +4,7 @@ import 'package:health/health.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:walk/walk.dart';
 import 'package:widyu/core/data/source/goal/walk_local_data_source.dart';
+import 'package:widyu/core/storage/walk_database.dart';
 
 class WalkLocalDataSourceImpl implements WalkLocalDataSource {
   static const _types = [HealthDataType.STEPS];
@@ -11,6 +12,7 @@ class WalkLocalDataSourceImpl implements WalkLocalDataSource {
 
   late final Health _health = Health();
   final WalkRecording _walkRecording = WalkRecording();
+  final WalkDatabase _db = WalkDatabase.instance;
   Future<void>? _configuration;
   WalkPermissionStatus _permissionStatus = WalkPermissionStatus.unknown;
   bool _backgroundReadGranted = false;
@@ -122,6 +124,23 @@ class WalkLocalDataSourceImpl implements WalkLocalDataSource {
       return null;
     }
   }
+
+  @override
+  Future<Map<String, dynamic>> readState(String memberId) => _db.read(memberId);
+
+  @override
+  Future<void> saveState(String memberId, Map<String, dynamic> state) =>
+      _db.save(memberId, state);
+
+  @override
+  Future<String?> acquireLock(String name) => _db.acquire(name);
+
+  @override
+  Future<bool> ownsLock(String name, String owner) => _db.owns(name, owner);
+
+  @override
+  Future<void> releaseLock(String name, String owner) =>
+      _db.release(name, owner);
 
   Future<bool> _ensureReady() async {
     if (kIsWeb ||
