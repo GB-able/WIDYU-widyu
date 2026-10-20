@@ -26,25 +26,6 @@ class WalkDatabase {
         },
       );
 
-  Future<T> exclusive<T>(String name, Future<T> Function() action) async {
-    final timeout = Stopwatch()..start();
-    String? owner;
-    while (owner == null) {
-      owner = await acquire(name);
-      if (owner == null) {
-        if (timeout.elapsed > const Duration(seconds: 25)) {
-          throw StateError('동기화 작업 잠금을 기다리는 시간이 초과되었습니다.');
-        }
-        await Future<void>.delayed(const Duration(milliseconds: 200));
-      }
-    }
-    try {
-      return await action();
-    } finally {
-      await release(name, owner);
-    }
-  }
-
   Future<Map<String, dynamic>> read(String session) async {
     final rows = await (await database).query(
       'state',
@@ -63,15 +44,6 @@ class WalkDatabase {
           'value': jsonEncode(state),
         },
         conflictAlgorithm: ConflictAlgorithm.replace);
-  }
-
-  Future<void> clearExcept(String? session) async {
-    final db = await database;
-    if (session == null) {
-      await db.delete('state');
-    } else {
-      await db.delete('state', where: 'session != ?', whereArgs: [session]);
-    }
   }
 
   Future<String?> acquire(String name) async {

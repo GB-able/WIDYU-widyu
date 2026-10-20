@@ -6,7 +6,7 @@ import 'package:widyu/core/data/repository/goal/walk_repository.dart';
 import 'package:widyu/core/data/source/goal/walk_local_data_source.dart';
 import 'package:widyu/core/data/source/goal/walk_remote_data_source.dart';
 import 'package:widyu/core/model/goal/walk/walk_sync_result.dart';
-import 'package:widyu/core/storage/step_database.dart';
+import 'package:widyu/core/storage/walk_database.dart';
 import 'package:widyu/core/network/token_manager.dart';
 import 'package:widyu/core/utils/extensions/walk_extension.dart';
 

@@ -1,9 +1,9 @@
-enum StepPermissionStatus { unknown, granted, denied, unavailable, error }
+enum WalkPermissionStatus { unknown, granted, denied, unavailable, error }
 
 abstract class WalkLocalDataSource {
   String get stepSource;
 
-  StepPermissionStatus get permissionStatus;
+  WalkPermissionStatus get permissionStatus;
 
   bool get backgroundReadGranted;
 

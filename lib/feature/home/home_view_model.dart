@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/widgets.dart';
-import 'package:widyu/core/data/provider/step_provider.dart';
+import 'package:widyu/core/data/provider/walk_provider.dart';
 import 'package:widyu/core/data/repository/heartRate/heart_rate_repository.dart';
 import 'package:widyu/core/data/repository/home/home_repository.dart';
 import 'package:widyu/core/data/repository/location/location_repository.dart';
@@ -41,7 +41,7 @@ class HomeViewModel with ChangeNotifier {
   final NotificationRepository _notificationRepository;
   final HeartRateRepository _heartRateRepository;
   final LocationRepository _locationRepository;
-  final StepProvider _stepProvider;
+  final WalkProvider _stepProvider;
   final PermissionRecoveryController _permissionRecoveryController;
 
   /// 소유권은 main.dart 의 Provider 에 있으므로 여기서 dispose 하지 않는다.
@@ -75,7 +75,7 @@ class HomeViewModel with ChangeNotifier {
     required NotificationRepository notificationRepository,
     required HeartRateRepository heartRateRepository,
     required LocationRepository locationRepository,
-    required StepProvider stepProvider,
+    required WalkProvider stepProvider,
     PermissionRecoveryController? permissionRecoveryController,
     BackgroundLocationNoticeController? noticeController,
     Future<bool> Function({

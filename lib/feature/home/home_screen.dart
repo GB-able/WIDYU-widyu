@@ -12,7 +12,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:widyu/app/routes/app_route.dart';
-import 'package:widyu/core/data/provider/step_provider.dart';
+import 'package:widyu/core/data/provider/walk_provider.dart';
 import 'package:widyu/core/data/repository/heartRate/heart_rate_repository.dart';
 import 'package:widyu/core/data/repository/home/home_repository.dart';
 import 'package:widyu/core/data/repository/location/location_repository.dart';
@@ -140,7 +140,7 @@ class HomeScreen extends StatelessWidget {
           notificationRepository: context.read<NotificationRepository>(),
           heartRateRepository: context.read<HeartRateRepository>(),
           locationRepository: context.read<LocationRepository>(),
-          stepProvider: context.read<StepProvider>(),
+          stepProvider: context.read<WalkProvider>(),
           noticeController: context.read<BackgroundLocationNoticeController>(),
         );
       },
@@ -233,7 +233,7 @@ class HomeScreen extends StatelessWidget {
                                     medicationStatus: uiState.medicationStatus,
                                     hasStepGoal: uiState.hasStepGoal,
                                     stepProgress: uiState.stepProgressOf(
-                                      context.select<StepProvider, int>(
+                                      context.select<WalkProvider, int>(
                                           (p) => p.steps),
                                     ),
                                     hasHealthSchedule:

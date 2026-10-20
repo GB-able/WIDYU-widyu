@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:widyu/core/data/provider/album_provider.dart';
 import 'package:widyu/core/data/provider/medication_alarm_provider.dart';
 import 'package:widyu/core/data/provider/point_provider.dart';
-import 'package:widyu/core/data/provider/step_provider.dart';
+import 'package:widyu/core/data/provider/walk_provider.dart';
 import 'package:widyu/core/data/repository/album/album_repository.dart';
 import 'package:widyu/core/data/repository/goal/walk_repository.dart';
 import 'package:widyu/core/data/repository/goal/medication_repository.dart';
@@ -33,9 +33,9 @@ class UserSessionScope extends StatelessWidget {
           create: (context) =>
               PointProvider(repository: context.read<PointRepository>()),
         ),
-        ChangeNotifierProvider<StepProvider>(
+        ChangeNotifierProvider<WalkProvider>(
           lazy: false,
-          create: (context) => StepProvider(
+          create: (context) => WalkProvider(
             repository: context.read<WalkRepository>(),
           )..start(),
         ),

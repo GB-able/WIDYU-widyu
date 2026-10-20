@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:widyu/core/data/provider/step_provider.dart';
+import 'package:widyu/core/data/provider/walk_provider.dart';
 import 'package:widyu/core/data/repository/goal/walk_repository.dart';
 import 'package:widyu/core/data/repository/heartRate/heart_rate_repository.dart';
 import 'package:widyu/core/data/repository/home/home_repository.dart';
@@ -110,7 +110,7 @@ class _Harness {
       notificationRepository: _Notification(),
       heartRateRepository: _HeartRate(),
       locationRepository: location,
-      stepProvider: StepProvider(repository: _Walk()),
+      stepProvider: WalkProvider(repository: _Walk()),
       permissionRecoveryController: PermissionRecoveryController(
         statusReader: (_) => readPermission?.call() ?? Future.value(permission),
         requester: (_) async => permission,

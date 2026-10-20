@@ -6,8 +6,8 @@ import 'package:widyu/core/network/token_manager.dart';
 import 'package:widyu/core/utils/extensions/walk_extension.dart';
 import 'package:widyu/walk_background_service.dart';
 
-class StepProvider with ChangeNotifier, WidgetsBindingObserver {
-  StepProvider({
+class WalkProvider with ChangeNotifier, WidgetsBindingObserver {
+  WalkProvider({
     required WalkRepository repository,
   }) : _repository = repository;
 
@@ -49,14 +49,14 @@ class StepProvider with ChangeNotifier, WidgetsBindingObserver {
         try {
           await startWalkBackgroundService();
         } catch (error) {
-          debugPrint('[StepProvider] 백그라운드 등록이 보류되었습니다: ${error.runtimeType}');
+          debugPrint('[WalkProvider] 백그라운드 등록이 보류되었습니다: ${error.runtimeType}');
         }
         if (_disposed) return;
       }
       _startTimer();
       await refresh(full: true);
     } catch (error) {
-      debugPrint('[StepProvider] 걸음수 연동을 시작하지 못했습니다: ${error.runtimeType}');
+      debugPrint('[WalkProvider] 걸음수 연동을 시작하지 못했습니다: ${error.runtimeType}');
     }
     if (!_disposed) notifyListeners();
   }
@@ -107,7 +107,7 @@ class StepProvider with ChangeNotifier, WidgetsBindingObserver {
       }
       notifyListeners();
     } catch (error) {
-      debugPrint('[StepProvider] 걸음수 동기화가 보류되었습니다: ${error.runtimeType}');
+      debugPrint('[WalkProvider] 걸음수 동기화가 보류되었습니다: ${error.runtimeType}');
     }
   }
 

@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/widgets.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:widyu/core/data/provider/point_provider.dart';
-import 'package:widyu/core/data/provider/step_provider.dart';
+import 'package:widyu/core/data/provider/walk_provider.dart';
 import 'package:widyu/core/data/repository/goal/goal_repository.dart';
 import 'package:widyu/core/data/repository/location/location_repository.dart';
 import 'package:widyu/core/model/api/api_result.dart';
@@ -19,7 +19,7 @@ import 'package:widyu/feature/goal/main/goal_ui_state.dart';
 class GoalViewModel with ChangeNotifier {
   final GoalRepository _repository;
   final PointProvider _pointProvider;
-  final StepProvider _stepProvider;
+  final WalkProvider _stepProvider;
   final LocationRepository _locationRepository;
   Timer? _countdownTimer;
 
@@ -32,7 +32,7 @@ class GoalViewModel with ChangeNotifier {
   GoalViewModel({
     required GoalRepository repository,
     required PointProvider pointProvider,
-    required StepProvider stepProvider,
+    required WalkProvider stepProvider,
     required LocationRepository locationRepository,
   })  : _repository = repository,
         _pointProvider = pointProvider,
