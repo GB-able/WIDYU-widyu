@@ -23,6 +23,7 @@ import 'package:widyu/feature/medication_camera/medication_camera_screen.dart';
 import 'package:widyu/feature/home/home_screen.dart';
 import 'package:widyu/feature/management/management_screen.dart';
 import 'package:widyu/feature/myPage/my_page_screen.dart';
+import 'package:widyu/feature/notification/notification_screen.dart';
 import 'package:widyu/feature/notification_setting/notification_setting_screen.dart';
 import 'package:widyu/feature/permission/permission_screen.dart';
 import 'package:widyu/feature/point/point_screen.dart';
@@ -163,8 +164,12 @@ class CustomRouter {
             builder: (_, __) => const ManagementScreen(),
           ),
           CustomGoRoute.slideRoute(
-            route: AppRoute.notification,
+            route: AppRoute.notificationSetting,
             builder: (_, __) => const NotificationSettingScreen(),
+          ),
+          CustomGoRoute.slideRoute(
+            route: AppRoute.notification,
+            builder: (_, __) => const NotificationScreen(),
           ),
           CustomGoRoute.slideRoute(
             route: AppRoute.post,

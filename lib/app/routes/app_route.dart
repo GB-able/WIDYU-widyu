@@ -18,7 +18,8 @@ enum AppRoute {
   point("/my/point"),
   contact("/my/contact"),
   management("/my/management"),
-  notification("/my/notification"),
+  notificationSetting("/my/notification"),
+  notification("/notification"),
   medicationCamera("/medication/camera"),
   ;
 

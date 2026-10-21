@@ -50,7 +50,7 @@ class _AlbumScreenState extends State<AlbumScreen>
         actions: [
           GestureDetector(
             behavior: HitTestBehavior.translucent,
-            onTap: () => {}, // [TODO] 알림 페이지 생성 후 연결
+            onTap: () => context.push(AppRoute.notification.path),
             child: const IconWidget(
               icon: "notification",
               width: 22,
