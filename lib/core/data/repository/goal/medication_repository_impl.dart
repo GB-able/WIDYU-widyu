@@ -146,6 +146,10 @@ class MedicationRepositoryImpl extends MedicationRepository {
       _localDataSource.capabilities();
 
   @override
+  Future<Map<String, dynamic>> requestAlarmPermission() =>
+      _localDataSource.requestPermissions();
+
+  @override
   Future<Map<String, dynamic>> activateAlarm(String memberId) =>
       _localDataSource.activate(memberId);
 

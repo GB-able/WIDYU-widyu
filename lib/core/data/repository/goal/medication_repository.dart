@@ -15,6 +15,8 @@ abstract class MedicationRepository {
 
   Future<Map<String, dynamic>> alarmCapabilities();
 
+  Future<Map<String, dynamic>> requestAlarmPermission();
+
   Future<Map<String, dynamic>> activateAlarm(String memberId);
 
   Future<Map<String, dynamic>> alarmState();

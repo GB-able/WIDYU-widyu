@@ -3,6 +3,8 @@ abstract class MedicationAlarmLocalDataSource {
 
   Future<Map<String, dynamic>> capabilities();
 
+  Future<Map<String, dynamic>> requestPermissions();
+
   Future<Map<String, dynamic>> activate(String memberId);
 
   Future<Map<String, dynamic>> state();

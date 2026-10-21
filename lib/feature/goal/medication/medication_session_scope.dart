@@ -55,6 +55,7 @@ class _MedicationSessionScopeState extends State<MedicationSessionScope>
       if (member == null || !mounted) return;
       await repository.activateAlarm(member);
       ready = true;
+      await requestAlarmPermissionIfNeeded();
       await refreshAlarmMember();
       unawaited(drainLaunch());
       startAlarmTimer();
@@ -70,6 +71,15 @@ class _MedicationSessionScopeState extends State<MedicationSessionScope>
         if (initial != null) onMessage(initial);
       }
     } catch (_) {/* Status card retains retry access. */}
+  }
+
+  Future<void> requestAlarmPermissionIfNeeded() async {
+    if (!Platform.isIOS) return;
+    try {
+      final caps = await repository.alarmCapabilities();
+      if (caps['mode'] != 'alarmKit' || caps['authorized'] == true) return;
+      await repository.requestAlarmPermission();
+    } catch (_) {}
   }
 
   Future<void> refreshAlarmMember() async {
