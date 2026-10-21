@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:medication_alarm/medication_alarm.dart';
 import 'package:widyu/core/data/repository/goal/medication_repository.dart';
 import 'package:widyu/core/data/source/goal/medication_alarm_local_data_source.dart';
@@ -9,49 +10,136 @@ import 'package:widyu/core/model/api/api_result.dart';
 import 'package:widyu/core/model/goal/medication/medication_point_result.dart';
 import 'package:widyu/core/utils/extensions/api_result_extension.dart';
 
+typedef _Session = ({
+  String member,
+  String session,
+  Map<String, dynamic> state
+});
+
 class MedicationRepositoryImpl extends MedicationRepository {
   final MedicationRemoteDataSource _remoteDataSource;
   final MedicationAlarmLocalDataSource _localDataSource;
+  final Future<String?> Function() _currentMember;
   final _medicationChanges = StreamController<void>.broadcast();
   int? _scheduleRevision;
+  Future<void>? _syncing;
+  bool _syncAgain = false;
 
   MedicationRepositoryImpl({
     required MedicationRemoteDataSource remoteDataSource,
     required MedicationAlarmLocalDataSource localDataSource,
+    required Future<String?> Function() currentMember,
   })  : _remoteDataSource = remoteDataSource,
-        _localDataSource = localDataSource;
-
-  @override
-  Future<ApiResult<MedicationPointResult>> verifyMedication({
-    required int scheduleId,
-    required File proofImage,
-  }) async {
-    final result = await _remoteDataSource.verifyMedication(
-        scheduleId: scheduleId, proofImages: [proofImage]).toApiResult();
-    if (result is Success) _medicationChanges.add(null);
-    return result;
-  }
+        _localDataSource = localDataSource,
+        _currentMember = currentMember;
 
   @override
   Stream<void> get medicationChanges => _medicationChanges.stream;
 
   @override
-  Future<ApiResult<MedicationSchedule>> fetchMedicationSchedule(
-      String memberId) async {
-    final result =
-        await _remoteDataSource.fetchMedicationSchedule(memberId).toApiResult();
-    if (result case Success(:final data)) {
-      final previous = _scheduleRevision;
-      _scheduleRevision = data.revision;
-      if (previous != null && previous != data.revision) {
-        _medicationChanges.add(null);
-      }
-    }
-    return result;
+  Stream<void> get alarmChanges => _localDataSource.changes;
+
+  @override
+  Future<MedicationPointResult> verifyMedication(
+      MedicationOccurrence occurrence, File proofImage) async {
+    final current = await _session();
+    if (current == null) throw StateError('로그인이 필요해요.');
+    final point = switch (await _remoteDataSource.verifyMedication(
+        scheduleId: occurrence.scheduleId,
+        proofImages: [proofImage]).toApiResult()) {
+      Success(:final data) => data,
+      Failure(:final message) => throw StateError(message),
+    };
+    _medicationChanges.add(null);
+    if ((await _session())?.session != current.session) return point;
+    await _localDataSource
+        .complete(sessionId: current.session, occurrenceIds: [occurrence.id]);
+    unawaited(syncAlarmSchedule());
+    return point;
   }
 
   @override
-  Stream<void> get alarmChanges => _localDataSource.changes;
+  Future<void> syncAlarmSchedule() {
+    if (_syncing != null) {
+      _syncAgain = true;
+      return _syncing!;
+    }
+    return _syncing = _syncLoop().whenComplete(() => _syncing = null);
+  }
+
+  Future<void> _syncLoop() async {
+    do {
+      _syncAgain = false;
+      await _sync();
+    } while (_syncAgain);
+  }
+
+  Future<void> _sync() async {
+    try {
+      final current = await _session();
+      if (current == null) return;
+      final (:member, :session, :state) = current;
+      final timeZone = (state['capabilities'] as Map?)?['timeZone'];
+      if (timeZone is! String) throw StateError('기기 타임존을 읽지 못했어요.');
+      final MedicationSchedule schedule;
+      try {
+        schedule = await _fetchSchedule(member);
+      } catch (_) {
+        if (state['schedule'] is Map) {
+          await _apply(session,
+              Map<String, dynamic>.from(state['schedule'] as Map), timeZone);
+        }
+        rethrow;
+      }
+      if (schedule.memberId != member ||
+          (await _session())?.session != session) {
+        return;
+      }
+      debugPrint('[MedicationSync] revision ${state['revision']} → '
+          '${schedule.revision}, schedules=${schedule.schedules.length}');
+      final status = await _apply(session, schedule.toJson(), timeZone);
+      debugPrint('[MedicationSync] applySchedule status=${status['status']} '
+          'applied=${status['appliedRevision']} '
+          'count=${status['scheduledCount']} failures=${status['failures']}');
+    } catch (e) {
+      debugPrint('[MedicationSync] sync 실패: $e');
+    }
+  }
+
+  Future<MedicationSchedule> _fetchSchedule(String member) async {
+    final schedule = switch (
+        await _remoteDataSource.fetchMedicationSchedule(member).toApiResult()) {
+      Success(:final data) => data,
+      Failure(:final statusCode) =>
+        throw StateError('알람 일정 조회 실패: HTTP $statusCode'),
+    };
+    final previous = _scheduleRevision;
+    _scheduleRevision = schedule.revision;
+    if (previous != null && previous != schedule.revision) {
+      _medicationChanges.add(null);
+    }
+    return schedule;
+  }
+
+  Future<Map<String, dynamic>> _apply(
+      String session, Map<String, dynamic> json, String timeZone) {
+    final schedule =
+        MedicationSchedule.fromJson({...json, 'timeZone': timeZone});
+    return _localDataSource.applySchedule(
+        sessionId: session,
+        schedule: schedule.toJson(),
+        groups: schedule.groups(DateTime.now()));
+  }
+
+  Future<_Session?> _session() async {
+    final member = await _currentMember();
+    final state = await _localDataSource.state();
+    final session = state['sessionId'];
+    if (member == null || state['memberId'] != member || session is! String) {
+      return null;
+    }
+    return (member: member, session: session, state: state);
+  }
 
   @override
   Future<Map<String, dynamic>> alarmCapabilities() =>
@@ -67,23 +155,6 @@ class MedicationRepositoryImpl extends MedicationRepository {
   @override
   Future<Map<String, dynamic>> activeAlarmGroup() =>
       _localDataSource.activeGroup();
-
-  @override
-  Future<Map<String, dynamic>> applyAlarmSchedule({
-    required String sessionId,
-    required Map<String, dynamic> schedule,
-    required List<Map<String, dynamic>> groups,
-  }) =>
-      _localDataSource.applySchedule(
-          sessionId: sessionId, schedule: schedule, groups: groups);
-
-  @override
-  Future<Map<String, dynamic>> completeAlarm({
-    required String sessionId,
-    required List<String> occurrenceIds,
-  }) =>
-      _localDataSource.complete(
-          sessionId: sessionId, occurrenceIds: occurrenceIds);
 
   @override
   Future<void> stopAlarm(String groupId) => _localDataSource.stop(groupId);

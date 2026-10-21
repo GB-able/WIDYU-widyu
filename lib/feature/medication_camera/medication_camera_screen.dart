@@ -6,7 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
-import 'package:widyu/core/data/provider/medication_alarm_provider.dart';
+import 'package:widyu/core/data/repository/goal/medication_repository.dart';
 import 'package:widyu/core/data/provider/point_provider.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
@@ -40,7 +40,7 @@ class MedicationCameraScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (context) => MedicationCameraViewModel(
-        medicationAlarmProvider: context.read<MedicationAlarmProvider>(),
+        medicationRepository: context.read<MedicationRepository>(),
         pointProvider: context.read<PointProvider>(),
         group: group,
       )..load(),

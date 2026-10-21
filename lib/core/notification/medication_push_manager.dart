@@ -4,7 +4,6 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:widyu/core/data/provider/medication_alarm_provider.dart';
 import 'package:widyu/core/data/repository/goal/medication_repository_impl.dart';
 import 'package:widyu/core/data/source/goal/medication_alarm_local_data_source_impl.dart';
 import 'package:widyu/core/data/source/goal/medication_remote_data_source_impl.dart';
@@ -31,12 +30,10 @@ Future<String?> authenticatedMedicationMember() async {
   return TokenManager().memberId;
 }
 
-MedicationAlarmProvider createMedicationAlarmProvider() =>
-    MedicationAlarmProvider(
-      repository: MedicationRepositoryImpl(
-        remoteDataSource: MedicationRemoteDataSourceImpl(apiClient: ApiClient()),
-        localDataSource: MedicationAlarmLocalDataSourceImpl(),
-      ),
+MedicationRepositoryImpl createMedicationRepository() =>
+    MedicationRepositoryImpl(
+      remoteDataSource: MedicationRemoteDataSourceImpl(apiClient: ApiClient()),
+      localDataSource: MedicationAlarmLocalDataSourceImpl(),
       currentMember: authenticatedMedicationMember,
     );
 
@@ -54,10 +51,5 @@ Future<void> medicationBackgroundMessage(RemoteMessage message) async {
   } catch (e) {
     debugPrint('[MedicationSync] 백그라운드 Firebase 초기화 실패: $e');
   }
-  final service = createMedicationAlarmProvider();
-  try {
-    await service.sync();
-  } finally {
-    service.dispose();
-  }
+  await createMedicationRepository().syncAlarmSchedule();
 }
