@@ -35,6 +35,7 @@ class PermissionViewModel with ChangeNotifier {
   /// 나머지 권한은 해당 기능을 사용할 때 요청한다.
   static const _initialRequestPermissions = [
     PermissionType.notification,
+    PermissionType.alarm,
     PermissionType.location,
   ];
 
@@ -48,7 +49,7 @@ class PermissionViewModel with ChangeNotifier {
       final denied = <PermissionType>[];
       final settingsLaunchFailed = <PermissionType>[];
 
-      // 1. 알림 → 위치 순서로 최초 실행에 필요한 권한만 요청한다.
+      // 1. 알림 → 알람 → 위치 순서로 최초 실행에 필요한 권한만 요청한다.
       await _requestSequentially(
         _initialRequestPermissions,
         denied,
