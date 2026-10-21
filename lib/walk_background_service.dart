@@ -12,7 +12,7 @@ import 'package:widyu/core/network/token_manager.dart';
 import 'package:workmanager/workmanager.dart';
 
 const _walkBackgroundTaskName = 'widyu.steps.sync';
-const _channel = MethodChannel('com.example.widyu/step_background');
+const _channel = MethodChannel('com.widucorp.widu/step_background');
 const _uniqueTaskName = 'widyu.steps.periodic';
 Future<void>? _initialization;
 
@@ -34,7 +34,7 @@ void onWalkStart() {
 @pragma('vm:entry-point')
 Future<void> onIosWalkBackground() async {
   WidgetsFlutterBinding.ensureInitialized();
-  const channel = MethodChannel('com.example.widyu/step_background_worker');
+  const channel = MethodChannel('com.widucorp.widu/step_background_worker');
   var succeeded = false;
   try {
     await channel.invokeMethod<void>('ready');

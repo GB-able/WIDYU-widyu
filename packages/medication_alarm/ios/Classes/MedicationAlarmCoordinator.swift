@@ -22,7 +22,7 @@ final class MedicationAlarmCoordinator {
     private let center = UNUserNotificationCenter.current()
     private var updates: Task<Void, Never>?
     private var backgroundRegistered = false
-    private static let refreshID = "com.widyu.medication.refresh"
+    private static let refreshID = "com.widucorp.widu.medication.refresh"
     private static let watchdogID = "widyu.medication.watchdog"
 
     func registerBackground() {

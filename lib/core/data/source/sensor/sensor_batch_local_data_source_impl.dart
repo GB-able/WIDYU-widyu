@@ -7,7 +7,7 @@ import 'package:widyu/core/data/source/sensor/sensor_batch_local_data_source.dar
 import 'package:widyu/core/model/sensor/sensor_message.dart';
 
 class SensorBatchLocalDataSourceImpl implements SensorBatchLocalDataSource {
-  static const _eventChannel = EventChannel('com.gbable.widu/sensor_batch');
+  static const _eventChannel = EventChannel('com.widucorp.widu/sensor_batch');
 
   late final Stream<SensorMessage> _sensorBatchStream = _eventChannel
       .receiveBroadcastStream()

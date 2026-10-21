@@ -13,8 +13,8 @@ public class MedicationAlarmPlugin: NSObject, FlutterPlugin, FlutterStreamHandle
     public static func register(with registrar: FlutterPluginRegistrar) {
         let instance = MedicationAlarmPlugin()
         registrar.addMethodCallDelegate(instance, channel: FlutterMethodChannel(
-            name: "com.widyu/medication_alarm", binaryMessenger: registrar.messenger()))
-        FlutterEventChannel(name: "com.widyu/medication_alarm/events", binaryMessenger: registrar.messenger())
+            name: "com.widucorp.widu/medication_alarm", binaryMessenger: registrar.messenger()))
+        FlutterEventChannel(name: "com.widucorp.widu/medication_alarm/events", binaryMessenger: registrar.messenger())
             .setStreamHandler(instance)
         registrar.addApplicationDelegate(instance)
     }

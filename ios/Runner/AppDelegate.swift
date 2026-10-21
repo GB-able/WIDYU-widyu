@@ -8,7 +8,7 @@ import flutter_background_service_ios
 @main
 @objc class AppDelegate: FlutterAppDelegate {
   // [NOTICE] 자정부터 현재까지의 걸음 수를 조회하는 채널.
-  private static let stepChannelName = "com.example.widyu/step_counter"
+  private static let stepChannelName = "com.widucorp.widu/step_counter"
 
   private let pedometer = CMPedometer()
   private let stepBackground = StepBackgroundCoordinator()
@@ -22,7 +22,7 @@ import flutter_background_service_ios
     if #available(iOS 10.0, *) {
       UNUserNotificationCenter.current().delegate = self as? UNUserNotificationCenterDelegate
     }
-    SwiftFlutterBackgroundServicePlugin.taskIdentifier = "com.gbable.widu.refresh"
+    SwiftFlutterBackgroundServicePlugin.taskIdentifier = "com.widucorp.widu.refresh"
     UIApplication.shared.setMinimumBackgroundFetchInterval(UIApplication.backgroundFetchIntervalMinimum)
 
     if let controller = window?.rootViewController as? FlutterViewController {
@@ -81,7 +81,7 @@ import flutter_background_service_ios
 }
 
 private final class StepBackgroundCoordinator {
-  private static let taskIdentifier = "com.example.widyu.steps.refresh"
+  private static let taskIdentifier = "com.widucorp.widu.steps.refresh"
   private static let enabledKey = "widyu.steps.background.enabled"
   private static let callbackKey = "widyu.steps.background.callback"
   private static let pendingKey = "widyu.steps.background.pending"
@@ -134,7 +134,7 @@ private final class StepBackgroundCoordinator {
 
   func attach(to messenger: FlutterBinaryMessenger) {
     let channel = FlutterMethodChannel(
-      name: "com.example.widyu/step_background",
+      name: "com.widucorp.widu/step_background",
       binaryMessenger: messenger
     )
     foregroundChannel = channel
@@ -282,7 +282,7 @@ private final class StepBackgroundCoordinator {
     }
     GeneratedPluginRegistrant.register(with: backgroundEngine)
     let controlChannel = FlutterMethodChannel(
-      name: "com.example.widyu/step_background",
+      name: "com.widucorp.widu/step_background",
       binaryMessenger: backgroundEngine.binaryMessenger
     )
     workerControlChannel = controlChannel
@@ -299,7 +299,7 @@ private final class StepBackgroundCoordinator {
       result(nil)
     }
     let channel = FlutterMethodChannel(
-      name: "com.example.widyu/step_background_worker",
+      name: "com.widucorp.widu/step_background_worker",
       binaryMessenger: backgroundEngine.binaryMessenger
     )
     workerChannel = channel
