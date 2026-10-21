@@ -15,7 +15,6 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$PointUiState {
   bool get isLoading;
-  int get currentPoints;
   List<PointUiModel> get histories;
 
   /// Create a copy of PointUiState
@@ -33,18 +32,16 @@ mixin _$PointUiState {
             other is PointUiState &&
             (identical(other.isLoading, isLoading) ||
                 other.isLoading == isLoading) &&
-            (identical(other.currentPoints, currentPoints) ||
-                other.currentPoints == currentPoints) &&
             const DeepCollectionEquality().equals(other.histories, histories));
   }
 
   @override
-  int get hashCode => Object.hash(runtimeType, isLoading, currentPoints,
-      const DeepCollectionEquality().hash(histories));
+  int get hashCode => Object.hash(
+      runtimeType, isLoading, const DeepCollectionEquality().hash(histories));
 
   @override
   String toString() {
-    return 'PointUiState(isLoading: $isLoading, currentPoints: $currentPoints, histories: $histories)';
+    return 'PointUiState(isLoading: $isLoading, histories: $histories)';
   }
 }
 
@@ -54,7 +51,7 @@ abstract mixin class $PointUiStateCopyWith<$Res> {
           PointUiState value, $Res Function(PointUiState) _then) =
       _$PointUiStateCopyWithImpl;
   @useResult
-  $Res call({bool isLoading, int currentPoints, List<PointUiModel> histories});
+  $Res call({bool isLoading, List<PointUiModel> histories});
 }
 
 /// @nodoc
@@ -70,7 +67,6 @@ class _$PointUiStateCopyWithImpl<$Res> implements $PointUiStateCopyWith<$Res> {
   @override
   $Res call({
     Object? isLoading = null,
-    Object? currentPoints = null,
     Object? histories = null,
   }) {
     return _then(_self.copyWith(
@@ -78,10 +74,6 @@ class _$PointUiStateCopyWithImpl<$Res> implements $PointUiStateCopyWith<$Res> {
           ? _self.isLoading
           : isLoading // ignore: cast_nullable_to_non_nullable
               as bool,
-      currentPoints: null == currentPoints
-          ? _self.currentPoints
-          : currentPoints // ignore: cast_nullable_to_non_nullable
-              as int,
       histories: null == histories
           ? _self.histories
           : histories // ignore: cast_nullable_to_non_nullable
@@ -183,15 +175,13 @@ extension PointUiStatePatterns on PointUiState {
 
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>(
-    TResult Function(
-            bool isLoading, int currentPoints, List<PointUiModel> histories)?
-        $default, {
+    TResult Function(bool isLoading, List<PointUiModel> histories)? $default, {
     required TResult orElse(),
   }) {
     final _that = this;
     switch (_that) {
       case _PointUiState() when $default != null:
-        return $default(_that.isLoading, _that.currentPoints, _that.histories);
+        return $default(_that.isLoading, _that.histories);
       case _:
         return orElse();
     }
@@ -212,14 +202,12 @@ extension PointUiStatePatterns on PointUiState {
 
   @optionalTypeArgs
   TResult when<TResult extends Object?>(
-    TResult Function(
-            bool isLoading, int currentPoints, List<PointUiModel> histories)
-        $default,
+    TResult Function(bool isLoading, List<PointUiModel> histories) $default,
   ) {
     final _that = this;
     switch (_that) {
       case _PointUiState():
-        return $default(_that.isLoading, _that.currentPoints, _that.histories);
+        return $default(_that.isLoading, _that.histories);
       case _:
         throw StateError('Unexpected subclass');
     }
@@ -239,14 +227,12 @@ extension PointUiStatePatterns on PointUiState {
 
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>(
-    TResult? Function(
-            bool isLoading, int currentPoints, List<PointUiModel> histories)?
-        $default,
+    TResult? Function(bool isLoading, List<PointUiModel> histories)? $default,
   ) {
     final _that = this;
     switch (_that) {
       case _PointUiState() when $default != null:
-        return $default(_that.isLoading, _that.currentPoints, _that.histories);
+        return $default(_that.isLoading, _that.histories);
       case _:
         return null;
     }
@@ -257,17 +243,12 @@ extension PointUiStatePatterns on PointUiState {
 
 class _PointUiState implements PointUiState {
   const _PointUiState(
-      {this.isLoading = false,
-      this.currentPoints = 0,
-      final List<PointUiModel> histories = const []})
+      {this.isLoading = false, final List<PointUiModel> histories = const []})
       : _histories = histories;
 
   @override
   @JsonKey()
   final bool isLoading;
-  @override
-  @JsonKey()
-  final int currentPoints;
   final List<PointUiModel> _histories;
   @override
   @JsonKey()
@@ -292,19 +273,17 @@ class _PointUiState implements PointUiState {
             other is _PointUiState &&
             (identical(other.isLoading, isLoading) ||
                 other.isLoading == isLoading) &&
-            (identical(other.currentPoints, currentPoints) ||
-                other.currentPoints == currentPoints) &&
             const DeepCollectionEquality()
                 .equals(other._histories, _histories));
   }
 
   @override
-  int get hashCode => Object.hash(runtimeType, isLoading, currentPoints,
-      const DeepCollectionEquality().hash(_histories));
+  int get hashCode => Object.hash(
+      runtimeType, isLoading, const DeepCollectionEquality().hash(_histories));
 
   @override
   String toString() {
-    return 'PointUiState(isLoading: $isLoading, currentPoints: $currentPoints, histories: $histories)';
+    return 'PointUiState(isLoading: $isLoading, histories: $histories)';
   }
 }
 
@@ -316,7 +295,7 @@ abstract mixin class _$PointUiStateCopyWith<$Res>
       __$PointUiStateCopyWithImpl;
   @override
   @useResult
-  $Res call({bool isLoading, int currentPoints, List<PointUiModel> histories});
+  $Res call({bool isLoading, List<PointUiModel> histories});
 }
 
 /// @nodoc
@@ -333,7 +312,6 @@ class __$PointUiStateCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   $Res call({
     Object? isLoading = null,
-    Object? currentPoints = null,
     Object? histories = null,
   }) {
     return _then(_PointUiState(
@@ -341,10 +319,6 @@ class __$PointUiStateCopyWithImpl<$Res>
           ? _self.isLoading
           : isLoading // ignore: cast_nullable_to_non_nullable
               as bool,
-      currentPoints: null == currentPoints
-          ? _self.currentPoints
-          : currentPoints // ignore: cast_nullable_to_non_nullable
-              as int,
       histories: null == histories
           ? _self._histories
           : histories // ignore: cast_nullable_to_non_nullable

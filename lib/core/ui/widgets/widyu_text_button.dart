@@ -10,6 +10,7 @@ class WidyuTextButton extends StatelessWidget {
   final VoidCallback? onTap;
   final String text;
   final bool enable;
+  final bool isLoading;
 
   /// 활성 상태의 배경색
   final Color backgroundColor;
@@ -28,6 +29,7 @@ class WidyuTextButton extends StatelessWidget {
     required this.onTap,
     required this.text,
     this.enable = true,
+    this.isLoading = false,
     this.backgroundColor = MyColor.primary,
     this.textColor = MyColor.white,
     this.disabledBackgroundColor = MyColor.grey100,
@@ -45,18 +47,28 @@ class WidyuTextButton extends StatelessWidget {
       color: enable ? backgroundColor : disabledBackgroundColor,
       borderRadius: radius,
       child: InkWell(
-        onTap: enable ? onTap : null,
+        onTap: enable && !isLoading ? onTap : null,
         borderRadius: radius,
         child: SizedBox(
           width: double.infinity,
           height: 52,
           child: Center(
-            child: Text(
-              text,
-              style: MyTypo.button.copyWith(
-                color: enable ? textColor : disabledTextColor,
-              ),
-            ),
+            child: isLoading
+                ? SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: textColor,
+                      semanticsLabel: '$text 진행 중',
+                    ),
+                  )
+                : Text(
+                    text,
+                    style: MyTypo.button.copyWith(
+                      color: enable ? textColor : disabledTextColor,
+                    ),
+                  ),
           ),
         ),
       ),

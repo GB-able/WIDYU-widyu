@@ -62,33 +62,41 @@ class _HealthScheduleCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return _CarouselCardShell(
       title: '건강 일정',
-      background: const MeshGradientBackground(
-        baseColor: MyColor.white,
-        colors: [
-          MyColor.primary400,
-          MyColor.primary500,
-          MyColor.primary300,
-        ],
-        blobs: _healthScheduleBlobSpecs,
-        blurSigma: 32,
-        topScrimAlpha: 0,
-      ),
-      content: Stack(
+      background: Stack(
         fit: StackFit.expand,
         children: [
+          const MeshGradientBackground(
+            baseColor: MyColor.white,
+            colors: [
+              MyColor.primary400,
+              MyColor.primary500,
+              MyColor.primary300,
+            ],
+            blobs: _healthScheduleBlobSpecs,
+            blurSigma: 32,
+            topScrimAlpha: 0,
+          ),
           _SpringBounce(
             isActive: isCentered,
-            child: FractionalTranslation(
-              translation: const Offset(0.12, 0),
-              child: Transform.scale(
-                scale: 1.1,
-                child: const WidyuAssetImage(
-                  name: 'img_calendar.png',
-                  fit: BoxFit.contain,
+            child: Transform.translate(
+              offset: const Offset(12, 0),
+              child: FractionalTranslation(
+                translation: const Offset(0.12, 0),
+                child: Transform.scale(
+                  scale: 1.1,
+                  child: const WidyuAssetImage(
+                    name: 'img_238_calendar.png',
+                    fit: BoxFit.contain,
+                  ),
                 ),
               ),
             ),
           ),
+        ],
+      ),
+      content: Stack(
+        fit: StackFit.expand,
+        children: [
           Align(
             alignment: Alignment.bottomCenter,
             child: Material(

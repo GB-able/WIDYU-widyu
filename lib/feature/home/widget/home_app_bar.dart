@@ -4,11 +4,12 @@ class _HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
   const _HomeAppBar();
 
   @override
-  Size get preferredSize => AppBar().preferredSize;
+  Size get preferredSize => const Size.fromHeight(52);
 
   @override
   Widget build(BuildContext context) {
     return AppBar(
+      toolbarHeight: 52,
       backgroundColor: MyColor.transparent,
       titleSpacing: 16,
       title: Text(
@@ -18,10 +19,11 @@ class _HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
       actions: [
         GestureDetector(
           onTap: () => {},
-          child: const WidyuIcon(
-            icon: 'ic_24_notification.svg',
-            width: 24,
-            height: 24,
+          child: const IconWidget(
+            icon: 'notification',
+            width: 22,
+            height: 22,
+            color: MyColor.black,
           ),
         ),
         const SizedBox(width: 16),

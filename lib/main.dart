@@ -1,14 +1,24 @@
 import 'dart:async';
 
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:provider/provider.dart';
 import 'package:widyu/app/routes/custom_router.dart';
 import 'package:widyu/background_service.dart';
+import 'package:widyu/core/data/repository/album/album_repository.dart';
+import 'package:widyu/core/data/repository/album/album_repository_impl.dart';
 import 'package:widyu/core/data/repository/auth/auth_repository.dart';
 import 'package:widyu/core/data/repository/auth/auth_repository_impl.dart';
+import 'package:widyu/core/data/repository/goal/goal_repository.dart';
+import 'package:widyu/core/data/repository/goal/goal_repository_impl.dart';
+import 'package:widyu/core/data/repository/goal/medication_repository.dart';
+import 'package:widyu/core/data/repository/goal/medication_repository_impl.dart';
+import 'package:widyu/core/data/repository/goal/walk_repository.dart';
+import 'package:widyu/core/data/repository/goal/walk_repository_impl.dart';
 import 'package:widyu/core/data/repository/heartRate/heart_rate_repository.dart';
 import 'package:widyu/core/data/repository/heartRate/heart_rate_repository_impl.dart';
 import 'package:widyu/core/data/repository/home/home_repository.dart';
@@ -19,10 +29,24 @@ import 'package:widyu/core/data/repository/myPage/my_page_repository.dart';
 import 'package:widyu/core/data/repository/myPage/my_page_repository_impl.dart';
 import 'package:widyu/core/data/repository/notification/notification_repository.dart';
 import 'package:widyu/core/data/repository/notification/notification_repository_impl.dart';
+import 'package:widyu/core/data/repository/point/point_repository.dart';
+import 'package:widyu/core/data/repository/point/point_repository_impl.dart';
+import 'package:widyu/core/data/source/album/album_remote_data_source.dart';
+import 'package:widyu/core/data/source/album/album_remote_data_source_impl.dart';
 import 'package:widyu/core/data/source/auth/auth_local_data_source.dart';
 import 'package:widyu/core/data/source/auth/auth_local_data_source_impl.dart';
 import 'package:widyu/core/data/source/auth/auth_remote_data_source.dart';
 import 'package:widyu/core/data/source/auth/auth_remote_data_source_impl.dart';
+import 'package:widyu/core/data/source/goal/goal_remote_data_source.dart';
+import 'package:widyu/core/data/source/goal/goal_remote_data_source_impl.dart';
+import 'package:widyu/core/data/source/goal/medication_alarm_local_data_source.dart';
+import 'package:widyu/core/data/source/goal/medication_alarm_local_data_source_impl.dart';
+import 'package:widyu/core/data/source/goal/medication_remote_data_source.dart';
+import 'package:widyu/core/data/source/goal/medication_remote_data_source_impl.dart';
+import 'package:widyu/core/data/source/goal/walk_local_data_source.dart';
+import 'package:widyu/core/data/source/goal/walk_local_data_source_impl.dart';
+import 'package:widyu/core/data/source/goal/walk_remote_data_source.dart';
+import 'package:widyu/core/data/source/goal/walk_remote_data_source_impl.dart';
 import 'package:widyu/core/data/source/device/device_local_data_source.dart';
 import 'package:widyu/core/data/source/device/device_local_data_source_impl.dart';
 import 'package:widyu/core/data/source/heartRate/heart_rate_local_data_source.dart';
@@ -39,13 +63,18 @@ import 'package:widyu/core/data/source/myPage/my_page_remote_data_source.dart';
 import 'package:widyu/core/data/source/myPage/my_page_remote_data_source_impl.dart';
 import 'package:widyu/core/data/source/notification/notification_remote_data_source.dart';
 import 'package:widyu/core/data/source/notification/notification_remote_data_source_impl.dart';
+import 'package:widyu/core/data/source/point/point_remote_data_source.dart';
+import 'package:widyu/core/data/source/point/point_remote_data_source_impl.dart';
+import 'package:widyu/core/notification/medication_push_manager.dart';
 import 'package:widyu/core/network/api_client.dart';
-import 'package:widyu/core/network/socket_client.dart';
 import 'package:widyu/core/network/token_manager.dart';
+import 'package:widyu/core/network/socket_client.dart';
 import 'package:widyu/core/ui/theme/theme.dart';
 import 'package:widyu/core/utils/app_service_controller.dart';
+import 'package:widyu/core/notification/local_notification_manager.dart';
+import 'package:widyu/firebase_options.dart';
+import 'package:widyu/walk_background_service.dart';
 import 'package:widyu/core/utils/background_location_notice_controller.dart';
-import 'package:widyu/core/utils/local_notification_manager.dart';
 
 void main() {
   runZonedGuarded(_bootstrap, (error, stack) {
@@ -70,21 +99,36 @@ Future<void> _bootstrap() async {
   }
 
   try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+  } catch (e, stack) {
+    debugPrint('[main] Firebase.initializeApp 실패: $e\n$stack');
+  }
+
+  try {
     await initializeService();
   } catch (e, stack) {
     debugPrint('[main] initializeService 실패: $e\n$stack');
   }
 
   try {
-    await LocalNotificationManager.initialize();
-  } catch (e, stack) {
-    debugPrint('[main] LocalNotificationManager.initialize 실패: $e\n$stack');
+    await initializeWalkService();
+  } catch (e) {
+    debugPrint('[main] 걸음수 백그라운드 초기화 실패: ${e.runtimeType}');
   }
 
   try {
     await initializeDateFormatting('ko_KR');
   } catch (e, stack) {
     debugPrint('[main] initializeDateFormatting 실패: $e\n$stack');
+  }
+
+  try {
+    await initializeMedicationPush();
+    await LocalNotificationManager.initialize();
+  } catch (e, stack) {
+    debugPrint('[main] 알림 초기화 실패: $e\n$stack');
   }
 
   runApp(
@@ -100,6 +144,39 @@ Future<void> _bootstrap() async {
         ),
         Provider<ApiClient>(create: (_) => ApiClient()),
         Provider<SocketClient>(create: (_) => SocketClient()),
+        ProxyProvider<ApiClient, MedicationRemoteDataSource>(
+          update: (_, apiClient, __) =>
+              MedicationRemoteDataSourceImpl(apiClient: apiClient),
+        ),
+        ProxyProvider<ApiClient, WalkRemoteDataSource>(
+          update: (_, apiClient, __) =>
+              WalkRemoteDataSourceImpl(apiClient: apiClient),
+        ),
+        ProxyProvider<ApiClient, GoalRemoteDataSource>(
+          update: (_, apiClient, __) =>
+              GoalRemoteDataSourceImpl(apiClient: apiClient),
+        ),
+        Provider<WalkLocalDataSource>(create: (_) => WalkLocalDataSourceImpl()),
+        ProxyProvider2<WalkLocalDataSource, WalkRemoteDataSource,
+            WalkRepository>(
+          update: (_, local, remote, __) => WalkRepositoryImpl(
+            localDataSource: local,
+            remoteDataSource: remote,
+          ),
+        ),
+        ProxyProvider<GoalRemoteDataSource, GoalRepository>(
+          update: (_, goal, __) =>
+              GoalRepositoryImpl(goalRemoteDataSource: goal),
+        ),
+        Provider<MedicationAlarmLocalDataSource>(
+            create: (_) => MedicationAlarmLocalDataSourceImpl()),
+        Provider<MedicationRepository>(
+          create: (context) => MedicationRepositoryImpl(
+            localDataSource: context.read<MedicationAlarmLocalDataSource>(),
+            remoteDataSource: context.read<MedicationRemoteDataSource>(),
+            currentMember: authenticatedMedicationMember,
+          ),
+        ),
         ProxyProvider<ApiClient, AuthRemoteDataSource>(
           update: (_, apiClient, __) =>
               AuthRemoteDataSourceImpl(apiClient: apiClient),
@@ -133,6 +210,14 @@ Future<void> _bootstrap() async {
         ProxyProvider<ApiClient, HeartRateRemoteDataSource>(
           update: (_, apiClient, __) =>
               HeartRateRemoteDataSourceImpl(apiClient: apiClient),
+        ),
+        ProxyProvider<ApiClient, AlbumRemoteDataSource>(
+          update: (_, apiClient, __) =>
+              AlbumRemoteDataSourceImpl(apiClient: apiClient),
+        ),
+        ProxyProvider<ApiClient, PointRemoteDataSource>(
+          update: (_, apiClient, __) =>
+              PointRemoteDataSourceImpl(apiClient: apiClient),
         ),
         ProxyProvider2<AuthRemoteDataSource, AuthLocalDataSource,
             AuthRepository>(
@@ -169,6 +254,14 @@ Future<void> _bootstrap() async {
             authLocalDataSource: authLocal,
             deviceLocalDataSource: deviceLocal,
           ),
+        ),
+        ProxyProvider<PointRemoteDataSource, PointRepository>(
+          update: (_, remote, __) =>
+              PointRepositoryImpl(remoteDataSource: remote),
+        ),
+        ProxyProvider<AlbumRemoteDataSource, AlbumRepository>(
+          update: (_, remote, __) =>
+              AlbumRepositoryImpl(remoteDataSource: remote),
         ),
       ],
       child: const App(),
@@ -213,6 +306,8 @@ class _AppState extends State<App> with WidgetsBindingObserver {
       title: '위듀',
       theme: MyTheme.myTheme,
       routerConfig: CustomRouter.router,
+      locale: const Locale('ko', 'KR'),
+      localizationsDelegates: GlobalMaterialLocalizations.delegates,
     );
   }
 }

@@ -22,27 +22,27 @@ abstract class HomeUiState with _$HomeUiState {
     DateTime? measuredAt,
     required List<String> thumbnails,
     required MedicationStatus medicationStatus,
-    required int stepCount,
     required int stepGoal,
     required String? healthSchedulePlace,
     required double? healthScheduleLatitude,
     required double? healthScheduleLongitude,
-
-    /// 약 복용 인증 사진을 업로드하는 중인지 여부
-    required bool isVerifyingMedication,
   }) = _HomeUiState;
 
   /// 목표 유무
   bool get hasGoal =>
       medicationStatus != const MedicationStatus.unknown() ||
       hasStepGoal ||
-      (healthSchedulePlace?.isNotEmpty ?? false);
+      hasHealthSchedule;
 
   /// 걷기 목표 설정 여부
   bool get hasStepGoal => stepGoal > 0;
 
+  /// 건강 일정 등록 여부
+  bool get hasHealthSchedule => healthSchedulePlace?.isNotEmpty ?? false;
+
   /// 목표 대비 진행률(%)
-  double get stepProgress => hasStepGoal ? (stepCount / stepGoal) * 100 : 0.0;
+  double stepProgressOf(int steps) =>
+      hasStepGoal ? (steps / stepGoal) * 100 : 0.0;
 
   /// 최상단에 나타날 알림
   NotificationUiModel? get notification =>
@@ -59,11 +59,9 @@ abstract class HomeUiState with _$HomeUiState {
         heartRateStatus: HeartRateStatus.unknown,
         thumbnails: [],
         medicationStatus: MedicationStatus.unknown(),
-        stepCount: 0,
         stepGoal: 0,
         healthSchedulePlace: null,
         healthScheduleLatitude: null,
         healthScheduleLongitude: null,
-        isVerifyingMedication: false,
       );
 }

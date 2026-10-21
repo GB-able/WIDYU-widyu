@@ -10,5 +10,9 @@ abstract class NotificationRepository {
 
   Future<ApiResult<NotificationPage>> fetchNotificationPage(int? cursor);
 
-  Future<ApiResult<void>> markAsRead(int notificationId);
+  Future<ApiResult<void>> readNotification(int notificationId);
+
+  Future<ApiResult<void>> registerFcmToken(String token);
+
+  Future<ApiResult<void>> deactivateFcmToken(String token);
 }

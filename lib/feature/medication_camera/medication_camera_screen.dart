@@ -1,14 +1,24 @@
+import 'dart:io';
+
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:provider/provider.dart';
+import 'package:widyu/core/data/repository/goal/medication_repository.dart';
+import 'package:widyu/core/data/provider/point_provider.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
+import 'package:widyu/core/ui/widgets/ui_event_listener.dart';
 import 'package:widyu/core/ui/widgets/widyu_icon.dart';
 import 'package:widyu/core/utils/show_toast.dart';
+import 'package:widyu/feature/medication_camera/medication_camera_ui_event.dart';
+import 'package:widyu/feature/medication_camera/medication_camera_ui_state.dart';
+import 'package:widyu/feature/medication_camera/medication_camera_view_model.dart';
 
-part 'widget/camera_capture_view.dart';
-part 'widget/medication_camera_app_bar.dart';
+part 'widgets/camera_capture_view.dart';
+part 'widgets/medication_camera_app_bar.dart';
 
 /// 앱 바, 시스템 바, 하단 버튼 영역에 깔아 뒤의 카메라 화면이 비쳐 보이게 하는 반투명 배경
 const _scrimColor = Color(0x80000000);
@@ -22,34 +32,139 @@ const _systemOverlayStyle = SystemUiOverlayStyle(
   systemNavigationBarContrastEnforced: false,
 );
 
-/// 약 복용 인증 사진을 촬영한다.
-/// 촬영하면 바로 사진 경로를 결과로 pop 하고, 업로드는 홈 화면이 맡는다.
 class MedicationCameraScreen extends StatelessWidget {
-  /// 이번 회차에 복용할 약 개수
-  final int? doseCount;
+  const MedicationCameraScreen({super.key, required this.group});
+  final Map<String, dynamic> group;
 
-  const MedicationCameraScreen({super.key, required this.doseCount});
+  @override
+  Widget build(BuildContext context) {
+    return ChangeNotifierProvider(
+      create: (context) => MedicationCameraViewModel(
+        medicationRepository: context.read<MedicationRepository>(),
+        pointProvider: context.read<PointProvider>(),
+        group: group,
+      )..load(),
+      child: const _MedicationCameraView(),
+    );
+  }
+}
 
-  void _handleCameraFailure(BuildContext context) {
+class _MedicationCameraView extends StatefulWidget {
+  const _MedicationCameraView();
+
+  @override
+  State<_MedicationCameraView> createState() => _MedicationCameraViewState();
+}
+
+class _MedicationCameraViewState extends State<_MedicationCameraView>
+    with WidgetsBindingObserver {
+  MedicationCameraViewModel get _viewModel =>
+      context.read<MedicationCameraViewModel>();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  Future<void> didChangeAppLifecycleState(AppLifecycleState state) async {
+    if (state != AppLifecycleState.resumed ||
+        !_viewModel.uiState.isPermissionDenied) {
+      return;
+    }
+    final status = await Permission.camera.status;
+    if (mounted) _viewModel.setPermissionDenied(!status.isGranted);
+  }
+
+  void _handleCameraFailure() {
     showToast('카메라를 실행할 수 없어요. 잠시 후 다시 시도해 주세요.');
     context.pop();
   }
 
+  Future<void> _handleEvent(MedicationCameraUiEvent event) async {
+    switch (event) {
+      case OccurrenceNotFound():
+        await showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            content: const Text('존재하지 않는 복약 일정이에요.'),
+            actions: [
+              TextButton(onPressed: context.pop, child: const Text('확인')),
+            ],
+          ),
+        );
+        if (mounted) context.pop();
+      case VerifySuccess(:final result):
+        context.pop(result);
+      case VerifyFailure():
+        showToast('복용 인증에 실패했어요.');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    // 하단 내비게이션 바 스타일은 화면 아래쪽 영역에서 읽으므로 화면 전체를 감싼다.
-    return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: _systemOverlayStyle,
-      child: Scaffold(
-        backgroundColor: MyColor.black,
-        extendBodyBehindAppBar: true,
-        appBar: const _MedicationCameraAppBar(),
-        body: _CameraCaptureView(
-          doseCount: doseCount,
-          onCaptured: (path) => context.pop(path),
-          onFailure: () => _handleCameraFailure(context),
+    final uiState =
+        context.select<MedicationCameraViewModel, MedicationCameraUiState>(
+            (vm) => vm.uiState);
+
+    return UiEventListener(
+      stream: _viewModel.uiEvent,
+      onEvent: _handleEvent,
+      child: PopScope(
+        canPop: !uiState.isBusy,
+        child: AnnotatedRegion<SystemUiOverlayStyle>(
+          value: _systemOverlayStyle,
+          child: Scaffold(
+            backgroundColor: MyColor.black,
+            extendBodyBehindAppBar: true,
+            appBar: _MedicationCameraAppBar(enabled: !uiState.isBusy),
+            body: Stack(
+              fit: StackFit.expand,
+              children: [
+                _buildBody(uiState),
+                if (uiState.isBusy)
+                  const AbsorbPointer(
+                    child: ColoredBox(
+                      color: _scrimColor,
+                      child: Center(child: CircularProgressIndicator()),
+                    ),
+                  ),
+              ],
+            ),
+          ),
         ),
       ),
+    );
+  }
+
+  Widget _buildBody(MedicationCameraUiState uiState) {
+    if (uiState.isPermissionDenied) {
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('카메라 권한이 필요해요.',
+                style: MyTypo.body1.copyWith(color: MyColor.white)),
+            const TextButton(onPressed: openAppSettings, child: Text('설정 열기')),
+          ],
+        ),
+      );
+    }
+    if (!uiState.isReady) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    return _CameraCaptureView(
+      doseLabel: _viewModel.doseLabel,
+      onCaptured: (path) => _viewModel.submit(File(path)),
+      onPermissionDenied: () => _viewModel.setPermissionDenied(true),
+      onFailure: _handleCameraFailure,
     );
   }
 }

@@ -99,16 +99,16 @@ class _MedicationCard extends StatelessWidget {
     topScrimAlpha: 0,
   );
 
-  Widget get _pillImage => Padding(
-        padding: const EdgeInsets.all(20),
-        child: _SpringBounce(
-          isActive: isCentered,
+  Widget get _pillImage => _SpringBounce(
+        isActive: isCentered,
+        child: Transform.translate(
+          offset: const Offset(34, 0),
           child: FractionalTranslation(
             translation: const Offset(0.05, 0.05),
             child: Transform.scale(
               scale: 1.1,
               child: const WidyuAssetImage(
-                name: 'img_medicine.png',
+                name: 'img_238_medicine.png',
                 fit: BoxFit.contain,
               ),
             ),

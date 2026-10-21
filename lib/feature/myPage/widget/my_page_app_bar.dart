@@ -4,11 +4,12 @@ class _MyPageAppBar extends StatelessWidget implements PreferredSizeWidget {
   const _MyPageAppBar();
 
   @override
-  Size get preferredSize => AppBar().preferredSize;
+  Size get preferredSize => const Size.fromHeight(52);
 
   @override
   Widget build(BuildContext context) {
     return AppBar(
+      toolbarHeight: 52,
       backgroundColor: MyColor.orange400,
       systemOverlayStyle: const SystemUiOverlayStyle(
         statusBarColor: Colors.transparent,

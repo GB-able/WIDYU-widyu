@@ -34,7 +34,7 @@ void main() {
     PermissionRecoveryMode __,
   ) async => PermissionRecoveryAction.cancel;
 
-  test('전체 권한 목록은 유지하고 최초 요청은 알림과 위치 순서로 한정한다', () async {
+  test('전체 권한 목록은 유지하고 최초 요청은 알림, 알람, 위치 순서로 한정한다', () async {
     final requested = <PermissionType>[];
     final statuses = <PermissionType>[];
     final viewModel = PermissionViewModel(
@@ -59,8 +59,13 @@ void main() {
       {...viewModel.requiredPermissions, ...viewModel.optionalPermissions},
       PermissionType.values.toSet(),
     );
-    expect(requested, [PermissionType.notification, PermissionType.location]);
-    expect(statuses, [PermissionType.notification, PermissionType.location]);
+    const initial = [
+      PermissionType.notification,
+      PermissionType.alarm,
+      PermissionType.location,
+    ];
+    expect(requested, initial);
+    expect(statuses, initial);
     expect(events.whereType<NavigateToNext>(), hasLength(1));
 
     await subscription.cancel();

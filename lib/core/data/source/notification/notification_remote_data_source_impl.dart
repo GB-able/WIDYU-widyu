@@ -60,7 +60,7 @@ class NotificationRemoteDataSourceImpl implements NotificationRemoteDataSource {
   }
 
   @override
-  Future<ApiResponse<void>> markAsRead(int notificationId) async {
+  Future<ApiResponse<void>> readNotification(int notificationId) async {
     try {
       final response = await _apiClient.req(
         path: '$_path/$notificationId',
@@ -69,6 +69,34 @@ class NotificationRemoteDataSourceImpl implements NotificationRemoteDataSource {
       return response.toApiResponse<void>((json) => {});
     } catch (e) {
       throw Exception("알림 읽음 처리에 실패했습니다: $e");
+    }
+  }
+
+  @override
+  Future<ApiResponse<void>> registerFcmToken(String token) async {
+    try {
+      final response = await _apiClient.req(
+        path: '$_path/token/login',
+        method: HttpMethod.post,
+        body: {'token': token},
+      );
+      return response.toApiResponse<void>((json) => {});
+    } catch (e) {
+      throw Exception("FCM 토큰 등록에 실패했습니다: $e");
+    }
+  }
+
+  @override
+  Future<ApiResponse<void>> deactivateFcmToken(String token) async {
+    try {
+      final response = await _apiClient.req(
+        path: '$_path/token/logout',
+        method: HttpMethod.post,
+        body: {'token': token},
+      );
+      return response.toApiResponse<void>((json) => {});
+    } catch (e) {
+      throw Exception("FCM 토큰 비활성화에 실패했습니다: $e");
     }
   }
 }

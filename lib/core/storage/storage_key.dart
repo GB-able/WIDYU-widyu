@@ -1,1 +1,6 @@
-enum StorageKey { accessToken, refreshToken, tempToken, memberId }
+enum StorageKey {
+  widyuAccessToken,
+  widyuRefreshToken,
+  tempToken,
+  memberId,
+}

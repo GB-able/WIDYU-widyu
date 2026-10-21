@@ -6,11 +6,11 @@ import 'package:widyu/core/ui/theme/typos.dart';
 import 'package:widyu/core/ui/widgets/icon_widget.dart';
 
 class BotNav extends StatelessWidget {
+  static const height = 64.0;
+
   final StatefulNavigationShell navigationShell;
 
   const BotNav({super.key, required this.navigationShell});
-
-  static const height = 64.0;
 
   static const _routes = <({AppRoute route, String label, String icon})>[
     (route: AppRoute.home, label: "홈", icon: "home"),
@@ -22,7 +22,7 @@ class BotNav extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: BotNav.height + MediaQuery.of(context).padding.bottom,
+      height: height + MediaQuery.of(context).padding.bottom,
       decoration: BoxDecoration(
         borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
         color: MyColor.white,
@@ -37,11 +37,14 @@ class BotNav extends StatelessWidget {
       child: BottomNavigationBar(
         elevation: 0,
         currentIndex: navigationShell.currentIndex,
-        onTap: (index) => navigationShell.goBranch(
-          index,
-          // 같은 탭을 다시 누르면 해당 탭의 첫 화면으로 돌아간다
-          initialLocation: index == navigationShell.currentIndex,
-        ),
+        onTap: (index) {
+          navigationShell.goBranch(
+            index,
+            initialLocation: index ==
+                navigationShell
+                    .currentIndex, // [NOTICE] 같은 탭을 다시 누르면 해당 탭의 첫 화면으로 이동
+          );
+        },
         backgroundColor: Colors.transparent,
         type: BottomNavigationBarType.fixed,
         selectedItemColor: MyColor.grey700,

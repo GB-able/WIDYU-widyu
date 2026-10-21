@@ -1,5 +1,7 @@
 part of '../home_screen.dart';
 
+enum _CarouselCard { medication, healthSchedule, walking, album }
+
 class _CarouselMenu extends StatefulWidget {
   final bool isLoading;
   final bool hasGoal;
@@ -7,6 +9,7 @@ class _CarouselMenu extends StatefulWidget {
   final MedicationStatus medicationStatus;
   final bool hasStepGoal;
   final double stepProgress;
+  final bool hasHealthSchedule;
   final VoidCallback onCameraTap;
   final VoidCallback onRouteTap;
 
@@ -17,16 +20,15 @@ class _CarouselMenu extends StatefulWidget {
     required this.medicationStatus,
     required this.hasStepGoal,
     required this.stepProgress,
+    required this.hasHealthSchedule,
     required this.onCameraTap,
     required this.onRouteTap,
   });
 
-  /// 시트 위 모서리 반지름. 배경 이미지가 모서리 영역까지 덮도록 홈 화면 레이아웃 계산에 쓴다.
   static const sheetRadius = _CarouselMenuState._sheetRadius;
 
-  /// 카드 상태 기준 시트 높이. 홈 화면에서 배경 이미지 높이를 계산할 때 쓴다.
   static double sheetHeightOf(BuildContext context) =>
-      _CarouselMenuState._sheetTopPadding +
+      _CarouselMenuState._carouselTopPadding +
       _CarouselMenuState._carouselCardMaxHeight +
       _CarouselMenuState._carouselIndicatorArea +
       BotNav.height +
@@ -40,43 +42,53 @@ class _CarouselMenuState extends State<_CarouselMenu> {
   PageController? _controller;
 
   // 무한 순환을 위해 양방향으로 충분한 여유를 둔 시작 페이지
-  // 첫 인디케이터가 0을 가리키려면 [_carouselCards] 길이의 배수여야 한다
+  // 인덱스는 이 페이지를 0으로 두고 계산하므로 카드 수가 몇 개든 첫 인디케이터가 0을 가리킨다
   static const _carouselInitialPage = 4000;
-  static const _cardsLength = 4;
+  static const _carouselTopPadding = 32.0;
   static const _carouselArcOffset = 40.0;
   static const _carouselMaxAngle = 0.12;
   static const _carouselCardGap = 52.0;
   static const _carouselCardWidth = 220.0;
   static const _carouselCardMaxHeight = 278.0;
-  static const _sheetTopPadding = 32.0;
   static const _sheetRadius = 40.0;
 
-  // 인디케이터 영역 높이 (카드와의 간격 20 + 인디케이터 크기 6 + 하단 여백 16)
-  static const _carouselIndicatorArea = 42.0;
+  static const _carouselIndicatorGap = 20.0;
+  static const _carouselIndicatorSize = 6.0;
+  static const _carouselBottomPadding = 16.0;
+  static const _carouselIndicatorArea =
+      _carouselIndicatorGap + _carouselIndicatorSize + _carouselBottomPadding;
 
   /// 현재 중앙에 있는 페이지
   int _currentPage = _carouselInitialPage;
 
-  int get _currentIndex => _currentPage % _cardsLength;
+  /// 데이터가 있는 카드만 순환 대상에 넣는다.
+  List<_CarouselCard> get _cards => [
+        _CarouselCard.medication,
+        if (widget.hasHealthSchedule) _CarouselCard.healthSchedule,
+        _CarouselCard.walking,
+        _CarouselCard.album,
+      ];
+
+  int _indexAt(int page, int length) => (page - _carouselInitialPage) % length;
 
   /// [page] 위치에 놓일 카드. 중앙 카드에만 아이콘 바운스를 켠다.
-  Widget _cardAt(int page) {
+  Widget _cardAt(int page, List<_CarouselCard> cards) {
     final isCentered = page == _currentPage;
-    return switch (page % _cardsLength) {
-      0 => _MedicationCard(
+    return switch (cards[_indexAt(page, cards.length)]) {
+      _CarouselCard.medication => _MedicationCard(
           medicationStatus: widget.medicationStatus,
           onCameraTap: widget.onCameraTap,
           isCentered: isCentered,
         ),
-      1 => _HealthScheduleCard(
+      _CarouselCard.healthSchedule => _HealthScheduleCard(
           isCentered: isCentered,
           onRouteTap: widget.onRouteTap,
         ),
-      2 => _WalkingCard(
+      _CarouselCard.walking => _WalkingCard(
           hasStepGoal: widget.hasStepGoal,
           stepProgress: widget.stepProgress,
         ),
-      _ => _AlbumCard(thumbnails: widget.thumbanils),
+      _CarouselCard.album => _AlbumCard(thumbnails: widget.thumbanils),
     };
   }
 
@@ -101,10 +113,13 @@ class _CarouselMenuState extends State<_CarouselMenu> {
 
   @override
   Widget build(BuildContext context) {
+    final controller = _controller!;
+    final cards = _cards;
+
     return Container(
       width: double.infinity,
       padding: EdgeInsets.only(
-        top: _sheetTopPadding,
+        top: _carouselTopPadding,
         bottom: BotNav.height + MediaQuery.paddingOf(context).bottom + 16,
       ),
       decoration: const BoxDecoration(
@@ -114,33 +129,32 @@ class _CarouselMenuState extends State<_CarouselMenu> {
           topRight: Radius.circular(_sheetRadius),
         ),
       ),
-      child: _buildContent(),
+      child: _content(controller, cards),
     );
   }
 
-  Widget _buildContent() {
-    final controller = _controller!;
+  Widget _content(PageController controller, List<_CarouselCard> cards) {
     const cardHeight = _carouselCardMaxHeight;
+    const contentHeight = cardHeight + _carouselIndicatorArea;
 
     // 로딩
     if (widget.isLoading) {
       return const SizedBox(
-        height: cardHeight + _carouselIndicatorArea,
+        height: contentHeight,
         child: Center(child: CircularProgressIndicator()),
       );
     }
 
-    // 목표가 존재하지 않음. 카드 상태와 같은 높이를 유지해 시트 높이가 상태와 무관하게 고정되도록 한다.
+    // 목표가 존재하지 않음
     if (!widget.hasGoal) {
       return const SizedBox(
-        height: cardHeight + _carouselIndicatorArea,
+        height: contentHeight,
         child: _CarouselEmptyView(),
       );
     }
 
     return Column(
       mainAxisSize: MainAxisSize.min,
-      mainAxisAlignment: MainAxisAlignment.start,
       children: [
         SizedBox(
           height: cardHeight,
@@ -177,7 +191,7 @@ class _CarouselMenuState extends State<_CarouselMenu> {
                         duration: const Duration(milliseconds: 300),
                         curve: Curves.easeOut,
                       ),
-                      child: _cardAt(index),
+                      child: _cardAt(index, cards),
                     ),
                   ),
                 ),
@@ -185,12 +199,12 @@ class _CarouselMenuState extends State<_CarouselMenu> {
             },
           ),
         ),
-        const SizedBox(height: 20),
+        const SizedBox(height: _carouselIndicatorGap),
         _CarouselIndicator(
-          count: _cardsLength,
-          currentIndex: _currentIndex,
+          count: cards.length,
+          currentIndex: _indexAt(_currentPage, cards.length),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: _carouselBottomPadding),
       ],
     );
   }
@@ -199,8 +213,8 @@ class _CarouselMenuState extends State<_CarouselMenu> {
 class _CarouselEmptyView extends StatelessWidget {
   const _CarouselEmptyView();
 
-  static const _characterMaxWidth = 144.0;
-  static const _characterMaxHeight = 186.0;
+  static const _characterWidth = 144.0;
+  static const _characterHeight = 186.0;
 
   @override
   Widget build(BuildContext context) {
@@ -211,8 +225,8 @@ class _CarouselEmptyView extends StatelessWidget {
           const Expanded(
             child: WidyuAssetImage(
               name: 'img_card_character.png',
-              width: _characterMaxWidth,
-              height: _characterMaxHeight,
+              width: _characterWidth,
+              height: _characterHeight,
               fit: BoxFit.contain,
             ),
           ),

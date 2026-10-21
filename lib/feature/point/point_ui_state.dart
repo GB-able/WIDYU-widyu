@@ -7,7 +7,6 @@ part 'point_ui_state.freezed.dart';
 abstract class PointUiState with _$PointUiState {
   const factory PointUiState({
     @Default(false) bool isLoading,
-    @Default(0) int currentPoints,
     @Default([]) List<PointUiModel> histories,
   }) = _PointUiState;
 }

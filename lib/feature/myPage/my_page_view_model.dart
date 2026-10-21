@@ -2,16 +2,20 @@ import 'dart:async';
 
 import 'package:flutter/widgets.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:widyu/core/data/provider/point_provider.dart';
 import 'package:widyu/core/data/repository/auth/auth_repository.dart';
 import 'package:widyu/core/data/repository/myPage/my_page_repository.dart';
 import 'package:widyu/core/model/api/api_result.dart';
 import 'package:widyu/core/model/myPage/user/user.dart';
+import 'package:widyu/core/notification/fcm_token_service.dart';
 import 'package:widyu/feature/myPage/my_page_ui_event.dart';
 import 'package:widyu/feature/myPage/my_page_ui_state.dart';
 
 class MyPageViewModel with ChangeNotifier {
   final MyPageRepository _repository;
   final AuthRepository _authRepository;
+  final PointProvider _pointProvider;
+  final FcmTokenService _fcmTokenService;
 
   MyPageUiState _uiState = const MyPageUiState();
   MyPageUiState get uiState => _uiState;
@@ -25,8 +29,12 @@ class MyPageViewModel with ChangeNotifier {
   MyPageViewModel({
     required MyPageRepository repository,
     required AuthRepository authRepository,
+    required PointProvider pointProvider,
+    required FcmTokenService fcmTokenService,
   })  : _repository = repository,
-        _authRepository = authRepository {
+        _authRepository = authRepository,
+        _pointProvider = pointProvider,
+        _fcmTokenService = fcmTokenService {
     fetchUser();
     _fetchAppVersion();
   }
@@ -38,10 +46,10 @@ class MyPageViewModel with ChangeNotifier {
     final result = await _repository.fetchUser();
     if (result is Success) {
       final user = (result as Success<User>).data;
+      _pointProvider.sync(user.points);
       _uiState = _uiState.copyWith(
         profileImage: user.profileImage,
         name: user.name,
-        points: user.points,
       );
     } else {
       _uiEvent.add(const FetchUserFailure());
@@ -51,9 +59,11 @@ class MyPageViewModel with ChangeNotifier {
   }
 
   Future<void> logout() async {
+    await _fcmTokenService.deactivateToken();
     if (await _authRepository.logout() is Success) {
       _uiEvent.add(const LogoutSuccess());
     } else {
+      _fcmTokenService.start();
       _uiEvent.add(const LogoutFailure());
     }
   }

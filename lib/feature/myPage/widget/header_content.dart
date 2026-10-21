@@ -3,13 +3,11 @@ part of '../my_page_screen.dart';
 class _HeaderContent extends StatelessWidget {
   final String? profileImage;
   final String? name;
-  final int? points;
   final bool isLoading;
 
   const _HeaderContent({
     required this.profileImage,
     required this.name,
-    required this.points,
     required this.isLoading,
   });
 
@@ -23,10 +21,7 @@ class _HeaderContent extends StatelessWidget {
           name: name,
         ),
         const SizedBox(height: 20),
-        _PointView(
-          isLoading: isLoading,
-          points: points,
-        ),
+        const _PointView(),
       ],
     );
   }

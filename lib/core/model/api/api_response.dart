@@ -11,7 +11,8 @@ class ApiResponse<T> {
     this.data,
   });
 
-  bool get isSuccess => statusCode == 200 || statusCode == 201;
+  bool get isSuccess =>
+      statusCode == 200 || statusCode == 201 || statusCode == 202;
 
   factory ApiResponse.fromJson(
     int? statusCode,

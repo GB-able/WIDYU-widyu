@@ -282,12 +282,12 @@ class _MeshGradientPainter extends CustomPainter {
     if (cached != null) return cached;
 
     final spec = blobs[index];
-    final core = spec.color ??
-        (colors.isEmpty ? null : colors[index % colors.length]);
+    final core =
+        spec.color ?? (colors.isEmpty ? null : colors[index % colors.length]);
     if (core == null) return null;
 
-    final shader = _buildBlobGradient(spec, core, shortestSide)
-        .createShader(_unitOval);
+    final shader =
+        _buildBlobGradient(spec, core, shortestSide).createShader(_unitOval);
     _shaders[index] = shader;
     return shader;
   }

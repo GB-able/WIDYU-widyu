@@ -1,7 +1,9 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:widyu/core/data/provider/walk_provider.dart';
+import 'package:widyu/core/data/repository/goal/medication_repository.dart';
+import 'package:widyu/core/data/repository/goal/walk_repository.dart';
 import 'package:widyu/core/data/repository/heartRate/heart_rate_repository.dart';
 import 'package:widyu/core/data/repository/home/home_repository.dart';
 import 'package:widyu/core/data/repository/location/location_repository.dart';
@@ -9,7 +11,7 @@ import 'package:widyu/core/data/repository/myPage/my_page_repository.dart';
 import 'package:widyu/core/data/repository/notification/notification_repository.dart';
 import 'package:widyu/core/model/api/api_result.dart';
 import 'package:widyu/core/model/heartRate/heart_rate_response.dart';
-import 'package:widyu/core/model/home/medication_verification.dart';
+import 'package:widyu/core/model/goal/medication/medication_point_result.dart';
 import 'package:widyu/core/model/home/senior_card.dart';
 import 'package:widyu/core/model/location/user_location.dart';
 import 'package:widyu/core/model/myPage/user/user.dart';
@@ -25,17 +27,6 @@ import 'package:widyu/feature/home/home_view_model.dart';
 class _Home extends Fake implements HomeRepository {
   int? scheduleId = 7;
   int fetches = 0;
-  final verifications = <(int, String)>[];
-  final verification = Completer<ApiResult<MedicationVerification>>();
-
-  @override
-  Future<ApiResult<MedicationVerification>> verifyMedication(
-    int scheduleId,
-    File image,
-  ) {
-    verifications.add((scheduleId, image.path));
-    return verification.future;
-  }
 
   @override
   Future<ApiResult<SeniorCard>> fetchSeniorCard() async {
@@ -97,9 +88,19 @@ class _Location extends Fake implements LocationRepository {
   }
 }
 
+class _Walk extends Fake implements WalkRepository {}
+
+class _Medication extends Fake implements MedicationRepository {
+  final changes = StreamController<void>.broadcast();
+
+  @override
+  Stream<void> get medicationChanges => changes.stream;
+}
+
 class _Harness {
   final home = _Home();
   final location = _Location();
+  final medication = _Medication();
   final events = <HomeUiEvent>[];
   final starts = <UserLocation?>[];
   int get photos => events.whereType<NavigateToMedicationCamera>().length;
@@ -118,6 +119,8 @@ class _Harness {
       notificationRepository: _Notification(),
       heartRateRepository: _HeartRate(),
       locationRepository: location,
+      stepProvider: WalkProvider(repository: _Walk()),
+      medicationRepository: medication,
       permissionRecoveryController: PermissionRecoveryController(
         statusReader: (_) => readPermission?.call() ?? Future.value(permission),
         requester: (_) async => permission,
@@ -340,47 +343,24 @@ void main() {
     expect(h.photos, 0);
   });
 
-  test('인증 성공 시 리워드를 알리고 카드를 다시 불러온다', () async {
+  test('인증 성공 시 리워드를 알린다', () async {
+    final h = _Harness();
+    await h.initialize();
+    const result = MedicationPointResult(earnedPoints: 100, currentPoints: 700);
+    h.vm.onMedicationVerified(result);
+    await Future<void>.delayed(Duration.zero);
+    expect(
+      h.events.single,
+      isA<ShowMedicationReward>().having((it) => it.result, 'result', result),
+    );
+  });
+
+  test('복약 변경 신호를 받으면 카드를 다시 불러온다', () async {
     final h = _Harness();
     await h.initialize();
     final fetches = h.home.fetches;
-    final verify = h.vm.verifyMedication(7, '/tmp/pill.jpg');
-    h.home.verification.complete(const ApiResult.success(
-      MedicationVerification(earnedPoints: 100, currentPoints: 700),
-    ));
-    await verify;
+    h.medication.changes.add(null);
     await Future<void>.delayed(Duration.zero);
-    expect(h.home.verifications, [(7, '/tmp/pill.jpg')]);
-    expect(
-      h.events.single,
-      isA<ShowMedicationReward>()
-          .having((it) => it.earnedPoints, 'earnedPoints', 100)
-          .having((it) => it.currentPoints, 'currentPoints', 700),
-    );
     expect(h.home.fetches, fetches + 1);
-  });
-
-  test('인증 실패 시 실패를 알린다', () async {
-    final h = _Harness();
-    await h.initialize();
-    h.home.verification.complete(const ApiResult.failure('error'));
-    await h.vm.verifyMedication(7, '/tmp/pill.jpg');
-    await Future<void>.delayed(Duration.zero);
-    expect(h.events.single, isA<VerifyMedicationFailure>());
-  });
-
-  test('인증 업로드 중에는 로딩 상태이고 다시 촬영하거나 중복 업로드하지 않는다', () async {
-    final h = _Harness();
-    await h.initialize();
-    final verify = h.vm.verifyMedication(7, '/tmp/pill.jpg');
-    expect(h.vm.uiState.isVerifyingMedication, isTrue);
-    await h.vm.verifyMedication(7, '/tmp/pill.jpg');
-    await h.vm.takeMedicationPhoto();
-    await Future<void>.delayed(Duration.zero);
-    expect(h.home.verifications.length, 1);
-    expect(h.photos, 0);
-    h.home.verification.complete(const ApiResult.failure('error'));
-    await verify;
-    expect(h.vm.uiState.isVerifyingMedication, isFalse);
   });
 }
