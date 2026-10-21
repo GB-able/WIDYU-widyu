@@ -78,7 +78,7 @@
         <key>BGTaskSchedulerPermittedIdentifiers</key>
         <array>
             <string>com.widyu.medication.refresh</string>
-            <string>com.gbable.widu.refresh</string>
+            <string>com.widucorp.widu.refresh</string>
             <string>com.example.widyu.steps.refresh</string>
         </array>
         <key>NSHealthShareUsageDescription</key>

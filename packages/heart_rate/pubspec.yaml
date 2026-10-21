@@ -15,5 +15,5 @@ flutter:
   plugin:
     platforms:
       android:
-        package: com.gbable.widu.heart_rate
+        package: com.widucorp.widu.heart_rate
         pluginClass: HeartRatePlugin
