@@ -1,0 +1,132 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [develop]
+  # 머지 후 develop에서 Gradle·Flutter 캐시를 만들어 PR 실행이 재사용한다.
+  push:
+    branches: [develop]
+
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+# 각 검사 결과를 PR 체크와 결과 댓글에 표시한다.
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-flutter
+        with:
+          firebase-options-dart: ${{ secrets.FIREBASE_OPTIONS_DART }}
+          google-services-json: ${{ secrets.GOOGLE_SERVICES_JSON }}
+          dot-env: ${{ secrets.DOT_ENV }}
+      - run: flutter analyze
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-flutter
+        with:
+          firebase-options-dart: ${{ secrets.FIREBASE_OPTIONS_DART }}
+          google-services-json: ${{ secrets.GOOGLE_SERVICES_JSON }}
+          dot-env: ${{ secrets.DOT_ENV }}
+      - run: flutter test
+      - run: flutter test
+        working-directory: packages/medication_alarm
+
+  build-apk:
+    name: Build APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4.9.1
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c # v5
+        with:
+          # 캐시 저장(약 2분)은 develop push에서만 하고 PR은 읽기만 한다.
+          cache-read-only: ${{ github.event_name == 'pull_request' }}
+      - uses: ./.github/actions/setup-flutter
+        with:
+          firebase-options-dart: ${{ secrets.FIREBASE_OPTIONS_DART }}
+          google-services-json: ${{ secrets.GOOGLE_SERVICES_JSON }}
+          dot-env: ${{ secrets.DOT_ENV }}
+      # CI 검증용이라 arm64만 빌드해 AOT 컴파일을 한 번으로 줄인다.
+      - run: flutter build apk --release --target-platform android-arm64
+
+  report:
+    name: Comment CI results
+    needs: [lint, test, build-apk]
+    # fork PR은 토큰에 쓰기 권한이 없으므로 저장소 내부 PR만 대상으로 한다.
+    # 새 push로 취소된 실행은 댓글을 남기지 않는다.
+    if: ${{ !cancelled() && github.event.pull_request.head.repo.full_name == github.repository }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      actions: read
+      pull-requests: write
+    steps:
+      - uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            const jobs = await github.paginate(github.rest.actions.listJobsForWorkflowRun, {
+              ...context.repo,
+              run_id: context.runId,
+              // 실패한 작업만 재실행해도 이전 시도의 결과를 보여주도록 모든 시도를 조회한다.
+              filter: 'all',
+              per_page: 100,
+            });
+            const statuses = {
+              success: '✅ 성공',
+              failure: '❌ 실패',
+              cancelled: '🚫 취소',
+              skipped: '⏭️ 건너뜀',
+              timed_out: '⏰ 시간 초과',
+            };
+            const rows = ['Lint', 'Test', 'Build APK'].map(name => {
+              const job = jobs
+                .filter(job => job.name === name)
+                .sort((a, b) => b.run_attempt - a.run_attempt)[0];
+              const status = statuses[job?.conclusion] ?? job?.conclusion ?? '결과 없음';
+              let duration = '-';
+              if (job?.started_at && job?.completed_at && job.conclusion !== 'skipped') {
+                const seconds = Math.max(0, Math.round(
+                  (Date.parse(job.completed_at) - Date.parse(job.started_at)) / 1000,
+                ));
+                duration = `${Math.floor(seconds / 60)}분 ${seconds % 60}초`;
+              }
+              const label = job ? `[${name}](${job.html_url})` : name;
+              return `| ${label} | ${status} | ${duration} |`;
+            });
+            const attempt = process.env.GITHUB_RUN_ATTEMPT;
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}/attempts/${attempt}`;
+            const body = [
+              '## CI 실행 결과',
+              '',
+              `커밋: ${context.payload.pull_request.head.sha.slice(0, 7)} · [실행 #${context.runNumber} (시도 ${attempt})](${runUrl})`,
+              '',
+              '| 단계 | 결과 | 소요 시간 |',
+              '| --- | --- | --- |',
+              ...rows,
+              '',
+              '소요 시간은 환경 준비를 포함한 각 작업의 실행 시간입니다.',
+            ].join('\n');
+            await github.rest.issues.createComment({ ...context.repo, issue_number: context.issue.number, body });

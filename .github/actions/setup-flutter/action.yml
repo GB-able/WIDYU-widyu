@@ -1,0 +1,38 @@
+name: Setup Flutter
+description: .fvmrc 버전 Flutter 설치, gitignore된 비밀 파일 복원, pub get
+
+inputs:
+  firebase-options-dart:
+    required: true
+  google-services-json:
+    required: true
+  dot-env:
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Read Flutter version from .fvmrc
+      id: fvm
+      shell: bash
+      run: echo "version=$(jq -r .flutter .fvmrc)" >> "$GITHUB_OUTPUT"
+
+    - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+      with:
+        flutter-version: ${{ steps.fvm.outputs.version }}
+        channel: stable
+        cache: true
+
+    - name: Restore secret files
+      shell: bash
+      env:
+        FIREBASE_OPTIONS_DART: ${{ inputs.firebase-options-dart }}
+        GOOGLE_SERVICES_JSON: ${{ inputs.google-services-json }}
+        DOT_ENV: ${{ inputs.dot-env }}
+      run: |
+        echo "$FIREBASE_OPTIONS_DART" | base64 -d > lib/firebase_options.dart
+        echo "$GOOGLE_SERVICES_JSON" | base64 -d > android/app/google-services.json
+        echo "$DOT_ENV" | base64 -d > .env
+
+    - shell: bash
+      run: flutter pub get
