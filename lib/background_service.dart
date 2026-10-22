@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:ui';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -29,6 +30,7 @@ import 'package:widyu/core/model/location/location_service_state.dart';
 import 'package:widyu/core/model/permission/permission_type.dart';
 import 'package:widyu/core/network/api_client.dart';
 import 'package:widyu/core/network/socket_client.dart';
+import 'package:widyu/core/log/log.dart';
 import 'package:widyu/core/network/token_manager.dart';
 import 'package:widyu/core/utils/location_service_manager.dart';
 import 'package:widyu/core/utils/permission_manager.dart';
@@ -127,7 +129,21 @@ Future<void> connectSocket(SocketClient socketClient) async {
 }
 
 @pragma('vm:entry-point')
-void onStart(ServiceInstance service) async {
+void onStart(ServiceInstance service) {
+  // 서비스는 별도 isolate라 main의 zone이 적용되지 않으므로 여기서 다시 감싼다.
+  runZonedGuarded(
+    () => _onStart(service),
+    (error, stack) {
+      // onError는 바깥 zone에서 실행되어 print 차단이 적용되지 않으므로 직접 막는다.
+      if (!kReleaseMode) {
+        debugPrint('[background_service] 처리되지 않은 예외: $error\n$stack');
+      }
+    },
+    zoneSpecification: quietPrintInRelease,
+  );
+}
+
+Future<void> _onStart(ServiceInstance service) async {
   WidgetsFlutterBinding.ensureInitialized();
   DartPluginRegistrant.ensureInitialized();
   await dotenv.load(fileName: ".env");
