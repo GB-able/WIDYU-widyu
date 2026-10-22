@@ -93,7 +93,6 @@ void main() {
       final status = resolveMedicationStatus(
         medicine: _summary(
           takenCount: 3,
-          totalCount: 3,
           scheduleStatuses: [
             _dose('08:00', taken: true),
             _dose('15:00', taken: true),
@@ -154,7 +153,6 @@ void main() {
         medicine: _summary(
           takenCount: 0,
           totalCount: 1,
-          nextAlarmTime: '15:00',
           scheduleStatuses: const [],
         ),
         now: _at(14, 45),

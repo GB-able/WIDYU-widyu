@@ -56,7 +56,7 @@ Future<void> syncWalkBackground() async {
       await stopWalkBackgroundService();
       return;
     }
-    await dotenv.load(fileName: '.env');
+    await dotenv.load();
     final repository = WalkRepositoryImpl(
       localDataSource: WalkLocalDataSourceImpl(),
       remoteDataSource: WalkRemoteDataSourceImpl(apiClient: ApiClient()),

@@ -6,7 +6,7 @@ class _InviteButton extends StatelessWidget {
   const _InviteButton({required this.familyCode});
 
   void _showInviteDialog(BuildContext context) {
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (dialogContext) => Dialog(
         backgroundColor: MyColor.transparent,
@@ -73,7 +73,6 @@ class _InviteButton extends StatelessWidget {
     return WidyuTextButton(
       onTap: () => _showInviteDialog(context),
       text: '새로운 가족 멤버 초대하기',
-      enable: true,
     );
   }
 }

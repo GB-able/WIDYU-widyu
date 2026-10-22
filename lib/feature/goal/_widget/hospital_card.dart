@@ -38,11 +38,10 @@ class HospitalCard extends StatelessWidget {
             Row(
               spacing: 16,
               children: [
-                const IconTile(type: GoalType.hospital, isFailed: false),
+                const IconTile(type: GoalType.hospital),
                 Expanded(
                   child: Row(
                     spacing: 16,
-                    mainAxisAlignment: MainAxisAlignment.start,
                     children: [
                       Flexible(
                         child: Text(
@@ -70,7 +69,7 @@ class HospitalCard extends StatelessWidget {
               spacing: 8,
               children: [
                 _HospitalInfo(
-                  label: "건강일정",
+                  label: '건강일정',
                   content: IntrinsicHeight(
                     child: Row(
                       spacing: 12,
@@ -89,7 +88,7 @@ class HospitalCard extends StatelessWidget {
                   ),
                 ),
                 _HospitalInfo(
-                  label: "방문주소",
+                  label: '방문주소',
                   content: Text(
                     hospital.address,
                     style: MyTypo.body1.copyWith(color: MyColor.grey700),

@@ -6,15 +6,15 @@ import 'package:widyu/feature/goal/main/goal_screen.dart';
 
 extension GoalTypeUI on GoalType {
   String get title => switch (this) {
-        GoalType.medicine => "복용할 약이 없어요!",
-        GoalType.walk => "걷기 목표가 없어요!",
-        GoalType.hospital => "건강 일정이 없어요!",
+        GoalType.medicine => '복용할 약이 없어요!',
+        GoalType.walk => '걷기 목표가 없어요!',
+        GoalType.hospital => '건강 일정이 없어요!',
       };
 
   String get subTitle => switch (this) {
-        GoalType.medicine => "복용하실 약을 추가하고 알림을 받아보세요.",
-        GoalType.walk => "달성할 걷기를 추가하고 알림을 받아보세요.",
-        GoalType.hospital => "예약한 병원 일정을 추가하고 알림을 받아보세요.",
+        GoalType.medicine => '복용하실 약을 추가하고 알림을 받아보세요.',
+        GoalType.walk => '달성할 걷기를 추가하고 알림을 받아보세요.',
+        GoalType.hospital => '예약한 병원 일정을 추가하고 알림을 받아보세요.',
       };
 }
 
@@ -47,7 +47,7 @@ class GoalEmptyCard extends StatelessWidget {
         child: Column(
           children: [
             Image.asset(
-              "assets/images/img_50_${type.name}.png",
+              'assets/images/img_50_${type.name}.png',
               width: 50,
               height: 50,
             ),

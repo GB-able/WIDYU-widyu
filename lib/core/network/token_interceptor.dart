@@ -71,7 +71,7 @@ class TokenInterceptor extends Interceptor {
         }
 
         err.requestOptions.headers['Authorization'] = 'Bearer $newAccessToken';
-        final retryResponse = await _dio.fetch(err.requestOptions);
+        final retryResponse = await _dio.fetch<dynamic>(err.requestOptions);
         handler.resolve(retryResponse);
         return;
       } catch (e) {
@@ -90,7 +90,7 @@ class TokenInterceptor extends Interceptor {
       throw Exception('No refresh token');
     }
 
-    final response = await _dio.post(
+    final response = await _dio.post<Map<String, dynamic>>(
       '/v1/auth/reissue',
       data: {'refreshToken': refreshToken},
     );
@@ -99,7 +99,7 @@ class TokenInterceptor extends Interceptor {
       throw Exception('Token refresh failed: ${response.statusCode}');
     }
 
-    final tokens = TokenPair.fromJson(response.data);
+    final tokens = TokenPair.fromJson(response.data!);
     await _tokenManager.setToken(tokens.accessToken, tokens.refreshToken);
 
     return tokens.accessToken;

@@ -9,9 +9,9 @@ const _pageSize = 100;
 const _maxSelectCount = 8;
 
 enum PhotoFilter {
-  all(label: "전체", type: RequestType.common),
-  image(label: "사진", type: RequestType.image),
-  video(label: "동영상", type: RequestType.video);
+  all(label: '전체', type: RequestType.common),
+  image(label: '사진', type: RequestType.image),
+  video(label: '동영상', type: RequestType.video);
 
   const PhotoFilter({required this.label, required this.type});
   final String label;
@@ -70,7 +70,6 @@ class SelectPhotoViewModel extends ChangeNotifier {
   Future<void> checkAlbumPermission() async {
     _photoPermission = await PhotoManager.getPermissionState(
       requestOption: const PermissionRequestOption(
-        iosAccessLevel: IosAccessLevel.readWrite,
         androidPermission: AndroidPermission(
           type: RequestType.common,
           mediaLocation: true,
@@ -115,7 +114,7 @@ class SelectPhotoViewModel extends ChangeNotifier {
       type: filter.type,
       filterOption: FilterOptionGroup(
         orders: [
-          const OrderOption(type: OrderOptionType.createDate, asc: false),
+          const OrderOption(),
         ],
       ),
     );
@@ -184,12 +183,12 @@ class SelectPhotoViewModel extends ChangeNotifier {
       _selected.removeAt(index);
     } else {
       if (_selected.length >= _maxSelectCount) {
-        showToast("최대 $_maxSelectCount개까지 선택 가능합니다");
+        showToast('최대 $_maxSelectCount개까지 선택 가능합니다');
         return false;
       }
       if (asset.type == AssetType.video &&
           asset.duration > _maxVideoDurationSeconds) {
-        showToast("영상은 최대 1분길이만 선택 가능합니다");
+        showToast('영상은 최대 1분길이만 선택 가능합니다');
         return false;
       }
       _selected.add(asset);
@@ -201,7 +200,7 @@ class SelectPhotoViewModel extends ChangeNotifier {
   Future<void> captureFromCamera() async {
     if (_isCapturing) return;
     if (_selected.length >= _maxSelectCount) {
-      showToast("최대 $_maxSelectCount개까지 선택 가능합니다");
+      showToast('최대 $_maxSelectCount개까지 선택 가능합니다');
       return;
     }
 

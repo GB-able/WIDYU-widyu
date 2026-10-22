@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -71,14 +73,14 @@ class _FeedWidgetState extends State<FeedWidget> {
     final point = context.read<PointProvider>().point;
 
     if (point != null && point < price) {
-      showDialog(
+      unawaited(showDialog<void>(
         context: context,
         builder: (_) => UnlockDialog.notEnough(
           price: price,
           point: point,
           onTap: () => context.go(AppRoute.goal.path),
         ),
-      );
+      ));
       return;
     }
 
@@ -91,12 +93,12 @@ class _FeedWidgetState extends State<FeedWidget> {
       ),
     );
     if (success == true && mounted && !albumProvider.isDisposed) {
-      context.push(AppRoute.post.path, extra: widget.albumId);
+      unawaited(context.push(AppRoute.post.path, extra: widget.albumId));
     }
   }
 
   void showMenu() {
-    showModalBottomSheet(
+    showModalBottomSheet<void>(
       useRootNavigator: true,
       backgroundColor: Colors.transparent,
       context: context,
@@ -118,13 +120,13 @@ class _FeedWidgetState extends State<FeedWidget> {
   }
 
   void confirmDelete() {
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (_) => CustomDialog(
         type: CustomDialogType.two,
-        title: "게시글을 삭제하시겠어요?",
-        description: "삭제한 게시글은 다시 볼 수 없어요.",
-        posText: "삭제",
+        title: '게시글을 삭제하시겠어요?',
+        description: '삭제한 게시글은 다시 볼 수 없어요.',
+        posText: '삭제',
         onPosTap: deleteFeed,
       ),
     );
@@ -137,7 +139,7 @@ class _FeedWidgetState extends State<FeedWidget> {
     if (!mounted) return;
 
     if (!success) {
-      showToast("게시글 삭제에 실패했습니다.");
+      showToast('게시글 삭제에 실패했습니다.');
       return;
     }
 
@@ -185,7 +187,7 @@ class _FeedWidgetState extends State<FeedWidget> {
                   behavior: HitTestBehavior.opaque,
                   child: const Padding(
                     padding: EdgeInsets.symmetric(horizontal: 4),
-                    child: IconWidget(icon: "more", width: 24),
+                    child: IconWidget(icon: 'more', width: 24),
                   ),
                 ),
             ],
@@ -281,7 +283,7 @@ class _FeedWidgetState extends State<FeedWidget> {
                             widget.albumId,
                           ),
                   child: IconWidget(
-                    icon: stat.isLiked ? "like_on" : "like_off",
+                    icon: stat.isLiked ? 'like_on' : 'like_off',
                     width: 24,
                   ),
                 ),
@@ -305,7 +307,7 @@ class _FeedWidgetState extends State<FeedWidget> {
 
                     context.push(AppRoute.post.path, extra: widget.albumId);
                   },
-                  child: const IconWidget(icon: "comment", width: 24),
+                  child: const IconWidget(icon: 'comment', width: 24),
                 ),
                 Text(
                   stat.commentCount.toString(),

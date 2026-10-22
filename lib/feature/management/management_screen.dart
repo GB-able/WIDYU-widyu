@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:widyu/core/ui/widgets/widyu_icon.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -7,17 +6,18 @@ import 'package:widyu/core/data/repository/myPage/my_page_repository.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
 import 'package:widyu/core/ui/widgets/ui_event_listener.dart';
+import 'package:widyu/core/ui/widgets/widyu_icon.dart';
 import 'package:widyu/core/ui/widgets/widyu_text_button.dart';
 import 'package:widyu/core/utils/show_toast.dart';
 import 'package:widyu/feature/management/management_ui_event.dart';
 import 'package:widyu/feature/management/management_ui_state.dart';
 import 'package:widyu/feature/management/management_view_model.dart';
 
-part 'widget/management_app_bar.dart';
+part 'widget/close_button.dart';
 part 'widget/famliy_code_view.dart';
 part 'widget/invite_button.dart';
+part 'widget/management_app_bar.dart';
 part 'widget/share_item.dart';
-part 'widget/close_button.dart';
 
 class ManagementScreen extends StatelessWidget {
   const ManagementScreen({super.key});

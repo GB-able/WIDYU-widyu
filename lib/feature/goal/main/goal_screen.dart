@@ -60,7 +60,7 @@ class _GoalScreenState extends State<GoalScreen> {
       case VerifyMedicationFailure(:final message):
         showToast(message);
       case VerifyMedicationSuccess(:final earnedPoint, :final currentPoint):
-        showDialog(
+        showDialog<void>(
           context: context,
           builder: (context) => MedicationRewardDialog(
             earnedPoint: earnedPoint,

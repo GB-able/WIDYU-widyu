@@ -25,12 +25,12 @@ import 'package:widyu/core/data/source/sensor/sensor_batch_local_data_source_imp
 import 'package:widyu/core/data/source/sensor/sensor_batch_remote_data_source_impl.dart';
 import 'package:widyu/core/data/source/sensor/sensor_config_local_data_source_impl.dart';
 import 'package:widyu/core/data/source/sensor/sensor_config_remote_data_source_impl.dart';
+import 'package:widyu/core/log/log.dart';
 import 'package:widyu/core/model/api/api_result.dart';
 import 'package:widyu/core/model/location/location_service_state.dart';
 import 'package:widyu/core/model/permission/permission_type.dart';
 import 'package:widyu/core/network/api_client.dart';
 import 'package:widyu/core/network/socket_client.dart';
-import 'package:widyu/core/log/log.dart';
 import 'package:widyu/core/network/token_manager.dart';
 import 'package:widyu/core/utils/location_service_manager.dart';
 import 'package:widyu/core/utils/permission_manager.dart';
@@ -146,7 +146,7 @@ void onStart(ServiceInstance service) {
 Future<void> _onStart(ServiceInstance service) async {
   WidgetsFlutterBinding.ensureInitialized();
   DartPluginRegistrant.ensureInitialized();
-  await dotenv.load(fileName: ".env");
+  await dotenv.load();
 
   if (!await TokenManager().hasToken()) {
     try {
@@ -240,7 +240,7 @@ Future<void> _enqueueBackgroundService(Future<void> Function() operation) {
     (_) => operation(),
     onError: (_) => operation(),
   );
-  _backgroundServiceQueue = next.catchError((error, stack) {
+  _backgroundServiceQueue = next.catchError((Object error, StackTrace stack) {
     debugPrint('[background_service] 서비스 제어 실패: $error\n$stack');
   });
   return next;

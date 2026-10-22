@@ -41,7 +41,6 @@ class _ImagePreviewState extends State<_ImagePreview> {
       child: SizedBox.expand(
         child: AssetEntityImage(
           widget.asset,
-          isOriginal: true,
           fit: BoxFit.contain,
         ),
       ),

@@ -1,7 +1,6 @@
+import 'package:widyu/core/data/source/location/location_remote_data_source.dart';
 import 'package:widyu/core/model/location/location_update_request.dart';
 import 'package:widyu/core/network/socket_client.dart';
-
-import 'location_remote_data_source.dart';
 
 class LocationRemoteDataSourceImpl implements LocationRemoteDataSource {
   final SocketClient _socketClient;

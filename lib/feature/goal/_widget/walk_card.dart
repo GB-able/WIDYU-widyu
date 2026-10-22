@@ -38,15 +38,15 @@ class WalkCard extends StatelessWidget {
             Row(
               spacing: 16,
               children: [
-                const IconTile(type: GoalType.walk, isFailed: false),
-                Text("걷기", style: MyTypo.title3),
+                const IconTile(type: GoalType.walk),
+                Text('걷기', style: MyTypo.title3),
                 Expanded(
                   child: TweenAnimationBuilder<int>(
                     tween: IntTween(begin: 0, end: walk.actual),
                     duration: _countUpDuration,
                     curve: Curves.easeOut,
                     builder: (context, steps, _) => Text(
-                      "${steps.toComma}걸음",
+                      '${steps.toComma}걸음',
                       style: MyTypo.title3.copyWith(
                         color: MyColor.secondary,
                       ),

@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:widyu/core/model/permission/permission_recovery_prompt.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
 import 'package:widyu/core/ui/widgets/widyu_asset_image.dart';
 import 'package:widyu/core/ui/widgets/widyu_dialog.dart';
 import 'package:widyu/core/ui/widgets/widyu_text_button.dart';
-
-import 'package:widyu/core/model/permission/permission_recovery_prompt.dart';
 
 /// 권한 요청을 다시 안내하고 사용자의 다음 선택만 반환하는 dialog.
 class PermissionRecoveryDialog extends StatelessWidget {

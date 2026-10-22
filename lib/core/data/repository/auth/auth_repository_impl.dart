@@ -41,5 +41,5 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<ApiResult<String>> fetchSocketToken() async =>
-      await _remoteDatasource.fetchSocketToken().toApiResult();
+      _remoteDatasource.fetchSocketToken().toApiResult();
 }

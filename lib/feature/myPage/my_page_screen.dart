@@ -6,8 +6,8 @@ import 'package:skeletonizer/skeletonizer.dart';
 import 'package:widyu/app/routes/app_route.dart';
 import 'package:widyu/core/data/provider/point_provider.dart';
 import 'package:widyu/core/data/repository/auth/auth_repository.dart';
-import 'package:widyu/core/notification/fcm_token_service.dart';
 import 'package:widyu/core/data/repository/myPage/my_page_repository.dart';
+import 'package:widyu/core/notification/fcm_token_service.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
 import 'package:widyu/core/ui/widgets/ui_event_listener.dart';
@@ -21,9 +21,9 @@ import 'package:widyu/feature/myPage/my_page_ui_state.dart';
 import 'package:widyu/feature/myPage/my_page_view_model.dart';
 
 part 'widget/header_content.dart';
-part 'widget/my_page_app_bar.dart';
 part 'widget/information_menu_view.dart';
 part 'widget/management_menu_view.dart';
+part 'widget/my_page_app_bar.dart';
 part 'widget/my_page_header.dart';
 part 'widget/point_view.dart';
 part 'widget/profile_view.dart';
@@ -76,7 +76,6 @@ class MyPageScreen extends StatelessWidget {
                     padding: EdgeInsets.only(
                       bottom: MediaQuery.of(context).viewPadding.bottom + 64,
                     ),
-                    scrollDirection: Axis.vertical,
                     child: const Column(
                       children: [
                         _ManagementMenuView(),

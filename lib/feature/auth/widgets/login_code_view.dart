@@ -7,9 +7,9 @@ import 'package:provider/provider.dart';
 import 'package:widyu/app/routes/app_route.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
+import 'package:widyu/core/ui/widgets/widyu_text_button.dart';
 import 'package:widyu/core/utils/app_service_controller.dart';
 import 'package:widyu/core/utils/show_toast.dart';
-import 'package:widyu/core/ui/widgets/widyu_text_button.dart';
 import 'package:widyu/feature/auth/login_ui_state.dart';
 import 'package:widyu/feature/auth/login_view_model.dart';
 import 'package:widyu/feature/auth/widgets/login_base_view.dart';
@@ -52,7 +52,6 @@ class LoginCodeView extends StatelessWidget {
               ),
         ),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             const SizedBox(height: 58),
             Column(
@@ -61,7 +60,6 @@ class LoginCodeView extends StatelessWidget {
               children: [
                 Row(
                   spacing: 8,
-                  mainAxisAlignment: MainAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: List.generate(
                     LoginViewModel.inviteCodeLength,

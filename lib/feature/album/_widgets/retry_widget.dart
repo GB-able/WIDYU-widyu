@@ -25,7 +25,7 @@ class RetryWidget extends StatelessWidget {
           TextButton(
             onPressed: onRetry,
             child: Text(
-              "다시 시도",
+              '다시 시도',
               style: MyTypo.body2.copyWith(color: MyColor.primary),
             ),
           ),

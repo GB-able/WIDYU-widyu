@@ -2,10 +2,10 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:widyu/core/data/source/album/album_remote_data_source.dart';
-import 'package:widyu/core/model/album/comment.dart';
 import 'package:widyu/core/model/album/album_comment_create_request.dart';
 import 'package:widyu/core/model/album/album_comment_update_request.dart';
 import 'package:widyu/core/model/album/album_unlock.dart';
+import 'package:widyu/core/model/album/comment.dart';
 import 'package:widyu/core/model/album/feed.dart';
 import 'package:widyu/core/model/album/feed_detail.dart';
 import 'package:widyu/core/model/album/media.dart';
@@ -33,7 +33,7 @@ class AlbumRemoteDataSourceImpl extends AlbumRemoteDataSource {
       );
       return response.toApiResponse(FeedDetail.fromJson);
     } catch (e) {
-      throw Exception("피드 조회에 실패했습니다: $e");
+      throw Exception('피드 조회에 실패했습니다: $e');
     }
   }
 
@@ -55,7 +55,7 @@ class AlbumRemoteDataSourceImpl extends AlbumRemoteDataSource {
         ),
       );
     } catch (e) {
-      throw Exception("피드 목록 조회에 실패했습니다: $e");
+      throw Exception('피드 목록 조회에 실패했습니다: $e');
     }
   }
 
@@ -76,7 +76,7 @@ class AlbumRemoteDataSourceImpl extends AlbumRemoteDataSource {
         ),
       );
     } catch (e) {
-      throw Exception("미디어 목록 조회에 실패했습니다: $e");
+      throw Exception('미디어 목록 조회에 실패했습니다: $e');
     }
   }
 
@@ -91,7 +91,7 @@ class AlbumRemoteDataSourceImpl extends AlbumRemoteDataSource {
         (json) => (json['albumIds'] as List<dynamic>? ?? []).cast<int>(),
       );
     } catch (e) {
-      throw Exception("좋아요한 피드 조회에 실패했습니다: $e");
+      throw Exception('좋아요한 피드 조회에 실패했습니다: $e');
     }
   }
 
@@ -106,7 +106,7 @@ class AlbumRemoteDataSourceImpl extends AlbumRemoteDataSource {
         (json) => (json['albumIds'] as List<dynamic>? ?? []).cast<int>(),
       );
     } catch (e) {
-      throw Exception("해금한 앨범 조회에 실패했습니다: $e");
+      throw Exception('해금한 앨범 조회에 실패했습니다: $e');
     }
   }
 
@@ -123,7 +123,7 @@ class AlbumRemoteDataSourceImpl extends AlbumRemoteDataSource {
       );
       return response.toApiResponsePrimitives<int>();
     } catch (e) {
-      throw Exception("앨범 캘린더 조회에 실패했습니다: $e");
+      throw Exception('앨범 캘린더 조회에 실패했습니다: $e');
     }
   }
 
@@ -150,7 +150,7 @@ class AlbumRemoteDataSourceImpl extends AlbumRemoteDataSource {
       );
       return response.toApiResponse<void>((json) => {});
     } catch (e) {
-      throw Exception("피드 업로드에 실패했습니다: $e");
+      throw Exception('피드 업로드에 실패했습니다: $e');
     }
   }
 
@@ -167,7 +167,7 @@ class AlbumRemoteDataSourceImpl extends AlbumRemoteDataSource {
       );
       return response.toApiResponse<void>((json) => {});
     } catch (e) {
-      throw Exception("피드 수정에 실패했습니다: $e");
+      throw Exception('피드 수정에 실패했습니다: $e');
     }
   }
 
@@ -180,7 +180,7 @@ class AlbumRemoteDataSourceImpl extends AlbumRemoteDataSource {
       );
       return response.toApiResponse<void>((json) => {});
     } catch (e) {
-      throw Exception("피드 삭제에 실패했습니다: $e");
+      throw Exception('피드 삭제에 실패했습니다: $e');
     }
   }
 
@@ -193,7 +193,7 @@ class AlbumRemoteDataSourceImpl extends AlbumRemoteDataSource {
       );
       return response.toApiResponse(AlbumUnlock.fromJson);
     } catch (e) {
-      throw Exception("앨범 해금에 실패했습니다: $e");
+      throw Exception('앨범 해금에 실패했습니다: $e');
     }
   }
 
@@ -206,7 +206,7 @@ class AlbumRemoteDataSourceImpl extends AlbumRemoteDataSource {
       );
       return response.toApiResponse<void>((json) => {});
     } catch (e) {
-      throw Exception("좋아요에 실패했습니다: $e");
+      throw Exception('좋아요에 실패했습니다: $e');
     }
   }
 
@@ -219,7 +219,7 @@ class AlbumRemoteDataSourceImpl extends AlbumRemoteDataSource {
       );
       return response.toApiResponse<void>((json) => {});
     } catch (e) {
-      throw Exception("좋아요 취소에 실패했습니다: $e");
+      throw Exception('좋아요 취소에 실패했습니다: $e');
     }
   }
 
@@ -236,7 +236,7 @@ class AlbumRemoteDataSourceImpl extends AlbumRemoteDataSource {
       );
       return response.toApiResponse(Comment.fromJson);
     } catch (e) {
-      throw Exception("댓글 작성에 실패했습니다: $e");
+      throw Exception('댓글 작성에 실패했습니다: $e');
     }
   }
 
@@ -253,7 +253,7 @@ class AlbumRemoteDataSourceImpl extends AlbumRemoteDataSource {
       );
       return response.toApiResponse(Comment.fromJson);
     } catch (e) {
-      throw Exception("댓글 수정에 실패했습니다: $e");
+      throw Exception('댓글 수정에 실패했습니다: $e');
     }
   }
 
@@ -266,7 +266,7 @@ class AlbumRemoteDataSourceImpl extends AlbumRemoteDataSource {
       );
       return response.toApiResponse<void>((json) => {});
     } catch (e) {
-      throw Exception("댓글 삭제에 실패했습니다: $e");
+      throw Exception('댓글 삭제에 실패했습니다: $e');
     }
   }
 }

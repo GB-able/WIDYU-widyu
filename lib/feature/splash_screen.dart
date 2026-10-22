@@ -56,7 +56,7 @@ class _SplashScreenState extends State<SplashScreen> {
         return true;
       });
 
-      await Future.delayed(const Duration(milliseconds: 1500));
+      await Future<void>.delayed(const Duration(milliseconds: 1500));
       if (!mounted) return;
 
       context.pushReplacement(

@@ -19,13 +19,13 @@ class _CalendarFeedList extends StatelessWidget {
     if (feeds.isEmpty) {
       if (viewModel.hasErrorSelectedDay) {
         return RetryWidget(
-          message: "피드를 불러오지 못했어요",
+          message: '피드를 불러오지 못했어요',
           onRetry: () => viewModel.retry(),
         );
       }
       return Center(
         child: Text(
-          "게시물이 없어요🥲",
+          '게시물이 없어요🥲',
           style: MyTypo.title2.copyWith(color: MyColor.grey300),
         ),
       );

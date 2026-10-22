@@ -10,7 +10,7 @@ class HeartRateRemoteDataSourceImpl implements HeartRateRemoteDataSource {
   HeartRateRemoteDataSourceImpl({required ApiClient apiClient})
       : _apiClient = apiClient;
 
-  static const _path = "/heart-rate/status";
+  static const _path = '/heart-rate/status';
 
   @override
   Future<ApiResponse<HeartRateResponse>> fetchHeartRateStatus() async {
@@ -22,7 +22,7 @@ class HeartRateRemoteDataSourceImpl implements HeartRateRemoteDataSource {
       );
       return response.toApiResponse(HeartRateResponse.fromJson);
     } catch (e) {
-      throw Exception("Failed to Fetch Heart Rate Status: $e");
+      throw Exception('Failed to Fetch Heart Rate Status: $e');
     }
   }
 }

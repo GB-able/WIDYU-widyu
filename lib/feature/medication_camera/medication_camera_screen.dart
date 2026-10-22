@@ -6,8 +6,8 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
-import 'package:widyu/core/data/repository/goal/medication_repository.dart';
 import 'package:widyu/core/data/provider/point_provider.dart';
+import 'package:widyu/core/data/repository/goal/medication_repository.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
 import 'package:widyu/core/ui/widgets/ui_event_listener.dart';
@@ -91,7 +91,7 @@ class _MedicationCameraViewState extends State<_MedicationCameraView>
   Future<void> _handleEvent(MedicationCameraUiEvent event) async {
     switch (event) {
       case OccurrenceNotFound():
-        await showDialog(
+        await showDialog<void>(
           context: context,
           builder: (context) => AlertDialog(
             content: const Text('존재하지 않는 복약 일정이에요.'),

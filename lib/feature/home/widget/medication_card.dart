@@ -127,7 +127,6 @@ class _MedicationCard extends StatelessWidget {
       );
 
   Widget _statusBadge(String label) => Align(
-        alignment: Alignment.center,
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 10),
           decoration: BoxDecoration(
@@ -171,7 +170,6 @@ class _MedicationCard extends StatelessWidget {
                     child: WidyuTextButton(
                       onTap: onCameraTap,
                       text: '카메라',
-                      enable: true,
                     ),
                   ),
               ],

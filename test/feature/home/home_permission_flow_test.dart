@@ -10,8 +10,8 @@ import 'package:widyu/core/data/repository/location/location_repository.dart';
 import 'package:widyu/core/data/repository/myPage/my_page_repository.dart';
 import 'package:widyu/core/data/repository/notification/notification_repository.dart';
 import 'package:widyu/core/model/api/api_result.dart';
-import 'package:widyu/core/model/heartRate/heart_rate_response.dart';
 import 'package:widyu/core/model/goal/medication/medication_point_result.dart';
+import 'package:widyu/core/model/heartRate/heart_rate_response.dart';
 import 'package:widyu/core/model/home/senior_card.dart';
 import 'package:widyu/core/model/location/user_location.dart';
 import 'package:widyu/core/model/myPage/user/user.dart';
@@ -91,6 +91,8 @@ class _Location extends Fake implements LocationRepository {
 class _Walk extends Fake implements WalkRepository {}
 
 class _Medication extends Fake implements MedicationRepository {
+  // 테스트 하나가 끝나면 함께 버려지는 가짜 스트림이라 닫지 않는다.
+  // ignore: close_sinks
   final changes = StreamController<void>.broadcast();
 
   @override

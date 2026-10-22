@@ -16,7 +16,7 @@ class DoneTag extends StatelessWidget {
         borderRadius: BorderRadius.circular(10),
       ),
       child: Text(
-        isFailed ? "미완료" : "완료",
+        isFailed ? '미완료' : '완료',
         style: MyTypo.subTitle3.copyWith(
           color: isFailed ? MyColor.red500 : MyColor.green600,
         ),

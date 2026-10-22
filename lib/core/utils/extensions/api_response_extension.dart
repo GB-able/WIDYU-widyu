@@ -1,11 +1,15 @@
-import 'package:widyu/core/model/api/api_response.dart';
 import 'package:dio/dio.dart';
+import 'package:widyu/core/model/api/api_response.dart';
 
-extension ApiResponseExtension on Response {
+extension ApiResponseExtension on Response<dynamic> {
   ApiResponse<T> toApiResponse<T>(
     T Function(Map<String, dynamic>) fromJson,
   ) {
-    return ApiResponse<T>.fromJson(statusCode, data, fromJson);
+    return ApiResponse<T>.fromJson(
+      statusCode,
+      data as Map<String, dynamic>,
+      fromJson,
+    );
   }
 
   ApiResponse<List<T>> toApiResponses<T>(

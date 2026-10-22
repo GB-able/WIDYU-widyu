@@ -1,6 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
-import 'point.dart';
+import 'package:widyu/core/model/myPage/point/point.dart';
 
 part 'point_history.freezed.dart';
 part 'point_history.g.dart';
