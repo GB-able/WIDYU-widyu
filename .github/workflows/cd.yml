@@ -13,6 +13,8 @@ concurrency:
 
 jobs:
   deploy-android:
+    # 수동 실행(workflow_dispatch)은 실행할 브랜치를 고를 수 있으므로 main 일 때만 배포한다.
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
