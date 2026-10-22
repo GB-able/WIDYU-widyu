@@ -3,9 +3,12 @@ name: CI
 on:
   pull_request:
     branches: [develop]
+  # 머지 후 develop에서 Gradle·Flutter 캐시를 만들어 PR 실행이 재사용한다.
+  push:
+    branches: [develop]
 
 concurrency:
-  group: ci-${{ github.head_ref }}
+  group: ci-${{ github.head_ref || github.ref }}
   cancel-in-progress: true
 
 # 각 검사 결과를 PR 체크와 결과 댓글에 표시한다.
@@ -50,14 +53,15 @@ jobs:
           java-version: 17
       - uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c # v5
         with:
-          # PR에서도 다음 실행을 위해 캐시를 저장한다.
-          cache-read-only: false
+          # 캐시 저장(약 2분)은 develop push에서만 하고 PR은 읽기만 한다.
+          cache-read-only: ${{ github.event_name == 'pull_request' }}
       - uses: ./.github/actions/setup-flutter
         with:
           firebase-options-dart: ${{ secrets.FIREBASE_OPTIONS_DART }}
           google-services-json: ${{ secrets.GOOGLE_SERVICES_JSON }}
           dot-env: ${{ secrets.DOT_ENV }}
-      - run: flutter build apk --release
+      # CI 검증용이라 arm64만 빌드해 AOT 컴파일을 한 번으로 줄인다.
+      - run: flutter build apk --release --target-platform android-arm64
 
   report:
     name: Comment CI results
