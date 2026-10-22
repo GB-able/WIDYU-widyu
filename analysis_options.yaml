@@ -26,3 +26,8 @@ linter:
 
 # Additional information about this file can be found at
 # https://dart.dev/guides/language/analysis-options
+
+analyzer:
+  errors:
+    # Freezed 생성자 파라미터에 붙인 @JsonKey 경고 (Freezed 공식 권장 설정)
+    invalid_annotation_target: ignore
