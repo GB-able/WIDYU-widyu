@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -67,6 +68,7 @@ import 'package:widyu/core/data/source/point/point_remote_data_source.dart';
 import 'package:widyu/core/data/source/point/point_remote_data_source_impl.dart';
 import 'package:widyu/core/notification/medication_push_manager.dart';
 import 'package:widyu/core/network/api_client.dart';
+import 'package:widyu/core/log/log.dart';
 import 'package:widyu/core/network/token_manager.dart';
 import 'package:widyu/core/network/socket_client.dart';
 import 'package:widyu/core/ui/theme/theme.dart';
@@ -77,9 +79,14 @@ import 'package:widyu/walk_background_service.dart';
 import 'package:widyu/core/utils/background_location_notice_controller.dart';
 
 void main() {
-  runZonedGuarded(_bootstrap, (error, stack) {
-    debugPrint('[main] 처리되지 않은 예외: $error\n$stack');
-  });
+  runZonedGuarded(
+    _bootstrap,
+    (error, stack) {
+      // onError는 바깥 zone에서 실행되어 print 차단이 적용되지 않으므로 직접 막는다.
+      if (!kReleaseMode) debugPrint('[main] 처리되지 않은 예외: $error\n$stack');
+    },
+    zoneSpecification: quietPrintInRelease,
+  );
 }
 
 Future<void> _bootstrap() async {
