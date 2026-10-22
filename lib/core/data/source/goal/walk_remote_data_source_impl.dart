@@ -26,7 +26,7 @@ class WalkRemoteDataSourceImpl extends WalkRemoteDataSource {
       );
       return response.toApiResponse(WalkSyncResponse.fromJson);
     } catch (e) {
-      throw Exception("걸음 수 동기화에 실패했습니다: $e");
+      throw Exception('걸음 수 동기화에 실패했습니다: $e');
     }
   }
 
@@ -40,7 +40,7 @@ class WalkRemoteDataSourceImpl extends WalkRemoteDataSource {
       );
       return response.toApiResponse<void>((json) => {});
     } catch (e) {
-      throw Exception("걷기 목표 설정에 실패했습니다: $e");
+      throw Exception('걷기 목표 설정에 실패했습니다: $e');
     }
   }
 
@@ -53,7 +53,7 @@ class WalkRemoteDataSourceImpl extends WalkRemoteDataSource {
       );
       return response.toApiResponse<int>((json) => json['steps'] as int? ?? 0);
     } catch (e) {
-      throw Exception("목표 걸음 수 조회에 실패했습니다: $e");
+      throw Exception('목표 걸음 수 조회에 실패했습니다: $e');
     }
   }
 }

@@ -21,7 +21,7 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
       );
       return response.toApiResponse(SeniorCard.fromJson);
     } catch (e) {
-      throw Exception("시니어 카드 조회에 실패했습니다: $e");
+      throw Exception('시니어 카드 조회에 실패했습니다: $e');
     }
   }
 }

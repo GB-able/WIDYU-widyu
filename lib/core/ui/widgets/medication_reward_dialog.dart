@@ -30,7 +30,6 @@ class MedicationRewardDialog extends StatelessWidget {
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 const SizedBox(height: 24),
                 const WidyuAssetImage(
@@ -83,7 +82,6 @@ class MedicationRewardDialog extends StatelessWidget {
                       router.go(AppRoute.goal.path);
                     },
                     text: '목표로 이동하기',
-                    enable: true,
                   ),
                 ),
               ],

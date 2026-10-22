@@ -104,7 +104,6 @@ class _HealthScheduleCard extends StatelessWidget {
               child: WidyuTextButton(
                 onTap: onRouteTap,
                 text: '길 찾기',
-                enable: true,
               ),
             ),
           ),

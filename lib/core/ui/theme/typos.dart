@@ -1,5 +1,5 @@
-import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:widyu/core/ui/theme/colors.dart';
 
 class MyTypo {
   static const typoBase = TextStyle(

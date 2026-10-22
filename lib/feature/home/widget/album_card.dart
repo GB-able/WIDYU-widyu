@@ -46,7 +46,6 @@ class _AlbumCard extends StatelessWidget {
           child: WidyuTextButton(
             onTap: () => context.go(AppRoute.album.path),
             text: '앨범 보러 가기',
-            enable: true,
           ),
         ),
       ),

@@ -49,11 +49,11 @@ class PostScreen extends StatelessWidget {
                         child: CircularProgressIndicator(),
                       ),
                     PostStatus.error => RetryWidget(
-                        message: "피드를 불러오지 못했어요",
+                        message: '피드를 불러오지 못했어요',
                         onRetry: viewModel.retry,
                       ),
                     PostStatus.success when feed == null => RetryWidget(
-                        message: "피드를 불러오지 못했어요",
+                        message: '피드를 불러오지 못했어요',
                         onRetry: viewModel.retry,
                       ),
                     PostStatus.success => SingleChildScrollView(
@@ -82,18 +82,16 @@ class PostScreen extends StatelessWidget {
                                 ),
                                 child: feed!.comments.isEmpty
                                     ? Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.center,
                                         spacing: 8,
                                         children: [
                                           Text(
-                                            "첫번째 댓글을 달아주세요",
+                                            '첫번째 댓글을 달아주세요',
                                             style: MyTypo.title2.copyWith(
                                               color: MyColor.grey700,
                                             ),
                                           ),
                                           Text(
-                                            "가족들의 사랑스러운 순간들을 보고 댓글을 남겨주세요.",
+                                            '가족들의 사랑스러운 순간들을 보고 댓글을 남겨주세요.',
                                             style: MyTypo.body2.copyWith(
                                               color: MyColor.grey500,
                                             ),

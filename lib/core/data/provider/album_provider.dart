@@ -1,9 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:widyu/core/data/provider/point_provider.dart';
 import 'package:widyu/core/data/repository/album/album_repository.dart';
-import 'package:widyu/core/model/album/album_unlock.dart';
 import 'package:widyu/core/model/album/album_post.dart';
 import 'package:widyu/core/model/album/album_stat.dart';
+import 'package:widyu/core/model/album/album_unlock.dart';
 import 'package:widyu/core/model/album/feed_base.dart';
 import 'package:widyu/core/model/api/api_result.dart';
 

@@ -4,7 +4,7 @@ import 'package:widyu/core/model/album/member.dart';
 part 'comment.freezed.dart';
 part 'comment.g.dart';
 
-Object? _readAuthor(Map json, String key) =>
+Object? _readAuthor(Map<dynamic, dynamic> json, String key) =>
     json[key] ??
     {
       'memberId': json['authorId'],

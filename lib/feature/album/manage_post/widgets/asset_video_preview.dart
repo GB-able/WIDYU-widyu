@@ -30,17 +30,17 @@ class _AssetVideoPreviewState extends State<_AssetVideoPreview> {
     final file = await widget.asset.file;
     if (file == null || !mounted) return;
 
-    final controller = VideoPlayerController.file(file)
-      ..setLooping(true)
-      ..setVolume(0);
+    final controller = VideoPlayerController.file(file);
+    await controller.setLooping(true);
+    await controller.setVolume(0);
     await controller.initialize();
 
     if (!mounted) {
-      controller.dispose();
+      await controller.dispose();
       return;
     }
     setState(() => _controller = controller);
-    if (widget.isActive) controller.play();
+    if (widget.isActive) await controller.play();
   }
 
   @override

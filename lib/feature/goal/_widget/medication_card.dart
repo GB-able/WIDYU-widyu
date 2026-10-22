@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:widyu/core/model/goal/medication/medication.dart';
+import 'package:widyu/core/model/goal/medication/medication_point_result.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
 import 'package:widyu/core/ui/widgets/custom_network_image.dart';
@@ -9,10 +10,9 @@ import 'package:widyu/core/ui/widgets/dash_border.dart';
 import 'package:widyu/core/ui/widgets/icon_widget.dart';
 import 'package:widyu/core/utils/extensions/duration_extension.dart';
 import 'package:widyu/core/utils/extensions/string_extension.dart';
+import 'package:widyu/core/utils/medication_verification_launcher.dart';
 import 'package:widyu/feature/goal/_widget/icon_tile.dart';
 import 'package:widyu/feature/goal/main/goal_screen.dart';
-import 'package:widyu/core/utils/medication_verification_launcher.dart';
-import 'package:widyu/core/model/goal/medication/medication_point_result.dart';
 
 const _boxHeight = 100.0;
 const _boxRadius = 10.0;
@@ -72,17 +72,16 @@ class MedicationCard extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.start,
               spacing: 16,
               children: [
                 IconTile(type: GoalType.medicine, isFailed: state.isFailed),
                 Text(
-                  "약 복용",
+                  '약 복용',
                   style: MyTypo.title3.copyWith(color: MyColor.black),
                 ),
                 Expanded(
                   child: Text(
-                    "${medicine.takenCount}/${medicine.totalCount}회",
+                    '${medicine.takenCount}/${medicine.totalCount}회',
                     style: MyTypo.title3.copyWith(
                       color: MyColor.primary,
                     ),
@@ -202,7 +201,7 @@ class _VerifyPhotoBox extends StatelessWidget {
                 decoration: BoxDecoration(
                     color: MyColor.white,
                     shape: BoxShape.circle,
-                    border: Border.all(color: MyColor.primary, width: 1)),
+                    border: Border.all(color: MyColor.primary)),
                 alignment: Alignment.center,
                 child: const IconWidget(
                   icon: 'camera_add',
@@ -278,7 +277,7 @@ class _VerifyDoneBox extends StatelessWidget {
             alignment: Alignment.center,
             color: MyColor.black.withValues(alpha: 0.5),
             child: Text(
-              "$doseCount정 복용완료",
+              '$doseCount정 복용완료',
               style: MyTypo.title3.copyWith(color: MyColor.white),
             ),
           ),
@@ -305,12 +304,12 @@ class _VerifyEmptyBox extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Image.asset(
-            "assets/images/img_40_medicine_disabled.png",
+            'assets/images/img_40_medicine_disabled.png',
             width: 40,
             height: 40,
           ),
           Text(
-            "미복용",
+            '미복용',
             style: MyTypo.body2.copyWith(color: MyColor.grey500),
           )
         ],
@@ -337,7 +336,7 @@ class _AlarmTimeRow extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       spacing: 6,
       children: [
-        IconWidget(icon: "time", width: 20, color: color),
+        IconWidget(icon: 'time', width: 20, color: color),
         Text(
           alarmTime.twelveHourTime,
           style: MyTypo.subTitle1.copyWith(

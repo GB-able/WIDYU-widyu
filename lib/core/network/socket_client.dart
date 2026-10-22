@@ -30,7 +30,7 @@ class SocketClient {
   /// 서버가 거부한 요청의 사유가 내려오는 구독.
   StompUnsubscribe? _errorUnsubscribe;
 
-  String get _baseUrl => dotenv.env['BASE_URL'] ?? "";
+  String get _baseUrl => dotenv.env['BASE_URL'] ?? '';
 
   bool get _isConnected => _stompClient?.connected ?? false;
 
@@ -191,7 +191,7 @@ class SocketClient {
     String label,
   ) {
     if (!_isConnected) {
-      _log("Socket Client is not connected, cannot send $label.");
+      _log('Socket Client is not connected, cannot send $label.');
       return false;
     }
 
@@ -204,7 +204,7 @@ class SocketClient {
       );
       return true;
     } catch (e) {
-      _log("Failed to send $label: $e");
+      _log('Failed to send $label: $e');
       return false;
     }
   }

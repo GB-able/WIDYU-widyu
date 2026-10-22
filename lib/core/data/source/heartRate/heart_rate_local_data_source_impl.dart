@@ -6,9 +6,9 @@ import 'package:widyu/core/data/source/heartRate/heart_rate_local_data_source.da
 import 'package:widyu/core/model/heartRate/heart_rate.dart';
 
 class HeartRateLocalDataSourceImpl implements HeartRateLocalDataSource {
-  static const _eventChannel = EventChannel("com.widucorp.widu/heart_rate");
+  static const _eventChannel = EventChannel('com.widucorp.widu/heart_rate');
   static const _methodChannel =
-      MethodChannel("com.widucorp.widu/heart_rate_status");
+      MethodChannel('com.widucorp.widu/heart_rate_status');
 
   late final Stream<HeartRate> _heartRateStream =
       _eventChannel.receiveBroadcastStream().map(
@@ -35,7 +35,7 @@ class HeartRateLocalDataSourceImpl implements HeartRateLocalDataSource {
       await _methodChannel.invokeMethod(
           'fetchHeartRateStatus', {'heartRateStatus': heartRateStatus});
     } on PlatformException catch (e) {
-      log("Error in sendHeartRateStatus: ${e.message}");
+      log('Error in sendHeartRateStatus: ${e.message}');
     }
   }
 

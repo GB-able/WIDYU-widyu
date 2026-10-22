@@ -12,7 +12,7 @@ void showCommentMenu(
 }) {
   final viewModel = context.read<PostViewModel>();
 
-  showModalBottomSheet(
+  showModalBottomSheet<void>(
     useRootNavigator: true,
     backgroundColor: Colors.transparent,
     context: context,
@@ -28,16 +28,16 @@ void _confirmDelete(
   PostViewModel viewModel,
   int commentId,
 ) {
-  showDialog(
+  showDialog<void>(
     context: context,
     builder: (_) => CustomDialog(
       type: CustomDialogType.two,
-      title: "댓글을 삭제하시겠어요?",
-      description: "삭제한 댓글은 다시 볼 수 없어요.",
-      posText: "삭제",
+      title: '댓글을 삭제하시겠어요?',
+      description: '삭제한 댓글은 다시 볼 수 없어요.',
+      posText: '삭제',
       onPosTap: () async {
         final success = await viewModel.deleteComment(commentId);
-        if (!success) showToast("댓글 삭제에 실패했습니다.");
+        if (!success) showToast('댓글 삭제에 실패했습니다.');
       },
     ),
   );

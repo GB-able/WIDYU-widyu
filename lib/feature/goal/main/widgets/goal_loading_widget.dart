@@ -7,7 +7,6 @@ class _GoalLoadingWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return const SizedBox.expand(
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Spacer(flex: 2),
           CircularProgressIndicator(),

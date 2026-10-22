@@ -1,11 +1,10 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:widyu/background_service.dart';
 import 'package:widyu/core/model/location/location_service_state.dart';
 import 'package:widyu/core/network/token_manager.dart';
 import 'package:widyu/core/utils/location_service_manager.dart';
-
-import 'package:flutter/foundation.dart';
 
 typedef HasToken = Future<bool> Function();
 typedef LocationStateReader = Future<LocationServiceState> Function();
@@ -175,7 +174,7 @@ class AppServiceController extends ChangeNotifier {
 
   Future<void> _enqueue(Future<void> Function() operation) {
     final next = _queue.then((_) => operation(), onError: (_) => operation());
-    _queue = next.catchError((error, stack) {
+    _queue = next.catchError((Object error, StackTrace stack) {
       debugPrint('[AppServiceController] 작업 실패: $error\n$stack');
     });
     return _queue;

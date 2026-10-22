@@ -40,7 +40,6 @@ class WidyuPermissionDialog extends StatelessWidget {
       contentPadding: const EdgeInsets.fromLTRB(16, 28, 16, 16),
       child: Column(
         mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           const WidyuAssetImage(
             name: 'img_94_warning.png',

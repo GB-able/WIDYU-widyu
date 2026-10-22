@@ -43,17 +43,17 @@ class _CalendarHeaderView extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               _MonthArrow(
-                icon: "chevron_left",
+                icon: 'chevron_left',
                 onTap: () => viewModel.onPageChanged(
                   DateTime(focusedMonth.year, focusedMonth.month - 1),
                 ),
               ),
               Text(
-                "${focusedMonth.year}년 ${focusedMonth.month}월",
+                '${focusedMonth.year}년 ${focusedMonth.month}월',
                 style: MyTypo.title3.copyWith(color: MyColor.grey800),
               ),
               _MonthArrow(
-                icon: "chevron_right",
+                icon: 'chevron_right',
                 onTap: () => viewModel.onPageChanged(
                   DateTime(focusedMonth.year, focusedMonth.month + 1),
                 ),

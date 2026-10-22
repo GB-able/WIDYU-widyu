@@ -9,9 +9,9 @@ import 'package:widyu/core/data/repository/location/location_repository.dart';
 import 'package:widyu/core/data/repository/myPage/my_page_repository.dart';
 import 'package:widyu/core/data/repository/notification/notification_repository.dart';
 import 'package:widyu/core/model/api/api_result.dart';
+import 'package:widyu/core/model/goal/medication/medication_point_result.dart';
 import 'package:widyu/core/model/heartRate/heart_rate_response.dart';
 import 'package:widyu/core/model/heartRate/heart_rate_status.dart';
-import 'package:widyu/core/model/goal/medication/medication_point_result.dart';
 import 'package:widyu/core/model/home/medication_status.dart';
 import 'package:widyu/core/model/home/senior_card.dart';
 import 'package:widyu/core/model/location/user_location.dart';
@@ -60,7 +60,7 @@ class HomeViewModel with ChangeNotifier {
   final _uiEvent = StreamController<HomeUiEvent>.broadcast();
   Stream<HomeUiEvent> get uiEvent => _uiEvent.stream;
 
-  StreamSubscription? _watchConnection;
+  StreamSubscription<bool>? _watchConnection;
   late final StreamSubscription<void> _medicationChanges;
 
   // 갱신용 타이머

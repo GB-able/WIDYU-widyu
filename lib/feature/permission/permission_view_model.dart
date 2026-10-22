@@ -2,12 +2,12 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:widyu/core/model/permission/permission_recovery_prompt.dart';
 import 'package:widyu/core/model/permission/permission_type.dart';
 import 'package:widyu/core/storage/app_preference.dart';
 import 'package:widyu/core/storage/preference_key.dart';
 import 'package:widyu/core/utils/permission_manager.dart';
 import 'package:widyu/core/utils/permission_recovery_controller.dart';
-import 'package:widyu/core/model/permission/permission_recovery_prompt.dart';
 import 'package:widyu/feature/permission/permission_ui_event.dart';
 import 'package:widyu/feature/permission/permission_ui_model.dart';
 

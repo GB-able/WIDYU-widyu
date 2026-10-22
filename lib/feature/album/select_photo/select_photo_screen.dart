@@ -15,7 +15,7 @@ import 'package:widyu/feature/album/select_photo/select_photo_view_model.dart';
 
 part 'widgets/permission_denied_widget.dart';
 part 'widgets/photo_grid.dart';
-part "widgets/photo_header.dart";
+part 'widgets/photo_header.dart';
 part 'widgets/photo_item.dart';
 
 class SelectPhotoScreen extends StatelessWidget {
@@ -51,7 +51,7 @@ class SelectPhotoScreen extends StatelessWidget {
                           AppRoute.managePost.path,
                           extra: viewModel.selected,
                         ),
-                        text: "게시글 작성하기",
+                        text: '게시글 작성하기',
                         enable: viewModel.selected.isNotEmpty,
                       )
                     : Column(
@@ -59,8 +59,7 @@ class SelectPhotoScreen extends StatelessWidget {
                         children: [
                           WidyuTextButton(
                             onTap: () => viewModel.requestAlbumPermission(),
-                            text: "설정에서 권한 허용하기",
-                            enable: true,
+                            text: '설정에서 권한 허용하기',
                           ),
                           GestureDetector(
                             onTap: () => context.pop(),
@@ -70,7 +69,7 @@ class SelectPhotoScreen extends StatelessWidget {
                               color: Colors.transparent,
                               alignment: Alignment.center,
                               child: Text(
-                                "나중에 하기",
+                                '나중에 하기',
                                 style: MyTypo.button.copyWith(
                                   color: MyColor.black,
                                 ),

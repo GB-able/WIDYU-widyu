@@ -65,7 +65,7 @@ class _CommentCardState extends State<CommentCard> {
     if (!mounted) return;
 
     if (!success) {
-      showToast("답글 등록에 실패했습니다.");
+      showToast('답글 등록에 실패했습니다.');
       return;
     }
 
@@ -85,7 +85,7 @@ class _CommentCardState extends State<CommentCard> {
     if (!mounted) return;
 
     if (!success) {
-      showToast("댓글 수정에 실패했습니다.");
+      showToast('댓글 수정에 실패했습니다.');
       return;
     }
 
@@ -114,7 +114,6 @@ class _CommentCardState extends State<CommentCard> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
                     spacing: 4,
                     children: [
                       Flexible(
@@ -140,7 +139,7 @@ class _CommentCardState extends State<CommentCard> {
                       onTapOutside: (_) => FocusScope.of(context).unfocus(),
                       onFieldSubmitted: (_) => submitEdit(),
                       decoration: InputDecoration(
-                        hintText: "댓글을 수정해 주세요.",
+                        hintText: '댓글을 수정해 주세요.',
                         hintStyle: MyTypo.body2.copyWith(
                           color: MyColor.grey600,
                         ),
@@ -158,7 +157,7 @@ class _CommentCardState extends State<CommentCard> {
                   GestureDetector(
                     onTap: startReply,
                     child: Text(
-                      "답글달기",
+                      '답글달기',
                       style: MyTypo.helper.copyWith(color: MyColor.grey500),
                     ),
                   ),
@@ -204,7 +203,7 @@ class _CommentCardState extends State<CommentCard> {
             behavior: HitTestBehavior.opaque,
             child: const Padding(
               padding: EdgeInsets.symmetric(horizontal: 4),
-              child: IconWidget(icon: "more", width: 24),
+              child: IconWidget(icon: 'more', width: 24),
             ),
           ),
       ],

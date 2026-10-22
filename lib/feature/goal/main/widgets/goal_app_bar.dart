@@ -19,7 +19,7 @@ class _GoalAppBar extends StatelessWidget implements PreferredSizeWidget {
             behavior: HitTestBehavior.translucent,
             onTap: () => {}, // [TODO] 알림 페이지 생성 후 연결
             child: const IconWidget(
-              icon: "notification",
+              icon: 'notification',
               width: 22,
               color: MyColor.grey600,
             ),

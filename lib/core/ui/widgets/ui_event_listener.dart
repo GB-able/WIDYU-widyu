@@ -15,7 +15,7 @@ class UiEventListener<E> extends StatefulWidget {
   });
 
   @override
-  State<UiEventListener> createState() => _UiEventListenerState<E>();
+  State<UiEventListener<E>> createState() => _UiEventListenerState<E>();
 }
 
 class _UiEventListenerState<E> extends State<UiEventListener<E>> {

@@ -32,11 +32,7 @@ class FcmTokenService {
     try {
       if (_disposed || !await TokenManager().hasToken()) return null;
 
-      await FirebaseMessaging.instance.requestPermission(
-        alert: true,
-        badge: true,
-        sound: true,
-      );
+      await FirebaseMessaging.instance.requestPermission();
 
       if (Platform.isIOS && await _waitForApnsToken() == null) {
         debugPrint('[FCM] APNs 토큰이 발급되지 않아 등록을 미룹니다.');

@@ -75,7 +75,7 @@ class _PhotoPreviewScreenState extends State<PhotoPreviewScreen> {
         return Scaffold(
           backgroundColor: MyColor.white,
           appBar: CustomAppBar(
-            title: "${currIdx + 1}/$total",
+            title: '${currIdx + 1}/$total',
           ),
           body: SafeArea(
             child: Column(
@@ -153,7 +153,7 @@ class _PhotoPreviewScreenState extends State<PhotoPreviewScreen> {
                   padding: const EdgeInsets.all(16),
                   child: WidyuTextButton(
                     onTap: _onWritePost,
-                    text: "게시글 작성하기",
+                    text: '게시글 작성하기',
                     enable: _viewModel.selected.isNotEmpty,
                   ),
                 ),

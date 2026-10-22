@@ -4,9 +4,9 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
-import 'package:widyu/core/utils/phone_formatter.dart';
 import 'package:widyu/core/ui/widgets/custom_text_field.dart';
 import 'package:widyu/core/ui/widgets/widyu_text_button.dart';
+import 'package:widyu/core/utils/phone_formatter.dart';
 import 'package:widyu/feature/auth/login_ui_state.dart';
 import 'package:widyu/feature/auth/login_view_model.dart';
 import 'package:widyu/feature/auth/widgets/login_base_view.dart';
@@ -40,7 +40,7 @@ class LoginPhoneView extends StatelessWidget {
               spacing: 4,
               children: [
                 Text(
-                  "전화번호",
+                  '전화번호',
                   style: MyTypo.subTitle2.copyWith(
                     color: MyColor.grey700,
                   ),
