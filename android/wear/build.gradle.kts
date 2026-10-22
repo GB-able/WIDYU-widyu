@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -20,17 +22,37 @@ android {
         applicationId = "com.widucorp.widu"
         minSdk = 30
         targetSdk = 36
-        versionCode = 1
+        // 폰 앱과 같은 Play 앱 항목에 올라가므로 versionCode 가 겹치면 안 된다.
+        // 폰과 같은 빌드 번호(-PbuildNumber, CI 에서 전달)에 1_000_000 을 더한다.
+        versionCode = 1_000_000 + (findProperty("buildNumber") as String? ?: "1").toInt()
         versionName = "1.0"
+    }
+
+    // 폰 앱(app/build.gradle)과 같은 android/key.properties 를 읽는다.
+    val keystorePropertiesFile = rootProject.file("key.properties")
+    val keystoreProperties = Properties().apply {
+        if (keystorePropertiesFile.exists()) keystorePropertiesFile.inputStream().use { load(it) }
+    }
+
+    signingConfigs {
+        create("release") {
+            if (keystorePropertiesFile.exists()) {
+                storeFile = rootProject.file(keystoreProperties.getProperty("storeFile"))
+                storePassword = keystoreProperties.getProperty("storePassword")
+                keyAlias = keystoreProperties.getProperty("keyAlias")
+                keyPassword = keystoreProperties.getProperty("keyPassword")
+            }
+        }
     }
 
     buildTypes {
         release {
             isMinifyEnabled = false
             // Data Layer 는 패키지명과 서명 인증서가 모두 같아야 앱 사이를 라우팅한다.
-            // 폰 앱(app/build.gradle)이 debug 키로 서명되므로 워치도 동일하게 맞춘다.
-            // 스토어 배포 시에는 양쪽 모듈을 같은 릴리즈 키스토어로 교체해야 한다.
-            signingConfig = signingConfigs.getByName("debug")
+            // 폰 앱과 같은 규칙으로 key.properties 가 있으면 업로드 키, 없으면 debug 키로 서명한다.
+            signingConfig = signingConfigs.getByName(
+                if (keystorePropertiesFile.exists()) "release" else "debug"
+            )
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
