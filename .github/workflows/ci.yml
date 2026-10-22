@@ -62,8 +62,9 @@ jobs:
   report:
     name: Comment CI results
     needs: [lint, test, build-apk]
-    # 기존 CI와 동일하게 저장소 내부 PR을 대상으로 한다.
-    if: ${{ always() && github.event.pull_request.head.repo.full_name == github.repository }}
+    # fork PR은 토큰에 쓰기 권한이 없으므로 저장소 내부 PR만 대상으로 한다.
+    # 새 push로 취소된 실행은 댓글을 남기지 않는다.
+    if: ${{ !cancelled() && github.event.pull_request.head.repo.full_name == github.repository }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
@@ -101,18 +102,28 @@ jobs:
             });
             const attempt = process.env.GITHUB_RUN_ATTEMPT;
             const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}/attempts/${attempt}`;
-            await github.rest.issues.createComment({
+            const marker = '<!-- ci-report -->';
+            const body = [
+              marker,
+              '## CI 실행 결과',
+              '',
+              `커밋: ${context.payload.pull_request.head.sha.slice(0, 7)} · [실행 #${context.runNumber} (시도 ${attempt})](${runUrl})`,
+              '',
+              '| 단계 | 결과 | 소요 시간 |',
+              '| --- | --- | --- |',
+              ...rows,
+              '',
+              '소요 시간은 환경 준비를 포함한 각 작업의 실행 시간입니다.',
+            ].join('\n');
+            // PR당 댓글 하나를 유지하고 실행할 때마다 내용을 덮어쓴다.
+            const comments = await github.paginate(github.rest.issues.listComments, {
               ...context.repo,
               issue_number: context.issue.number,
-              body: [
-                '## CI 실행 결과',
-                '',
-                `커밋: ${context.payload.pull_request.head.sha.slice(0, 7)} · [실행 #${context.runNumber} (시도 ${attempt})](${runUrl})`,
-                '',
-                '| 단계 | 결과 | 소요 시간 |',
-                '| --- | --- | --- |',
-                ...rows,
-                '',
-                '소요 시간은 환경 준비를 포함한 각 작업의 실행 시간입니다.',
-              ].join('\n'),
+              per_page: 100,
             });
+            const existing = comments.find(c => c.user.type === 'Bot' && c.body.startsWith(marker));
+            if (existing) {
+              await github.rest.issues.updateComment({ ...context.repo, comment_id: existing.id, body });
+            } else {
+              await github.rest.issues.createComment({ ...context.repo, issue_number: context.issue.number, body });
+            }
