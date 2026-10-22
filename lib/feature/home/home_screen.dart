@@ -180,6 +180,8 @@ class HomeScreen extends StatelessWidget {
                       ),
                     ),
                     CustomScrollView(
+                      scrollBehavior: ScrollConfiguration.of(context)
+                          .copyWith(overscroll: false),
                       slivers: [
                         SliverFillRemaining(
                           hasScrollBody: false,

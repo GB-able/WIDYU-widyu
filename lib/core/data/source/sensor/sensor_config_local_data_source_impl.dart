@@ -5,7 +5,7 @@ import 'package:widyu/core/data/source/sensor/sensor_config_local_data_source.da
 import 'package:widyu/core/model/sensor/sensor_config.dart';
 
 class SensorConfigLocalDataSourceImpl implements SensorConfigLocalDataSource {
-  static const _channel = MethodChannel('com.gbable.widu/sensor_config');
+  static const _channel = MethodChannel('com.widucorp.widu/sensor_config');
 
   /// 키 이름은 네이티브가 DataMap 에 그대로 옮기는 워치와의 계약이다. 바꾸지 말 것.
   @override
