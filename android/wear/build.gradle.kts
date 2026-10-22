@@ -25,7 +25,10 @@ android {
         // 폰 앱과 같은 Play 앱 항목에 올라가므로 versionCode 가 겹치면 안 된다.
         // 폰과 같은 빌드 번호(-PbuildNumber, CI 에서 전달)에 1_000_000 을 더한다.
         versionCode = 1_000_000 + (findProperty("buildNumber") as String? ?: "1").toInt()
-        versionName = "1.0"
+        // 폰과 같은 versionName 을 쓰도록 pubspec.yaml 의 version(예: 1.2.0+37)에서 '+' 앞부분을 읽는다.
+        versionName = rootProject.file("../pubspec.yaml").readLines()
+            .first { it.startsWith("version:") }
+            .substringAfter(":").trim().substringBefore("+")
     }
 
     // 폰 앱(app/build.gradle)과 같은 android/key.properties 를 읽는다.
