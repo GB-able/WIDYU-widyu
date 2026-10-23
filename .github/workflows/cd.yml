@@ -39,6 +39,10 @@ jobs:
           # CI(PR 검사)는 개발 서버용 DOT_ENV, 배포는 배포 서버용 DOT_ENV_RELEASE 를 쓴다.
           dot-env: ${{ secrets.DOT_ENV_RELEASE }}
 
+      # 시크릿이 비어 있어도 빌드는 성공하므로, 서버 주소 없는 앱이 배포되지 않게 여기서 멈춘다.
+      - name: Check release env
+        run: grep -Eq '^BASE_URL="?https://[^"[:space:]]+"?[[:space:]]*$' .env
+
       - name: Restore upload key
         env:
           UPLOAD_KEYSTORE_BASE64: ${{ secrets.UPLOAD_KEYSTORE_BASE64 }}
@@ -49,7 +53,7 @@ jobs:
           echo "$UPLOAD_KEYSTORE_BASE64" | base64 -d > android/upload-keystore.jks
           printf 'storeFile=upload-keystore.jks\nstorePassword=%s\nkeyPassword=%s\nkeyAlias=%s\n' \
             "$KEYSTORE_PASSWORD" "$KEY_PASSWORD" "$KEY_ALIAS" > android/key.properties
-          # 키가 비어 있으면 Gradle 이 debug 키로 서명하므로 여기서 멈춘다.
+          # 키가 비어 있으면 빌드 막바지 서명 단계에서야 실패하므로 여기서 먼저 멈춘다.
           test -s android/upload-keystore.jks
 
       - name: Build app bundles
@@ -57,6 +61,7 @@ jobs:
           # 폰·워치에 같은 번호를 쓴다(워치 versionCode = 1_000_000 + 번호).
           # Play Console 에 수동으로 처음 올린 번들이 1 이므로 +1 한다.
           BUILD_NUMBER=$(( ${{ github.run_number }} + 1 ))
+          # android/gradlew 는 git 에 없고 Flutter 빌드가 만들어 주므로 워치 빌드보다 먼저 실행한다.
           flutter build appbundle --release --build-number=$BUILD_NUMBER
           (cd android && ./gradlew :wear:bundleRelease -PbuildNumber=$BUILD_NUMBER)
 
