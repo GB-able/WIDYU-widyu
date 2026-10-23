@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:widyu/core/data/provider/album_provider.dart';
 import 'package:widyu/core/data/repository/album/album_repository.dart';
 import 'package:widyu/core/data/repository/myPage/my_page_repository.dart';
-import 'package:widyu/core/model/album/comment.dart';
 import 'package:widyu/core/model/album/album_comment_create_request.dart';
 import 'package:widyu/core/model/album/album_comment_update_request.dart';
+import 'package:widyu/core/model/album/comment.dart';
 import 'package:widyu/core/model/album/feed_detail.dart';
 import 'package:widyu/core/model/api/api_result.dart';
 import 'package:widyu/core/model/myPage/user/user.dart';
@@ -47,7 +47,7 @@ class PostViewModel extends ChangeNotifier {
         canEdit: true,
         author: data.author.copyWith(
           name: data.author.name.isEmpty
-              ? (_uiState.me?.name ?? "")
+              ? (_uiState.me?.name ?? '')
               : data.author.name,
           profileImage: data.author.profileImage ?? _uiState.me?.profileImage,
         ),

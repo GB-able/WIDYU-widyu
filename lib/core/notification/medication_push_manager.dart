@@ -42,7 +42,7 @@ Future<void> medicationBackgroundMessage(RemoteMessage message) async {
   if (!isMedicationChange(message)) return;
   debugPrint('[MedicationSync] 백그라운드 푸시 수신: ${message.data}');
   WidgetsFlutterBinding.ensureInitialized();
-  await dotenv.load(fileName: '.env');
+  await dotenv.load();
   try {
     if (Firebase.apps.isEmpty) {
       await Firebase.initializeApp(

@@ -23,15 +23,16 @@ class _VideoPreviewState extends State<_VideoPreview> {
     final file = await widget.asset.file;
     if (file == null || !mounted) return;
 
-    final controller = VideoPlayerController.file(file)..setLooping(true);
+    final controller = VideoPlayerController.file(file);
+    await controller.setLooping(true);
     await controller.initialize();
 
     if (!mounted) {
-      controller.dispose();
+      await controller.dispose();
       return;
     }
     setState(() => _videoCtrl = controller);
-    if (widget.isActive) controller.play();
+    if (widget.isActive) await controller.play();
   }
 
   @override
@@ -92,7 +93,7 @@ class _VideoPreviewState extends State<_VideoPreview> {
                       shape: BoxShape.circle,
                     ),
                     child: const IconWidget(
-                      icon: "play",
+                      icon: 'play',
                       width: 18,
                       color: MyColor.white,
                     ),

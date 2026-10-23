@@ -199,7 +199,6 @@ class GoalViewModel with ChangeNotifier {
           destination: UserLocation(latitude: latitude, longitude: longitude),
           start: current,
           destinationName: address,
-          routeType: KakaoMapRouteType.publicTransit,
         );
       }
       if (!isOpened) {
@@ -212,11 +211,11 @@ class GoalViewModel with ChangeNotifier {
           mode: LaunchMode.externalApplication,
         );
         if (!launched) {
-          throw Exception("다른 지도 맵 열기 실패");
+          throw Exception('다른 지도 맵 열기 실패');
         }
       }
     } catch (e) {
-      showToast("길을 안내할 수 없습니다.");
+      showToast('길을 안내할 수 없습니다.');
     }
   }
 

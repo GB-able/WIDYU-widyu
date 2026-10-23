@@ -37,7 +37,7 @@ class _MediaThumbnail extends StatelessWidget {
                       shape: BoxShape.circle,
                       color: MyColor.white.withValues(alpha: 0.24),
                     ),
-                    child: const IconWidget(icon: "play", width: 18),
+                    child: const IconWidget(icon: 'play', width: 18),
                   ),
                 ),
               ),
@@ -66,14 +66,14 @@ class _MediaThumbnail extends StatelessWidget {
     final point = context.read<PointProvider>().point;
 
     if (point != null && point < price) {
-      showDialog(
+      unawaited(showDialog<void>(
         context: context,
         builder: (_) => UnlockDialog.notEnough(
           price: price,
           point: point,
           onTap: () => context.go(AppRoute.goal.path),
         ),
-      );
+      ));
       return;
     }
 
@@ -86,7 +86,7 @@ class _MediaThumbnail extends StatelessWidget {
       ),
     );
     if (success == true && context.mounted && !albumProvider.isDisposed) {
-      context.push(AppRoute.post.path, extra: media.postId);
+      unawaited(context.push(AppRoute.post.path, extra: media.postId));
     }
   }
 
@@ -94,6 +94,6 @@ class _MediaThumbnail extends StatelessWidget {
     final url = media.thumbnailUrl;
     if (url == null) return Container(color: MyColor.grey100);
 
-    return CustomNetworkImage(url: url, width: null, height: null);
+    return CustomNetworkImage(url: url);
   }
 }

@@ -20,7 +20,7 @@ class _ProfileView extends StatelessWidget {
         Skeletonizer(
           enabled: isLoading,
           child: Text(
-            isLoading ? '홍길동' : (name ?? "-"),
+            isLoading ? '홍길동' : (name ?? '-'),
             style: MyTypo.title4.copyWith(color: MyColor.white),
           ),
         ),
@@ -29,7 +29,7 @@ class _ProfileView extends StatelessWidget {
           onPressed: () async {
             await context.push(AppRoute.profile.path);
             if (context.mounted) {
-              context.read<MyPageViewModel>().fetchUser();
+              await context.read<MyPageViewModel>().fetchUser();
             }
           },
           icon: const WidyuIcon(

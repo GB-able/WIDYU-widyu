@@ -23,7 +23,7 @@ class NotificationRemoteDataSourceImpl implements NotificationRemoteDataSource {
       );
       return response.toApiResponses(NotificationSetting.fromJson);
     } catch (e) {
-      throw Exception("알림 설정 조회에 실패했습니다: $e");
+      throw Exception('알림 설정 조회에 실패했습니다: $e');
     }
   }
 
@@ -38,7 +38,7 @@ class NotificationRemoteDataSourceImpl implements NotificationRemoteDataSource {
       );
       return response.toApiResponse(NotificationSetting.fromJson);
     } catch (e) {
-      throw Exception("알림 설정 변경에 실패했습니다: $e");
+      throw Exception('알림 설정 변경에 실패했습니다: $e');
     }
   }
 
@@ -55,7 +55,7 @@ class NotificationRemoteDataSourceImpl implements NotificationRemoteDataSource {
       );
       return response.toApiResponse(NotificationPage.fromJson);
     } catch (e) {
-      throw Exception("알림 조회에 실패했습니다: $e");
+      throw Exception('알림 조회에 실패했습니다: $e');
     }
   }
 
@@ -68,7 +68,7 @@ class NotificationRemoteDataSourceImpl implements NotificationRemoteDataSource {
       );
       return response.toApiResponse<void>((json) => {});
     } catch (e) {
-      throw Exception("알림 읽음 처리에 실패했습니다: $e");
+      throw Exception('알림 읽음 처리에 실패했습니다: $e');
     }
   }
 
@@ -82,7 +82,7 @@ class NotificationRemoteDataSourceImpl implements NotificationRemoteDataSource {
       );
       return response.toApiResponse<void>((json) => {});
     } catch (e) {
-      throw Exception("FCM 토큰 등록에 실패했습니다: $e");
+      throw Exception('FCM 토큰 등록에 실패했습니다: $e');
     }
   }
 
@@ -96,7 +96,7 @@ class NotificationRemoteDataSourceImpl implements NotificationRemoteDataSource {
       );
       return response.toApiResponse<void>((json) => {});
     } catch (e) {
-      throw Exception("FCM 토큰 비활성화에 실패했습니다: $e");
+      throw Exception('FCM 토큰 비활성화에 실패했습니다: $e');
     }
   }
 }

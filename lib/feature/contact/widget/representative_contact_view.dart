@@ -26,8 +26,6 @@ class _RepresentativeContactView extends StatelessWidget {
                 BoxShadow(
                   color: MyColor.black.withValues(alpha: 0.2),
                   blurRadius: 12,
-                  spreadRadius: 0,
-                  offset: const Offset(0, 0),
                 ),
               ],
             ),

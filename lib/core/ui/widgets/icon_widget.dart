@@ -16,7 +16,7 @@ class IconWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SvgPicture.asset(
-      "assets/icons/ic_${width!.toInt()}_$icon.svg",
+      'assets/icons/ic_${width!.toInt()}_$icon.svg',
       width: width,
       height: height,
       colorFilter:

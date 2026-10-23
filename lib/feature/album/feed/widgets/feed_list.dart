@@ -43,7 +43,7 @@ class _FeedListState extends State<_FeedList> {
     if (viewModel.isEmpty) {
       if (viewModel.hasError) {
         return RetryWidget(
-          message: "피드를 불러오지 못했어요",
+          message: '피드를 불러오지 못했어요',
           onRetry: () => context.read<FeedTabViewModel>().retry(),
         );
       }

@@ -3,8 +3,8 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:medication_alarm/medication_alarm.dart';
-import 'package:widyu/core/data/repository/goal/medication_repository.dart';
 import 'package:widyu/core/data/provider/point_provider.dart';
+import 'package:widyu/core/data/repository/goal/medication_repository.dart';
 import 'package:widyu/core/model/goal/medication/medication_point_result.dart';
 import 'package:widyu/feature/medication_camera/medication_camera_ui_event.dart';
 import 'package:widyu/feature/medication_camera/medication_camera_ui_state.dart';
@@ -48,7 +48,7 @@ class MedicationCameraViewModel extends ChangeNotifier {
       final state = await _medicationRepository.alarmState();
       if (state['memberId'] == _group['memberId']) {
         final now = DateTime.now();
-        for (final target in (_group['occurrences'] as List).cast<Map>()) {
+        for (final target in (_group['occurrences'] as List).cast<Map<dynamic, dynamic>>()) {
           final occurrence =
               MedicationOccurrence.fromJson(Map<String, dynamic>.from(target));
           if (occurrence.canVerify(now)) _pending.add(occurrence);

@@ -12,7 +12,7 @@ class ViewersRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (viewers.isEmpty) {
-      return Text("아직 아무도 게시글을 읽지 않았어요!", style: MyTypo.helper2);
+      return Text('아직 아무도 게시글을 읽지 않았어요!', style: MyTypo.helper2);
     }
 
     final displayViewers = viewers.take(3).toList().reversed.toList();
@@ -26,7 +26,7 @@ class ViewersRow extends StatelessWidget {
               .map(
                 (viewer) => Container(
                   decoration: BoxDecoration(
-                    border: Border.all(color: MyColor.white, width: 1),
+                    border: Border.all(color: MyColor.white),
                     shape: BoxShape.circle,
                   ),
                   child: ProfileWidget(

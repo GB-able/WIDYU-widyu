@@ -8,9 +8,9 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:widyu/app/routes/app_route.dart';
-import 'package:widyu/core/notification/medication_push_manager.dart';
 import 'package:widyu/core/data/repository/goal/medication_repository.dart';
 import 'package:widyu/core/model/goal/medication/medication_point_result.dart';
+import 'package:widyu/core/notification/medication_push_manager.dart';
 import 'package:widyu/core/ui/widgets/medication_reward_dialog.dart';
 import 'package:widyu/feature/goal/medication/medication_ringing_screen.dart';
 

@@ -9,8 +9,8 @@ class ExpandableText extends StatelessWidget {
     this.maxLines = 2,
     this.isExpanded = false,
     this.onExpandChanged,
-    this.moreLabel = "더보기",
-    this.lessLabel = "접기",
+    this.moreLabel = '더보기',
+    this.lessLabel = '접기',
   });
 
   final String text;

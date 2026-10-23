@@ -35,7 +35,7 @@ class LoginBaseView extends StatelessWidget {
                   child: const Padding(
                     padding: EdgeInsets.only(left: 16),
                     child: IconWidget(
-                      icon: "back",
+                      icon: 'back',
                       width: 22,
                       color: MyColor.grey600,
                     ),
@@ -53,7 +53,6 @@ class LoginBaseView extends StatelessWidget {
                 behavior: HitTestBehavior.opaque,
                 child: SafeArea(
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Expanded(
                         child: SingleChildScrollView(

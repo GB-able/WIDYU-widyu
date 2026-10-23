@@ -25,7 +25,7 @@ class ApiClient {
     if (kDebugMode) dio.interceptors.add(LoggerInterceptor());
   }
 
-  Future<Response> req({
+  Future<Response<dynamic>> req({
     required String path,
     required HttpMethod method,
     Map<String, dynamic>? query,

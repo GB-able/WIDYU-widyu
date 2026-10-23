@@ -195,7 +195,6 @@ class _TranslucentContainer extends StatelessWidget {
               color: MyColor.white.withValues(alpha: 0.5),
               border: Border.all(
                 color: MyColor.white.withValues(alpha: 0.6),
-                width: 1,
               ),
             ),
             child: content,

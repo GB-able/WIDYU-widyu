@@ -21,9 +21,9 @@ class UnlockDialog extends StatefulWidget {
     required this.point,
     required this.onPurchase,
   })  : onTap = null,
-        image = "assets/images/img_112_unlock.png",
-        title = "새로운 소식을 구매할까요?",
-        buttonText = "구매하기";
+        image = 'assets/images/img_112_unlock.png',
+        title = '새로운 소식을 구매할까요?',
+        buttonText = '구매하기';
 
   const UnlockDialog.notEnough({
     super.key,
@@ -31,9 +31,9 @@ class UnlockDialog extends StatefulWidget {
     required this.point,
     required this.onTap,
   })  : onPurchase = null,
-        image = "assets/images/img_112_warning.png",
-        title = "포인트가 부족해요",
-        buttonText = "포인트 모으러 가기";
+        image = 'assets/images/img_112_warning.png',
+        title = '포인트가 부족해요',
+        buttonText = '포인트 모으러 가기';
 
   final String image;
   final String title;
@@ -108,7 +108,7 @@ class _UnlockDialogState extends State<UnlockDialog> {
                           child: const Padding(
                             padding: EdgeInsets.all(2),
                             child: IconWidget(
-                              icon: "close",
+                              icon: 'close',
                               width: 16,
                               color: MyColor.grey700,
                             ),
@@ -126,7 +126,7 @@ class _UnlockDialogState extends State<UnlockDialog> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      "${widget.price}P",
+                      '${widget.price}P',
                       style: MyTypo.title1.copyWith(color: MyColor.primary),
                     ),
                     const SizedBox(height: 20),
@@ -171,11 +171,11 @@ class _PointBalance extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
-            "잔여 포인트",
+            '잔여 포인트',
             style: MyTypo.subTitle2.copyWith(color: MyColor.grey500),
           ),
           Text(
-            point == null ? "-" : "${point}P",
+            point == null ? '-' : '${point}P',
             style: MyTypo.title2.copyWith(color: MyColor.grey600),
           ),
         ],

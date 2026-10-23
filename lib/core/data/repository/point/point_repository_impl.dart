@@ -11,5 +11,5 @@ class PointRepositoryImpl extends PointRepository {
 
   @override
   Future<ApiResult<int>> fetchPoints() async =>
-      await _remoteDataSource.fetchPoints().toApiResult();
+      _remoteDataSource.fetchPoints().toApiResult();
 }

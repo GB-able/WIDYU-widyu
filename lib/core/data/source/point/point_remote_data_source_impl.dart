@@ -18,7 +18,7 @@ class PointRemoteDataSourceImpl extends PointRemoteDataSource {
       );
       return response.toApiResponse((json) => json['points'] as int);
     } catch (e) {
-      throw Exception("포인트 조회에 실패했습니다: $e");
+      throw Exception('포인트 조회에 실패했습니다: $e');
     }
   }
 }

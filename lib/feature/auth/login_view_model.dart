@@ -53,7 +53,7 @@ class LoginViewModel with ChangeNotifier {
 
         _prevCodes[index] = currentValue;
 
-        changeState(const LoginCodeState(error: null));
+        changeState(const LoginCodeState());
         notifyListeners();
       });
     }
@@ -171,7 +171,7 @@ class LoginViewModel with ChangeNotifier {
                 ? LoginError.loginFailed
                 : LoginError.loginFailedALot));
       case Failure():
-        onFailure("로그인 실패. 잠시 후 다시 시도하세요");
+        onFailure('로그인 실패. 잠시 후 다시 시도하세요');
     }
     notifyListeners();
   }

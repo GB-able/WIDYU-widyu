@@ -10,8 +10,8 @@ class CustomDialog extends StatelessWidget {
     this.type = CustomDialogType.one,
     required this.title,
     this.description,
-    this.posText = "확인",
-    this.negText = "취소",
+    this.posText = '확인',
+    this.negText = '취소',
     this.onPosTap,
     this.onNegTap,
   });

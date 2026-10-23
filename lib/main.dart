@@ -38,6 +38,8 @@ import 'package:widyu/core/data/source/auth/auth_local_data_source.dart';
 import 'package:widyu/core/data/source/auth/auth_local_data_source_impl.dart';
 import 'package:widyu/core/data/source/auth/auth_remote_data_source.dart';
 import 'package:widyu/core/data/source/auth/auth_remote_data_source_impl.dart';
+import 'package:widyu/core/data/source/device/device_local_data_source.dart';
+import 'package:widyu/core/data/source/device/device_local_data_source_impl.dart';
 import 'package:widyu/core/data/source/goal/goal_remote_data_source.dart';
 import 'package:widyu/core/data/source/goal/goal_remote_data_source_impl.dart';
 import 'package:widyu/core/data/source/goal/medication_alarm_local_data_source.dart';
@@ -48,8 +50,6 @@ import 'package:widyu/core/data/source/goal/walk_local_data_source.dart';
 import 'package:widyu/core/data/source/goal/walk_local_data_source_impl.dart';
 import 'package:widyu/core/data/source/goal/walk_remote_data_source.dart';
 import 'package:widyu/core/data/source/goal/walk_remote_data_source_impl.dart';
-import 'package:widyu/core/data/source/device/device_local_data_source.dart';
-import 'package:widyu/core/data/source/device/device_local_data_source_impl.dart';
 import 'package:widyu/core/data/source/heartRate/heart_rate_local_data_source.dart';
 import 'package:widyu/core/data/source/heartRate/heart_rate_local_data_source_impl.dart';
 import 'package:widyu/core/data/source/heartRate/heart_rate_remote_data_source.dart';
@@ -66,17 +66,17 @@ import 'package:widyu/core/data/source/notification/notification_remote_data_sou
 import 'package:widyu/core/data/source/notification/notification_remote_data_source_impl.dart';
 import 'package:widyu/core/data/source/point/point_remote_data_source.dart';
 import 'package:widyu/core/data/source/point/point_remote_data_source_impl.dart';
-import 'package:widyu/core/notification/medication_push_manager.dart';
-import 'package:widyu/core/network/api_client.dart';
 import 'package:widyu/core/log/log.dart';
-import 'package:widyu/core/network/token_manager.dart';
+import 'package:widyu/core/network/api_client.dart';
 import 'package:widyu/core/network/socket_client.dart';
+import 'package:widyu/core/network/token_manager.dart';
+import 'package:widyu/core/notification/local_notification_manager.dart';
+import 'package:widyu/core/notification/medication_push_manager.dart';
 import 'package:widyu/core/ui/theme/theme.dart';
 import 'package:widyu/core/utils/app_service_controller.dart';
-import 'package:widyu/core/notification/local_notification_manager.dart';
+import 'package:widyu/core/utils/background_location_notice_controller.dart';
 import 'package:widyu/firebase_options.dart';
 import 'package:widyu/walk_background_service.dart';
-import 'package:widyu/core/utils/background_location_notice_controller.dart';
 
 void main() {
   runZonedGuarded(
@@ -90,7 +90,8 @@ void main() {
 }
 
 Future<void> _bootstrap() async {
-  WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+  final WidgetsBinding widgetsBinding =
+      WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
 
   FlutterError.onError = (details) {
@@ -100,7 +101,7 @@ Future<void> _bootstrap() async {
 
   // 초기화 단계 중 하나가 실패하더라도 나머지 단계와 runApp 은 반드시 수행한다.
   try {
-    await dotenv.load(fileName: ".env");
+    await dotenv.load();
   } catch (e, stack) {
     debugPrint('[main] dotenv.load 실패: $e\n$stack');
   }

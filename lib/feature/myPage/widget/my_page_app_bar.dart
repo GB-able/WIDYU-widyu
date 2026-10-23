@@ -16,7 +16,7 @@ class _MyPageAppBar extends StatelessWidget implements PreferredSizeWidget {
         statusBarBrightness: Brightness.light,
       ),
       title: Text(
-        "내 정보",
+        '내 정보',
         style: MyTypo.title4.copyWith(color: MyColor.grey800),
       ),
       centerTitle: true,

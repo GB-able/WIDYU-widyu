@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
-import 'package:widyu/core/ui/widgets/widyu_dialog.dart';
-
 import 'package:widyu/core/model/permission/permission_recovery_prompt.dart';
 import 'package:widyu/core/ui/widgets/permission_recovery_dialog.dart';
+import 'package:widyu/core/ui/widgets/widyu_dialog.dart';
 
 Widget _routerApp(Widget home) {
   final router = GoRouter(routes: [
