@@ -14,6 +14,7 @@ import 'package:widyu/core/model/goal/medication/medication_point_result.dart';
 import 'package:widyu/core/model/goal/weekly_goal_status_response.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
+import 'package:widyu/core/ui/widgets/custom_loading_widget.dart';
 import 'package:widyu/core/ui/widgets/icon_widget.dart';
 import 'package:widyu/core/ui/widgets/medication_reward_dialog.dart';
 import 'package:widyu/core/ui/widgets/ui_event_listener.dart';
@@ -33,7 +34,6 @@ part 'widgets/goal_app_bar.dart';
 part 'widgets/goal_content.dart';
 part 'widgets/goal_error_widget.dart';
 part 'widgets/goal_header.dart';
-part 'widgets/goal_loading_widget.dart';
 part 'widgets/weekly_card.dart';
 
 enum GoalType { medicine, walk, hospital }
@@ -153,7 +153,7 @@ class _GoalScreenState extends State<GoalScreen> {
                       ],
                     ),
                   ),
-                  if (uiState.isLoading) const _GoalLoadingWidget(),
+                  if (uiState.isLoading) const CustomLoadingWidget(),
                 ],
               ),
             ),

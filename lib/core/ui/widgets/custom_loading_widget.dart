@@ -1,7 +1,7 @@
-part of '../goal_screen.dart';
+import 'package:flutter/material.dart';
 
-class _GoalLoadingWidget extends StatelessWidget {
-  const _GoalLoadingWidget();
+class CustomLoadingWidget extends StatelessWidget {
+  const CustomLoadingWidget({super.key});
 
   @override
   Widget build(BuildContext context) {
