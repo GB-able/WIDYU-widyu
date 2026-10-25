@@ -1,5 +1,4 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:widyu/core/model/notification/notification_category.dart';
 
 part 'notification.freezed.dart';
 part 'notification.g.dart';
@@ -8,12 +7,13 @@ part 'notification.g.dart';
 abstract class Notification with _$Notification {
   const factory Notification({
     required int notificationId,
-    required String image,
-    required NotificationCategory category,
+    @Default('') String image,
+    required String category,
     required String title,
-    required String content,
+    @Default('') String content,
     required String createdAt,
-    required String scheme,
+    @Default(false) bool isRead,
+    @Default('') String path,
   }) = _Notification;
 
   factory Notification.fromJson(Map<String, dynamic> json) =>

@@ -34,19 +34,6 @@ class _NotificationListState extends State<_NotificationList> {
   Widget build(BuildContext context) {
     final viewModel = context.watch<NotificationViewModel>();
 
-    if (viewModel.isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(color: MyColor.primary),
-      );
-    }
-
-    if (viewModel.isEmpty) {
-      return _NotificationEmptyWidget(
-        hasError: viewModel.hasError,
-        onRetry: () => context.read<NotificationViewModel>().retry(),
-      );
-    }
-
     final notifications = viewModel.items;
 
     return RefreshIndicator(
@@ -87,8 +74,13 @@ class _NotificationListState extends State<_NotificationList> {
 
           return _NotificationTile(
             notification: notification,
-            onTap: () =>
-                context.read<NotificationViewModel>().read(notification),
+            categoryName: viewModel.uiState.nameOf(notification.category),
+            onTap: () {
+              context.read<NotificationViewModel>().read(notification);
+              if (notification.path.isNotEmpty) {
+                context.push(notification.path);
+              }
+            },
           );
         },
       ),

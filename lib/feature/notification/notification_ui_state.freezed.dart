@@ -14,8 +14,8 @@ T _$identity<T>(T value) => value;
 
 /// @nodoc
 mixin _$NotificationUiState {
-  NotificationFilter get filter;
-  Map<NotificationFilter, int> get counts;
+  String get category;
+  List<NotificationCategory> get categories;
 
   /// Create a copy of NotificationUiState
   /// with the given fields replaced by the non-null parameter values.
@@ -30,17 +30,19 @@ mixin _$NotificationUiState {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is NotificationUiState &&
-            (identical(other.filter, filter) || other.filter == filter) &&
-            const DeepCollectionEquality().equals(other.counts, counts));
+            (identical(other.category, category) ||
+                other.category == category) &&
+            const DeepCollectionEquality()
+                .equals(other.categories, categories));
   }
 
   @override
   int get hashCode => Object.hash(
-      runtimeType, filter, const DeepCollectionEquality().hash(counts));
+      runtimeType, category, const DeepCollectionEquality().hash(categories));
 
   @override
   String toString() {
-    return 'NotificationUiState(filter: $filter, counts: $counts)';
+    return 'NotificationUiState(category: $category, categories: $categories)';
   }
 }
 
@@ -50,7 +52,7 @@ abstract mixin class $NotificationUiStateCopyWith<$Res> {
           NotificationUiState value, $Res Function(NotificationUiState) _then) =
       _$NotificationUiStateCopyWithImpl;
   @useResult
-  $Res call({NotificationFilter filter, Map<NotificationFilter, int> counts});
+  $Res call({String category, List<NotificationCategory> categories});
 }
 
 /// @nodoc
@@ -66,18 +68,18 @@ class _$NotificationUiStateCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? filter = null,
-    Object? counts = null,
+    Object? category = null,
+    Object? categories = null,
   }) {
     return _then(_self.copyWith(
-      filter: null == filter
-          ? _self.filter
-          : filter // ignore: cast_nullable_to_non_nullable
-              as NotificationFilter,
-      counts: null == counts
-          ? _self.counts
-          : counts // ignore: cast_nullable_to_non_nullable
-              as Map<NotificationFilter, int>,
+      category: null == category
+          ? _self.category
+          : category // ignore: cast_nullable_to_non_nullable
+              as String,
+      categories: null == categories
+          ? _self.categories
+          : categories // ignore: cast_nullable_to_non_nullable
+              as List<NotificationCategory>,
     ));
   }
 }
@@ -175,15 +177,14 @@ extension NotificationUiStatePatterns on NotificationUiState {
 
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>(
-    TResult Function(
-            NotificationFilter filter, Map<NotificationFilter, int> counts)?
+    TResult Function(String category, List<NotificationCategory> categories)?
         $default, {
     required TResult orElse(),
   }) {
     final _that = this;
     switch (_that) {
       case _NotificationUiState() when $default != null:
-        return $default(_that.filter, _that.counts);
+        return $default(_that.category, _that.categories);
       case _:
         return orElse();
     }
@@ -204,14 +205,13 @@ extension NotificationUiStatePatterns on NotificationUiState {
 
   @optionalTypeArgs
   TResult when<TResult extends Object?>(
-    TResult Function(
-            NotificationFilter filter, Map<NotificationFilter, int> counts)
+    TResult Function(String category, List<NotificationCategory> categories)
         $default,
   ) {
     final _that = this;
     switch (_that) {
       case _NotificationUiState():
-        return $default(_that.filter, _that.counts);
+        return $default(_that.category, _that.categories);
       case _:
         throw StateError('Unexpected subclass');
     }
@@ -231,14 +231,13 @@ extension NotificationUiStatePatterns on NotificationUiState {
 
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>(
-    TResult? Function(
-            NotificationFilter filter, Map<NotificationFilter, int> counts)?
+    TResult? Function(String category, List<NotificationCategory> categories)?
         $default,
   ) {
     final _that = this;
     switch (_that) {
       case _NotificationUiState() when $default != null:
-        return $default(_that.filter, _that.counts);
+        return $default(_that.category, _that.categories);
       case _:
         return null;
     }
@@ -249,21 +248,21 @@ extension NotificationUiStatePatterns on NotificationUiState {
 
 class _NotificationUiState extends NotificationUiState {
   const _NotificationUiState(
-      {this.filter = NotificationFilter.all,
-      final Map<NotificationFilter, int> counts = const {}})
-      : _counts = counts,
+      {this.category = 'ALL',
+      final List<NotificationCategory> categories = const []})
+      : _categories = categories,
         super._();
 
   @override
   @JsonKey()
-  final NotificationFilter filter;
-  final Map<NotificationFilter, int> _counts;
+  final String category;
+  final List<NotificationCategory> _categories;
   @override
   @JsonKey()
-  Map<NotificationFilter, int> get counts {
-    if (_counts is EqualUnmodifiableMapView) return _counts;
+  List<NotificationCategory> get categories {
+    if (_categories is EqualUnmodifiableListView) return _categories;
     // ignore: implicit_dynamic_type
-    return EqualUnmodifiableMapView(_counts);
+    return EqualUnmodifiableListView(_categories);
   }
 
   /// Create a copy of NotificationUiState
@@ -280,17 +279,19 @@ class _NotificationUiState extends NotificationUiState {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _NotificationUiState &&
-            (identical(other.filter, filter) || other.filter == filter) &&
-            const DeepCollectionEquality().equals(other._counts, _counts));
+            (identical(other.category, category) ||
+                other.category == category) &&
+            const DeepCollectionEquality()
+                .equals(other._categories, _categories));
   }
 
   @override
   int get hashCode => Object.hash(
-      runtimeType, filter, const DeepCollectionEquality().hash(_counts));
+      runtimeType, category, const DeepCollectionEquality().hash(_categories));
 
   @override
   String toString() {
-    return 'NotificationUiState(filter: $filter, counts: $counts)';
+    return 'NotificationUiState(category: $category, categories: $categories)';
   }
 }
 
@@ -302,7 +303,7 @@ abstract mixin class _$NotificationUiStateCopyWith<$Res>
       __$NotificationUiStateCopyWithImpl;
   @override
   @useResult
-  $Res call({NotificationFilter filter, Map<NotificationFilter, int> counts});
+  $Res call({String category, List<NotificationCategory> categories});
 }
 
 /// @nodoc
@@ -318,18 +319,18 @@ class __$NotificationUiStateCopyWithImpl<$Res>
   @override
   @pragma('vm:prefer-inline')
   $Res call({
-    Object? filter = null,
-    Object? counts = null,
+    Object? category = null,
+    Object? categories = null,
   }) {
     return _then(_NotificationUiState(
-      filter: null == filter
-          ? _self.filter
-          : filter // ignore: cast_nullable_to_non_nullable
-              as NotificationFilter,
-      counts: null == counts
-          ? _self._counts
-          : counts // ignore: cast_nullable_to_non_nullable
-              as Map<NotificationFilter, int>,
+      category: null == category
+          ? _self.category
+          : category // ignore: cast_nullable_to_non_nullable
+              as String,
+      categories: null == categories
+          ? _self._categories
+          : categories // ignore: cast_nullable_to_non_nullable
+              as List<NotificationCategory>,
     ));
   }
 }

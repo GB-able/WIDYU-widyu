@@ -1,5 +1,6 @@
 import 'package:widyu/core/data/source/notification/notification_remote_data_source.dart';
 import 'package:widyu/core/model/api/api_response.dart';
+import 'package:widyu/core/model/notification/notification_category.dart';
 import 'package:widyu/core/model/notification/notification_page.dart';
 import 'package:widyu/core/model/notification/notification_setting.dart';
 import 'package:widyu/core/network/api_client.dart';
@@ -43,19 +44,34 @@ class NotificationRemoteDataSourceImpl implements NotificationRemoteDataSource {
   }
 
   @override
-  Future<ApiResponse<NotificationPage>> fetchNotificationPage(
-      int? cursor) async {
+  Future<ApiResponse<NotificationPage>> fetchNotificationPage(int? cursor,
+      {String? category}) async {
     try {
       final response = await _apiClient.req(
         path: _path,
         method: HttpMethod.get,
         query: {
+          if (category != null) 'category': category,
           if (cursor != null) 'cursor': cursor,
         },
       );
       return response.toApiResponse(NotificationPage.fromJson);
     } catch (e) {
       throw Exception("알림 조회에 실패했습니다: $e");
+    }
+  }
+
+  @override
+  Future<ApiResponse<List<NotificationCategory>>>
+      fetchNotificationCategories() async {
+    try {
+      final response = await _apiClient.req(
+        path: '$_path/categories',
+        method: HttpMethod.get,
+      );
+      return response.toApiResponses(NotificationCategory.fromJson);
+    } catch (e) {
+      throw Exception("알림 카테고리 조회에 실패했습니다: $e");
     }
   }
 

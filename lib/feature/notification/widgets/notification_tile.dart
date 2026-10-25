@@ -1,9 +1,14 @@
 part of '../notification_screen.dart';
 
 class _NotificationTile extends StatelessWidget {
-  const _NotificationTile({required this.notification, required this.onTap});
+  const _NotificationTile({
+    required this.notification,
+    required this.categoryName,
+    required this.onTap,
+  });
 
   final NotificationItemUiModel notification;
+  final String categoryName;
   final VoidCallback onTap;
 
   @override
@@ -18,20 +23,24 @@ class _NotificationTile extends StatelessWidget {
           spacing: 8,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Image.asset(
-              "assets/images/img_24_warning.png",
-              width: 24,
-              height: 24,
+            ClipOval(
+              child: CustomNetworkImage(
+                url: notification.image,
+                width: 24,
+                height: 24,
+                errorIconSize: 16,
+              ),
             ),
             Expanded(
               child: Column(
                 spacing: 4,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    notification.group.title,
-                    style: MyTypo.body2.copyWith(color: MyColor.grey500),
-                  ),
+                  if (categoryName.isNotEmpty)
+                    Text(
+                      categoryName,
+                      style: MyTypo.body2.copyWith(color: MyColor.grey500),
+                    ),
                   Text(
                     notification.title,
                     style: MyTypo.subTitle3.copyWith(color: MyColor.grey800),

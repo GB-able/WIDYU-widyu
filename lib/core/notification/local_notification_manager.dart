@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
@@ -52,6 +54,10 @@ class LocalNotificationManager {
           ),
         );
 
+    if (Firebase.apps.isNotEmpty) {
+      FirebaseMessaging.onMessage.listen(_onForegroundMessage);
+    }
+
     // 앱이 종료된 상태에서 알림 탭으로 실행된 경우에는 콜백이 오지 않으므로 여기서 확인한다.
     final launchDetails = await _plugin.getNotificationAppLaunchDetails();
     if (launchDetails?.didNotificationLaunchApp ?? false) {
@@ -62,6 +68,23 @@ class LocalNotificationManager {
         debugPrint('[LocalNotificationManager] 알림으로 앱 실행: $_initialPayload');
       }
     }
+  }
+
+  static const _silentTypes = {'EMERGENCY_CONFIRM_REQUEST'};
+
+  static void _onForegroundMessage(RemoteMessage message) {
+    if (kDebugMode) {
+      debugPrint('[LocalNotificationManager] 포그라운드 수신: ${message.messageId}');
+    }
+    final notification = message.notification;
+    if (notification == null) return;
+    if (_silentTypes.contains(message.data['type'])) return;
+    show(
+      title: notification.title ?? '',
+      body: notification.body ?? '',
+      id: message.messageId?.hashCode ?? _defaultNotificationId,
+      payload: message.data['deepLink'] as String?,
+    );
   }
 
   static void _onNotificationTapped(NotificationResponse response) {

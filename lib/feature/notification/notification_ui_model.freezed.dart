@@ -15,11 +15,13 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$NotificationItemUiModel {
   int get notificationId;
-  NotificationGroup get group;
+  String get image;
+  String get category;
   String get title;
   String get content;
   bool get isRead;
   DateTime get createdAt;
+  String get path;
 
   /// Create a copy of NotificationItemUiModel
   /// with the given fields replaced by the non-null parameter values.
@@ -36,21 +38,24 @@ mixin _$NotificationItemUiModel {
             other is NotificationItemUiModel &&
             (identical(other.notificationId, notificationId) ||
                 other.notificationId == notificationId) &&
-            (identical(other.group, group) || other.group == group) &&
+            (identical(other.image, image) || other.image == image) &&
+            (identical(other.category, category) ||
+                other.category == category) &&
             (identical(other.title, title) || other.title == title) &&
             (identical(other.content, content) || other.content == content) &&
             (identical(other.isRead, isRead) || other.isRead == isRead) &&
             (identical(other.createdAt, createdAt) ||
-                other.createdAt == createdAt));
+                other.createdAt == createdAt) &&
+            (identical(other.path, path) || other.path == path));
   }
 
   @override
-  int get hashCode => Object.hash(
-      runtimeType, notificationId, group, title, content, isRead, createdAt);
+  int get hashCode => Object.hash(runtimeType, notificationId, image, category,
+      title, content, isRead, createdAt, path);
 
   @override
   String toString() {
-    return 'NotificationItemUiModel(notificationId: $notificationId, group: $group, title: $title, content: $content, isRead: $isRead, createdAt: $createdAt)';
+    return 'NotificationItemUiModel(notificationId: $notificationId, image: $image, category: $category, title: $title, content: $content, isRead: $isRead, createdAt: $createdAt, path: $path)';
   }
 }
 
@@ -62,11 +67,13 @@ abstract mixin class $NotificationItemUiModelCopyWith<$Res> {
   @useResult
   $Res call(
       {int notificationId,
-      NotificationGroup group,
+      String image,
+      String category,
       String title,
       String content,
       bool isRead,
-      DateTime createdAt});
+      DateTime createdAt,
+      String path});
 }
 
 /// @nodoc
@@ -83,21 +90,27 @@ class _$NotificationItemUiModelCopyWithImpl<$Res>
   @override
   $Res call({
     Object? notificationId = null,
-    Object? group = null,
+    Object? image = null,
+    Object? category = null,
     Object? title = null,
     Object? content = null,
     Object? isRead = null,
     Object? createdAt = null,
+    Object? path = null,
   }) {
     return _then(_self.copyWith(
       notificationId: null == notificationId
           ? _self.notificationId
           : notificationId // ignore: cast_nullable_to_non_nullable
               as int,
-      group: null == group
-          ? _self.group
-          : group // ignore: cast_nullable_to_non_nullable
-              as NotificationGroup,
+      image: null == image
+          ? _self.image
+          : image // ignore: cast_nullable_to_non_nullable
+              as String,
+      category: null == category
+          ? _self.category
+          : category // ignore: cast_nullable_to_non_nullable
+              as String,
       title: null == title
           ? _self.title
           : title // ignore: cast_nullable_to_non_nullable
@@ -114,6 +127,10 @@ class _$NotificationItemUiModelCopyWithImpl<$Res>
           ? _self.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
               as DateTime,
+      path: null == path
+          ? _self.path
+          : path // ignore: cast_nullable_to_non_nullable
+              as String,
     ));
   }
 }
@@ -211,16 +228,30 @@ extension NotificationItemUiModelPatterns on NotificationItemUiModel {
 
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>(
-    TResult Function(int notificationId, NotificationGroup group, String title,
-            String content, bool isRead, DateTime createdAt)?
+    TResult Function(
+            int notificationId,
+            String image,
+            String category,
+            String title,
+            String content,
+            bool isRead,
+            DateTime createdAt,
+            String path)?
         $default, {
     required TResult orElse(),
   }) {
     final _that = this;
     switch (_that) {
       case _NotificationItemUiModel() when $default != null:
-        return $default(_that.notificationId, _that.group, _that.title,
-            _that.content, _that.isRead, _that.createdAt);
+        return $default(
+            _that.notificationId,
+            _that.image,
+            _that.category,
+            _that.title,
+            _that.content,
+            _that.isRead,
+            _that.createdAt,
+            _that.path);
       case _:
         return orElse();
     }
@@ -241,15 +272,29 @@ extension NotificationItemUiModelPatterns on NotificationItemUiModel {
 
   @optionalTypeArgs
   TResult when<TResult extends Object?>(
-    TResult Function(int notificationId, NotificationGroup group, String title,
-            String content, bool isRead, DateTime createdAt)
+    TResult Function(
+            int notificationId,
+            String image,
+            String category,
+            String title,
+            String content,
+            bool isRead,
+            DateTime createdAt,
+            String path)
         $default,
   ) {
     final _that = this;
     switch (_that) {
       case _NotificationItemUiModel():
-        return $default(_that.notificationId, _that.group, _that.title,
-            _that.content, _that.isRead, _that.createdAt);
+        return $default(
+            _that.notificationId,
+            _that.image,
+            _that.category,
+            _that.title,
+            _that.content,
+            _that.isRead,
+            _that.createdAt,
+            _that.path);
       case _:
         throw StateError('Unexpected subclass');
     }
@@ -269,15 +314,29 @@ extension NotificationItemUiModelPatterns on NotificationItemUiModel {
 
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>(
-    TResult? Function(int notificationId, NotificationGroup group, String title,
-            String content, bool isRead, DateTime createdAt)?
+    TResult? Function(
+            int notificationId,
+            String image,
+            String category,
+            String title,
+            String content,
+            bool isRead,
+            DateTime createdAt,
+            String path)?
         $default,
   ) {
     final _that = this;
     switch (_that) {
       case _NotificationItemUiModel() when $default != null:
-        return $default(_that.notificationId, _that.group, _that.title,
-            _that.content, _that.isRead, _that.createdAt);
+        return $default(
+            _that.notificationId,
+            _that.image,
+            _that.category,
+            _that.title,
+            _that.content,
+            _that.isRead,
+            _that.createdAt,
+            _that.path);
       case _:
         return null;
     }
@@ -289,16 +348,20 @@ extension NotificationItemUiModelPatterns on NotificationItemUiModel {
 class _NotificationItemUiModel implements NotificationItemUiModel {
   const _NotificationItemUiModel(
       {required this.notificationId,
-      required this.group,
+      required this.image,
+      required this.category,
       required this.title,
       required this.content,
       required this.isRead,
-      required this.createdAt});
+      required this.createdAt,
+      required this.path});
 
   @override
   final int notificationId;
   @override
-  final NotificationGroup group;
+  final String image;
+  @override
+  final String category;
   @override
   final String title;
   @override
@@ -307,6 +370,8 @@ class _NotificationItemUiModel implements NotificationItemUiModel {
   final bool isRead;
   @override
   final DateTime createdAt;
+  @override
+  final String path;
 
   /// Create a copy of NotificationItemUiModel
   /// with the given fields replaced by the non-null parameter values.
@@ -324,21 +389,24 @@ class _NotificationItemUiModel implements NotificationItemUiModel {
             other is _NotificationItemUiModel &&
             (identical(other.notificationId, notificationId) ||
                 other.notificationId == notificationId) &&
-            (identical(other.group, group) || other.group == group) &&
+            (identical(other.image, image) || other.image == image) &&
+            (identical(other.category, category) ||
+                other.category == category) &&
             (identical(other.title, title) || other.title == title) &&
             (identical(other.content, content) || other.content == content) &&
             (identical(other.isRead, isRead) || other.isRead == isRead) &&
             (identical(other.createdAt, createdAt) ||
-                other.createdAt == createdAt));
+                other.createdAt == createdAt) &&
+            (identical(other.path, path) || other.path == path));
   }
 
   @override
-  int get hashCode => Object.hash(
-      runtimeType, notificationId, group, title, content, isRead, createdAt);
+  int get hashCode => Object.hash(runtimeType, notificationId, image, category,
+      title, content, isRead, createdAt, path);
 
   @override
   String toString() {
-    return 'NotificationItemUiModel(notificationId: $notificationId, group: $group, title: $title, content: $content, isRead: $isRead, createdAt: $createdAt)';
+    return 'NotificationItemUiModel(notificationId: $notificationId, image: $image, category: $category, title: $title, content: $content, isRead: $isRead, createdAt: $createdAt, path: $path)';
   }
 }
 
@@ -352,11 +420,13 @@ abstract mixin class _$NotificationItemUiModelCopyWith<$Res>
   @useResult
   $Res call(
       {int notificationId,
-      NotificationGroup group,
+      String image,
+      String category,
       String title,
       String content,
       bool isRead,
-      DateTime createdAt});
+      DateTime createdAt,
+      String path});
 }
 
 /// @nodoc
@@ -373,21 +443,27 @@ class __$NotificationItemUiModelCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   $Res call({
     Object? notificationId = null,
-    Object? group = null,
+    Object? image = null,
+    Object? category = null,
     Object? title = null,
     Object? content = null,
     Object? isRead = null,
     Object? createdAt = null,
+    Object? path = null,
   }) {
     return _then(_NotificationItemUiModel(
       notificationId: null == notificationId
           ? _self.notificationId
           : notificationId // ignore: cast_nullable_to_non_nullable
               as int,
-      group: null == group
-          ? _self.group
-          : group // ignore: cast_nullable_to_non_nullable
-              as NotificationGroup,
+      image: null == image
+          ? _self.image
+          : image // ignore: cast_nullable_to_non_nullable
+              as String,
+      category: null == category
+          ? _self.category
+          : category // ignore: cast_nullable_to_non_nullable
+              as String,
       title: null == title
           ? _self.title
           : title // ignore: cast_nullable_to_non_nullable
@@ -404,6 +480,10 @@ class __$NotificationItemUiModelCopyWithImpl<$Res>
           ? _self.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
               as DateTime,
+      path: null == path
+          ? _self.path
+          : path // ignore: cast_nullable_to_non_nullable
+              as String,
     ));
   }
 }

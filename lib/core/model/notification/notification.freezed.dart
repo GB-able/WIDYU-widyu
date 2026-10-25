@@ -16,11 +16,12 @@ T _$identity<T>(T value) => value;
 mixin _$Notification {
   int get notificationId;
   String get image;
-  NotificationCategory get category;
+  String get category;
   String get title;
   String get content;
   String get createdAt;
-  String get scheme;
+  bool get isRead;
+  String get path;
 
   /// Create a copy of Notification
   /// with the given fields replaced by the non-null parameter values.
@@ -47,17 +48,18 @@ mixin _$Notification {
             (identical(other.content, content) || other.content == content) &&
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt) &&
-            (identical(other.scheme, scheme) || other.scheme == scheme));
+            (identical(other.isRead, isRead) || other.isRead == isRead) &&
+            (identical(other.path, path) || other.path == path));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(runtimeType, notificationId, image, category,
-      title, content, createdAt, scheme);
+      title, content, createdAt, isRead, path);
 
   @override
   String toString() {
-    return 'Notification(notificationId: $notificationId, image: $image, category: $category, title: $title, content: $content, createdAt: $createdAt, scheme: $scheme)';
+    return 'Notification(notificationId: $notificationId, image: $image, category: $category, title: $title, content: $content, createdAt: $createdAt, isRead: $isRead, path: $path)';
   }
 }
 
@@ -70,11 +72,12 @@ abstract mixin class $NotificationCopyWith<$Res> {
   $Res call(
       {int notificationId,
       String image,
-      NotificationCategory category,
+      String category,
       String title,
       String content,
       String createdAt,
-      String scheme});
+      bool isRead,
+      String path});
 }
 
 /// @nodoc
@@ -95,7 +98,8 @@ class _$NotificationCopyWithImpl<$Res> implements $NotificationCopyWith<$Res> {
     Object? title = null,
     Object? content = null,
     Object? createdAt = null,
-    Object? scheme = null,
+    Object? isRead = null,
+    Object? path = null,
   }) {
     return _then(_self.copyWith(
       notificationId: null == notificationId
@@ -109,7 +113,7 @@ class _$NotificationCopyWithImpl<$Res> implements $NotificationCopyWith<$Res> {
       category: null == category
           ? _self.category
           : category // ignore: cast_nullable_to_non_nullable
-              as NotificationCategory,
+              as String,
       title: null == title
           ? _self.title
           : title // ignore: cast_nullable_to_non_nullable
@@ -122,9 +126,13 @@ class _$NotificationCopyWithImpl<$Res> implements $NotificationCopyWith<$Res> {
           ? _self.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
               as String,
-      scheme: null == scheme
-          ? _self.scheme
-          : scheme // ignore: cast_nullable_to_non_nullable
+      isRead: null == isRead
+          ? _self.isRead
+          : isRead // ignore: cast_nullable_to_non_nullable
+              as bool,
+      path: null == path
+          ? _self.path
+          : path // ignore: cast_nullable_to_non_nullable
               as String,
     ));
   }
@@ -226,19 +234,27 @@ extension NotificationPatterns on Notification {
     TResult Function(
             int notificationId,
             String image,
-            NotificationCategory category,
+            String category,
             String title,
             String content,
             String createdAt,
-            String scheme)?
+            bool isRead,
+            String path)?
         $default, {
     required TResult orElse(),
   }) {
     final _that = this;
     switch (_that) {
       case _Notification() when $default != null:
-        return $default(_that.notificationId, _that.image, _that.category,
-            _that.title, _that.content, _that.createdAt, _that.scheme);
+        return $default(
+            _that.notificationId,
+            _that.image,
+            _that.category,
+            _that.title,
+            _that.content,
+            _that.createdAt,
+            _that.isRead,
+            _that.path);
       case _:
         return orElse();
     }
@@ -262,18 +278,26 @@ extension NotificationPatterns on Notification {
     TResult Function(
             int notificationId,
             String image,
-            NotificationCategory category,
+            String category,
             String title,
             String content,
             String createdAt,
-            String scheme)
+            bool isRead,
+            String path)
         $default,
   ) {
     final _that = this;
     switch (_that) {
       case _Notification():
-        return $default(_that.notificationId, _that.image, _that.category,
-            _that.title, _that.content, _that.createdAt, _that.scheme);
+        return $default(
+            _that.notificationId,
+            _that.image,
+            _that.category,
+            _that.title,
+            _that.content,
+            _that.createdAt,
+            _that.isRead,
+            _that.path);
       case _:
         throw StateError('Unexpected subclass');
     }
@@ -296,18 +320,26 @@ extension NotificationPatterns on Notification {
     TResult? Function(
             int notificationId,
             String image,
-            NotificationCategory category,
+            String category,
             String title,
             String content,
             String createdAt,
-            String scheme)?
+            bool isRead,
+            String path)?
         $default,
   ) {
     final _that = this;
     switch (_that) {
       case _Notification() when $default != null:
-        return $default(_that.notificationId, _that.image, _that.category,
-            _that.title, _that.content, _that.createdAt, _that.scheme);
+        return $default(
+            _that.notificationId,
+            _that.image,
+            _that.category,
+            _that.title,
+            _that.content,
+            _that.createdAt,
+            _that.isRead,
+            _that.path);
       case _:
         return null;
     }
@@ -319,29 +351,36 @@ extension NotificationPatterns on Notification {
 class _Notification implements Notification {
   const _Notification(
       {required this.notificationId,
-      required this.image,
+      this.image = '',
       required this.category,
       required this.title,
-      required this.content,
+      this.content = '',
       required this.createdAt,
-      required this.scheme});
+      this.isRead = false,
+      this.path = ''});
   factory _Notification.fromJson(Map<String, dynamic> json) =>
       _$NotificationFromJson(json);
 
   @override
   final int notificationId;
   @override
+  @JsonKey()
   final String image;
   @override
-  final NotificationCategory category;
+  final String category;
   @override
   final String title;
   @override
+  @JsonKey()
   final String content;
   @override
   final String createdAt;
   @override
-  final String scheme;
+  @JsonKey()
+  final bool isRead;
+  @override
+  @JsonKey()
+  final String path;
 
   /// Create a copy of Notification
   /// with the given fields replaced by the non-null parameter values.
@@ -372,17 +411,18 @@ class _Notification implements Notification {
             (identical(other.content, content) || other.content == content) &&
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt) &&
-            (identical(other.scheme, scheme) || other.scheme == scheme));
+            (identical(other.isRead, isRead) || other.isRead == isRead) &&
+            (identical(other.path, path) || other.path == path));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(runtimeType, notificationId, image, category,
-      title, content, createdAt, scheme);
+      title, content, createdAt, isRead, path);
 
   @override
   String toString() {
-    return 'Notification(notificationId: $notificationId, image: $image, category: $category, title: $title, content: $content, createdAt: $createdAt, scheme: $scheme)';
+    return 'Notification(notificationId: $notificationId, image: $image, category: $category, title: $title, content: $content, createdAt: $createdAt, isRead: $isRead, path: $path)';
   }
 }
 
@@ -397,11 +437,12 @@ abstract mixin class _$NotificationCopyWith<$Res>
   $Res call(
       {int notificationId,
       String image,
-      NotificationCategory category,
+      String category,
       String title,
       String content,
       String createdAt,
-      String scheme});
+      bool isRead,
+      String path});
 }
 
 /// @nodoc
@@ -423,7 +464,8 @@ class __$NotificationCopyWithImpl<$Res>
     Object? title = null,
     Object? content = null,
     Object? createdAt = null,
-    Object? scheme = null,
+    Object? isRead = null,
+    Object? path = null,
   }) {
     return _then(_Notification(
       notificationId: null == notificationId
@@ -437,7 +479,7 @@ class __$NotificationCopyWithImpl<$Res>
       category: null == category
           ? _self.category
           : category // ignore: cast_nullable_to_non_nullable
-              as NotificationCategory,
+              as String,
       title: null == title
           ? _self.title
           : title // ignore: cast_nullable_to_non_nullable
@@ -450,9 +492,13 @@ class __$NotificationCopyWithImpl<$Res>
           ? _self.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
               as String,
-      scheme: null == scheme
-          ? _self.scheme
-          : scheme // ignore: cast_nullable_to_non_nullable
+      isRead: null == isRead
+          ? _self.isRead
+          : isRead // ignore: cast_nullable_to_non_nullable
+              as bool,
+      path: null == path
+          ? _self.path
+          : path // ignore: cast_nullable_to_non_nullable
               as String,
     ));
   }

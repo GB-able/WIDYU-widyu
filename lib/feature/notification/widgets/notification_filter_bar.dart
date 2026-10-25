@@ -5,23 +5,23 @@ class _NotificationFilterBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final viewModel = context.watch<NotificationViewModel>();
+    final uiState = context.watch<NotificationViewModel>().uiState;
 
     return SizedBox(
       height: 52,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        itemCount: NotificationFilter.values.length,
+        itemCount: uiState.categories.length,
         separatorBuilder: (context, index) => const SizedBox(width: 8),
         itemBuilder: (context, index) {
-          final filter = NotificationFilter.values[index];
+          final category = uiState.categories[index];
 
           return _NotificationFilterChip(
-            filter: filter,
-            count: viewModel.uiState.countOf(filter),
-            isSelected: viewModel.uiState.filter == filter,
-            onTap: () => context.read<NotificationViewModel>().select(filter),
+            category: category,
+            isSelected: uiState.category == category.label,
+            onTap: () =>
+                context.read<NotificationViewModel>().select(category.label),
           );
         },
       ),
@@ -31,14 +31,12 @@ class _NotificationFilterBar extends StatelessWidget {
 
 class _NotificationFilterChip extends StatelessWidget {
   const _NotificationFilterChip({
-    required this.filter,
-    required this.count,
+    required this.category,
     required this.isSelected,
     required this.onTap,
   });
 
-  final NotificationFilter filter;
-  final int count;
+  final NotificationCategory category;
   final bool isSelected;
   final VoidCallback onTap;
 
@@ -60,14 +58,14 @@ class _NotificationFilterChip extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              filter.label,
+              category.name,
               style: MyTypo.subTitle2.copyWith(
                 color: isSelected ? MyColor.grey50 : MyColor.grey500,
               ),
             ),
-            if (count > 0)
+            if (category.count > 0)
               Text(
-                count > 99 ? "99+" : "$count",
+                category.count > 99 ? "99+" : "${category.count}",
                 style: MyTypo.subTitle2.copyWith(
                   color: isSelected ? MyColor.orange400 : MyColor.primary,
                 ),

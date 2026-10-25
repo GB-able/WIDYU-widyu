@@ -96,6 +96,14 @@ mixin InfiniteScrollMixin<T> on ChangeNotifier {
     return isEmpty ? init() : loadMore();
   }
 
+  void replaceWhere(bool Function(T) test, T Function(T) replace) {
+    if (!_items.any(test)) return;
+    for (var i = 0; i < _items.length; i++) {
+      if (test(_items[i])) _items[i] = replace(_items[i]);
+    }
+    notifyListeners();
+  }
+
   void removeWhere(bool Function(T) test) {
     if (!_items.any(test)) return;
     _items.removeWhere(test);

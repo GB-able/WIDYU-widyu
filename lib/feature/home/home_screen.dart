@@ -23,6 +23,7 @@ import 'package:widyu/core/model/home/medication_status.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
 import 'package:widyu/core/ui/widgets/bot_nav.dart';
+import 'package:widyu/core/ui/widgets/custom_network_image.dart';
 import 'package:widyu/core/ui/widgets/icon_widget.dart';
 import 'package:widyu/core/ui/widgets/medication_reward_dialog.dart';
 import 'package:widyu/core/ui/widgets/ui_event_listener.dart';
