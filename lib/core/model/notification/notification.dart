@@ -8,7 +8,7 @@ part 'notification.g.dart';
 abstract class Notification with _$Notification {
   const factory Notification({
     required int notificationId,
-    required String image,
+    required String? image,
     required NotificationCategory category,
     required String title,
     required String content,

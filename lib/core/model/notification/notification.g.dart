@@ -9,7 +9,7 @@ part of 'notification.dart';
 _Notification _$NotificationFromJson(Map<String, dynamic> json) =>
     _Notification(
       notificationId: (json['notificationId'] as num).toInt(),
-      image: json['image'] as String,
+      image: json['image'] as String?,
       category: $enumDecode(_$NotificationCategoryEnumMap, json['category']),
       title: json['title'] as String,
       content: json['content'] as String,
