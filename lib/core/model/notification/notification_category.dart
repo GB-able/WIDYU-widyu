@@ -15,6 +15,8 @@ enum NotificationCategory {
   heartMessage,
   @JsonValue('SAFE_ZONE')
   safeZone,
+  @JsonValue('LOCATION_NOTICE')
+  locationNotice,
   @JsonValue('ETC')
   etc,
 }

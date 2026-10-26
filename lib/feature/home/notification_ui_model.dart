@@ -39,6 +39,7 @@ extension NotificationCategoryMapper on NotificationCategory {
       // 아이콘 추가 필요
       NotificationCategory.heartMessage => '',
       NotificationCategory.safeZone => 'img_24_location.png',
+      NotificationCategory.locationNotice => 'img_24_location.png',
       // 아이콘 추가 필요
       NotificationCategory.etc => '',
     };
