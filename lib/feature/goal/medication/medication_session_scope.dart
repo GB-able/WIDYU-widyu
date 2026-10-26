@@ -9,7 +9,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:widyu/app/routes/app_route.dart';
 import 'package:widyu/core/notification/medication_push_manager.dart';
-import 'package:widyu/core/data/provider/medication_alarm_provider.dart';
+import 'package:widyu/core/data/repository/goal/medication_repository.dart';
 import 'package:widyu/core/model/goal/medication/medication_point_result.dart';
 import 'package:widyu/core/ui/widgets/medication_reward_dialog.dart';
 import 'package:widyu/feature/goal/medication/medication_ringing_screen.dart';
@@ -23,8 +23,9 @@ class MedicationSessionScope extends StatefulWidget {
 
 class _MedicationSessionScopeState extends State<MedicationSessionScope>
     with WidgetsBindingObserver {
-  late final MedicationAlarmProvider service =
-      context.read<MedicationAlarmProvider>();
+  late final MedicationRepository repository =
+      context.read<MedicationRepository>();
+  Object? alarmMember;
   final subscriptions = <StreamSubscription<dynamic>>[];
   Timer? alarmTimer;
   Map<String, dynamic>? activeGroup;
@@ -37,9 +38,9 @@ class _MedicationSessionScopeState extends State<MedicationSessionScope>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    subscriptions.add(service.changes.listen((_) async {
+    subscriptions.add(repository.alarmChanges.listen((_) async {
       try {
-        await service.refreshState();
+        await refreshAlarmMember();
         unawaited(drainLaunch());
         unawaited(refreshActiveAlarm());
       } catch (_) {}
@@ -52,29 +53,43 @@ class _MedicationSessionScopeState extends State<MedicationSessionScope>
       // Drain persisted intents before a server refresh can replace old groups.
       final member = await authenticatedMedicationMember();
       if (member == null || !mounted) return;
-      await service.activate(member);
+      await repository.activateAlarm(member);
       ready = true;
-      await service.refreshState();
+      await requestAlarmPermissionIfNeeded();
+      await refreshAlarmMember();
       unawaited(drainLaunch());
       startAlarmTimer();
       unawaited(refreshActiveAlarm());
-      unawaited(service.sync());
+      unawaited(repository.syncAlarmSchedule());
       if (Firebase.apps.isNotEmpty) {
         subscriptions.add(FirebaseMessaging.onMessage.listen(onMessage));
         subscriptions
             .add(FirebaseMessaging.onMessageOpenedApp.listen(onMessage));
         subscriptions.add(FirebaseMessaging.instance.onTokenRefresh
-            .listen((_) => service.sync()));
+            .listen((_) => repository.syncAlarmSchedule()));
         final initial = await FirebaseMessaging.instance.getInitialMessage();
         if (initial != null) onMessage(initial);
       }
     } catch (_) {/* Status card retains retry access. */}
   }
 
+  Future<void> requestAlarmPermissionIfNeeded() async {
+    if (!Platform.isIOS) return;
+    try {
+      final caps = await repository.alarmCapabilities();
+      if (caps['mode'] != 'alarmKit' || caps['authorized'] == true) return;
+      await repository.requestAlarmPermission();
+    } catch (_) {}
+  }
+
+  Future<void> refreshAlarmMember() async {
+    alarmMember = (await repository.alarmState())['memberId'];
+  }
+
   void onMessage(RemoteMessage message) {
     if (!isMedicationChange(message)) return;
     debugPrint('[MedicationSync] 포그라운드 푸시 수신: ${message.data}');
-    unawaited(service.sync());
+    unawaited(repository.syncAlarmSchedule());
   }
 
   void startAlarmTimer() {
@@ -94,14 +109,14 @@ class _MedicationSessionScopeState extends State<MedicationSessionScope>
     }
     readingAlarm = true;
     try {
-      final group = await service.activeGroup();
+      final group = await repository.activeAlarmGroup();
       if (!mounted ||
           alarmActionBusy ||
           WidgetsBinding.instance.lifecycleState != AppLifecycleState.resumed) {
         return;
       }
       final valid = group['groupId'] is String &&
-          group['memberId'] == service.state['memberId'];
+          group['memberId'] == alarmMember;
       final next = valid ? group : null;
       if (next?['groupId'] != activeGroup?['groupId']) {
         setState(() => activeGroup = next);
@@ -118,7 +133,7 @@ class _MedicationSessionScopeState extends State<MedicationSessionScope>
     if (group == null || alarmActionBusy) return;
     setState(() => alarmActionBusy = true);
     try {
-      await service.stop(group['groupId'] as String);
+      await repository.stopAlarm(group['groupId'] as String);
       if (!mounted) return;
       setState(() {
         activeGroup = null;
@@ -142,7 +157,7 @@ class _MedicationSessionScopeState extends State<MedicationSessionScope>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
       startAlarmTimer();
-      unawaited(service.sync());
+      unawaited(repository.syncAlarmSchedule());
       unawaited(drainLaunch());
       unawaited(refreshActiveAlarm());
     } else {
@@ -160,17 +175,17 @@ class _MedicationSessionScopeState extends State<MedicationSessionScope>
     }
     routing = true;
     try {
-      final launch = await service.pendingLaunch();
+      final launch = await repository.pendingAlarmLaunch();
       if (!mounted || launch.isEmpty) return;
       if (launch['memberId'] != await authenticatedMedicationMember()) return;
       final eventId = launch['eventId'] as String;
       final group = Map<String, dynamic>.from(launch['group'] as Map);
-      unawaited(service.stop(group['groupId'] as String));
+      unawaited(repository.stopAlarm(group['groupId'] as String));
       if (!mounted) return;
       final result = await context.push<MedicationPointResult>(
           AppRoute.medicationCamera.path,
           extra: launch['group']);
-      await service.acknowledgeLaunch(eventId);
+      await repository.acknowledgeAlarmLaunch(eventId);
       if (result != null && mounted) showReward(result);
     } finally {
       routing = false;

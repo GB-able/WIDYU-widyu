@@ -14,7 +14,7 @@ class _GoalContent extends StatelessWidget {
   final VoidCallback findRoute;
 
   int _stepsOf(BuildContext context) =>
-      context.select<StepProvider, int>((provider) => provider.steps);
+      context.select<WalkProvider, int>((provider) => provider.steps);
 
   @override
   Widget build(BuildContext context) {

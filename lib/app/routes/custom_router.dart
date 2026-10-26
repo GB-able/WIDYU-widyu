@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:photo_manager/photo_manager.dart';
+import 'package:provider/provider.dart';
 import 'package:widyu/app/routes/app_route.dart';
 import 'package:widyu/app/routes/custom_page.dart';
 import 'package:widyu/app/routes/safety_check_listener.dart';
 import 'package:widyu/app/routes/extra/edit_post_extra.dart';
-import 'package:widyu/app/routes/extra/photo_preview_extra.dart';
-import 'package:widyu/app/routes/tab_reloader.dart';
 import 'package:widyu/app/routes/user_session_scope.dart';
 import 'package:widyu/core/network/token_manager.dart';
 import 'package:widyu/core/ui/widgets/bot_nav.dart';
@@ -15,6 +14,7 @@ import 'package:widyu/feature/album/manage_post/manage_post_screen.dart';
 import 'package:widyu/feature/album/post/post_screen.dart';
 import 'package:widyu/feature/album/preview/photo_preview_screen.dart';
 import 'package:widyu/feature/album/select_photo/select_photo_screen.dart';
+import 'package:widyu/feature/album/select_photo/select_photo_view_model.dart';
 import 'package:widyu/feature/auth/login_screen.dart';
 import 'package:widyu/feature/auth/onboarding_screen.dart';
 import 'package:widyu/feature/contact/contact_screen.dart';
@@ -116,8 +116,7 @@ class CustomRouter {
                 routes: [
                   CustomGoRoute.staticRoute(
                     route: AppRoute.home,
-                    builder: (context, state) =>
-                        TabReloader.wrap(index: 0, child: const HomeScreen()),
+                    builder: (context, state) => const HomeScreen(),
                   ),
                 ],
               ),
@@ -125,8 +124,7 @@ class CustomRouter {
                 routes: [
                   CustomGoRoute.staticRoute(
                     route: AppRoute.goal,
-                    builder: (context, state) =>
-                        TabReloader.wrap(index: 1, child: const GoalScreen()),
+                    builder: (context, state) => const GoalScreen(),
                   ),
                 ],
               ),
@@ -134,8 +132,7 @@ class CustomRouter {
                 routes: [
                   CustomGoRoute.staticRoute(
                     route: AppRoute.album,
-                    builder: (context, state) =>
-                        TabReloader.wrap(index: 2, child: const AlbumScreen()),
+                    builder: (context, state) => const AlbumScreen(),
                   ),
                 ],
               ),
@@ -143,8 +140,7 @@ class CustomRouter {
                 routes: [
                   CustomGoRoute.staticRoute(
                     route: AppRoute.my,
-                    builder: (context, state) =>
-                        TabReloader.wrap(index: 3, child: const MyPageScreen()),
+                    builder: (context, state) => const MyPageScreen(),
                   ),
                 ],
               ),
@@ -186,14 +182,22 @@ class CustomRouter {
             builder: (_, state) => PostScreen(
                 albumId: int.parse(state.pathParameters['albumId']!)),
           ),
-          CustomGoRoute.closeRoute(
-            route: AppRoute.selectPhoto,
-            builder: (_, __) => const SelectPhotoScreen(),
-          ),
-          CustomGoRoute.slideRoute(
-            route: AppRoute.photoPreview,
-            builder: (_, state) =>
-                PhotoPreviewScreen(extra: state.extra as PhotoPreviewExtra),
+          CustomGoRoute.closeShellRoute(
+            builder: (_, __, child) => ChangeNotifierProvider(
+              create: (_) => SelectPhotoViewModel()..init(),
+              child: child,
+            ),
+            routes: [
+              CustomGoRoute.staticRoute(
+                route: AppRoute.selectPhoto,
+                builder: (_, __) => const SelectPhotoScreen(),
+              ),
+              CustomGoRoute.slideRoute(
+                route: AppRoute.photoPreview,
+                builder: (_, state) =>
+                    PhotoPreviewScreen(initialIndex: state.extra as int),
+              ),
+            ],
           ),
           CustomGoRoute.slideRoute(
             route: AppRoute.managePost,

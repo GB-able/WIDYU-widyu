@@ -3,8 +3,9 @@ import 'dart:async';
 import 'package:flutter/widgets.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:widyu/core/data/provider/point_provider.dart';
-import 'package:widyu/core/data/provider/step_provider.dart';
+import 'package:widyu/core/data/provider/walk_provider.dart';
 import 'package:widyu/core/data/repository/goal/goal_repository.dart';
+import 'package:widyu/core/data/repository/goal/medication_repository.dart';
 import 'package:widyu/core/data/repository/location/location_repository.dart';
 import 'package:widyu/core/model/api/api_result.dart';
 import 'package:widyu/core/model/goal/goal_home_response.dart';
@@ -19,9 +20,12 @@ import 'package:widyu/feature/goal/main/goal_ui_state.dart';
 class GoalViewModel with ChangeNotifier {
   final GoalRepository _repository;
   final PointProvider _pointProvider;
-  final StepProvider _stepProvider;
+  final WalkProvider _stepProvider;
   final LocationRepository _locationRepository;
   Timer? _countdownTimer;
+  Timer? _dayTimer;
+  String? _loadedDay;
+  late final StreamSubscription<void> _medicationChanges;
 
   GoalUiState _uiState = const GoalUiState();
   GoalUiState get uiState => _uiState;
@@ -32,14 +36,22 @@ class GoalViewModel with ChangeNotifier {
   GoalViewModel({
     required GoalRepository repository,
     required PointProvider pointProvider,
-    required StepProvider stepProvider,
+    required WalkProvider stepProvider,
     required LocationRepository locationRepository,
+    required MedicationRepository medicationRepository,
   })  : _repository = repository,
         _pointProvider = pointProvider,
         _stepProvider = stepProvider,
         _locationRepository = locationRepository {
     unawaited(_stepProvider.start());
     unawaited(refresh());
+    _medicationChanges = medicationRepository.medicationChanges
+        .listen((_) => unawaited(refresh(showLoading: false)));
+    _dayTimer = Timer.periodic(const Duration(seconds: 30), (_) {
+      if (_loadedDay != _stepProvider.today) {
+        unawaited(refresh(showLoading: false));
+      }
+    });
   }
 
   @override
@@ -53,6 +65,7 @@ class GoalViewModel with ChangeNotifier {
 
   Future<void> refresh({bool showLoading = true}) async {
     final requestedDay = _stepProvider.today;
+    _loadedDay = requestedDay;
     if (showLoading) {
       _countdownTimer?.cancel();
       _uiState = _uiState.copyWith(
@@ -168,7 +181,6 @@ class GoalViewModel with ChangeNotifier {
 
   void onMedicationVerified(MedicationPointResult result) {
     _emit(VerifyMedicationSuccess(result.earnedPoints, result.currentPoints));
-    unawaited(refresh(showLoading: false));
   }
 
   Future<void> findRoute() async {
@@ -211,6 +223,8 @@ class GoalViewModel with ChangeNotifier {
   @override
   void dispose() {
     _countdownTimer?.cancel();
+    _dayTimer?.cancel();
+    _medicationChanges.cancel();
     _uiEvent.close();
     super.dispose();
   }

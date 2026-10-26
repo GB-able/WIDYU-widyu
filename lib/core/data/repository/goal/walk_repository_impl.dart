@@ -6,7 +6,6 @@ import 'package:widyu/core/data/repository/goal/walk_repository.dart';
 import 'package:widyu/core/data/source/goal/walk_local_data_source.dart';
 import 'package:widyu/core/data/source/goal/walk_remote_data_source.dart';
 import 'package:widyu/core/model/goal/walk/walk_sync_result.dart';
-import 'package:widyu/core/storage/step_database.dart';
 import 'package:widyu/core/network/token_manager.dart';
 import 'package:widyu/core/utils/extensions/walk_extension.dart';
 
@@ -22,7 +21,6 @@ class WalkRepositoryImpl implements WalkRepository {
   final WalkRemoteDataSource _remoteDataSource;
   final DateTime Function() now;
   final TokenManager _tokenManager = TokenManager();
-  WalkDatabase get db => WalkDatabase.instance;
 
   @override
   Future<bool> ensurePermission() => _localDataSource.ensurePermission();
@@ -40,19 +38,19 @@ class WalkRepositoryImpl implements WalkRepository {
     final elapsed = Stopwatch()..start();
     final readHealth =
         !background || await _localDataSource.canReadInBackground();
-    final owner = await db.acquire('steps');
+    final owner = await _localDataSource.acquireLock('steps');
     if (owner == null) return const WalkSaveResult();
     Future<bool> active() async =>
         isCancelled?.call() != true &&
         elapsed.elapsed < budget &&
-        await db.owns('steps', owner) &&
+        await _localDataSource.ownsLock('steps', owner) &&
         await _tokenManager.memberId == memberId;
     try {
       if (!await active()) return const WalkSaveResult();
-      final state = await db.read(memberId);
+      final state = await _localDataSource.readState(memberId);
       Future<void> save() async {
         if (await active()) {
-          await db.save(memberId, state);
+          await _localDataSource.saveState(memberId, state);
         }
       }
 
@@ -75,7 +73,7 @@ class WalkRepositoryImpl implements WalkRepository {
       );
       if (await _tokenManager.memberId != memberId ||
           isCancelled?.call() == true ||
-          !await db.owns('steps', owner)) {
+          !await _localDataSource.ownsLock('steps', owner)) {
         return const WalkSaveResult();
       }
       final resultDate = now().walkDate;
@@ -87,7 +85,7 @@ class WalkRepositoryImpl implements WalkRepository {
         unauthorized: summary.unauthorized,
       );
     } finally {
-      await db.release('steps', owner);
+      await _localDataSource.releaseLock('steps', owner);
     }
   }
 

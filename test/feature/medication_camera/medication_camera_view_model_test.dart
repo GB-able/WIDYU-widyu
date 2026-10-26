@@ -3,25 +3,23 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:medication_alarm/medication_alarm.dart';
-import 'package:widyu/core/data/provider/medication_alarm_provider.dart';
+import 'package:widyu/core/data/repository/goal/medication_repository.dart';
 import 'package:widyu/core/data/provider/point_provider.dart';
 import 'package:widyu/core/model/goal/medication/medication_point_result.dart';
 import 'package:widyu/feature/medication_camera/medication_camera_ui_event.dart';
 import 'package:widyu/feature/medication_camera/medication_camera_view_model.dart';
 
-class _Alarm extends Fake implements MedicationAlarmProvider {
-  @override
-  Map<String, dynamic> state = {'memberId': '1'};
+class _Alarm extends Fake implements MedicationRepository {
 
   final verified = <int>[];
   Future<MedicationPointResult> Function(MedicationOccurrence) onVerify =
       (_) async => const MedicationPointResult(earnedPoints: 10);
 
   @override
-  Future<void> refreshState() async {}
+  Future<Map<String, dynamic>> alarmState() async => {'memberId': '1'};
 
   @override
-  Future<MedicationPointResult> verify(
+  Future<MedicationPointResult> verifyMedication(
       MedicationOccurrence occurrence, File photo) {
     verified.add(occurrence.scheduleId);
     return onVerify(occurrence);
@@ -40,7 +38,7 @@ void main() {
       setUp({List<int> scheduleIds = const [7]}) async {
     final alarm = _Alarm();
     final vm = MedicationCameraViewModel(
-      medicationAlarmProvider: alarm,
+      medicationRepository: alarm,
       pointProvider: _Point(),
       group: {
         'memberId': '1',

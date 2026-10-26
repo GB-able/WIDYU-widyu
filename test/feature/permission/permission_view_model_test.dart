@@ -38,7 +38,7 @@ void main() {
   ) async =>
       PermissionRecoveryAction.cancel;
 
-  test('전체 권한 목록은 유지하고 최초 요청은 알림, 다른 앱 위에 표시, 위치 순서로 한정한다', () async {
+  test('전체 권한 목록은 유지하고 최초 요청은 알림, 알람, 다른 앱 위에 표시, 위치 순서로 한정한다', () async {
     final requested = <PermissionType>[];
     final statuses = <PermissionType>[];
     final viewModel = PermissionViewModel(
@@ -67,6 +67,7 @@ void main() {
     );
     const initial = [
       PermissionType.notification,
+      PermissionType.alarm,
       PermissionType.overlay,
       PermissionType.location,
     ];

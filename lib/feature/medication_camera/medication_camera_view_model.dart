@@ -3,14 +3,14 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:medication_alarm/medication_alarm.dart';
-import 'package:widyu/core/data/provider/medication_alarm_provider.dart';
+import 'package:widyu/core/data/repository/goal/medication_repository.dart';
 import 'package:widyu/core/data/provider/point_provider.dart';
 import 'package:widyu/core/model/goal/medication/medication_point_result.dart';
 import 'package:widyu/feature/medication_camera/medication_camera_ui_event.dart';
 import 'package:widyu/feature/medication_camera/medication_camera_ui_state.dart';
 
 class MedicationCameraViewModel extends ChangeNotifier {
-  final MedicationAlarmProvider _medicationAlarmProvider;
+  final MedicationRepository _medicationRepository;
   final PointProvider _pointProvider;
   final Map<String, dynamic> _group;
   final _pending = <MedicationOccurrence>[];
@@ -23,10 +23,10 @@ class MedicationCameraViewModel extends ChangeNotifier {
   Stream<MedicationCameraUiEvent> get uiEvent => _uiEvent.stream;
 
   MedicationCameraViewModel({
-    required MedicationAlarmProvider medicationAlarmProvider,
+    required MedicationRepository medicationRepository,
     required PointProvider pointProvider,
     required Map<String, dynamic> group,
-  })  : _medicationAlarmProvider = medicationAlarmProvider,
+  })  : _medicationRepository = medicationRepository,
         _pointProvider = pointProvider,
         _group = group;
 
@@ -45,8 +45,8 @@ class MedicationCameraViewModel extends ChangeNotifier {
 
   Future<void> load() async {
     try {
-      await _medicationAlarmProvider.refreshState();
-      if (_medicationAlarmProvider.state['memberId'] == _group['memberId']) {
+      final state = await _medicationRepository.alarmState();
+      if (state['memberId'] == _group['memberId']) {
         final now = DateTime.now();
         for (final target in (_group['occurrences'] as List).cast<Map>()) {
           final occurrence =
@@ -72,7 +72,7 @@ class MedicationCameraViewModel extends ChangeNotifier {
     try {
       late MedicationPointResult result;
       for (final occurrence in [..._pending]) {
-        result = await _medicationAlarmProvider.verify(occurrence, photo);
+        result = await _medicationRepository.verifyMedication(occurrence, photo);
         _pending.remove(occurrence);
       }
       await _pointProvider.refresh();

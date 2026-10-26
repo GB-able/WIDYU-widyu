@@ -12,6 +12,10 @@ class MedicationAlarmLocalDataSourceImpl
   Future<Map<String, dynamic>> capabilities() => _alarm.capabilities();
 
   @override
+  Future<Map<String, dynamic>> requestPermissions() =>
+      _alarm.requestPermissions();
+
+  @override
   Future<Map<String, dynamic>> activate(String memberId) =>
       _alarm.activate(memberId);
 

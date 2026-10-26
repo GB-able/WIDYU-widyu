@@ -16,7 +16,7 @@ class _PhotoItem extends StatelessWidget {
         return GestureDetector(
           onTap: () => context.push(
             AppRoute.photoPreview.path,
-            extra: PhotoPreviewExtra(viewModel: viewModel, initialIndex: index),
+            extra: index,
           ),
           child: Stack(
             fit: StackFit.expand,

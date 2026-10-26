@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:medication_alarm/medication_alarm.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:widyu/core/model/permission/permission_type.dart';
 import 'package:widyu/core/utils/settings_return_controller.dart';
@@ -46,7 +47,10 @@ class PermissionManager {
 
         case PermissionType.alarm:
           // 정확한 알람(SCHEDULE_EXACT_ALARM).
-          // iOS 에는 대응 개념이 없다.
+          if (Platform.isIOS) {
+            return _alarmKitResult(await MedicationAlarm().capabilities(),
+                denied: PermissionRequestResult.denied);
+          }
           if (!Platform.isAndroid) return PermissionRequestResult.unsupported;
           return mapStatus(await Permission.scheduleExactAlarm.status);
 
@@ -116,7 +120,10 @@ class PermissionManager {
         case PermissionType.alarm:
           // 정확한 알람(SCHEDULE_EXACT_ALARM).
           // Android 12+ 에서는 인앱 다이얼로그가 아니라 시스템 설정 화면으로 이동한다.
-          // iOS 에는 대응 개념이 없으므로 요청하지 않는다.
+          if (Platform.isIOS) {
+            return _alarmKitResult(await MedicationAlarm().requestPermissions(),
+                denied: PermissionRequestResult.permanentlyDenied);
+          }
           if (!Platform.isAndroid) return PermissionRequestResult.unsupported;
           return mapStatus(await Permission.scheduleExactAlarm.request());
 
@@ -234,6 +241,18 @@ class PermissionManager {
             ? PermissionSettingsResult.granted
             : PermissionSettingsResult.denied;
     }
+  }
+
+  static PermissionRequestResult _alarmKitResult(
+    Map<String, dynamic> capabilities, {
+    required PermissionRequestResult denied,
+  }) {
+    if (capabilities['mode'] != 'alarmKit') {
+      return PermissionRequestResult.unsupported;
+    }
+    return capabilities['authorized'] == true
+        ? PermissionRequestResult.granted
+        : denied;
   }
 
   /// 동작 및 피트니스에 해당하는 플랫폼별 권한.

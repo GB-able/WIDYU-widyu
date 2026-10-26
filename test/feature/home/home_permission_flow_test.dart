@@ -1,7 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:widyu/core/data/provider/step_provider.dart';
+import 'package:widyu/core/data/provider/walk_provider.dart';
+import 'package:widyu/core/data/repository/goal/medication_repository.dart';
 import 'package:widyu/core/data/repository/goal/walk_repository.dart';
 import 'package:widyu/core/data/repository/heartRate/heart_rate_repository.dart';
 import 'package:widyu/core/data/repository/home/home_repository.dart';
@@ -89,9 +90,17 @@ class _Location extends Fake implements LocationRepository {
 
 class _Walk extends Fake implements WalkRepository {}
 
+class _Medication extends Fake implements MedicationRepository {
+  final changes = StreamController<void>.broadcast();
+
+  @override
+  Stream<void> get medicationChanges => changes.stream;
+}
+
 class _Harness {
   final home = _Home();
   final location = _Location();
+  final medication = _Medication();
   final events = <HomeUiEvent>[];
   final starts = <UserLocation?>[];
   int get photos => events.whereType<NavigateToMedicationCamera>().length;
@@ -110,7 +119,8 @@ class _Harness {
       notificationRepository: _Notification(),
       heartRateRepository: _HeartRate(),
       locationRepository: location,
-      stepProvider: StepProvider(repository: _Walk()),
+      stepProvider: WalkProvider(repository: _Walk()),
+      medicationRepository: medication,
       permissionRecoveryController: PermissionRecoveryController(
         statusReader: (_) => readPermission?.call() ?? Future.value(permission),
         requester: (_) async => permission,
@@ -333,10 +343,9 @@ void main() {
     expect(h.photos, 0);
   });
 
-  test('인증 성공 시 리워드를 알리고 카드를 다시 불러온다', () async {
+  test('인증 성공 시 리워드를 알린다', () async {
     final h = _Harness();
     await h.initialize();
-    final fetches = h.home.fetches;
     const result = MedicationPointResult(earnedPoints: 100, currentPoints: 700);
     h.vm.onMedicationVerified(result);
     await Future<void>.delayed(Duration.zero);
@@ -344,6 +353,14 @@ void main() {
       h.events.single,
       isA<ShowMedicationReward>().having((it) => it.result, 'result', result),
     );
+  });
+
+  test('복약 변경 신호를 받으면 카드를 다시 불러온다', () async {
+    final h = _Harness();
+    await h.initialize();
+    final fetches = h.home.fetches;
+    h.medication.changes.add(null);
+    await Future<void>.delayed(Duration.zero);
     expect(h.home.fetches, fetches + 1);
   });
 }

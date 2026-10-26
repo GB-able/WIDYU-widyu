@@ -37,10 +37,12 @@ class PermissionViewModel with ChangeNotifier {
 
   /// 전체 권한 안내와 별개로 최초 실행 시 실제 요청할 권한과 순서.
   /// 나머지 권한은 해당 기능을 사용할 때 요청한다.
-  static const _initialRequestPermissions = [
+  static final _initialRequestPermissions = [
     PermissionType.notification,
+    PermissionType.alarm,
     PermissionType.overlay,
     PermissionType.location,
+    if (Platform.isAndroid) PermissionType.fitness,
   ];
 
   Future<void> requestPermissions({required PermissionRecoveryPrompt showPrompt}) async {
@@ -53,7 +55,7 @@ class PermissionViewModel with ChangeNotifier {
       final denied = <PermissionType>[];
       final settingsLaunchFailed = <PermissionType>[];
 
-      // 1. 알림 → 다른 앱 위에 표시 → 위치 순서로 최초 실행에 필요한 권한만 요청한다.
+      // 1. 알림 → 알람 → 다른 앱 위에 표시 → 위치 → 신체 활동(Android) 순서로 최초 실행에 필요한 권한만 요청한다.
       await _requestSequentially(
         _initialRequestPermissions,
         denied,

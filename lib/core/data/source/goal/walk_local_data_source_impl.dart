@@ -4,6 +4,7 @@ import 'package:health/health.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:walk/walk.dart';
 import 'package:widyu/core/data/source/goal/walk_local_data_source.dart';
+import 'package:widyu/core/storage/walk_database.dart';
 
 class WalkLocalDataSourceImpl implements WalkLocalDataSource {
   static const _types = [HealthDataType.STEPS];
@@ -11,8 +12,9 @@ class WalkLocalDataSourceImpl implements WalkLocalDataSource {
 
   late final Health _health = Health();
   final WalkRecording _walkRecording = WalkRecording();
+  final WalkDatabase _db = WalkDatabase.instance;
   Future<void>? _configuration;
-  StepPermissionStatus _permissionStatus = StepPermissionStatus.unknown;
+  WalkPermissionStatus _permissionStatus = WalkPermissionStatus.unknown;
   bool _backgroundReadGranted = false;
 
   @override
@@ -21,7 +23,7 @@ class WalkLocalDataSourceImpl implements WalkLocalDataSource {
       : 'healthAutomatic';
 
   @override
-  StepPermissionStatus get permissionStatus => _permissionStatus;
+  WalkPermissionStatus get permissionStatus => _permissionStatus;
   @override
   bool get backgroundReadGranted => _backgroundReadGranted;
 
@@ -31,12 +33,12 @@ class WalkLocalDataSourceImpl implements WalkLocalDataSource {
       if (!await _ensureReady()) return false;
       if (defaultTargetPlatform == TargetPlatform.android) {
         if (!(await Permission.activityRecognition.request()).isGranted) {
-          _permissionStatus = StepPermissionStatus.denied;
+          _permissionStatus = WalkPermissionStatus.denied;
           _backgroundReadGranted = false;
           return false;
         }
         await _walkRecording.startRecording();
-        _permissionStatus = StepPermissionStatus.granted;
+        _permissionStatus = WalkPermissionStatus.granted;
         _backgroundReadGranted = true;
         return true;
       }
@@ -50,17 +52,17 @@ class WalkLocalDataSourceImpl implements WalkLocalDataSource {
           permissions: _access,
         );
         if (!completed) {
-          _permissionStatus = StepPermissionStatus.unknown;
+          _permissionStatus = WalkPermissionStatus.unknown;
           return false;
         }
       }
-      _permissionStatus = StepPermissionStatus.unknown;
+      _permissionStatus = WalkPermissionStatus.unknown;
       return true;
     } on PlatformException catch (error) {
       _recordPlatformError(error);
       return false;
     } catch (_) {
-      _permissionStatus = StepPermissionStatus.error;
+      _permissionStatus = WalkPermissionStatus.error;
       return false;
     }
   }
@@ -79,7 +81,7 @@ class WalkLocalDataSourceImpl implements WalkLocalDataSource {
       return false;
     } catch (_) {
       _backgroundReadGranted = false;
-      _permissionStatus = StepPermissionStatus.error;
+      _permissionStatus = WalkPermissionStatus.error;
       return false;
     }
   }
@@ -118,22 +120,39 @@ class WalkLocalDataSourceImpl implements WalkLocalDataSource {
       _recordPlatformError(error);
       return null;
     } catch (_) {
-      _permissionStatus = StepPermissionStatus.error;
+      _permissionStatus = WalkPermissionStatus.error;
       return null;
     }
   }
+
+  @override
+  Future<Map<String, dynamic>> readState(String memberId) => _db.read(memberId);
+
+  @override
+  Future<void> saveState(String memberId, Map<String, dynamic> state) =>
+      _db.save(memberId, state);
+
+  @override
+  Future<String?> acquireLock(String name) => _db.acquire(name);
+
+  @override
+  Future<bool> ownsLock(String name, String owner) => _db.owns(name, owner);
+
+  @override
+  Future<void> releaseLock(String name, String owner) =>
+      _db.release(name, owner);
 
   Future<bool> _ensureReady() async {
     if (kIsWeb ||
         (defaultTargetPlatform != TargetPlatform.android &&
             defaultTargetPlatform != TargetPlatform.iOS)) {
-      _permissionStatus = StepPermissionStatus.unavailable;
+      _permissionStatus = WalkPermissionStatus.unavailable;
       _backgroundReadGranted = false;
       return false;
     }
     if (defaultTargetPlatform == TargetPlatform.android) {
       if (await _walkRecording.isAvailable()) return true;
-      _permissionStatus = StepPermissionStatus.unavailable;
+      _permissionStatus = WalkPermissionStatus.unavailable;
       _backgroundReadGranted = false;
       return false;
     }
@@ -143,14 +162,14 @@ class WalkLocalDataSourceImpl implements WalkLocalDataSource {
       _configuration = null;
       rethrow;
     }
-    _permissionStatus = StepPermissionStatus.unknown;
+    _permissionStatus = WalkPermissionStatus.unknown;
     return true;
   }
 
   Future<bool> _hasAndroidReadPermission() async {
     final allowed = (await Permission.activityRecognition.status).isGranted;
     _permissionStatus =
-        allowed ? StepPermissionStatus.granted : StepPermissionStatus.denied;
+        allowed ? WalkPermissionStatus.granted : WalkPermissionStatus.denied;
     if (!allowed) _backgroundReadGranted = false;
     return allowed;
   }
@@ -158,9 +177,9 @@ class WalkLocalDataSourceImpl implements WalkLocalDataSource {
   void _recordPlatformError(PlatformException error) {
     _backgroundReadGranted = false;
     _permissionStatus = switch (error.code) {
-      'PERMISSION_DENIED' => StepPermissionStatus.denied,
-      'UNAVAILABLE' => StepPermissionStatus.unavailable,
-      _ => StepPermissionStatus.error,
+      'PERMISSION_DENIED' => WalkPermissionStatus.denied,
+      'UNAVAILABLE' => WalkPermissionStatus.unavailable,
+      _ => WalkPermissionStatus.error,
     };
   }
 }

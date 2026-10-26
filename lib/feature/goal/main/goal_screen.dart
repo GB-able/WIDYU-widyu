@@ -7,8 +7,9 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:widyu/app/routes/app_route.dart';
 import 'package:widyu/core/data/provider/point_provider.dart';
-import 'package:widyu/core/data/provider/step_provider.dart';
+import 'package:widyu/core/data/provider/walk_provider.dart';
 import 'package:widyu/core/data/repository/goal/goal_repository.dart';
+import 'package:widyu/core/data/repository/goal/medication_repository.dart';
 import 'package:widyu/core/data/repository/location/location_repository.dart';
 import 'package:widyu/core/model/goal/medication/medication_point_result.dart';
 import 'package:widyu/core/model/goal/weekly_goal_status_response.dart';
@@ -94,8 +95,9 @@ class _GoalScreenState extends State<GoalScreen> {
       create: (context) => GoalViewModel(
         repository: context.read<GoalRepository>(),
         pointProvider: context.read<PointProvider>(),
-        stepProvider: context.read<StepProvider>(),
+        stepProvider: context.read<WalkProvider>(),
         locationRepository: context.read<LocationRepository>(),
+        medicationRepository: context.read<MedicationRepository>(),
       ),
       builder: (context, child) {
         final viewModel = context.read<GoalViewModel>();

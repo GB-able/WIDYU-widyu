@@ -176,11 +176,11 @@ Future<void> _bootstrap() async {
         ),
         Provider<MedicationAlarmLocalDataSource>(
             create: (_) => MedicationAlarmLocalDataSourceImpl()),
-        ProxyProvider2<MedicationAlarmLocalDataSource,
-            MedicationRemoteDataSource, MedicationRepository>(
-          update: (_, local, remote, __) => MedicationRepositoryImpl(
-            localDataSource: local,
-            remoteDataSource: remote,
+        Provider<MedicationRepository>(
+          create: (context) => MedicationRepositoryImpl(
+            localDataSource: context.read<MedicationAlarmLocalDataSource>(),
+            remoteDataSource: context.read<MedicationRemoteDataSource>(),
+            currentMember: authenticatedMedicationMember,
           ),
         ),
         ProxyProvider<ApiClient, AuthRemoteDataSource>(
