@@ -11,6 +11,7 @@ import 'package:widyu/core/model/album/comment.dart';
 import 'package:widyu/core/model/album/feed_detail.dart';
 import 'package:widyu/core/model/api/api_result.dart';
 import 'package:widyu/core/model/myPage/user/user.dart';
+import 'package:widyu/feature/album/post/post_ui_event.dart';
 import 'package:widyu/feature/album/post/post_ui_state.dart';
 
 class PostViewModel extends ChangeNotifier {
@@ -35,6 +36,14 @@ class PostViewModel extends ChangeNotifier {
   final int id;
 
   final commentController = TextEditingController();
+  final commentFocusNode = FocusNode();
+
+  final _uiEvent = StreamController<PostUiEvent>.broadcast();
+  Stream<PostUiEvent> get uiEvent => _uiEvent.stream;
+
+  void _emit(PostUiEvent event) {
+    if (!_uiEvent.isClosed) _uiEvent.add(event);
+  }
 
   PostUiState _uiState = const PostUiState();
   PostUiState get uiState => _uiState;
@@ -42,6 +51,25 @@ class PostViewModel extends ChangeNotifier {
   void _update(PostUiState Function(PostUiState) change) {
     _uiState = change(_uiState);
     notifyListeners();
+  }
+
+  List<Comment> get visibleComments {
+    final comments = _uiState.feed?.comments ?? const <Comment>[];
+    final parentId = _uiState.replyParentId;
+    if (parentId == null) return comments;
+    return comments.where((e) => e.commentId == parentId).toList();
+  }
+
+  void startReply(int parentCommentId) {
+    commentController.clear();
+    commentFocusNode.requestFocus();
+    _update((s) => s.copyWith(replyParentId: parentCommentId));
+  }
+
+  void cancelReply() {
+    commentController.clear();
+    commentFocusNode.unfocus();
+    _update((s) => s.copyWith(replyParentId: null));
   }
 
   Comment _mine(Comment data) => data.copyWith(
@@ -106,6 +134,16 @@ class PostViewModel extends ChangeNotifier {
     final feed = _uiState.feed;
     if (content.isEmpty || _uiState.isBusy || feed == null) return;
 
+    final parentId = _uiState.replyParentId;
+    if (parentId != null) {
+      if (!await sendReply(parentId, content)) {
+        _emit(const SendReplyFailure());
+      } else if (!_disposed) {
+        commentController.clear();
+      }
+      return;
+    }
+
     _update((s) => s.copyWith(isBusy: true));
 
     final result = await _repository.createComment(
@@ -120,6 +158,8 @@ class PostViewModel extends ChangeNotifier {
           feed: feed.copyWith(comments: [...feed.comments, newComment]));
       _albumProvider.onCommentAdded(id);
       if (!_disposed) commentController.clear();
+    } else {
+      _emit(const SendCommentFailure());
     }
 
     _update((s) => s.copyWith(isBusy: false));
@@ -163,9 +203,16 @@ class PostViewModel extends ChangeNotifier {
       }
 
       if (removed == 0) return false;
-      WiduLog.ui.i('댓글 삭제 성공 albumId=$id commentId=$commentId removed=$removed');
+      WiduLog.ui
+          .i('댓글 삭제 성공 albumId=$id commentId=$commentId removed=$removed');
 
-      _uiState = _uiState.copyWith(feed: feed.copyWith(comments: comments));
+      _uiState = _uiState.copyWith(
+        feed: feed.copyWith(comments: comments),
+        replyParentId:
+            comments.any((e) => e.commentId == _uiState.replyParentId)
+                ? _uiState.replyParentId
+                : null,
+      );
       _albumProvider.onCommentDeleted(id, count: removed);
       return true;
     } finally {
@@ -268,6 +315,8 @@ class PostViewModel extends ChangeNotifier {
   void dispose() {
     _disposed = true;
     commentController.dispose();
+    commentFocusNode.dispose();
+    _uiEvent.close();
     super.dispose();
   }
 }
