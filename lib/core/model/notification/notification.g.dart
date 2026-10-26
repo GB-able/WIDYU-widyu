@@ -38,5 +38,6 @@ const _$NotificationCategoryEnumMap = {
   NotificationCategory.medicineSchedule: 'MEDICINE_SCHEDULE',
   NotificationCategory.heartMessage: 'HEART_MESSAGE',
   NotificationCategory.safeZone: 'SAFE_ZONE',
+  NotificationCategory.locationNotice: 'LOCATION_NOTICE',
   NotificationCategory.etc: 'ETC',
 };
