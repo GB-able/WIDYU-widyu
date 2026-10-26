@@ -27,6 +27,8 @@ import 'package:widyu/core/data/repository/location/location_repository.dart';
 import 'package:widyu/core/data/repository/location/location_repository_impl.dart';
 import 'package:widyu/core/data/repository/myPage/my_page_repository.dart';
 import 'package:widyu/core/data/repository/myPage/my_page_repository_impl.dart';
+import 'package:widyu/core/data/repository/incident/incident_repository.dart';
+import 'package:widyu/core/data/repository/incident/incident_repository_impl.dart';
 import 'package:widyu/core/data/repository/notification/notification_repository.dart';
 import 'package:widyu/core/data/repository/notification/notification_repository_impl.dart';
 import 'package:widyu/core/data/repository/point/point_repository.dart';
@@ -61,6 +63,8 @@ import 'package:widyu/core/data/source/location/location_remote_data_source.dart
 import 'package:widyu/core/data/source/location/location_remote_data_source_impl.dart';
 import 'package:widyu/core/data/source/myPage/my_page_remote_data_source.dart';
 import 'package:widyu/core/data/source/myPage/my_page_remote_data_source_impl.dart';
+import 'package:widyu/core/data/source/incident/incident_remote_data_source.dart';
+import 'package:widyu/core/data/source/incident/incident_remote_data_source_impl.dart';
 import 'package:widyu/core/data/source/notification/notification_remote_data_source.dart';
 import 'package:widyu/core/data/source/notification/notification_remote_data_source_impl.dart';
 import 'package:widyu/core/data/source/point/point_remote_data_source.dart';
@@ -262,6 +266,14 @@ Future<void> _bootstrap() async {
         ProxyProvider<AlbumRemoteDataSource, AlbumRepository>(
           update: (_, remote, __) =>
               AlbumRepositoryImpl(remoteDataSource: remote),
+        ),
+        ProxyProvider<ApiClient, IncidentRemoteDataSource>(
+          update: (_, apiClient, __) =>
+              IncidentRemoteDataSourceImpl(apiClient: apiClient),
+        ),
+        ProxyProvider<IncidentRemoteDataSource, IncidentRepository>(
+          update: (_, remote, __) =>
+              IncidentRepositoryImpl(remoteDataSource: remote),
         ),
       ],
       child: const App(),

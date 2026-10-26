@@ -21,6 +21,7 @@ enum AppRoute {
   notificationSetting("/my/notification"),
   notification("/notification"),
   medicationCamera("/medication/camera"),
+  emergencyConfirm("/emergency/confirm"),
   ;
 
   final String path;
