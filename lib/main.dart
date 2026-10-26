@@ -69,6 +69,7 @@ import 'package:widyu/core/data/source/notification/notification_remote_data_sou
 import 'package:widyu/core/data/source/notification/notification_remote_data_source_impl.dart';
 import 'package:widyu/core/data/source/point/point_remote_data_source.dart';
 import 'package:widyu/core/data/source/point/point_remote_data_source_impl.dart';
+import 'package:widyu/core/notification/safety_push_manager.dart';
 import 'package:widyu/core/notification/medication_push_manager.dart';
 import 'package:widyu/core/network/api_client.dart';
 import 'package:widyu/core/network/token_manager.dart';
@@ -131,6 +132,7 @@ Future<void> _bootstrap() async {
   try {
     await initializeMedicationPush();
     await LocalNotificationManager.initialize();
+    SafetyPushManager.initialize();
   } catch (e, stack) {
     debugPrint('[main] 알림 초기화 실패: $e\n$stack');
   }

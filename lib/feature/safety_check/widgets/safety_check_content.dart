@@ -1,7 +1,7 @@
-part of '../emergency_confirm_screen.dart';
+part of '../safety_check_screen.dart';
 
-class _EmergencyConfirmContent extends StatelessWidget {
-  const _EmergencyConfirmContent({required this.onCancel});
+class _SafetyCheckContent extends StatelessWidget {
+  const _SafetyCheckContent({required this.onCancel});
 
   final Future<bool> Function() onCancel;
 

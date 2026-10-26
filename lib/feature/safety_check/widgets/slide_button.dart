@@ -1,4 +1,4 @@
-part of '../emergency_confirm_screen.dart';
+part of '../safety_check_screen.dart';
 
 class _SlideButton extends StatefulWidget {
   const _SlideButton({required this.onCompleted});
@@ -32,8 +32,7 @@ class _SlideButtonState extends State<_SlideButton>
     _controller.value += details.primaryDelta! / maxOffset;
   }
 
-  void _animateBack() =>
-      _controller.animateBack(0, curve: Curves.easeOutCubic);
+  void _animateBack() => _controller.animateBack(0, curve: Curves.easeOutCubic);
 
   Future<void> _onDragEnd(DragEndDetails details) async {
     if (_completed) return;

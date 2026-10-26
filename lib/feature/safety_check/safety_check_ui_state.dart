@@ -1,13 +1,13 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
-part 'emergency_confirm_ui_state.freezed.dart';
+part 'safety_check_ui_state.freezed.dart';
 
-enum EmergencyConfirmPhase { confirm, okay, notOkay }
+enum SafetyCheckPhase { confirm, okay, notOkay }
 
 @freezed
-abstract class EmergencyConfirmUiState with _$EmergencyConfirmUiState {
-  const factory EmergencyConfirmUiState({
-    @Default(EmergencyConfirmPhase.confirm) EmergencyConfirmPhase phase,
+abstract class SafetyCheckUiState with _$SafetyCheckUiState {
+  const factory SafetyCheckUiState({
+    @Default(SafetyCheckPhase.confirm) SafetyCheckPhase phase,
     @Default(false) bool isSubmitting,
-  }) = _EmergencyConfirmUiState;
+  }) = _SafetyCheckUiState;
 }

@@ -3,7 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:widyu/app/routes/app_route.dart';
 import 'package:widyu/app/routes/custom_page.dart';
-import 'package:widyu/app/routes/emergency_confirm_listener.dart';
+import 'package:widyu/app/routes/safety_check_listener.dart';
 import 'package:widyu/app/routes/extra/edit_post_extra.dart';
 import 'package:widyu/app/routes/extra/photo_preview_extra.dart';
 import 'package:widyu/app/routes/tab_reloader.dart';
@@ -18,7 +18,7 @@ import 'package:widyu/feature/album/select_photo/select_photo_screen.dart';
 import 'package:widyu/feature/auth/login_screen.dart';
 import 'package:widyu/feature/auth/onboarding_screen.dart';
 import 'package:widyu/feature/contact/contact_screen.dart';
-import 'package:widyu/feature/emergency_confirm/emergency_confirm_screen.dart';
+import 'package:widyu/feature/safety_check/safety_check_screen.dart';
 import 'package:widyu/feature/goal/main/goal_screen.dart';
 import 'package:widyu/feature/goal/medication/medication_session_scope.dart';
 import 'package:widyu/feature/medication_camera/medication_camera_screen.dart';
@@ -91,7 +91,7 @@ class CustomRouter {
       ),
       ShellRoute(
         builder: (context, state, child) => UserSessionScope(
-          child: EmergencyConfirmListener(
+          child: SafetyCheckListener(
             child: MedicationSessionScope(child: child),
           ),
         ),
@@ -105,9 +105,9 @@ class CustomRouter {
                     body: Center(child: Text('복용 정보를 확인할 수 없어요.'))),
           ),
           CustomGoRoute.fadeRoute(
-            route: AppRoute.emergencyConfirm,
+            route: AppRoute.safetyCheck,
             builder: (_, state) => state.extra is String
-                ? EmergencyConfirmScreen(incidentId: state.extra as String)
+                ? SafetyCheckScreen(incidentId: state.extra as String)
                 : const Scaffold(body: Center(child: Text('확인 요청을 찾을 수 없어요.'))),
           ),
           StatefulShellRoute.indexedStack(

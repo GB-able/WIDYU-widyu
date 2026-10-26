@@ -1,11 +1,11 @@
-sealed class EmergencyConfirmUiEvent {
-  const EmergencyConfirmUiEvent();
+sealed class SafetyCheckUiEvent {
+  const SafetyCheckUiEvent();
 }
 
-class RespondFailure extends EmergencyConfirmUiEvent {
+class RespondFailure extends SafetyCheckUiEvent {
   const RespondFailure();
 }
 
-class CloseScreen extends EmergencyConfirmUiEvent {
+class CloseScreen extends SafetyCheckUiEvent {
   const CloseScreen();
 }

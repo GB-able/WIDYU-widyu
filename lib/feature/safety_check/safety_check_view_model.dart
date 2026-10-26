@@ -3,10 +3,11 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:widyu/core/data/repository/incident/incident_repository.dart';
 import 'package:widyu/core/model/api/api_result.dart';
-import 'package:widyu/feature/emergency_confirm/emergency_confirm_ui_event.dart';
-import 'package:widyu/feature/emergency_confirm/emergency_confirm_ui_state.dart';
+import 'package:widyu/core/notification/safety_push_manager.dart';
+import 'package:widyu/feature/safety_check/safety_check_ui_event.dart';
+import 'package:widyu/feature/safety_check/safety_check_ui_state.dart';
 
-class EmergencyConfirmViewModel extends ChangeNotifier {
+class SafetyCheckViewModel extends ChangeNotifier {
   final IncidentRepository _repository;
   final String _incidentId;
   Timer? _deadlineTimer;
@@ -17,13 +18,13 @@ class EmergencyConfirmViewModel extends ChangeNotifier {
   static const _defaultResponseWindow = Duration(seconds: 60);
   static const _resultDisplayDuration = Duration(seconds: 3);
 
-  EmergencyConfirmUiState _uiState = const EmergencyConfirmUiState();
-  EmergencyConfirmUiState get uiState => _uiState;
+  SafetyCheckUiState _uiState = const SafetyCheckUiState();
+  SafetyCheckUiState get uiState => _uiState;
 
-  final _uiEvent = StreamController<EmergencyConfirmUiEvent>.broadcast();
-  Stream<EmergencyConfirmUiEvent> get uiEvent => _uiEvent.stream;
+  final _uiEvent = StreamController<SafetyCheckUiEvent>.broadcast();
+  Stream<SafetyCheckUiEvent> get uiEvent => _uiEvent.stream;
 
-  EmergencyConfirmViewModel({
+  SafetyCheckViewModel({
     required IncidentRepository repository,
     required String incidentId,
   })  : _repository = repository,
@@ -32,7 +33,7 @@ class EmergencyConfirmViewModel extends ChangeNotifier {
   Future<void> start() async {
     _scheduleDeadline(_defaultResponseWindow);
     final result = await _repository.markPromptDisplayed(_incidentId);
-    if (_disposed || _uiState.phase != EmergencyConfirmPhase.confirm) return;
+    if (_disposed || _uiState.phase != SafetyCheckPhase.confirm) return;
     if (result case Success(:final data) when data.respondByMs != null) {
       final respondBy = DateTime.fromMillisecondsSinceEpoch(data.respondByMs!);
       _scheduleDeadline(respondBy.difference(DateTime.now()));
@@ -40,8 +41,7 @@ class EmergencyConfirmViewModel extends ChangeNotifier {
   }
 
   Future<bool> respondOk() async {
-    if (_uiState.phase != EmergencyConfirmPhase.confirm ||
-        _uiState.isSubmitting) {
+    if (_uiState.phase != SafetyCheckPhase.confirm || _uiState.isSubmitting) {
       return false;
     }
     _update(_uiState.copyWith(isSubmitting: true));
@@ -50,13 +50,13 @@ class EmergencyConfirmViewModel extends ChangeNotifier {
     switch (result) {
       case Success(:final data):
         _showResult(data.state == 'OK_CLOSED'
-            ? EmergencyConfirmPhase.okay
-            : EmergencyConfirmPhase.notOkay);
+            ? SafetyCheckPhase.okay
+            : SafetyCheckPhase.notOkay);
         return true;
       case Failure():
         _update(_uiState.copyWith(isSubmitting: false));
         if (_deadlinePassed) {
-          _showResult(EmergencyConfirmPhase.notOkay);
+          _showResult(SafetyCheckPhase.notOkay);
         } else {
           _uiEvent.add(const RespondFailure());
         }
@@ -71,21 +71,22 @@ class EmergencyConfirmViewModel extends ChangeNotifier {
       () {
         _deadlinePassed = true;
         if (_uiState.isSubmitting) return;
-        _showResult(EmergencyConfirmPhase.notOkay);
+        _showResult(SafetyCheckPhase.notOkay);
       },
     );
   }
 
-  void _showResult(EmergencyConfirmPhase phase) {
-    if (_uiState.phase != EmergencyConfirmPhase.confirm) return;
+  void _showResult(SafetyCheckPhase phase) {
+    if (_uiState.phase != SafetyCheckPhase.confirm) return;
     _deadlineTimer?.cancel();
+    SafetyPushManager.stopAlarm(_incidentId);
     _update(_uiState.copyWith(phase: phase, isSubmitting: false));
     _closeTimer = Timer(_resultDisplayDuration, () {
       if (!_disposed) _uiEvent.add(const CloseScreen());
     });
   }
 
-  void _update(EmergencyConfirmUiState state) {
+  void _update(SafetyCheckUiState state) {
     if (_disposed) return;
     _uiState = state;
     notifyListeners();

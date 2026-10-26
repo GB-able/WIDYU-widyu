@@ -1,7 +1,7 @@
-part of '../emergency_confirm_screen.dart';
+part of '../safety_check_screen.dart';
 
-class _EmergencyResultContent extends StatelessWidget {
-  const _EmergencyResultContent({
+class _SafetyCheckResultContent extends StatelessWidget {
+  const _SafetyCheckResultContent({
     required this.title,
     required this.description,
   });
