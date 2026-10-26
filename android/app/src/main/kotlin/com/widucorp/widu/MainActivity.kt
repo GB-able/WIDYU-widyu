@@ -60,6 +60,7 @@ class MainActivity : FlutterActivity() {
         intent.removeExtra(SafetyCheckService.EXTRA_INCIDENT_ID)
         pendingIncidentId = incidentId
         setLockScreenVisible(true)
+        SafetyCheckService.onScreenShown()
         safetyChannel?.invokeMethod("onIncident", null)
     }
 

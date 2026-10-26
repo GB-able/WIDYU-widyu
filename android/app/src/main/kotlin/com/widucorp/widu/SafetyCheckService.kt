@@ -26,11 +26,17 @@ import android.util.Log
 class SafetyCheckService : Service() {
     private val handler = Handler(Looper.getMainLooper())
     private val timeout = Runnable { stopSelf() }
-    private val cancelFcm = Runnable { cancelFcmNotifications() }
+    private val cancelFcm = object : Runnable {
+        override fun run() {
+            cancelFcmNotifications()
+            handler.postDelayed(this, FCM_RECHECK_INTERVAL_MS)
+        }
+    }
     private var tone: ToneGenerator? = null
     private var wakeLock: PowerManager.WakeLock? = null
     private var focus: AudioFocusRequest? = null
     private var incidentId: String? = null
+    private var contentIntent: PendingIntent? = null
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -48,6 +54,7 @@ class SafetyCheckService : Service() {
             screen,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
+        contentIntent = content
         val inUse = isInUse()
         val canOverlay = Settings.canDrawOverlays(this)
         val notification = notification(content, fullScreen = !(inUse && canOverlay))
@@ -69,9 +76,8 @@ class SafetyCheckService : Service() {
                     .notify(NOTIFICATION_ID, notification(content, fullScreen = true))
             }
         }
-        cancelFcmNotifications()
         handler.removeCallbacks(cancelFcm)
-        handler.postDelayed(cancelFcm, FCM_RECHECK_DELAY_MS)
+        cancelFcm.run()
         handler.removeCallbacks(timeout)
         handler.postDelayed(timeout, TIMEOUT_MS)
         if (incidentId != id) {
@@ -106,6 +112,12 @@ class SafetyCheckService : Service() {
             .setContentIntent(content)
             .apply { if (fullScreen) setFullScreenIntent(content, true) }
             .build()
+
+    private fun showSilently() {
+        val content = contentIntent ?: return
+        getSystemService(NotificationManager::class.java)
+            .notify(NOTIFICATION_ID, notification(content, fullScreen = false))
+    }
 
     private fun cancelFcmNotifications() {
         val manager = getSystemService(NotificationManager::class.java)
@@ -162,12 +174,16 @@ class SafetyCheckService : Service() {
         private const val FCM_TAG_PREFIX = "FCM-Notification"
         private const val NOTIFICATION_ID = 48191
         private const val TIMEOUT_MS = 90_000L
-        private const val FCM_RECHECK_DELAY_MS = 1_500L
+        private const val FCM_RECHECK_INTERVAL_MS = 500L
         private const val SCREEN_WAKE_MS = 5_000L
         private const val TITLE = "평소와 다른 심박이 감지됐어요."
         private const val BODY = "괜찮으시면 취소를 눌러주세요. 시간 안에 누르지 않으면 보호자에게 알려드려요."
 
         private var current: SafetyCheckService? = null
+
+        fun onScreenShown() {
+            current?.showSilently()
+        }
 
         fun stop(incidentId: String?) {
             val service = current ?: return
