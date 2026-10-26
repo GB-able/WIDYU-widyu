@@ -9,7 +9,7 @@ enum AppRoute {
   album("/album"),
   my("/my"),
 
-  post("/album/post"),
+  post("/album/post/:albumId"),
   selectPhoto("/album/select-photo"),
   photoPreview("/album/select-photo/preview"),
   managePost("/album/manage-post"),
@@ -26,4 +26,7 @@ enum AppRoute {
 
   final String path;
   const AppRoute(this.path);
+
+  String withParams(Map<String, Object> params) => params.entries
+      .fold(path, (p, e) => p.replaceFirst(':${e.key}', '${e.value}'));
 }
