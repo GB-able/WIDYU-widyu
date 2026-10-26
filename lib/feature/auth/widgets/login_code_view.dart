@@ -47,9 +47,8 @@ class LoginCodeView extends StatelessWidget {
           text: '로그인',
           enable: !viewModel.state.isLoading &&
               viewModel.state.error == null &&
-              viewModel.codeControllers.every(
-                (controller) => controller.text.isNotEmpty,
-              ),
+              viewModel.codeController.text.length ==
+                  LoginViewModel.inviteCodeLength,
         ),
         child: Column(
           children: [
@@ -58,46 +57,57 @@ class LoginCodeView extends StatelessWidget {
               spacing: 12,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  spacing: 8,
-                  mainAxisSize: MainAxisSize.min,
-                  children: List.generate(
-                    LoginViewModel.inviteCodeLength,
-                    (index) => Container(
-                      constraints: const BoxConstraints(maxWidth: 42),
-                      height: 58,
-                      decoration: BoxDecoration(
-                        color: viewModel.state.error != null
-                            ? MyColor.orange100
-                            : MyColor.grey100,
-                        borderRadius: BorderRadius.circular(3),
-                        border: Border.all(
-                            color: viewModel.state.error != null
-                                ? MyColor.red
-                                : MyColor.grey200),
+                Stack(
+                  children: [
+                    Row(
+                      spacing: 8,
+                      mainAxisSize: MainAxisSize.min,
+                      children: List.generate(
+                        LoginViewModel.inviteCodeLength,
+                        (index) {
+                          final code = viewModel.codeController.text;
+                          return Container(
+                            width: 42,
+                            height: 58,
+                            decoration: BoxDecoration(
+                              color: viewModel.state.error != null
+                                  ? MyColor.orange100
+                                  : MyColor.grey100,
+                              borderRadius: BorderRadius.circular(3),
+                              border: Border.all(
+                                  color: viewModel.state.error != null
+                                      ? MyColor.red
+                                      : MyColor.grey200),
+                            ),
+                            alignment: Alignment.center,
+                            child: Text(
+                              index < code.length ? code[index] : '',
+                              style: MyTypo.largeTitle
+                                  .copyWith(color: MyColor.black, height: 1),
+                            ),
+                          );
+                        },
                       ),
-                      alignment: Alignment.center,
+                    ),
+                    Positioned.fill(
                       child: TextField(
-                        controller: viewModel.codeControllers[index],
-                        focusNode: viewModel.codeFocusNodes[index],
-                        textAlign: TextAlign.center,
-                        decoration: const InputDecoration(
-                          border: InputBorder.none,
-                          contentPadding: EdgeInsets.zero,
-                          counterText: '',
-                        ),
-                        maxLength: 1,
+                        controller: viewModel.codeController,
+                        maxLength: LoginViewModel.inviteCodeLength,
                         keyboardType: TextInputType.number,
+                        autofillHints: const [AutofillHints.oneTimeCode],
                         inputFormatters: [
                           FilteringTextInputFormatter.digitsOnly,
                         ],
-                        style: MyTypo.largeTitle.copyWith(
-                            color: MyColor.black,
-                            height: 1,
-                            textBaseline: TextBaseline.alphabetic),
+                        showCursor: false,
+                        enableInteractiveSelection: false,
+                        style: const TextStyle(color: Colors.transparent),
+                        decoration: const InputDecoration(
+                          border: InputBorder.none,
+                          counterText: '',
+                        ),
                       ),
                     ),
-                  ),
+                  ],
                 ),
                 if (viewModel.state.error != null)
                   Text(
