@@ -27,7 +27,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       );
       return response.toApiResponse(AuthResponse.fromJson);
     } catch (e) {
-      throw Exception("Login failed: $e");
+      throw Exception('Login failed: $e');
     }
   }
 
@@ -40,7 +40,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       );
       return response.toApiResponse<void>((json) => {});
     } catch (e) {
-      throw Exception("Logout failed: $e");
+      throw Exception('Logout failed: $e');
     }
   }
 
@@ -58,7 +58,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         data: response.data['data'],
       );
     } catch (e) {
-      throw Exception("소켓 토큰 발급에 실패했습니다: $e");
+      throw Exception('소켓 토큰 발급에 실패했습니다: $e');
     }
   }
 }

@@ -25,7 +25,7 @@ class IncidentRemoteDataSourceImpl implements IncidentRemoteDataSource {
       );
       return response.toApiResponse(PromptDisplayedResult.fromJson);
     } catch (e) {
-      throw Exception("본인확인 화면 수신 처리에 실패했습니다: $e");
+      throw Exception('본인확인 화면 수신 처리에 실패했습니다: $e');
     }
   }
 
@@ -44,7 +44,7 @@ class IncidentRemoteDataSourceImpl implements IncidentRemoteDataSource {
       );
       return response.toApiResponse(IncidentRespondResult.fromJson);
     } catch (e) {
-      throw Exception("본인확인 응답에 실패했습니다: $e");
+      throw Exception('본인확인 응답에 실패했습니다: $e');
     }
   }
 }

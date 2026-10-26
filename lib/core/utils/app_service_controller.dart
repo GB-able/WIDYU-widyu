@@ -1,11 +1,10 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:widyu/background_service.dart';
 import 'package:widyu/core/model/location/location_service_state.dart';
 import 'package:widyu/core/network/token_manager.dart';
 import 'package:widyu/core/utils/location_service_manager.dart';
-
-import 'package:flutter/foundation.dart';
 
 typedef HasToken = Future<bool> Function();
 typedef LocationStateReader = Future<LocationServiceState> Function();

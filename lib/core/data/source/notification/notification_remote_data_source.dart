@@ -12,8 +12,7 @@ abstract class NotificationRemoteDataSource {
   Future<ApiResponse<NotificationPage>> fetchNotificationPage(int? cursor,
       {String? category});
 
-  Future<ApiResponse<List<NotificationCategory>>>
-      fetchNotificationCategories();
+  Future<ApiResponse<List<NotificationCategory>>> fetchNotificationCategories();
 
   Future<ApiResponse<void>> readNotification(int notificationId);
 

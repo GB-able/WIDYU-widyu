@@ -23,12 +23,12 @@ import 'package:widyu/core/data/repository/heartRate/heart_rate_repository.dart'
 import 'package:widyu/core/data/repository/heartRate/heart_rate_repository_impl.dart';
 import 'package:widyu/core/data/repository/home/home_repository.dart';
 import 'package:widyu/core/data/repository/home/home_repository_impl.dart';
+import 'package:widyu/core/data/repository/incident/incident_repository.dart';
+import 'package:widyu/core/data/repository/incident/incident_repository_impl.dart';
 import 'package:widyu/core/data/repository/location/location_repository.dart';
 import 'package:widyu/core/data/repository/location/location_repository_impl.dart';
 import 'package:widyu/core/data/repository/myPage/my_page_repository.dart';
 import 'package:widyu/core/data/repository/myPage/my_page_repository_impl.dart';
-import 'package:widyu/core/data/repository/incident/incident_repository.dart';
-import 'package:widyu/core/data/repository/incident/incident_repository_impl.dart';
 import 'package:widyu/core/data/repository/notification/notification_repository.dart';
 import 'package:widyu/core/data/repository/notification/notification_repository_impl.dart';
 import 'package:widyu/core/data/repository/point/point_repository.dart';
@@ -39,6 +39,8 @@ import 'package:widyu/core/data/source/auth/auth_local_data_source.dart';
 import 'package:widyu/core/data/source/auth/auth_local_data_source_impl.dart';
 import 'package:widyu/core/data/source/auth/auth_remote_data_source.dart';
 import 'package:widyu/core/data/source/auth/auth_remote_data_source_impl.dart';
+import 'package:widyu/core/data/source/device/device_local_data_source.dart';
+import 'package:widyu/core/data/source/device/device_local_data_source_impl.dart';
 import 'package:widyu/core/data/source/goal/goal_remote_data_source.dart';
 import 'package:widyu/core/data/source/goal/goal_remote_data_source_impl.dart';
 import 'package:widyu/core/data/source/goal/medication_alarm_local_data_source.dart';
@@ -49,37 +51,35 @@ import 'package:widyu/core/data/source/goal/walk_local_data_source.dart';
 import 'package:widyu/core/data/source/goal/walk_local_data_source_impl.dart';
 import 'package:widyu/core/data/source/goal/walk_remote_data_source.dart';
 import 'package:widyu/core/data/source/goal/walk_remote_data_source_impl.dart';
-import 'package:widyu/core/data/source/device/device_local_data_source.dart';
-import 'package:widyu/core/data/source/device/device_local_data_source_impl.dart';
 import 'package:widyu/core/data/source/heartRate/heart_rate_local_data_source.dart';
 import 'package:widyu/core/data/source/heartRate/heart_rate_local_data_source_impl.dart';
 import 'package:widyu/core/data/source/heartRate/heart_rate_remote_data_source.dart';
 import 'package:widyu/core/data/source/heartRate/heart_rate_remote_data_source_impl.dart';
 import 'package:widyu/core/data/source/home/home_remote_data_source.dart';
 import 'package:widyu/core/data/source/home/home_remote_data_source_impl.dart';
+import 'package:widyu/core/data/source/incident/incident_remote_data_source.dart';
+import 'package:widyu/core/data/source/incident/incident_remote_data_source_impl.dart';
 import 'package:widyu/core/data/source/location/location_local_data_source.dart';
 import 'package:widyu/core/data/source/location/location_local_data_source_impl.dart';
 import 'package:widyu/core/data/source/location/location_remote_data_source.dart';
 import 'package:widyu/core/data/source/location/location_remote_data_source_impl.dart';
 import 'package:widyu/core/data/source/myPage/my_page_remote_data_source.dart';
 import 'package:widyu/core/data/source/myPage/my_page_remote_data_source_impl.dart';
-import 'package:widyu/core/data/source/incident/incident_remote_data_source.dart';
-import 'package:widyu/core/data/source/incident/incident_remote_data_source_impl.dart';
 import 'package:widyu/core/data/source/notification/notification_remote_data_source.dart';
 import 'package:widyu/core/data/source/notification/notification_remote_data_source_impl.dart';
 import 'package:widyu/core/data/source/point/point_remote_data_source.dart';
 import 'package:widyu/core/data/source/point/point_remote_data_source_impl.dart';
-import 'package:widyu/core/notification/safety_push_manager.dart';
-import 'package:widyu/core/notification/medication_push_manager.dart';
 import 'package:widyu/core/network/api_client.dart';
-import 'package:widyu/core/network/token_manager.dart';
 import 'package:widyu/core/network/socket_client.dart';
+import 'package:widyu/core/network/token_manager.dart';
+import 'package:widyu/core/notification/local_notification_manager.dart';
+import 'package:widyu/core/notification/medication_push_manager.dart';
+import 'package:widyu/core/notification/safety_push_manager.dart';
 import 'package:widyu/core/ui/theme/theme.dart';
 import 'package:widyu/core/utils/app_service_controller.dart';
-import 'package:widyu/core/notification/local_notification_manager.dart';
+import 'package:widyu/core/utils/background_location_notice_controller.dart';
 import 'package:widyu/firebase_options.dart';
 import 'package:widyu/walk_background_service.dart';
-import 'package:widyu/core/utils/background_location_notice_controller.dart';
 
 void main() {
   runZonedGuarded(_bootstrap, (error, stack) {
@@ -88,7 +88,8 @@ void main() {
 }
 
 Future<void> _bootstrap() async {
-  WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+  final WidgetsBinding widgetsBinding =
+      WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
 
   FlutterError.onError = (details) {
@@ -98,7 +99,7 @@ Future<void> _bootstrap() async {
 
   // 초기화 단계 중 하나가 실패하더라도 나머지 단계와 runApp 은 반드시 수행한다.
   try {
-    await dotenv.load(fileName: ".env");
+    await dotenv.load();
   } catch (e, stack) {
     debugPrint('[main] dotenv.load 실패: $e\n$stack');
   }

@@ -20,7 +20,7 @@ class _ProfileView extends StatelessWidget {
         Skeletonizer(
           enabled: isLoading,
           child: Text(
-            isLoading ? '홍길동' : (name ?? "-"),
+            isLoading ? '홍길동' : (name ?? '-'),
             style: MyTypo.title4.copyWith(color: MyColor.white),
           ),
         ),

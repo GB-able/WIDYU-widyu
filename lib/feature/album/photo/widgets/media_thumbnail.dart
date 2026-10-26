@@ -37,7 +37,7 @@ class _MediaThumbnail extends StatelessWidget {
                       shape: BoxShape.circle,
                       color: MyColor.white.withValues(alpha: 0.24),
                     ),
-                    child: const IconWidget(icon: "play", width: 18),
+                    child: const IconWidget(icon: 'play', width: 18),
                   ),
                 ),
               ),
@@ -94,6 +94,6 @@ class _MediaThumbnail extends StatelessWidget {
     final url = media.thumbnailUrl;
     if (url == null) return Container(color: MyColor.grey100);
 
-    return CustomNetworkImage(url: url, width: null, height: null);
+    return CustomNetworkImage(url: url);
   }
 }

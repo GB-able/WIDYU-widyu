@@ -3,8 +3,8 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:medication_alarm/medication_alarm.dart';
-import 'package:widyu/core/data/repository/goal/medication_repository.dart';
 import 'package:widyu/core/data/provider/point_provider.dart';
+import 'package:widyu/core/data/repository/goal/medication_repository.dart';
 import 'package:widyu/core/model/goal/medication/medication_point_result.dart';
 import 'package:widyu/feature/medication_camera/medication_camera_ui_event.dart';
 import 'package:widyu/feature/medication_camera/medication_camera_ui_state.dart';
@@ -72,7 +72,8 @@ class MedicationCameraViewModel extends ChangeNotifier {
     try {
       late MedicationPointResult result;
       for (final occurrence in [..._pending]) {
-        result = await _medicationRepository.verifyMedication(occurrence, photo);
+        result =
+            await _medicationRepository.verifyMedication(occurrence, photo);
         _pending.remove(occurrence);
       }
       await _pointProvider.refresh();

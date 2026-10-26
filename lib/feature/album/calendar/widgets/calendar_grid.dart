@@ -25,16 +25,13 @@ class _CalendarGrid extends StatelessWidget {
       formatAnimationDuration: Duration.zero,
       sixWeekMonthsEnforced: true,
       rowHeight: _HeaderMetrics.rowHeight,
-      daysOfWeekVisible: true,
       daysOfWeekHeight: _HeaderMetrics.daysOfWeekHeight,
-      startingDayOfWeek: StartingDayOfWeek.sunday,
       daysOfWeekStyle: DaysOfWeekStyle(
         weekdayStyle: MyTypo.body2.copyWith(color: MyColor.grey500),
         weekendStyle: MyTypo.body2.copyWith(color: MyColor.grey500),
       ),
       calendarStyle: const CalendarStyle(
         outsideDaysVisible: false,
-        isTodayHighlighted: true,
         markersMaxCount: 0,
       ),
       onPageChanged: viewModel.onPageChanged,

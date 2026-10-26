@@ -47,7 +47,6 @@ class _WeeklyCard extends StatelessWidget {
       child: Column(
         children: [
           Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Expanded(
                 child: Column(
@@ -117,7 +116,7 @@ class _WeekdayStamp extends StatelessWidget {
         const SizedBox(height: 6),
         switch (day.status) {
           GoalRateStatus.completed => const IconWidget(
-              icon: "circle_checked",
+              icon: 'circle_checked',
               width: _size,
             ),
           GoalRateStatus.inProgress => const _WaveCircle(

@@ -39,7 +39,7 @@ class _PhotoHeader extends StatelessWidget implements PreferredSizeWidget {
               filter.label,
               style: MyTypo.tab.copyWith(color: MyColor.black),
             ),
-            const IconWidget(icon: "chevron_down", width: 14),
+            const IconWidget(icon: 'chevron_down', width: 14),
           ],
         ),
       ),
@@ -47,7 +47,7 @@ class _PhotoHeader extends StatelessWidget implements PreferredSizeWidget {
         GestureDetector(
           onTap: () => context.pop(),
           child: const IconWidget(
-            icon: "close",
+            icon: 'close',
             width: 24,
             color: MyColor.grey600,
           ),

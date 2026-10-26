@@ -5,7 +5,7 @@ import 'package:widyu/core/ui/theme/typos.dart';
 class CustomErrorWidget extends StatelessWidget {
   const CustomErrorWidget({
     super.key,
-    this.errorMsg = "오류가 발생했습니다.\n다시 시도해주세요.",
+    this.errorMsg = '오류가 발생했습니다.\n다시 시도해주세요.',
     this.onRetry,
   });
 
@@ -18,7 +18,6 @@ class CustomErrorWidget extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
         spacing: 12,
         children: [
           const Spacer(flex: 2),
@@ -32,7 +31,7 @@ class CustomErrorWidget extends StatelessWidget {
             TextButton(
               onPressed: onRetry,
               child: const Text(
-                "다시 시도",
+                '다시 시도',
                 style: TextStyle(color: MyColor.primary),
               ),
             ),

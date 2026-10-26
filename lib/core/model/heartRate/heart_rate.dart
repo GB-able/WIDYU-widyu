@@ -10,5 +10,6 @@ abstract class HeartRate with _$HeartRate {
     required DateTime measuredAt,
   }) = _HeartRate;
 
-  factory HeartRate.fromJson(Map<String, dynamic> json) => _$HeartRateFromJson(json);
+  factory HeartRate.fromJson(Map<String, dynamic> json) =>
+      _$HeartRateFromJson(json);
 }

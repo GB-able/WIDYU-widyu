@@ -13,10 +13,10 @@ class BotNav extends StatelessWidget {
   const BotNav({super.key, required this.navigationShell});
 
   static const _routes = <({AppRoute route, String label, String icon})>[
-    (route: AppRoute.home, label: "홈", icon: "home"),
-    (route: AppRoute.goal, label: "목표", icon: "health"),
-    (route: AppRoute.album, label: "앨범", icon: "album"),
-    (route: AppRoute.my, label: "내정보", icon: "user"),
+    (route: AppRoute.home, label: '홈', icon: 'home'),
+    (route: AppRoute.goal, label: '목표', icon: 'health'),
+    (route: AppRoute.album, label: '앨범', icon: 'album'),
+    (route: AppRoute.my, label: '내정보', icon: 'user'),
   ];
 
   @override

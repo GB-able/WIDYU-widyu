@@ -6,8 +6,8 @@ import 'package:widyu/core/data/repository/sensor/sensor_batch_repository.dart';
 import 'package:widyu/core/data/source/sensor/sensor_batch_local_data_source.dart';
 import 'package:widyu/core/data/source/sensor/sensor_batch_remote_data_source.dart';
 import 'package:widyu/core/model/sensor/sensor_batch.dart';
-import 'package:widyu/core/model/sensor/sensor_message.dart';
 import 'package:widyu/core/model/sensor/sensor_batch_config.dart';
+import 'package:widyu/core/model/sensor/sensor_message.dart';
 import 'package:widyu/core/model/sensor/sensor_result.dart';
 
 class SensorBatchRepositoryImpl implements SensorBatchRepository {

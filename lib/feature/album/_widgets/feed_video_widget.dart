@@ -138,7 +138,7 @@ class _FeedVideoWidgetState extends State<FeedVideoWidget> {
                         shape: BoxShape.circle,
                       ),
                       child: const IconWidget(
-                        icon: "play",
+                        icon: 'play',
                         width: 18,
                         color: MyColor.white,
                       ),

@@ -43,7 +43,6 @@ class _ProfileNameViewState extends State<_ProfileNameView> {
             showCursor: _isEditing,
             cursorColor: MyColor.black,
             textAlign: TextAlign.center,
-            maxLines: 1,
             style: MyTypo.title3.copyWith(color: MyColor.black),
             decoration: const InputDecoration(
               isDense: true,

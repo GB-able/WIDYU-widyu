@@ -66,7 +66,7 @@ class ManagePostViewModel extends ChangeNotifier {
       if (_albumProvider.isDisposed) return false;
       if (result case Failure(:final message)) {
         debugPrint('uploadFeed failed: $message');
-        showToast("게시글 업로드에 실패했습니다");
+        showToast('게시글 업로드에 실패했습니다');
         return false;
       }
       await Future.wait([
@@ -76,7 +76,7 @@ class ManagePostViewModel extends ChangeNotifier {
       return !_albumProvider.isDisposed;
     } catch (e) {
       debugPrint('uploadFeed failed: $e');
-      showToast("게시글 업로드에 실패했습니다");
+      showToast('게시글 업로드에 실패했습니다');
       return false;
     } finally {
       _isUploading = false;
@@ -100,7 +100,7 @@ class ManagePostViewModel extends ChangeNotifier {
       );
       if (_albumProvider.isDisposed) return null;
       if (!updated) {
-        showToast("게시글 수정에 실패했습니다");
+        showToast('게시글 수정에 실패했습니다');
         return null;
       }
       return content;

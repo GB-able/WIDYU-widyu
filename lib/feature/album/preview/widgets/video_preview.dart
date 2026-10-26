@@ -92,7 +92,7 @@ class _VideoPreviewState extends State<_VideoPreview> {
                       shape: BoxShape.circle,
                     ),
                     child: const IconWidget(
-                      icon: "play",
+                      icon: 'play',
                       width: 18,
                       color: MyColor.white,
                     ),

@@ -24,8 +24,7 @@ class _GoalErrorWidget extends StatelessWidget {
             const SizedBox(height: 20),
             SizedBox(
               width: 160,
-              child:
-                  WidyuTextButton(onTap: onRetry, text: '다시 시도', enable: true),
+              child: WidyuTextButton(onTap: onRetry, text: '다시 시도'),
             ),
           ],
         ),

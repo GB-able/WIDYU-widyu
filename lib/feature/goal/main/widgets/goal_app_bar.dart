@@ -19,7 +19,7 @@ class _GoalAppBar extends StatelessWidget implements PreferredSizeWidget {
             behavior: HitTestBehavior.translucent,
             onTap: () => context.push(AppRoute.notification.path),
             child: const IconWidget(
-              icon: "notification",
+              icon: 'notification',
               width: 22,
               color: MyColor.grey600,
             ),

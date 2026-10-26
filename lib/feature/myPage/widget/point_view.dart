@@ -22,7 +22,7 @@ class _PointView extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 4),
-        Text("포인트", style: MyTypo.subTitle5.copyWith(color: MyColor.white)),
+        Text('포인트', style: MyTypo.subTitle5.copyWith(color: MyColor.white)),
         const Spacer(),
         Skeletonizer(
           enabled: isLoading,

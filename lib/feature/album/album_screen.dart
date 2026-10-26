@@ -46,13 +46,13 @@ class _AlbumScreenState extends State<AlbumScreen>
     return Scaffold(
       appBar: CustomAppBar(
         canBack: false,
-        title: "앨범 위듀",
+        title: '앨범 위듀',
         actions: [
           GestureDetector(
             behavior: HitTestBehavior.translucent,
             onTap: () => context.push(AppRoute.notification.path),
             child: const IconWidget(
-              icon: "notification",
+              icon: 'notification',
               width: 22,
               color: MyColor.grey600,
             ),
@@ -79,9 +79,9 @@ class _AlbumScreenState extends State<AlbumScreen>
                 labelStyle: MyTypo.tab,
                 unselectedLabelStyle: MyTypo.tab,
                 tabs: const [
-                  Tab(text: "피드"),
-                  Tab(text: "앨범"),
-                  Tab(text: "캘린더"),
+                  Tab(text: '피드'),
+                  Tab(text: '앨범'),
+                  Tab(text: '캘린더'),
                 ],
                 dividerColor: Colors.transparent,
                 dividerHeight: 0,
@@ -121,9 +121,9 @@ class _AlbumScreenState extends State<AlbumScreen>
                 mainAxisSize: MainAxisSize.min,
                 spacing: 4,
                 children: [
-                  const IconWidget(icon: "plus", width: 13),
+                  const IconWidget(icon: 'plus', width: 13),
                   Text(
-                    "올리기",
+                    '올리기',
                     style: MyTypo.button.copyWith(color: MyColor.white),
                   ),
                 ],

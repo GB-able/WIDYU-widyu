@@ -1,5 +1,5 @@
-import 'medication_occurrence.dart';
-import 'medication_schedule_rule.dart';
+import 'package:medication_alarm/src/medication_occurrence.dart';
+import 'package:medication_alarm/src/medication_schedule_rule.dart';
 
 class MedicationSchedule {
   const MedicationSchedule({

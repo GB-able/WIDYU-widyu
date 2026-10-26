@@ -29,7 +29,7 @@ class NotificationScreen extends StatelessWidget {
       ),
       child: Scaffold(
         backgroundColor: MyColor.white,
-        appBar: const CustomAppBar(title: "알림"),
+        appBar: const CustomAppBar(title: '알림'),
         body: Column(
           children: [
             const _NotificationFilterBar(),
@@ -45,7 +45,7 @@ class NotificationScreen extends StatelessWidget {
                   if (viewModel.isEmpty) {
                     if (viewModel.hasError) {
                       return CustomErrorWidget(
-                        errorMsg: "알림을 불러오지 못했어요.\n잠시 후 다시 시도해 주세요.",
+                        errorMsg: '알림을 불러오지 못했어요.\n잠시 후 다시 시도해 주세요.',
                         onRetry: () =>
                             context.read<NotificationViewModel>().retry(),
                       );

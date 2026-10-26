@@ -64,10 +64,10 @@ class LocationRepositoryImpl implements LocationRepository {
     if (!_active) return;
 
     _locationSubscription = _localDataSource.getLocation().listen(
-      (location) => _send(location, LocationReason.move),
-      onError: (Object error, StackTrace stackTrace) =>
-          log('Error in location stream: $error', stackTrace: stackTrace),
-    );
+          (location) => _send(location, LocationReason.move),
+          onError: (Object error, StackTrace stackTrace) =>
+              log('Error in location stream: $error', stackTrace: stackTrace),
+        );
     _connection = _remoteDataSource.connectionState.listen((connected) {
       if (connected) _resendQueued();
     });

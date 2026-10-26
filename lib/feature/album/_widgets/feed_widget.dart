@@ -122,9 +122,9 @@ class _FeedWidgetState extends State<FeedWidget> {
       context: context,
       builder: (_) => CustomDialog(
         type: CustomDialogType.two,
-        title: "게시글을 삭제하시겠어요?",
-        description: "삭제한 게시글은 다시 볼 수 없어요.",
-        posText: "삭제",
+        title: '게시글을 삭제하시겠어요?',
+        description: '삭제한 게시글은 다시 볼 수 없어요.',
+        posText: '삭제',
         onPosTap: deleteFeed,
       ),
     );
@@ -137,7 +137,7 @@ class _FeedWidgetState extends State<FeedWidget> {
     if (!mounted) return;
 
     if (!success) {
-      showToast("게시글 삭제에 실패했습니다.");
+      showToast('게시글 삭제에 실패했습니다.');
       return;
     }
 
@@ -185,7 +185,7 @@ class _FeedWidgetState extends State<FeedWidget> {
                   behavior: HitTestBehavior.opaque,
                   child: const Padding(
                     padding: EdgeInsets.symmetric(horizontal: 4),
-                    child: IconWidget(icon: "more", width: 24),
+                    child: IconWidget(icon: 'more', width: 24),
                   ),
                 ),
             ],
@@ -281,7 +281,7 @@ class _FeedWidgetState extends State<FeedWidget> {
                             widget.albumId,
                           ),
                   child: IconWidget(
-                    icon: stat.isLiked ? "like_on" : "like_off",
+                    icon: stat.isLiked ? 'like_on' : 'like_off',
                     width: 24,
                   ),
                 ),
@@ -306,7 +306,7 @@ class _FeedWidgetState extends State<FeedWidget> {
                     context.push(
                         AppRoute.post.withParams({'albumId': widget.albumId}));
                   },
-                  child: const IconWidget(icon: "comment", width: 24),
+                  child: const IconWidget(icon: 'comment', width: 24),
                 ),
                 Text(
                   stat.commentCount.toString(),
@@ -339,7 +339,7 @@ class _FeedWidgetState extends State<FeedWidget> {
 
 String _lockedPreview(String content) {
   final chars = content.trim().characters;
-  return "${chars.take(chars.length < 5 ? 1 : 5)}...";
+  return '${chars.take(chars.length < 5 ? 1 : 5)}...';
 }
 
 String _formatDate(DateTime date) {

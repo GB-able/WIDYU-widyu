@@ -9,8 +9,8 @@ class ExpandableText extends StatelessWidget {
     this.maxLines = 2,
     this.isExpanded = false,
     this.onExpandChanged,
-    this.moreLabel = "더보기",
-    this.lessLabel = "접기",
+    this.moreLabel = '더보기',
+    this.lessLabel = '접기',
   });
 
   final String text;
@@ -43,7 +43,8 @@ class ExpandableText extends StatelessWidget {
               text,
               style: style,
               maxLines: isExpanded ? null : maxLines,
-              overflow: isExpanded ? TextOverflow.visible : TextOverflow.ellipsis,
+              overflow:
+                  isExpanded ? TextOverflow.visible : TextOverflow.ellipsis,
             ),
             if (overflows)
               GestureDetector(
@@ -51,7 +52,8 @@ class ExpandableText extends StatelessWidget {
                 onTap: () => onExpandChanged?.call(!isExpanded),
                 child: Padding(
                   padding: const EdgeInsets.only(top: 2),
-                  child: Text(isExpanded ? lessLabel : moreLabel, style: moreStyle),
+                  child: Text(isExpanded ? lessLabel : moreLabel,
+                      style: moreStyle),
                 ),
               ),
           ],

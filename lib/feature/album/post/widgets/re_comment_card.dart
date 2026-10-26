@@ -36,7 +36,7 @@ class ReCommentCard extends StatelessWidget {
           ProfileWidget(profileImage: comment?.author.profileImage, size: 20),
           Expanded(
             child: Text(
-              comment == null ? "오류가 발생했습니다." : comment.content,
+              comment == null ? '오류가 발생했습니다.' : comment.content,
               style: MyTypo.body2.copyWith(color: MyColor.grey800),
             ),
           ),
@@ -47,14 +47,13 @@ class ReCommentCard extends StatelessWidget {
               behavior: HitTestBehavior.opaque,
               child: const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                child: IconWidget(icon: "more", width: 18),
+                child: IconWidget(icon: 'more', width: 18),
               ),
             ),
         ],
       );
     }
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
       spacing: 4,
       children: [
         ProfileWidget(profileImage: comment?.author.profileImage, size: 20),
@@ -67,7 +66,7 @@ class ReCommentCard extends StatelessWidget {
             onTapOutside: (_) => FocusScope.of(context).unfocus(),
             onFieldSubmitted: (_) => onSubmitted?.call(),
             decoration: InputDecoration(
-              hintText: "답글을 수정해 주세요.",
+              hintText: '답글을 수정해 주세요.',
               hintStyle: MyTypo.body2.copyWith(color: MyColor.grey600),
               contentPadding: EdgeInsets.zero,
               isDense: true,

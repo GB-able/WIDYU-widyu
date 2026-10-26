@@ -33,7 +33,7 @@ class FeedLockOverlay extends StatelessWidget {
             spacing: 12,
             mainAxisSize: MainAxisSize.min,
             children: [
-              const IconWidget(icon: "lock", width: 60),
+              const IconWidget(icon: 'lock', width: 60),
               Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 12,
@@ -44,12 +44,12 @@ class FeedLockOverlay extends StatelessWidget {
                   borderRadius: BorderRadius.circular(32),
                 ),
                 child: Text(
-                  "${price}P",
+                  '${price}P',
                   style: MyTypo.percentage.copyWith(color: MyColor.grey500),
                 ),
               ),
               Text(
-                "소식을 구매하고\n가족들의 일상을 둘러보세요",
+                '소식을 구매하고\n가족들의 일상을 둘러보세요',
                 style: MyTypo.subTitle3.copyWith(color: MyColor.grey200),
                 textAlign: TextAlign.center,
               ),
@@ -84,7 +84,7 @@ class MediaLockOverlay extends StatelessWidget {
         Container(
           alignment: Alignment.center,
           color: MyColor.black.withValues(alpha: 0.4),
-          child: const IconWidget(icon: "lock", width: 40),
+          child: const IconWidget(icon: 'lock', width: 40),
         ),
       ],
     );

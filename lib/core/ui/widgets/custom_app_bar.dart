@@ -7,7 +7,7 @@ import 'package:widyu/core/ui/widgets/icon_widget.dart';
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   const CustomAppBar({
     super.key,
-    this.title = "",
+    this.title = '',
     this.canBack = true,
     this.onBack,
     this.actions,
@@ -34,7 +34,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                   context.pop();
                 },
                 child: const IconWidget(
-                  icon: "back",
+                  icon: 'back',
                   width: 24,
                   color: MyColor.grey600,
                 ),

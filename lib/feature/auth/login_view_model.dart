@@ -37,7 +37,7 @@ class LoginViewModel with ChangeNotifier {
       if (codeController.selection != end) codeController.selection = end;
       if (text == _prevCode) return;
       _prevCode = text;
-      changeState(const LoginCodeState(error: null));
+      changeState(const LoginCodeState());
     });
 
     phoneController.addListener(() {
@@ -141,7 +141,7 @@ class LoginViewModel with ChangeNotifier {
                 ? LoginError.loginFailed
                 : LoginError.loginFailedALot));
       case Failure():
-        onFailure("로그인 실패. 잠시 후 다시 시도하세요");
+        onFailure('로그인 실패. 잠시 후 다시 시도하세요');
     }
     notifyListeners();
   }

@@ -36,11 +36,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 options: CarouselOptions(
                   height: double.infinity,
                   viewportFraction: 1.0,
-                  enableInfiniteScroll: true,
                   autoPlay: true,
                   autoPlayInterval: const Duration(seconds: 5),
-                  autoPlayAnimationDuration: const Duration(milliseconds: 800),
-                  autoPlayCurve: Curves.fastOutSlowIn,
                   onPageChanged: (index, reason) {
                     _onPageChanged(index);
                   },
@@ -60,7 +57,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         ),
                       ),
                       Text(
-                        "함께 나누고, 더 건강하게.",
+                        '함께 나누고, 더 건강하게.',
                         style: MyTypo.title2.copyWith(color: MyColor.grey800),
                         textAlign: TextAlign.center,
                       ),
@@ -95,7 +92,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   context.push(AppRoute.login.path);
                 },
                 text: '시작하기',
-                enable: true,
               ),
             ),
           ],

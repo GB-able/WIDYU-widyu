@@ -39,7 +39,7 @@ class MedicationRemoteDataSourceImpl extends MedicationRemoteDataSource {
       );
       return response.toApiResponse(MedicationPointResult.fromJson);
     } catch (e) {
-      throw Exception("약 복용 인증에 실패했습니다: $e");
+      throw Exception('약 복용 인증에 실패했습니다: $e');
     }
   }
 
@@ -50,7 +50,7 @@ class MedicationRemoteDataSourceImpl extends MedicationRemoteDataSource {
       path: '$_path/alarm-sync',
       method: HttpMethod.get,
     );
-    return response.toApiResponse((json) =>
-        MedicationSchedule.fromJson({'memberId': memberId, ...json}));
+    return response.toApiResponse(
+        (json) => MedicationSchedule.fromJson({'memberId': memberId, ...json}));
   }
 }

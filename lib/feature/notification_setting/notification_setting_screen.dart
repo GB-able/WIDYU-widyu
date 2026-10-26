@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:widyu/core/ui/widgets/widyu_icon.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:widyu/core/data/repository/notification/notification_repository.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
 import 'package:widyu/core/ui/widgets/ui_event_listener.dart';
+import 'package:widyu/core/ui/widgets/widyu_icon.dart';
 import 'package:widyu/core/utils/show_toast.dart';
 import 'package:widyu/feature/notification_setting/notification_setting_ui_event.dart';
 import 'package:widyu/feature/notification_setting/notification_setting_ui_model.dart';
@@ -13,8 +13,8 @@ import 'package:widyu/feature/notification_setting/notification_setting_ui_state
 import 'package:widyu/feature/notification_setting/notification_setting_view_model.dart';
 
 part 'widget/notification_setting_app_bar.dart';
-part 'widget/notification_setting_view.dart';
 part 'widget/notification_setting_toggle.dart';
+part 'widget/notification_setting_view.dart';
 
 class NotificationSettingScreen extends StatelessWidget {
   const NotificationSettingScreen({super.key});
@@ -35,9 +35,8 @@ class NotificationSettingScreen extends StatelessWidget {
         repository: context.read<NotificationRepository>(),
       ),
       builder: (context, _) {
-        final uiState =
-            context.select<NotificationSettingViewModel, NotificationSettingUiState>(
-                (vm) => vm.uiState);
+        final uiState = context.select<NotificationSettingViewModel,
+            NotificationSettingUiState>((vm) => vm.uiState);
         final viewModel = context.read<NotificationSettingViewModel>();
 
         return UiEventListener(

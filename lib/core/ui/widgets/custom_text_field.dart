@@ -44,7 +44,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
   bool _forceError = false;
 
   void _updateErrorState(String? errorText) {
-    final shouldShowError = errorText == "";
+    final shouldShowError = errorText == '';
     if (_forceError != shouldShowError) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
@@ -73,7 +73,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
           validator: (value) {
             final result = widget.validator!(value);
             _updateErrorState(result);
-            return result == "" ? null : result;
+            return result == '' ? null : result;
           },
           autovalidateMode: AutovalidateMode.onUserInteraction,
           maxLength: widget.maxLength,
@@ -85,7 +85,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
           decoration: InputDecoration(
             hintText: widget.hintText,
             hintStyle: MyTypo.hint.copyWith(color: MyColor.grey300),
-            counterText: "",
+            counterText: '',
             contentPadding: const EdgeInsets.symmetric(vertical: 15),
             prefix: const SizedBox(width: 15),
             suffix: widget.suffix == null
@@ -106,29 +106,29 @@ class _CustomTextFieldState extends State<CustomTextField> {
             errorStyle: MyTypo.helper.copyWith(color: MyColor.red),
             border: OutlineInputBorder(
               borderSide: BorderSide(
-                  color: _forceError ? MyColor.red : MyColor.grey300, width: 1),
+                  color: _forceError ? MyColor.red : MyColor.grey300),
               borderRadius: _radius,
             ),
             enabledBorder: OutlineInputBorder(
               borderSide: BorderSide(
-                  color: _forceError ? MyColor.red : MyColor.grey300, width: 1),
+                  color: _forceError ? MyColor.red : MyColor.grey300),
               borderRadius: _radius,
             ),
             disabledBorder: OutlineInputBorder(
-              borderSide: const BorderSide(color: MyColor.grey300, width: 1),
+              borderSide: const BorderSide(color: MyColor.grey300),
               borderRadius: _radius,
             ),
             focusedBorder: OutlineInputBorder(
               borderSide: BorderSide(
-                  color: _forceError ? MyColor.red : MyColor.grey700, width: 1),
+                  color: _forceError ? MyColor.red : MyColor.grey700),
               borderRadius: _radius,
             ),
             focusedErrorBorder: OutlineInputBorder(
-              borderSide: const BorderSide(color: MyColor.red, width: 1),
+              borderSide: const BorderSide(color: MyColor.red),
               borderRadius: _radius,
             ),
             errorBorder: OutlineInputBorder(
-              borderSide: const BorderSide(color: MyColor.red, width: 1),
+              borderSide: const BorderSide(color: MyColor.red),
               borderRadius: _radius,
             ),
           ),

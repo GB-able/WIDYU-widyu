@@ -80,9 +80,8 @@ class _CameraTile extends StatelessWidget {
             showDialog(
               context: context,
               builder: (_) => const CustomDialog(
-                type: CustomDialogType.one,
-                title: "카메라 접근이 차단되었습니다.",
-                description: "설정에서 위듀의 카메라 접근을 허용해주세요.",
+                title: '카메라 접근이 차단되었습니다.',
+                description: '설정에서 위듀의 카메라 접근을 허용해주세요.',
               ),
             );
           } else {
@@ -94,7 +93,7 @@ class _CameraTile extends StatelessWidget {
           alignment: Alignment.center,
           child: viewModel.isCapturing
               ? const CircularProgressIndicator()
-              : const IconWidget(icon: "camera", width: 64),
+              : const IconWidget(icon: 'camera', width: 64),
         ),
       ),
     );

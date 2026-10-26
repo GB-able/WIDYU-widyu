@@ -65,7 +65,7 @@ class _NotificationFilterChip extends StatelessWidget {
             ),
             if (category.count > 0)
               Text(
-                category.count > 99 ? "99+" : "${category.count}",
+                category.count > 99 ? '99+' : '${category.count}',
                 style: MyTypo.subTitle2.copyWith(
                   color: isSelected ? MyColor.orange400 : MyColor.primary,
                 ),

@@ -29,11 +29,11 @@ class FeedMenuSheet extends StatelessWidget {
                   if (onEdit != null) ...[
                     _MenuTile(
                       icon: const IconWidget(
-                        icon: "edit",
+                        icon: 'edit',
                         width: 18,
                         color: MyColor.black,
                       ),
-                      label: "수정하기",
+                      label: '수정하기',
                       color: MyColor.black,
                       onTap: () {
                         Navigator.pop(context);
@@ -44,11 +44,11 @@ class FeedMenuSheet extends StatelessWidget {
                   ],
                   _MenuTile(
                     icon: const IconWidget(
-                      icon: "delete",
+                      icon: 'delete',
                       width: 18,
                       color: MyColor.red,
                     ),
-                    label: "삭제하기",
+                    label: '삭제하기',
                     color: MyColor.red,
                     onTap: () {
                       Navigator.pop(context);
@@ -70,7 +70,7 @@ class FeedMenuSheet extends StatelessWidget {
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
-                  "취소",
+                  '취소',
                   style: MyTypo.button.copyWith(color: MyColor.grey400),
                 ),
               ),

@@ -11,8 +11,7 @@ abstract class NotificationRepository {
 
   Future<ApiResult<NotificationPage>> fetchNotificationPage(int? cursor,
       {String? category});
-  Future<ApiResult<List<NotificationCategory>>>
-      fetchNotificationCategories();
+  Future<ApiResult<List<NotificationCategory>>> fetchNotificationCategories();
 
   Future<ApiResult<void>> readNotification(int notificationId);
 

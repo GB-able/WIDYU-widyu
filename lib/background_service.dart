@@ -130,7 +130,7 @@ Future<void> connectSocket(SocketClient socketClient) async {
 void onStart(ServiceInstance service) async {
   WidgetsFlutterBinding.ensureInitialized();
   DartPluginRegistrant.ensureInitialized();
-  await dotenv.load(fileName: ".env");
+  await dotenv.load();
 
   if (!await TokenManager().hasToken()) {
     try {

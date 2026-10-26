@@ -32,7 +32,7 @@ class HeartRateRepositoryImpl implements HeartRateRepository {
         .throttleTime(_statusRefreshInterval)
         .listen(
           (_) => _sendHeartRateStatus(),
-          onError: (e) => log("Stream Error: $e"),
+          onError: (e) => log('Stream Error: $e'),
         );
   }
 
@@ -44,7 +44,7 @@ class HeartRateRepositoryImpl implements HeartRateRepository {
 
   @override
   Future<ApiResult<HeartRateResponse>> fetchHeartRate() async =>
-      await _remoteDataSource.fetchHeartRateStatus().toApiResult();
+      _remoteDataSource.fetchHeartRateStatus().toApiResult();
 
   Future<void> _sendHeartRateStatus() async {
     final result = await _remoteDataSource.fetchHeartRateStatus().toApiResult();

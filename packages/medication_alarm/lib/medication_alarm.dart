@@ -8,7 +8,8 @@ export 'src/medication_schedule_rule.dart';
 
 class MedicationAlarm {
   static const _channel = MethodChannel('com.widucorp.widu/medication_alarm');
-  static const _events = EventChannel('com.widucorp.widu/medication_alarm/events');
+  static const _events =
+      EventChannel('com.widucorp.widu/medication_alarm/events');
   static final Stream<void> changes =
       _events.receiveBroadcastStream().map((_) => null).asBroadcastStream();
 

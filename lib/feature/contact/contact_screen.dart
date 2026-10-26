@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:widyu/core/ui/widgets/widyu_icon.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:widyu/core/data/repository/myPage/my_page_repository.dart';
@@ -9,6 +8,7 @@ import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
 import 'package:widyu/core/ui/widgets/ui_event_listener.dart';
 import 'package:widyu/core/ui/widgets/widyu_divider.dart';
+import 'package:widyu/core/ui/widgets/widyu_icon.dart';
 import 'package:widyu/core/utils/extensions/string_extension.dart';
 import 'package:widyu/core/utils/show_toast.dart';
 import 'package:widyu/feature/contact/contact_ui_event.dart';
@@ -16,9 +16,9 @@ import 'package:widyu/feature/contact/contact_ui_state.dart';
 import 'package:widyu/feature/contact/contact_view_model.dart';
 
 part 'widget/contact_app_bar.dart';
-part 'widget/representative_contact_view.dart';
-part 'widget/family_contact_view.dart';
 part 'widget/family_contact_content.dart';
+part 'widget/family_contact_view.dart';
+part 'widget/representative_contact_view.dart';
 
 class ContactScreen extends StatelessWidget {
   const ContactScreen({super.key});

@@ -22,7 +22,7 @@ class GoalRemoteDataSourceImpl extends GoalRemoteDataSource {
       );
       return response.toApiResponse(GoalHomeResponse.fromJson);
     } catch (e) {
-      throw Exception("목표 홈 조회에 실패했습니다: $e");
+      throw Exception('목표 홈 조회에 실패했습니다: $e');
     }
   }
 
@@ -35,7 +35,7 @@ class GoalRemoteDataSourceImpl extends GoalRemoteDataSource {
       );
       return response.toApiResponse(WeeklyGoalStatusResponse.fromJson);
     } catch (e) {
-      throw Exception("이번 주 목표 달성률 조회에 실패했습니다: $e");
+      throw Exception('이번 주 목표 달성률 조회에 실패했습니다: $e');
     }
   }
 }

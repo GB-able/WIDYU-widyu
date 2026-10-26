@@ -106,59 +106,59 @@ class _GoalScreenState extends State<GoalScreen> {
         );
 
         return UiEventListener(
-            stream: viewModel.uiEvent,
-            onEvent: (event) => _handleEvent(context, event),
-            child: Scaffold(
-              backgroundColor: MyColor.orange300,
-              appBar: _GoalAppBar(fade: _appBarFade),
-              body: Stack(
-                children: [
-                  NotificationListener<ScrollNotification>(
-                    onNotification: _onScroll,
-                    child: CustomScrollView(
-                      physics: const ClampingScrollPhysics(),
-                      slivers: [
-                        SliverToBoxAdapter(
-                          child: Padding(
-                            padding: const EdgeInsets.only(
-                              bottom: _headerBottomGap,
-                            ),
-                            child: _GoalHeader(
-                              key: _headerKey,
-                              summary: uiState.weeklyStatuses,
-                            ),
+          stream: viewModel.uiEvent,
+          onEvent: (event) => _handleEvent(context, event),
+          child: Scaffold(
+            backgroundColor: MyColor.orange300,
+            appBar: _GoalAppBar(fade: _appBarFade),
+            body: Stack(
+              children: [
+                NotificationListener<ScrollNotification>(
+                  onNotification: _onScroll,
+                  child: CustomScrollView(
+                    physics: const ClampingScrollPhysics(),
+                    slivers: [
+                      SliverToBoxAdapter(
+                        child: Padding(
+                          padding: const EdgeInsets.only(
+                            bottom: _headerBottomGap,
+                          ),
+                          child: _GoalHeader(
+                            key: _headerKey,
+                            summary: uiState.weeklyStatuses,
                           ),
                         ),
-                        SliverLayoutBuilder(
-                          builder: (context, sliverConstraints) {
-                            final minHeight = math.max(
-                              0.0,
-                              sliverConstraints.viewportMainAxisExtent -
-                                  sliverConstraints.precedingScrollExtent,
-                            );
-                            return SliverToBoxAdapter(
-                              child: ConstrainedBox(
-                                constraints: BoxConstraints(
-                                  minHeight: minHeight,
-                                ),
-                                child: _GoalContent(
-                                  state: uiState.cards,
-                                  onRetry: viewModel.refresh,
-                                  onMedicationVerified:
-                                      viewModel.onMedicationVerified,
-                                  findRoute: viewModel.findRoute,
-                                ),
+                      ),
+                      SliverLayoutBuilder(
+                        builder: (context, sliverConstraints) {
+                          final minHeight = math.max(
+                            0.0,
+                            sliverConstraints.viewportMainAxisExtent -
+                                sliverConstraints.precedingScrollExtent,
+                          );
+                          return SliverToBoxAdapter(
+                            child: ConstrainedBox(
+                              constraints: BoxConstraints(
+                                minHeight: minHeight,
                               ),
-                            );
-                          },
-                        ),
-                      ],
-                    ),
+                              child: _GoalContent(
+                                state: uiState.cards,
+                                onRetry: viewModel.refresh,
+                                onMedicationVerified:
+                                    viewModel.onMedicationVerified,
+                                findRoute: viewModel.findRoute,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
                   ),
-                  if (uiState.isLoading) const CustomLoadingWidget(),
-                ],
-              ),
+                ),
+                if (uiState.isLoading) const CustomLoadingWidget(),
+              ],
             ),
+          ),
         );
       },
     );

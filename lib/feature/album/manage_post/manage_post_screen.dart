@@ -51,7 +51,7 @@ class ManagePostScreen extends StatelessWidget {
       child: Consumer<ManagePostViewModel>(
         builder: (context, viewModel, _) => Scaffold(
           appBar: CustomAppBar(
-            title: type == ManageMode.add ? "게시글 올리기" : "게시글 수정",
+            title: type == ManageMode.add ? '게시글 올리기' : '게시글 수정',
             actions: [
               GestureDetector(
                 onTap: () {
@@ -61,7 +61,7 @@ class ManagePostScreen extends StatelessWidget {
                   }
                   Navigator.of(context).popUntil((route) => route.isFirst);
                 },
-                child: const IconWidget(icon: "close", width: 24),
+                child: const IconWidget(icon: 'close', width: 24),
               ),
             ],
           ),
@@ -106,11 +106,11 @@ class ManagePostScreen extends StatelessWidget {
                                         border: InputBorder.none,
                                         isCollapsed: true,
                                         hintText:
-                                            "게시물에 대한 내용을 작성해주세요. (2,200자)",
+                                            '게시물에 대한 내용을 작성해주세요. (2,200자)',
                                         hintStyle: MyTypo.helper2.copyWith(
                                           color: MyColor.grey500,
                                         ),
-                                        counterText: "",
+                                        counterText: '',
                                       ),
                                       style: MyTypo.helper2,
                                       expands: true,
@@ -131,7 +131,7 @@ class ManagePostScreen extends StatelessWidget {
                                     mainAxisAlignment: MainAxisAlignment.end,
                                     children: [
                                       Text(
-                                        "${viewModel.contentCtrl.text.length}/2,200자",
+                                        '${viewModel.contentCtrl.text.length}/2,200자',
                                         style: MyTypo.helper.copyWith(
                                           color: MyColor.secondary,
                                         ),
@@ -168,7 +168,7 @@ class ManagePostScreen extends StatelessWidget {
                         context.pop();
                       }
                     },
-                    text: type == ManageMode.add ? "게시글 올리기" : "수정 완료",
+                    text: type == ManageMode.add ? '게시글 올리기' : '수정 완료',
                     enable: !viewModel.isUploading,
                   ),
                 ),
