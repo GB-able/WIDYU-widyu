@@ -11,67 +11,30 @@ import 'package:widyu/feature/album/_widgets/comment_menu.dart';
 import 'package:widyu/feature/album/post/post_view_model.dart';
 import 'package:widyu/feature/album/post/widgets/re_comment_card.dart';
 
-enum CommentCardMode { normal, writing }
-
 class CommentCard extends StatefulWidget {
-  const CommentCard({super.key, required this.comment, this.myProfileImage});
+  const CommentCard({super.key, required this.comment});
 
   final Comment comment;
-  final String? myProfileImage;
 
   @override
   State<CommentCard> createState() => _CommentCardState();
 }
 
 class _CommentCardState extends State<CommentCard> {
-  final replyController = TextEditingController();
   final editController = TextEditingController();
 
-  CommentCardMode mode = CommentCardMode.normal;
   int? editingId;
 
   @override
   void dispose() {
-    replyController.dispose();
     editController.dispose();
     super.dispose();
-  }
-
-  void startReply() {
-    replyController.clear();
-    setState(() {
-      editingId = null;
-      mode = CommentCardMode.writing;
-    });
   }
 
   void startEdit(Comment target) {
     editController.text = target.content;
     setState(() {
-      mode = CommentCardMode.normal;
       editingId = target.commentId;
-    });
-  }
-
-  Future<void> submitReply() async {
-    final viewModel = context.read<PostViewModel>();
-    final content = replyController.text.trim();
-    if (content.isEmpty) return;
-
-    final success = await viewModel.sendReply(
-      widget.comment.commentId,
-      content,
-    );
-    if (!mounted) return;
-
-    if (!success) {
-      showToast('답글 등록에 실패했습니다.');
-      return;
-    }
-
-    replyController.clear();
-    setState(() {
-      mode = CommentCardMode.normal;
     });
   }
 
@@ -155,7 +118,9 @@ class _CommentCardState extends State<CommentCard> {
                       overflow: TextOverflow.visible,
                     ),
                   GestureDetector(
-                    onTap: startReply,
+                    onTap: () => context
+                        .read<PostViewModel>()
+                        .startReply(widget.comment.commentId),
                     child: Text(
                       '답글달기',
                       style: MyTypo.helper.copyWith(color: MyColor.grey500),
@@ -170,8 +135,6 @@ class _CommentCardState extends State<CommentCard> {
                   children: [
                     for (final reply in widget.comment.replies!)
                       ReCommentCard(
-                        parentName: widget.comment.author.name,
-                        myProfileImage: widget.myProfileImage,
                         mode: editingId == reply.commentId
                             ? ReCommentMode.edit
                             : ReCommentMode.normal,
@@ -181,14 +144,6 @@ class _CommentCardState extends State<CommentCard> {
                         onEdit: () => startEdit(reply),
                       ),
                   ],
-                ),
-              if (mode == CommentCardMode.writing)
-                ReCommentCard(
-                  parentName: widget.comment.author.name,
-                  myProfileImage: widget.myProfileImage,
-                  mode: ReCommentMode.add,
-                  controller: replyController,
-                  onSubmitted: submitReply,
                 ),
             ],
           ),

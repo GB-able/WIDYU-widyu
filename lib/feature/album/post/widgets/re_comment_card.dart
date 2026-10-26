@@ -6,23 +6,19 @@ import 'package:widyu/core/ui/widgets/icon_widget.dart';
 import 'package:widyu/core/ui/widgets/profile_widget.dart';
 import 'package:widyu/feature/album/_widgets/comment_menu.dart';
 
-enum ReCommentMode { normal, add, edit }
+enum ReCommentMode { normal, edit }
 
 class ReCommentCard extends StatelessWidget {
   const ReCommentCard({
     super.key,
-    required this.parentName,
     required this.mode,
-    this.myProfileImage,
     this.reply,
     this.controller,
     this.onSubmitted,
     this.onEdit,
   });
 
-  final String parentName;
   final ReCommentMode mode;
-  final String? myProfileImage;
   final Comment? reply;
   final TextEditingController? controller;
   final VoidCallback? onSubmitted;
@@ -60,12 +56,7 @@ class ReCommentCard extends StatelessWidget {
     return Row(
       spacing: 4,
       children: [
-        ProfileWidget(
-          profileImage: mode == ReCommentMode.edit
-              ? comment?.author.profileImage
-              : myProfileImage,
-          size: 20,
-        ),
+        ProfileWidget(profileImage: comment?.author.profileImage, size: 20),
         Expanded(
           child: TextFormField(
             controller: controller,
@@ -75,9 +66,7 @@ class ReCommentCard extends StatelessWidget {
             onTapOutside: (_) => FocusScope.of(context).unfocus(),
             onFieldSubmitted: (_) => onSubmitted?.call(),
             decoration: InputDecoration(
-              hintText: mode == ReCommentMode.edit
-                  ? '답글을 수정해 주세요.'
-                  : '$parentName님에게 답글 달기...',
+              hintText: '답글을 수정해 주세요.',
               hintStyle: MyTypo.body2.copyWith(color: MyColor.grey600),
               contentPadding: EdgeInsets.zero,
               isDense: true,
