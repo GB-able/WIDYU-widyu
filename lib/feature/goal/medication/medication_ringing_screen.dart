@@ -35,7 +35,7 @@ class MedicationRingingScreen extends StatelessWidget {
       child: PopScope(
         canPop: false,
         child: Scaffold(
-          backgroundColor: const Color(0xE6151515),
+          backgroundColor: MyColor.dim,
           body: SafeArea(
             child: Column(children: [
               const SizedBox(height: 24),
