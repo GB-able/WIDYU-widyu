@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -21,20 +22,23 @@ void main() {
     required PermissionStatusReader statusReader,
     required PermissionRequester requester,
     PermissionRationaleReader? rationaleReader,
-  }) => PermissionRecoveryController(
-    settingsController: SettingsReturnController(launcher: () async => false),
-    statusReader: statusReader,
-    requester: requester,
-    rationaleReader: rationaleReader ?? (_) async => false,
-    settingsRechecker: (_, __) async => PermissionSettingsResult.canceled,
-  );
+  }) =>
+      PermissionRecoveryController(
+        settingsController:
+            SettingsReturnController(launcher: () async => false),
+        statusReader: statusReader,
+        requester: requester,
+        rationaleReader: rationaleReader ?? (_) async => false,
+        settingsRechecker: (_, __) async => PermissionSettingsResult.canceled,
+      );
 
   Future<PermissionRecoveryAction> cancelPrompt(
     PermissionType _,
     PermissionRecoveryMode __,
-  ) async => PermissionRecoveryAction.cancel;
+  ) async =>
+      PermissionRecoveryAction.cancel;
 
-  test('전체 권한 목록은 유지하고 최초 요청은 알림과 위치 순서로 한정한다', () async {
+  test('전체 권한 목록은 유지하고 최초 요청은 알림, 다른 앱 위에 표시, 위치 순서로 한정한다', () async {
     final requested = <PermissionType>[];
     final statuses = <PermissionType>[];
     final viewModel = PermissionViewModel(
@@ -57,10 +61,17 @@ void main() {
 
     expect(
       {...viewModel.requiredPermissions, ...viewModel.optionalPermissions},
-      PermissionType.values.toSet(),
+      PermissionType.values
+          .where((type) => Platform.isAndroid || type != PermissionType.overlay)
+          .toSet(),
     );
-    expect(requested, [PermissionType.notification, PermissionType.location]);
-    expect(statuses, [PermissionType.notification, PermissionType.location]);
+    const initial = [
+      PermissionType.notification,
+      PermissionType.overlay,
+      PermissionType.location,
+    ];
+    expect(requested, initial);
+    expect(statuses, initial);
     expect(events.whereType<NavigateToNext>(), hasLength(1));
 
     await subscription.cancel();
