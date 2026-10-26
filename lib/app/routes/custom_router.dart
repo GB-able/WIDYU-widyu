@@ -166,7 +166,8 @@ class CustomRouter {
           ),
           CustomGoRoute.slideRoute(
             route: AppRoute.post,
-            builder: (_, state) => PostScreen(albumId: state.extra as int),
+            builder: (_, state) => PostScreen(
+                albumId: int.parse(state.pathParameters['albumId']!)),
           ),
           CustomGoRoute.closeShellRoute(
             builder: (_, __, child) => ChangeNotifierProvider(
