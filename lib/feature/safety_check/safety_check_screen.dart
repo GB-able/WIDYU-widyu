@@ -18,17 +18,37 @@ part 'widgets/safety_check_content.dart';
 part 'widgets/safety_check_result_content.dart';
 part 'widgets/slide_button.dart';
 
-class SafetyCheckScreen extends StatelessWidget {
+const _logoTop = 24.0;
+const _logoSize = 64.0;
+
+class SafetyCheckScreen extends StatefulWidget {
   const SafetyCheckScreen({super.key, required this.incidentId});
 
   final String incidentId;
+
+  @override
+  State<SafetyCheckScreen> createState() => _SafetyCheckScreenState();
+}
+
+class _SafetyCheckScreenState extends State<SafetyCheckScreen> {
+  @override
+  void initState() {
+    super.initState();
+    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+  }
+
+  @override
+  void dispose() {
+    SystemChrome.setPreferredOrientations([]);
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (context) => SafetyCheckViewModel(
         repository: context.read<IncidentRepository>(),
-        incidentId: incidentId,
+        incidentId: widget.incidentId,
       )..start(),
       child: const _SafetyCheckView(),
     );
@@ -63,33 +83,41 @@ class _SafetyCheckView extends StatelessWidget {
           canPop: false,
           child: Scaffold(
             backgroundColor: MyColor.dim,
-            body: Stack(
-              children: [
-                SafeArea(
-                  child: Align(
+            body: SafeArea(
+              child: Stack(
+                children: [
+                  Align(
                     alignment: Alignment.topCenter,
                     child: Padding(
-                      padding: const EdgeInsets.only(top: 24),
+                      padding: const EdgeInsets.only(top: _logoTop),
                       child: Image.asset('assets/images/img_64_logo.png',
-                          width: 64, fit: BoxFit.contain),
+                          width: _logoSize, fit: BoxFit.contain),
                     ),
                   ),
-                ),
-                Center(
-                  child: switch (phase) {
-                    SafetyCheckPhase.confirm =>
-                      _SafetyCheckContent(onCancel: viewModel.respondOk),
-                    SafetyCheckPhase.okay => const _SafetyCheckResultContent(
-                        title: '괜찮다고 보호자에게\n전해드렸어요.',
-                        description: '괜찮으시면 시간 안에 누르지 않으면\n보호자에게 알려드려요.',
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        vertical: _logoTop + _logoSize),
+                    child: Center(
+                      child: SingleChildScrollView(
+                        child: switch (phase) {
+                          SafetyCheckPhase.confirm =>
+                            _SafetyCheckContent(onCancel: viewModel.respondOk),
+                          SafetyCheckPhase.okay =>
+                            const _SafetyCheckResultContent(
+                              title: '괜찮다고 보호자에게\n전해드렸어요.',
+                              description: '괜찮으시면 시간 안에 누르지 않으면\n보호자에게 알려드려요.',
+                            ),
+                          SafetyCheckPhase.notOkay =>
+                            const _SafetyCheckResultContent(
+                              title: '보호자에게 알렸어요.',
+                              description: '연락을 기다리는 동안 안전한 곳에서\n잠시 기다려주세요.',
+                            ),
+                        },
                       ),
-                    SafetyCheckPhase.notOkay => const _SafetyCheckResultContent(
-                        title: '보호자에게 알렸어요.',
-                        description: '연락을 기다리는 동안 안전한 곳에서\n잠시 기다려주세요.',
-                      ),
-                  },
-                ),
-              ],
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
