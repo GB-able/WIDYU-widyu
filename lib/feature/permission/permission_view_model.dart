@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:widyu/core/model/permission/permission_type.dart';
@@ -23,10 +24,13 @@ class PermissionViewModel with ChangeNotifier {
   bool get isRequesting => _isRequesting;
 
   List<PermissionType> get requiredPermissions =>
-      PermissionType.values.where((type) => type.isRequired).toList();
+      _visiblePermissions.where((type) => type.isRequired).toList();
 
   List<PermissionType> get optionalPermissions =>
-      PermissionType.values.where((type) => !type.isRequired).toList();
+      _visiblePermissions.where((type) => !type.isRequired).toList();
+
+  Iterable<PermissionType> get _visiblePermissions => PermissionType.values
+      .where((type) => Platform.isAndroid || type != PermissionType.overlay);
 
   final _uiEvent = StreamController<PermissionUiEvent>.broadcast();
   Stream<PermissionUiEvent> get uiEvent => _uiEvent.stream;
@@ -35,6 +39,7 @@ class PermissionViewModel with ChangeNotifier {
   /// 나머지 권한은 해당 기능을 사용할 때 요청한다.
   static const _initialRequestPermissions = [
     PermissionType.notification,
+    PermissionType.overlay,
     PermissionType.location,
   ];
 
@@ -48,7 +53,7 @@ class PermissionViewModel with ChangeNotifier {
       final denied = <PermissionType>[];
       final settingsLaunchFailed = <PermissionType>[];
 
-      // 1. 알림 → 위치 순서로 최초 실행에 필요한 권한만 요청한다.
+      // 1. 알림 → 다른 앱 위에 표시 → 위치 순서로 최초 실행에 필요한 권한만 요청한다.
       await _requestSequentially(
         _initialRequestPermissions,
         denied,

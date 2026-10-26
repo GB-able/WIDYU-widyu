@@ -7,6 +7,7 @@
 enum PermissionType {
   notification,
   alarm,
+  overlay,
   id,
   phone,
   location,

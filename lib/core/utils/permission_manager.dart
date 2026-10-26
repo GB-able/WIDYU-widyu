@@ -50,6 +50,10 @@ class PermissionManager {
           if (!Platform.isAndroid) return PermissionRequestResult.unsupported;
           return mapStatus(await Permission.scheduleExactAlarm.status);
 
+        case PermissionType.overlay:
+          if (!Platform.isAndroid) return PermissionRequestResult.unsupported;
+          return mapStatus(await Permission.systemAlertWindow.status);
+
         case PermissionType.id:
           // 런타임 권한이 아니다. (아래 request 주석 참고)
           return PermissionRequestResult.unsupported;
@@ -115,6 +119,10 @@ class PermissionManager {
           // iOS 에는 대응 개념이 없으므로 요청하지 않는다.
           if (!Platform.isAndroid) return PermissionRequestResult.unsupported;
           return mapStatus(await Permission.scheduleExactAlarm.request());
+
+        case PermissionType.overlay:
+          if (!Platform.isAndroid) return PermissionRequestResult.unsupported;
+          return mapStatus(await Permission.systemAlertWindow.request());
 
         case PermissionType.id:
           // 런타임 권한이 아니므로 요청을 시도하지 않는다.
@@ -245,6 +253,7 @@ class PermissionManager {
       case PermissionType.camera:
         return Permission.camera;
       case PermissionType.alarm:
+      case PermissionType.overlay:
       case PermissionType.id:
         return null;
     }
