@@ -16,6 +16,7 @@ import 'package:widyu/core/model/home/medication_status.dart';
 import 'package:widyu/core/model/home/senior_card.dart';
 import 'package:widyu/core/model/location/user_location.dart';
 import 'package:widyu/core/model/myPage/user/user.dart';
+import 'package:widyu/core/model/notification/notification_category.dart';
 import 'package:widyu/core/model/notification/notification_page.dart';
 import 'package:widyu/core/model/permission/permission_recovery_prompt.dart';
 import 'package:widyu/core/model/permission/permission_type.dart';
@@ -60,7 +61,7 @@ class HomeViewModel with ChangeNotifier {
   final _uiEvent = StreamController<HomeUiEvent>.broadcast();
   Stream<HomeUiEvent> get uiEvent => _uiEvent.stream;
 
-  StreamSubscription? _watchConnection;
+  StreamSubscription<bool>? _watchConnection;
   late final StreamSubscription<void> _medicationChanges;
 
   // 갱신용 타이머
@@ -100,6 +101,7 @@ class HomeViewModel with ChangeNotifier {
             noticeController ?? BackgroundLocationNoticeController(),
         _openRoute = openRoute ?? KakaoMapLauncher.openRoute {
     unawaited(_fetchNotification());
+    unawaited(fetchUnreadNotification());
     unawaited(_fetchUser());
     unawaited(_observeWatchConnection());
     unawaited(fetchHeartRate());
@@ -344,6 +346,17 @@ class HomeViewModel with ChangeNotifier {
       _emit(const FetchNotificationFailure());
     }
     _uiState = _uiState.copyWith(isNotificationLoading: false);
+    notifyListeners();
+  }
+
+  Future<void> fetchUnreadNotification() async {
+    final result = await _notificationRepository.fetchNotificationCategories();
+    if (result is! Success || _isDisposed) return;
+
+    final categories = (result as Success<List<NotificationCategory>>).data;
+    _uiState = _uiState.copyWith(
+      hasUnreadNotification: categories.any((it) => it.count > 0),
+    );
     notifyListeners();
   }
 

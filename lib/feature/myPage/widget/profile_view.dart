@@ -29,7 +29,7 @@ class _ProfileView extends StatelessWidget {
           onPressed: () async {
             await context.push(AppRoute.profile.path);
             if (context.mounted) {
-              context.read<MyPageViewModel>().fetchUser();
+              await context.read<MyPageViewModel>().fetchUser();
             }
           },
           icon: const WidyuIcon(

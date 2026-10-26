@@ -6,7 +6,7 @@ class _InviteButton extends StatelessWidget {
   const _InviteButton({required this.familyCode});
 
   void _showInviteDialog(BuildContext context) {
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (dialogContext) => Dialog(
         backgroundColor: MyColor.transparent,

@@ -91,7 +91,7 @@ class _MedicationCameraViewState extends State<_MedicationCameraView>
   Future<void> _handleEvent(MedicationCameraUiEvent event) async {
     switch (event) {
       case OccurrenceNotFound():
-        await showDialog(
+        await showDialog<void>(
           context: context,
           builder: (context) => AlertDialog(
             content: const Text('존재하지 않는 복약 일정이에요.'),

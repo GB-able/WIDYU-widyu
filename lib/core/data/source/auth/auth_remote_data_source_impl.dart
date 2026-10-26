@@ -53,9 +53,9 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       );
       return ApiResponse<String>(
         statusCode: response.statusCode,
-        code: response.data['code'],
-        message: response.data['message'],
-        data: response.data['data'],
+        code: response.data['code'] as String,
+        message: response.data['message'] as String,
+        data: response.data['data'] as String?,
       );
     } catch (e) {
       throw Exception('소켓 토큰 발급에 실패했습니다: $e');

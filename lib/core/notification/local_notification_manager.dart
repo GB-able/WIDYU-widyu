@@ -32,7 +32,7 @@ class LocalNotificationManager {
   static Future<void> initialize() async {
     await _plugin.initialize(
       settings: const InitializationSettings(
-        android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+        android: AndroidInitializationSettings('@drawable/ic_bg_service_small'),
         // 초기화 시점에는 권한을 요청하지 않는다.
         iOS: DarwinInitializationSettings(
           requestAlertPermission: false,

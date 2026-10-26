@@ -35,7 +35,7 @@ class _CalendarGrid extends StatelessWidget {
         markersMaxCount: 0,
       ),
       onPageChanged: viewModel.onPageChanged,
-      calendarBuilders: CalendarBuilders(
+      calendarBuilders: CalendarBuilders<dynamic>(
         prioritizedBuilder: (context, date, _) => _CalendarDayCell(
           date: date,
           isSelected: date.isSameDay(selectedDay),

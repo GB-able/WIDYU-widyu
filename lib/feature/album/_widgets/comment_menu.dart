@@ -12,7 +12,7 @@ void showCommentMenu(
 }) {
   final viewModel = context.read<PostViewModel>();
 
-  showModalBottomSheet(
+  showModalBottomSheet<void>(
     useRootNavigator: true,
     backgroundColor: Colors.transparent,
     context: context,
@@ -28,7 +28,7 @@ void _confirmDelete(
   PostViewModel viewModel,
   int commentId,
 ) {
-  showDialog(
+  showDialog<void>(
     context: context,
     builder: (_) => CustomDialog(
       type: CustomDialogType.two,

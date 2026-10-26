@@ -211,7 +211,7 @@ class ImuRepositoryImpl @Inject constructor(
         imuRemoteDataSource.sendBatch(batch, urgent)
         if (batch.seq % config.trimEverySeq != 0L) return
 
-        // 워치에 쌓아 둘 배치 상한. 기본 10분치(1초 배치면 600개).
+        // 워치에 쌓아 둘 배치 상한. 기본 30분치(1초 배치면 1800개).
         val maxQueuedBatches = config.queueMinutes * 60 / config.batchSec
         val dropped = imuRemoteDataSource.trimQueue(batch.sessionId, maxQueuedBatches)
         if (dropped.isEmpty()) return

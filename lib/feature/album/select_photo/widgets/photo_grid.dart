@@ -77,7 +77,7 @@ class _CameraTile extends StatelessWidget {
           final permission = viewModel.cameraPermission;
           if (permission == PermissionStatus.permanentlyDenied ||
               permission == PermissionStatus.restricted) {
-            showDialog(
+            showDialog<void>(
               context: context,
               builder: (_) => const CustomDialog(
                 title: '카메라 접근이 차단되었습니다.',

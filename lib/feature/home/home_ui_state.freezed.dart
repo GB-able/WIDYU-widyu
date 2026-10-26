@@ -19,6 +19,7 @@ mixin _$HomeUiState {
   bool get isNotificationLoading;
   bool get isSeniorCardLoading;
   List<NotificationUiModel> get notifications;
+  bool get hasUnreadNotification;
   String get name;
   bool get isWearing;
   int? get heartRate;
@@ -53,6 +54,8 @@ mixin _$HomeUiState {
                 other.isSeniorCardLoading == isSeniorCardLoading) &&
             const DeepCollectionEquality()
                 .equals(other.notifications, notifications) &&
+            (identical(other.hasUnreadNotification, hasUnreadNotification) ||
+                other.hasUnreadNotification == hasUnreadNotification) &&
             (identical(other.name, name) || other.name == name) &&
             (identical(other.isWearing, isWearing) ||
                 other.isWearing == isWearing) &&
@@ -85,6 +88,7 @@ mixin _$HomeUiState {
       isNotificationLoading,
       isSeniorCardLoading,
       const DeepCollectionEquality().hash(notifications),
+      hasUnreadNotification,
       name,
       isWearing,
       heartRate,
@@ -99,7 +103,7 @@ mixin _$HomeUiState {
 
   @override
   String toString() {
-    return 'HomeUiState(isUserLoading: $isUserLoading, isHeartRateLoading: $isHeartRateLoading, isNotificationLoading: $isNotificationLoading, isSeniorCardLoading: $isSeniorCardLoading, notifications: $notifications, name: $name, isWearing: $isWearing, heartRate: $heartRate, heartRateStatus: $heartRateStatus, measuredAt: $measuredAt, thumbnails: $thumbnails, medicationStatus: $medicationStatus, stepGoal: $stepGoal, healthSchedulePlace: $healthSchedulePlace, healthScheduleLatitude: $healthScheduleLatitude, healthScheduleLongitude: $healthScheduleLongitude)';
+    return 'HomeUiState(isUserLoading: $isUserLoading, isHeartRateLoading: $isHeartRateLoading, isNotificationLoading: $isNotificationLoading, isSeniorCardLoading: $isSeniorCardLoading, notifications: $notifications, hasUnreadNotification: $hasUnreadNotification, name: $name, isWearing: $isWearing, heartRate: $heartRate, heartRateStatus: $heartRateStatus, measuredAt: $measuredAt, thumbnails: $thumbnails, medicationStatus: $medicationStatus, stepGoal: $stepGoal, healthSchedulePlace: $healthSchedulePlace, healthScheduleLatitude: $healthScheduleLatitude, healthScheduleLongitude: $healthScheduleLongitude)';
   }
 }
 
@@ -115,6 +119,7 @@ abstract mixin class $HomeUiStateCopyWith<$Res> {
       bool isNotificationLoading,
       bool isSeniorCardLoading,
       List<NotificationUiModel> notifications,
+      bool hasUnreadNotification,
       String name,
       bool isWearing,
       int? heartRate,
@@ -147,6 +152,7 @@ class _$HomeUiStateCopyWithImpl<$Res> implements $HomeUiStateCopyWith<$Res> {
     Object? isNotificationLoading = null,
     Object? isSeniorCardLoading = null,
     Object? notifications = null,
+    Object? hasUnreadNotification = null,
     Object? name = null,
     Object? isWearing = null,
     Object? heartRate = freezed,
@@ -180,6 +186,10 @@ class _$HomeUiStateCopyWithImpl<$Res> implements $HomeUiStateCopyWith<$Res> {
           ? _self.notifications
           : notifications // ignore: cast_nullable_to_non_nullable
               as List<NotificationUiModel>,
+      hasUnreadNotification: null == hasUnreadNotification
+          ? _self.hasUnreadNotification
+          : hasUnreadNotification // ignore: cast_nullable_to_non_nullable
+              as bool,
       name: null == name
           ? _self.name
           : name // ignore: cast_nullable_to_non_nullable
@@ -337,6 +347,7 @@ extension HomeUiStatePatterns on HomeUiState {
             bool isNotificationLoading,
             bool isSeniorCardLoading,
             List<NotificationUiModel> notifications,
+            bool hasUnreadNotification,
             String name,
             bool isWearing,
             int? heartRate,
@@ -360,6 +371,7 @@ extension HomeUiStatePatterns on HomeUiState {
             _that.isNotificationLoading,
             _that.isSeniorCardLoading,
             _that.notifications,
+            _that.hasUnreadNotification,
             _that.name,
             _that.isWearing,
             _that.heartRate,
@@ -397,6 +409,7 @@ extension HomeUiStatePatterns on HomeUiState {
             bool isNotificationLoading,
             bool isSeniorCardLoading,
             List<NotificationUiModel> notifications,
+            bool hasUnreadNotification,
             String name,
             bool isWearing,
             int? heartRate,
@@ -419,6 +432,7 @@ extension HomeUiStatePatterns on HomeUiState {
             _that.isNotificationLoading,
             _that.isSeniorCardLoading,
             _that.notifications,
+            _that.hasUnreadNotification,
             _that.name,
             _that.isWearing,
             _that.heartRate,
@@ -455,6 +469,7 @@ extension HomeUiStatePatterns on HomeUiState {
             bool isNotificationLoading,
             bool isSeniorCardLoading,
             List<NotificationUiModel> notifications,
+            bool hasUnreadNotification,
             String name,
             bool isWearing,
             int? heartRate,
@@ -477,6 +492,7 @@ extension HomeUiStatePatterns on HomeUiState {
             _that.isNotificationLoading,
             _that.isSeniorCardLoading,
             _that.notifications,
+            _that.hasUnreadNotification,
             _that.name,
             _that.isWearing,
             _that.heartRate,
@@ -503,6 +519,7 @@ class _HomeUiState extends HomeUiState {
       required this.isNotificationLoading,
       required this.isSeniorCardLoading,
       required final List<NotificationUiModel> notifications,
+      required this.hasUnreadNotification,
       required this.name,
       required this.isWearing,
       this.heartRate,
@@ -534,6 +551,8 @@ class _HomeUiState extends HomeUiState {
     return EqualUnmodifiableListView(_notifications);
   }
 
+  @override
+  final bool hasUnreadNotification;
   @override
   final String name;
   @override
@@ -586,6 +605,8 @@ class _HomeUiState extends HomeUiState {
                 other.isSeniorCardLoading == isSeniorCardLoading) &&
             const DeepCollectionEquality()
                 .equals(other._notifications, _notifications) &&
+            (identical(other.hasUnreadNotification, hasUnreadNotification) ||
+                other.hasUnreadNotification == hasUnreadNotification) &&
             (identical(other.name, name) || other.name == name) &&
             (identical(other.isWearing, isWearing) ||
                 other.isWearing == isWearing) &&
@@ -618,6 +639,7 @@ class _HomeUiState extends HomeUiState {
       isNotificationLoading,
       isSeniorCardLoading,
       const DeepCollectionEquality().hash(_notifications),
+      hasUnreadNotification,
       name,
       isWearing,
       heartRate,
@@ -632,7 +654,7 @@ class _HomeUiState extends HomeUiState {
 
   @override
   String toString() {
-    return 'HomeUiState(isUserLoading: $isUserLoading, isHeartRateLoading: $isHeartRateLoading, isNotificationLoading: $isNotificationLoading, isSeniorCardLoading: $isSeniorCardLoading, notifications: $notifications, name: $name, isWearing: $isWearing, heartRate: $heartRate, heartRateStatus: $heartRateStatus, measuredAt: $measuredAt, thumbnails: $thumbnails, medicationStatus: $medicationStatus, stepGoal: $stepGoal, healthSchedulePlace: $healthSchedulePlace, healthScheduleLatitude: $healthScheduleLatitude, healthScheduleLongitude: $healthScheduleLongitude)';
+    return 'HomeUiState(isUserLoading: $isUserLoading, isHeartRateLoading: $isHeartRateLoading, isNotificationLoading: $isNotificationLoading, isSeniorCardLoading: $isSeniorCardLoading, notifications: $notifications, hasUnreadNotification: $hasUnreadNotification, name: $name, isWearing: $isWearing, heartRate: $heartRate, heartRateStatus: $heartRateStatus, measuredAt: $measuredAt, thumbnails: $thumbnails, medicationStatus: $medicationStatus, stepGoal: $stepGoal, healthSchedulePlace: $healthSchedulePlace, healthScheduleLatitude: $healthScheduleLatitude, healthScheduleLongitude: $healthScheduleLongitude)';
   }
 }
 
@@ -650,6 +672,7 @@ abstract mixin class _$HomeUiStateCopyWith<$Res>
       bool isNotificationLoading,
       bool isSeniorCardLoading,
       List<NotificationUiModel> notifications,
+      bool hasUnreadNotification,
       String name,
       bool isWearing,
       int? heartRate,
@@ -683,6 +706,7 @@ class __$HomeUiStateCopyWithImpl<$Res> implements _$HomeUiStateCopyWith<$Res> {
     Object? isNotificationLoading = null,
     Object? isSeniorCardLoading = null,
     Object? notifications = null,
+    Object? hasUnreadNotification = null,
     Object? name = null,
     Object? isWearing = null,
     Object? heartRate = freezed,
@@ -716,6 +740,10 @@ class __$HomeUiStateCopyWithImpl<$Res> implements _$HomeUiStateCopyWith<$Res> {
           ? _self._notifications
           : notifications // ignore: cast_nullable_to_non_nullable
               as List<NotificationUiModel>,
+      hasUnreadNotification: null == hasUnreadNotification
+          ? _self.hasUnreadNotification
+          : hasUnreadNotification // ignore: cast_nullable_to_non_nullable
+              as bool,
       name: null == name
           ? _self.name
           : name // ignore: cast_nullable_to_non_nullable

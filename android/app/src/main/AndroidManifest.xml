@@ -69,6 +69,10 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+        <!-- 알림 작은 아이콘. 이름은 flutter_background_service가 찾는 리소스명을 따른다. -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_icon"
+            android:resource="@drawable/ic_bg_service_small" />
         <service
             android:name="id.flutter.flutter_background_service.BackgroundService"
             android:foregroundServiceType="location|connectedDevice" />

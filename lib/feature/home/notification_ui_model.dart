@@ -14,7 +14,7 @@ abstract class NotificationUiModel with _$NotificationUiModel {
 
 extension NotificationMapper on List<Notification> {
   List<NotificationUiModel> toUiModel() {
-    return map((notification) {
+    return where((notification) => !notification.isRead).map((notification) {
       return NotificationUiModel(
         notificationId: notification.notificationId,
         icon: notification.image,

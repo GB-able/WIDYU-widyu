@@ -33,25 +33,25 @@ class _FeedVideoWidgetState extends State<FeedVideoWidget> {
   }
 
   Future<void> _initController() async {
-    final controller = VideoPlayerController.networkUrl(Uri.parse(widget.url))
-      ..setLooping(true);
+    final controller = VideoPlayerController.networkUrl(Uri.parse(widget.url));
+    await controller.setLooping(true);
 
     try {
       await controller.initialize();
     } catch (_) {
-      controller.dispose();
+      await controller.dispose();
       if (mounted) setState(() => _hasError = true);
       return;
     }
 
     if (!mounted) {
-      controller.dispose();
+      await controller.dispose();
       return;
     }
 
     await controller.setVolume(_isMuted ? 0 : 1);
     setState(() => _videoCtrl = controller);
-    if (widget.isActive) controller.play();
+    if (widget.isActive) await controller.play();
   }
 
   @override

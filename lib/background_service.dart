@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:ui';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -24,6 +25,7 @@ import 'package:widyu/core/data/source/sensor/sensor_batch_local_data_source_imp
 import 'package:widyu/core/data/source/sensor/sensor_batch_remote_data_source_impl.dart';
 import 'package:widyu/core/data/source/sensor/sensor_config_local_data_source_impl.dart';
 import 'package:widyu/core/data/source/sensor/sensor_config_remote_data_source_impl.dart';
+import 'package:widyu/core/log/log.dart';
 import 'package:widyu/core/model/api/api_result.dart';
 import 'package:widyu/core/model/location/location_service_state.dart';
 import 'package:widyu/core/model/permission/permission_type.dart';
@@ -127,7 +129,21 @@ Future<void> connectSocket(SocketClient socketClient) async {
 }
 
 @pragma('vm:entry-point')
-void onStart(ServiceInstance service) async {
+void onStart(ServiceInstance service) {
+  // 서비스는 별도 isolate라 main의 zone이 적용되지 않으므로 여기서 다시 감싼다.
+  runZonedGuarded(
+    () => _onStart(service),
+    (error, stack) {
+      // onError는 바깥 zone에서 실행되어 print 차단이 적용되지 않으므로 직접 막는다.
+      if (!kReleaseMode) {
+        debugPrint('[background_service] 처리되지 않은 예외: $error\n$stack');
+      }
+    },
+    zoneSpecification: quietPrintInRelease,
+  );
+}
+
+Future<void> _onStart(ServiceInstance service) async {
   WidgetsFlutterBinding.ensureInitialized();
   DartPluginRegistrant.ensureInitialized();
   await dotenv.load();
@@ -224,7 +240,7 @@ Future<void> _enqueueBackgroundService(Future<void> Function() operation) {
     (_) => operation(),
     onError: (_) => operation(),
   );
-  _backgroundServiceQueue = next.catchError((error, stack) {
+  _backgroundServiceQueue = next.catchError((Object error, StackTrace stack) {
     debugPrint('[background_service] 서비스 제어 실패: $error\n$stack');
   });
   return next;

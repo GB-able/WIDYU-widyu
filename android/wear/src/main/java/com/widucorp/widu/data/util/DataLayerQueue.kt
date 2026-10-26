@@ -3,7 +3,6 @@ package com.widucorp.widu.data.util
 import android.net.Uri
 import com.google.android.gms.tasks.Task
 import com.google.android.gms.wearable.DataClient
-import com.google.android.gms.wearable.DataMapItem
 import com.google.android.gms.wearable.PutDataMapRequest
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
@@ -11,7 +10,7 @@ import kotlin.coroutines.resumeWithException
 
 /*
  * 배치마다 고유 경로(`<prefix>/<sessionId>/<seq>`)의 DataItem 을 두어 Data Layer 저장소를 큐로 쓴다.
- * DataItem 은 폰과 끊겨도 워치에 남아 있다가 재연결 시 동기화된다. 폰은 받은 뒤 지운다.
+ * DataItem 은 폰과 끊겨도 워치에 남아 있다가 재연결 시 동기화된다. 폰은 서버가 받은 뒤에 지운다.
  */
 
 private const val KEY_BODY = "body"
@@ -44,7 +43,8 @@ internal suspend fun DataClient.trimOldest(
     val buffer = getDataItems(Uri.parse("wear://*$prefix/$sessionId"), DataClient.FILTER_PREFIX).awaitResult()
     val queued =
         try {
-            buffer.map { DataMapItem.fromDataItem(it).dataMap.getLong(KEY_SEQ) to it.uri }.sortedBy { it.first }
+            // 상한이 1800개라 매번 본문(DataMap)을 풀지 않고 경로 끝의 seq 만 읽는다.
+            buffer.mapNotNull { item -> item.uri.lastPathSegment?.toLongOrNull()?.let { it to item.uri } }.sortedBy { it.first }
         } finally {
             buffer.release()
         }

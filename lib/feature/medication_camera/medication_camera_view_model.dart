@@ -48,7 +48,8 @@ class MedicationCameraViewModel extends ChangeNotifier {
       final state = await _medicationRepository.alarmState();
       if (state['memberId'] == _group['memberId']) {
         final now = DateTime.now();
-        for (final target in (_group['occurrences'] as List).cast<Map>()) {
+        for (final target
+            in (_group['occurrences'] as List).cast<Map<dynamic, dynamic>>()) {
           final occurrence =
               MedicationOccurrence.fromJson(Map<String, dynamic>.from(target));
           if (occurrence.canVerify(now)) _pending.add(occurrence);

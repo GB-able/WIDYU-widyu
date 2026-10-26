@@ -27,7 +27,7 @@ class ContactViewModel with ChangeNotifier {
 
     final result = await _repository.updateRepresentativeContact(memberId);
     if (result is Success) {
-      _fetchContact();
+      await _fetchContact();
     } else {
       _uiEvent.add(const UpdateRepresentativeContactFailure());
     }

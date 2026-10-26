@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -71,14 +72,14 @@ class _FeedWidgetState extends State<FeedWidget> {
     final point = context.read<PointProvider>().point;
 
     if (point != null && point < price) {
-      showDialog(
+      unawaited(showDialog<void>(
         context: context,
         builder: (_) => UnlockDialog.notEnough(
           price: price,
           point: point,
           onTap: () => context.go(AppRoute.goal.path),
         ),
-      );
+      ));
       return;
     }
 
@@ -91,12 +92,13 @@ class _FeedWidgetState extends State<FeedWidget> {
       ),
     );
     if (success == true && mounted && !albumProvider.isDisposed) {
-      context.push(AppRoute.post.withParams({'albumId': widget.albumId}));
+      unawaited(
+          context.push(AppRoute.post.withParams({'albumId': widget.albumId})));
     }
   }
 
   void showMenu() {
-    showModalBottomSheet(
+    showModalBottomSheet<void>(
       useRootNavigator: true,
       backgroundColor: Colors.transparent,
       context: context,
@@ -118,7 +120,7 @@ class _FeedWidgetState extends State<FeedWidget> {
   }
 
   void confirmDelete() {
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (_) => CustomDialog(
         type: CustomDialogType.two,

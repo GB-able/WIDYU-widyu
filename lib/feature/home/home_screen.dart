@@ -122,7 +122,7 @@ class HomeScreen extends StatelessWidget {
       case CameraPermissionSettingsLaunchFailure():
         showToast('설정 화면을 열지 못했어요.');
       case ShowMedicationReward(:final result):
-        showDialog(
+        showDialog<void>(
           context: context,
           builder: (_) => MedicationRewardDialog(
             earnedPoint: result.earnedPoints,
@@ -160,7 +160,13 @@ class HomeScreen extends StatelessWidget {
           child: Scaffold(
             backgroundColor: MyColor.grey100,
             extendBodyBehindAppBar: true,
-            appBar: const _HomeAppBar(),
+            appBar: _HomeAppBar(
+              hasUnreadNotification: uiState.hasUnreadNotification,
+              onNotificationTap: () async {
+                await context.push(AppRoute.notification.path);
+                await viewModel.fetchUnreadNotification();
+              },
+            ),
             body: LayoutBuilder(
               builder: (context, constraints) {
                 final backgroundHeight = constraints.maxHeight -
@@ -181,6 +187,8 @@ class HomeScreen extends StatelessWidget {
                       ),
                     ),
                     CustomScrollView(
+                      scrollBehavior: ScrollConfiguration.of(context)
+                          .copyWith(overscroll: false),
                       slivers: [
                         SliverFillRemaining(
                           hasScrollBody: false,

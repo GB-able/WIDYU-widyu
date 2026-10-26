@@ -4,7 +4,7 @@ class _PhotoHeader extends StatelessWidget implements PreferredSizeWidget {
   const _PhotoHeader({required this.filter, required this.setFilter});
 
   final PhotoFilter filter;
-  final Function(PhotoFilter) setFilter;
+  final void Function(PhotoFilter) setFilter;
 
   @override
   Widget build(BuildContext context) {

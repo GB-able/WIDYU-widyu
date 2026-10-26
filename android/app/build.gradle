@@ -8,6 +8,13 @@ plugins {
     id "dev.flutter.flutter-gradle-plugin"
 }
 
+// 업로드 키는 android/key.properties 에서 읽는다(git 미추적). 워치 모듈도 같은 키를 쓴다.
+def keystoreProperties = new Properties()
+def keystorePropertiesFile = rootProject.file("key.properties")
+if (keystorePropertiesFile.exists()) {
+    keystorePropertiesFile.withInputStream { keystoreProperties.load(it) }
+}
+
 android {
     namespace = "com.widucorp.widu"
     compileSdk = flutter.compileSdkVersion
@@ -34,11 +41,22 @@ android {
         versionName = flutter.versionName
     }
 
+    signingConfigs {
+        release {
+            if (keystorePropertiesFile.exists()) {
+                storeFile = rootProject.file(keystoreProperties["storeFile"])
+                storePassword = keystoreProperties["storePassword"]
+                keyAlias = keystoreProperties["keyAlias"]
+                keyPassword = keystoreProperties["keyPassword"]
+            }
+        }
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.debug
+            // key.properties 가 없으면 debug 키로 서명해 로컬 `flutter run --release` 를 유지한다.
+            // Play Console 은 debug 서명 번들을 거부하므로 업로드는 key.properties 가 있어야 한다.
+            signingConfig = keystorePropertiesFile.exists() ? signingConfigs.release : signingConfigs.debug
         }
     }
 }

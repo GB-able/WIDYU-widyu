@@ -174,7 +174,7 @@ class AppServiceController extends ChangeNotifier {
 
   Future<void> _enqueue(Future<void> Function() operation) {
     final next = _queue.then((_) => operation(), onError: (_) => operation());
-    _queue = next.catchError((error, stack) {
+    _queue = next.catchError((Object error, StackTrace stack) {
       debugPrint('[AppServiceController] 작업 실패: $error\n$stack');
     });
     return _queue;

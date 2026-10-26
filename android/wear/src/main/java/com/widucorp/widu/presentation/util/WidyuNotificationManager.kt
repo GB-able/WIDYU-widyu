@@ -39,7 +39,6 @@ class WidyuNotificationManager @Inject constructor(
         )
     }
 
-    // 알림 아이콘 추가 필요
     fun buildNotification(): Notification {
         val notificationIntent = MainActivity.newIntent(context)
         val pendingIntent =
@@ -55,6 +54,7 @@ class WidyuNotificationManager @Inject constructor(
                 .Builder(context, NOTIFICATION_CHANNEL)
                 .setContentTitle(NOTIFICATION_TITLE)
                 .setContentText(NOTIFICATION_TEXT)
+                .setSmallIcon(R.drawable.ic_stat_widyu)
                 .setContentIntent(pendingIntent)
                 .setCategory(NotificationCompat.CATEGORY_WORKOUT)
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
@@ -63,7 +63,7 @@ class WidyuNotificationManager @Inject constructor(
             OngoingActivity
                 .Builder(context, NOTIFICATION_ID, notificationBuilder)
                 .setTouchIntent(pendingIntent)
-                .setStaticIcon(R.drawable.ic_launcher_background)
+                .setStaticIcon(R.drawable.ic_stat_widyu)
                 .build()
 
         ongoingActivity.apply(context)
@@ -85,7 +85,7 @@ class WidyuNotificationManager @Inject constructor(
                 .Builder(context, RESTART_NOTIFICATION_CHANNEL)
                 .setContentTitle(RESTART_NOTIFICATION_TITLE)
                 .setContentText(RESTART_NOTIFICATION_TEXT)
-                .setSmallIcon(R.drawable.ic_launcher_background)
+                .setSmallIcon(R.drawable.ic_stat_widyu)
                 .setContentIntent(pendingIntent)
                 .setAutoCancel(true)
                 .setPriority(NotificationCompat.PRIORITY_HIGH)

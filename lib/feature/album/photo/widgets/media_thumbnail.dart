@@ -17,7 +17,8 @@ class _MediaThumbnail extends StatelessWidget {
           _confirmUnlock(context);
           return;
         }
-        context.push(AppRoute.post.withParams({'albumId': media.postId}));
+        unawaited(
+            context.push(AppRoute.post.withParams({'albumId': media.postId})));
       },
       child: Stack(
         fit: StackFit.expand,
@@ -66,14 +67,14 @@ class _MediaThumbnail extends StatelessWidget {
     final point = context.read<PointProvider>().point;
 
     if (point != null && point < price) {
-      showDialog(
+      unawaited(showDialog<void>(
         context: context,
         builder: (_) => UnlockDialog.notEnough(
           price: price,
           point: point,
           onTap: () => context.go(AppRoute.goal.path),
         ),
-      );
+      ));
       return;
     }
 
@@ -86,7 +87,8 @@ class _MediaThumbnail extends StatelessWidget {
       ),
     );
     if (success == true && context.mounted && !albumProvider.isDisposed) {
-      context.push(AppRoute.post.withParams({'albumId': media.postId}));
+      unawaited(
+          context.push(AppRoute.post.withParams({'albumId': media.postId})));
     }
   }
 

@@ -36,10 +36,11 @@ class MedicationSchedule {
       revision: json['revision'] as int,
       timeZone: json['timeZone'] as String,
       schedules: schedules,
-      excludedOccurrenceIds:
-          ((json['excludedOccurrenceIds'] ?? json['completed'] ?? []) as List)
-              .map((e) => e.toString())
-              .toSet(),
+      excludedOccurrenceIds: ((json['excludedOccurrenceIds'] ??
+              json['completed'] ??
+              <Object?>[]) as List)
+          .map((e) => e.toString())
+          .toSet(),
     );
   }
 

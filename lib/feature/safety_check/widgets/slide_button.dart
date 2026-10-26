@@ -42,8 +42,8 @@ class _SlideButtonState extends State<_SlideButton>
       return;
     }
     _completed = true;
-    HapticFeedback.vibrate();
-    _controller.animateTo(1, curve: Curves.easeOutCubic);
+    unawaited(HapticFeedback.vibrate());
+    unawaited(_controller.animateTo(1, curve: Curves.easeOutCubic));
     final succeeded = await widget.onCompleted();
     if (succeeded || !mounted) return;
     _completed = false;
