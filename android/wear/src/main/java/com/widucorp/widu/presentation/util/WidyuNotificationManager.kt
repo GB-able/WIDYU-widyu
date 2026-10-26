@@ -39,7 +39,6 @@ class WidyuNotificationManager @Inject constructor(
         )
     }
 
-    // 알림 아이콘 추가 필요
     fun buildNotification(): Notification {
         val notificationIntent = MainActivity.newIntent(context)
         val pendingIntent =
@@ -55,6 +54,7 @@ class WidyuNotificationManager @Inject constructor(
                 .Builder(context, NOTIFICATION_CHANNEL)
                 .setContentTitle(NOTIFICATION_TITLE)
                 .setContentText(NOTIFICATION_TEXT)
+                .setSmallIcon(R.drawable.ic_stat_widyu)
                 .setContentIntent(pendingIntent)
                 .setCategory(NotificationCompat.CATEGORY_WORKOUT)
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
