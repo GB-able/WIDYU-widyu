@@ -324,6 +324,8 @@ class _FeedWidgetState extends State<FeedWidget> {
         const SizedBox(height: 8),
         Text(_formatDate(feed.createdAt), style: MyTypo.subTitle3),
         const SizedBox(height: 4),
+        if (isLocked && feed.content.trim().isNotEmpty)
+          Text(_lockedPreview(feed.content), style: MyTypo.body2),
         if (!isLocked)
           ExpandableText(
             text: feed.content,
@@ -336,6 +338,11 @@ class _FeedWidgetState extends State<FeedWidget> {
       ],
     );
   }
+}
+
+String _lockedPreview(String content) {
+  final chars = content.trim().characters;
+  return '${chars.take(chars.length < 5 ? 1 : 5)}...';
 }
 
 String _formatDate(DateTime date) {
