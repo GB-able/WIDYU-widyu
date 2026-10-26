@@ -15,16 +15,13 @@ class LoginViewModel with ChangeNotifier {
   bool _canGetPhoneNumber = false;
   bool _isDisposed = false;
   bool _isGettingPhoneNumber = false;
-  final List<TextEditingController> codeControllers =
-      List.generate(inviteCodeLength, (_) => TextEditingController());
-  final List<FocusNode> codeFocusNodes =
-      List.generate(inviteCodeLength, (_) => FocusNode());
+  final TextEditingController codeController = TextEditingController();
   final TextEditingController phoneController = TextEditingController();
 
   bool get canGetPhoneNumber => _canGetPhoneNumber;
   LoginUiState _state = const LoginPhoneState(isLoading: true);
   String? _phoneNumber;
-  final List<String> _prevCodes = List.generate(7, (_) => '');
+  String _prevCode = '';
   int _loginFailedCount = 0;
 
   LoginUiState get state => _state;
@@ -34,29 +31,14 @@ class LoginViewModel with ChangeNotifier {
   LoginViewModel({
     required AuthRepository authRepository,
   }) : _authRepository = authRepository {
-    for (int i = 0; i < codeControllers.length; i++) {
-      final index = i;
-      codeControllers[index].addListener(() {
-        final currentValue = codeControllers[index].text;
-        final previousValue = _prevCodes[index];
-
-        if (currentValue.isEmpty && previousValue.isNotEmpty && index > 0) {
-          codeFocusNodes[index - 1].requestFocus();
-          codeControllers[index - 1].selection = TextSelection.fromPosition(
-            TextPosition(offset: codeControllers[index - 1].text.length),
-          );
-        } else if (currentValue.isNotEmpty &&
-            previousValue.isEmpty &&
-            index < inviteCodeLength - 1) {
-          codeFocusNodes[index + 1].requestFocus();
-        }
-
-        _prevCodes[index] = currentValue;
-
-        changeState(const LoginCodeState(error: null));
-        notifyListeners();
-      });
-    }
+    codeController.addListener(() {
+      final text = codeController.text;
+      final end = TextSelection.collapsed(offset: text.length);
+      if (codeController.selection != end) codeController.selection = end;
+      if (text == _prevCode) return;
+      _prevCode = text;
+      changeState(const LoginCodeState(error: null));
+    });
 
     phoneController.addListener(() {
       notifyListeners();
@@ -68,12 +50,7 @@ class LoginViewModel with ChangeNotifier {
   @override
   void dispose() {
     _isDisposed = true;
-    for (var controller in codeControllers) {
-      controller.dispose();
-    }
-    for (var focusNode in codeFocusNodes) {
-      focusNode.dispose();
-    }
+    codeController.dispose();
     phoneController.dispose();
     super.dispose();
   }
@@ -137,14 +114,7 @@ class LoginViewModel with ChangeNotifier {
   }
 
   void resetCode() {
-    for (var controller in codeControllers) {
-      controller.clear();
-    }
-    for (int i = 0; i < _prevCodes.length; i++) {
-      final index = i;
-      _prevCodes[index] = '';
-    }
-    notifyListeners();
+    codeController.clear();
   }
 
   void changeState(LoginUiState state) {
@@ -158,7 +128,7 @@ class LoginViewModel with ChangeNotifier {
   }) async {
     assert(_phoneNumber != null && _phoneNumber!.isNotEmpty);
 
-    final inviteCode = codeControllers.map((c) => c.text).join();
+    final inviteCode = codeController.text;
     assert(inviteCode.length == inviteCodeLength);
 
     final result = await _authRepository.login(inviteCode, _phoneNumber!);
