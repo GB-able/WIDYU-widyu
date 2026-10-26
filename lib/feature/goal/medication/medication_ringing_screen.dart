@@ -39,7 +39,7 @@ class MedicationRingingScreen extends StatelessWidget {
           body: SafeArea(
             child: Column(children: [
               const SizedBox(height: 24),
-              Image.asset('assets/images/img_64_logo_medicine.png',
+              Image.asset('assets/images/img_64_logo.png',
                   width: 64, fit: BoxFit.contain),
               const Spacer(flex: 5),
               Center(
