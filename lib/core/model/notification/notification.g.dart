@@ -14,7 +14,8 @@ _Notification _$NotificationFromJson(Map<String, dynamic> json) =>
       title: json['title'] as String,
       content: json['content'] as String,
       createdAt: json['createdAt'] as String,
-      scheme: json['scheme'] as String,
+      isRead: json['isRead'] as bool,
+      path: json['path'] as String,
     );
 
 Map<String, dynamic> _$NotificationToJson(_Notification instance) =>
@@ -25,7 +26,8 @@ Map<String, dynamic> _$NotificationToJson(_Notification instance) =>
       'title': instance.title,
       'content': instance.content,
       'createdAt': instance.createdAt,
-      'scheme': instance.scheme,
+      'isRead': instance.isRead,
+      'path': instance.path,
     };
 
 const _$NotificationCategoryEnumMap = {

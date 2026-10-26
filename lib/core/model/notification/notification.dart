@@ -13,7 +13,8 @@ abstract class Notification with _$Notification {
     required String title,
     required String content,
     required String createdAt,
-    required String scheme,
+    required bool isRead,
+    required String path,
   }) = _Notification;
 
   factory Notification.fromJson(Map<String, dynamic> json) =>
