@@ -15,7 +15,7 @@ abstract class NotificationUiModel with _$NotificationUiModel {
 
 extension NotificationMapper on List<Notification> {
   List<NotificationUiModel> toUiModel() {
-    return where((notification) => notification.isRead)
+    return where((notification) => !notification.isRead)
         .map(
           (notification) => NotificationUiModel(
             notificationId: notification.notificationId,
