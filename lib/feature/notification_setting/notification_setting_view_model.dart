@@ -17,6 +17,8 @@ class NotificationSettingViewModel with ChangeNotifier {
   final _uiEvent = StreamController<NotificationSettingUiEvent>.broadcast();
   Stream<NotificationSettingUiEvent> get uiEvent => _uiEvent.stream;
 
+  bool _disposed = false;
+
   NotificationSettingViewModel({required NotificationRepository repository})
       : _repository = repository {
     _fetchNotificationSettings();
@@ -40,6 +42,7 @@ class NotificationSettingViewModel with ChangeNotifier {
     try {
       final result = await _repository.updateNotificationSettings(
           optimistic.toDomain(_uiState.policyRevision));
+      if (_disposed) return;
       if (result is! Success<NotificationSetting>) {
         _rollback(oldNotifications);
         return;
@@ -54,7 +57,7 @@ class NotificationSettingViewModel with ChangeNotifier {
       );
       notifyListeners();
     } catch (_) {
-      _rollback(oldNotifications);
+      if (!_disposed) _rollback(oldNotifications);
     }
   }
 
@@ -69,6 +72,7 @@ class NotificationSettingViewModel with ChangeNotifier {
     notifyListeners();
 
     final result = await _repository.fetchNotificationSettings();
+    if (_disposed) return;
     if (result is Success) {
       final data = (result as Success<List<NotificationSetting>>).data;
       _uiState = _uiState.copyWith(
@@ -84,6 +88,7 @@ class NotificationSettingViewModel with ChangeNotifier {
 
   @override
   void dispose() {
+    _disposed = true;
     _uiEvent.close();
     super.dispose();
   }
