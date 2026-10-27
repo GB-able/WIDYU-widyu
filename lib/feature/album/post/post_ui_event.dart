@@ -9,3 +9,11 @@ class SendCommentFailure extends PostUiEvent {
 class SendReplyFailure extends PostUiEvent {
   const SendReplyFailure();
 }
+
+class FeedDeleted extends PostUiEvent {
+  const FeedDeleted();
+}
+
+class FeedLocked extends PostUiEvent {
+  const FeedLocked();
+}

@@ -112,8 +112,15 @@ class PostViewModel extends ChangeNotifier {
         _update(
           (s) => s.copyWith(status: PostStatus.success, feed: _normalize(data)),
         );
-      case Failure():
-        _update((s) => s.copyWith(status: PostStatus.error));
+      case Failure(:final code):
+        switch (code) {
+          case 'ALBUM_4040':
+            _emit(const FeedDeleted());
+          case 'ALBUM_4031':
+            _emit(const FeedLocked());
+          default:
+            _update((s) => s.copyWith(status: PostStatus.error));
+        }
     }
   }
 

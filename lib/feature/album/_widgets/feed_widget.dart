@@ -7,7 +7,6 @@ import 'package:provider/provider.dart';
 import 'package:widyu/app/routes/app_route.dart';
 import 'package:widyu/app/routes/extra/edit_post_extra.dart';
 import 'package:widyu/core/data/provider/album_provider.dart';
-import 'package:widyu/core/data/provider/point_provider.dart';
 import 'package:widyu/core/model/album/album_post.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
@@ -66,33 +65,7 @@ class _FeedWidgetState extends State<FeedWidget> {
   }
 
   Future<void> _confirmUnlock() async {
-    final albumProvider = context.read<AlbumProvider>();
-    if (albumProvider.isUnlocking(widget.albumId)) return;
-    final price = albumProvider.postOf(widget.albumId)?.price;
-    if (price == null) return;
-    final point = context.read<PointProvider>().point;
-
-    if (point != null && point < price) {
-      unawaited(showDialog<void>(
-        context: context,
-        builder: (_) => UnlockDialog.notEnough(
-          price: price,
-          point: point,
-          onTap: () => context.go(AppRoute.goal.path),
-        ),
-      ));
-      return;
-    }
-
-    final success = await showDialog<bool>(
-      context: context,
-      builder: (_) => UnlockDialog.purchase(
-        price: price,
-        point: point,
-        onPurchase: () => albumProvider.unlock(widget.albumId),
-      ),
-    );
-    if (success == true && mounted && !albumProvider.isDisposed) {
+    if (await showUnlockDialog(context, widget.albumId) && mounted) {
       unawaited(context.push(AppRoute.postOf(widget.albumId)));
     }
   }
