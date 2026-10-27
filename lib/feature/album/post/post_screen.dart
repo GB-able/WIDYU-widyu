@@ -21,15 +21,15 @@ import 'package:widyu/feature/album/post/widgets/comment_card.dart';
 part 'widgets/comment_text_field.dart';
 
 class PostScreen extends StatelessWidget {
-  const PostScreen({super.key, required this.albumId});
+  const PostScreen({super.key, required this.postId});
 
-  final int albumId;
+  final int postId;
 
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (context) => PostViewModel(
-        id: albumId,
+        id: postId,
         repository: context.read<AlbumRepository>(),
         myPageRepository: context.read<MyPageRepository>(),
         albumProvider: context.read<AlbumProvider>(),
@@ -77,8 +77,8 @@ class PostScreen extends StatelessWidget {
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 16),
                                   child: FeedWidget(
-                                    albumId: albumId,
-                                    key: ValueKey(albumId),
+                                    albumId: postId,
+                                    key: ValueKey(postId),
                                     isDetail: true,
                                     onDeleted: () => context.pop(),
                                   ),
