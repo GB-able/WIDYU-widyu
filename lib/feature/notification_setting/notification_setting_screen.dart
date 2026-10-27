@@ -53,6 +53,7 @@ class NotificationSettingScreen extends StatelessWidget {
                       children: [
                         _NotificationSettingView(
                           notifications: uiState.notifications,
+                          isUpdating: uiState.isUpdating,
                           onToggle: viewModel.updateNotificationSetting,
                         ),
                       ],

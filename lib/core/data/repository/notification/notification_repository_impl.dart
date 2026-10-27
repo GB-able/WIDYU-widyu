@@ -18,7 +18,7 @@ class NotificationRepositoryImpl implements NotificationRepository {
           _remoteDataSource.fetchNotificationSettings().toApiResult();
 
   @override
-  Future<ApiResult<void>> updateNotificationSettings(
+  Future<ApiResult<NotificationSetting>> updateNotificationSettings(
           NotificationSetting setting) async =>
       _remoteDataSource.updateNotificationSetting(setting).toApiResult();
 

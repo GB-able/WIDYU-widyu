@@ -16,6 +16,7 @@ T _$identity<T>(T value) => value;
 mixin _$NotificationSettingUiState {
   bool get isLoading;
   List<NotificationSettingUiModel> get notifications;
+  int get policyRevision;
 
   /// Create a copy of NotificationSettingUiState
   /// with the given fields replaced by the non-null parameter values.
@@ -34,16 +35,18 @@ mixin _$NotificationSettingUiState {
             (identical(other.isLoading, isLoading) ||
                 other.isLoading == isLoading) &&
             const DeepCollectionEquality()
-                .equals(other.notifications, notifications));
+                .equals(other.notifications, notifications) &&
+            (identical(other.policyRevision, policyRevision) ||
+                other.policyRevision == policyRevision));
   }
 
   @override
   int get hashCode => Object.hash(runtimeType, isLoading,
-      const DeepCollectionEquality().hash(notifications));
+      const DeepCollectionEquality().hash(notifications), policyRevision);
 
   @override
   String toString() {
-    return 'NotificationSettingUiState(isLoading: $isLoading, notifications: $notifications)';
+    return 'NotificationSettingUiState(isLoading: $isLoading, notifications: $notifications, policyRevision: $policyRevision)';
   }
 }
 
@@ -53,7 +56,10 @@ abstract mixin class $NotificationSettingUiStateCopyWith<$Res> {
           $Res Function(NotificationSettingUiState) _then) =
       _$NotificationSettingUiStateCopyWithImpl;
   @useResult
-  $Res call({bool isLoading, List<NotificationSettingUiModel> notifications});
+  $Res call(
+      {bool isLoading,
+      List<NotificationSettingUiModel> notifications,
+      int policyRevision});
 }
 
 /// @nodoc
@@ -71,6 +77,7 @@ class _$NotificationSettingUiStateCopyWithImpl<$Res>
   $Res call({
     Object? isLoading = null,
     Object? notifications = null,
+    Object? policyRevision = null,
   }) {
     return _then(_self.copyWith(
       isLoading: null == isLoading
@@ -81,6 +88,10 @@ class _$NotificationSettingUiStateCopyWithImpl<$Res>
           ? _self.notifications
           : notifications // ignore: cast_nullable_to_non_nullable
               as List<NotificationSettingUiModel>,
+      policyRevision: null == policyRevision
+          ? _self.policyRevision
+          : policyRevision // ignore: cast_nullable_to_non_nullable
+              as int,
     ));
   }
 }
@@ -178,15 +189,16 @@ extension NotificationSettingUiStatePatterns on NotificationSettingUiState {
 
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>(
-    TResult Function(
-            bool isLoading, List<NotificationSettingUiModel> notifications)?
+    TResult Function(bool isLoading,
+            List<NotificationSettingUiModel> notifications, int policyRevision)?
         $default, {
     required TResult orElse(),
   }) {
     final _that = this;
     switch (_that) {
       case _NotificationSettingUiState() when $default != null:
-        return $default(_that.isLoading, _that.notifications);
+        return $default(
+            _that.isLoading, _that.notifications, _that.policyRevision);
       case _:
         return orElse();
     }
@@ -207,14 +219,15 @@ extension NotificationSettingUiStatePatterns on NotificationSettingUiState {
 
   @optionalTypeArgs
   TResult when<TResult extends Object?>(
-    TResult Function(
-            bool isLoading, List<NotificationSettingUiModel> notifications)
+    TResult Function(bool isLoading,
+            List<NotificationSettingUiModel> notifications, int policyRevision)
         $default,
   ) {
     final _that = this;
     switch (_that) {
       case _NotificationSettingUiState():
-        return $default(_that.isLoading, _that.notifications);
+        return $default(
+            _that.isLoading, _that.notifications, _that.policyRevision);
       case _:
         throw StateError('Unexpected subclass');
     }
@@ -234,14 +247,15 @@ extension NotificationSettingUiStatePatterns on NotificationSettingUiState {
 
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>(
-    TResult? Function(
-            bool isLoading, List<NotificationSettingUiModel> notifications)?
+    TResult? Function(bool isLoading,
+            List<NotificationSettingUiModel> notifications, int policyRevision)?
         $default,
   ) {
     final _that = this;
     switch (_that) {
       case _NotificationSettingUiState() when $default != null:
-        return $default(_that.isLoading, _that.notifications);
+        return $default(
+            _that.isLoading, _that.notifications, _that.policyRevision);
       case _:
         return null;
     }
@@ -250,11 +264,13 @@ extension NotificationSettingUiStatePatterns on NotificationSettingUiState {
 
 /// @nodoc
 
-class _NotificationSettingUiState implements NotificationSettingUiState {
+class _NotificationSettingUiState extends NotificationSettingUiState {
   const _NotificationSettingUiState(
       {this.isLoading = false,
-      final List<NotificationSettingUiModel> notifications = const []})
-      : _notifications = notifications;
+      final List<NotificationSettingUiModel> notifications = const [],
+      this.policyRevision = 0})
+      : _notifications = notifications,
+        super._();
 
   @override
   @JsonKey()
@@ -267,6 +283,10 @@ class _NotificationSettingUiState implements NotificationSettingUiState {
     // ignore: implicit_dynamic_type
     return EqualUnmodifiableListView(_notifications);
   }
+
+  @override
+  @JsonKey()
+  final int policyRevision;
 
   /// Create a copy of NotificationSettingUiState
   /// with the given fields replaced by the non-null parameter values.
@@ -285,16 +305,18 @@ class _NotificationSettingUiState implements NotificationSettingUiState {
             (identical(other.isLoading, isLoading) ||
                 other.isLoading == isLoading) &&
             const DeepCollectionEquality()
-                .equals(other._notifications, _notifications));
+                .equals(other._notifications, _notifications) &&
+            (identical(other.policyRevision, policyRevision) ||
+                other.policyRevision == policyRevision));
   }
 
   @override
   int get hashCode => Object.hash(runtimeType, isLoading,
-      const DeepCollectionEquality().hash(_notifications));
+      const DeepCollectionEquality().hash(_notifications), policyRevision);
 
   @override
   String toString() {
-    return 'NotificationSettingUiState(isLoading: $isLoading, notifications: $notifications)';
+    return 'NotificationSettingUiState(isLoading: $isLoading, notifications: $notifications, policyRevision: $policyRevision)';
   }
 }
 
@@ -307,7 +329,10 @@ abstract mixin class _$NotificationSettingUiStateCopyWith<$Res>
       __$NotificationSettingUiStateCopyWithImpl;
   @override
   @useResult
-  $Res call({bool isLoading, List<NotificationSettingUiModel> notifications});
+  $Res call(
+      {bool isLoading,
+      List<NotificationSettingUiModel> notifications,
+      int policyRevision});
 }
 
 /// @nodoc
@@ -325,6 +350,7 @@ class __$NotificationSettingUiStateCopyWithImpl<$Res>
   $Res call({
     Object? isLoading = null,
     Object? notifications = null,
+    Object? policyRevision = null,
   }) {
     return _then(_NotificationSettingUiState(
       isLoading: null == isLoading
@@ -335,6 +361,10 @@ class __$NotificationSettingUiStateCopyWithImpl<$Res>
           ? _self._notifications
           : notifications // ignore: cast_nullable_to_non_nullable
               as List<NotificationSettingUiModel>,
+      policyRevision: null == policyRevision
+          ? _self.policyRevision
+          : policyRevision // ignore: cast_nullable_to_non_nullable
+              as int,
     ));
   }
 }

@@ -2,10 +2,12 @@ part of '../notification_setting_screen.dart';
 
 class _NotificationSettingToggle extends StatelessWidget {
   final NotificationSettingUiModel notification;
+  final bool isUpdating;
   final ValueChanged<NotificationSettingUiModel> onToggle;
 
   const _NotificationSettingToggle({
     required this.notification,
+    required this.isUpdating,
     required this.onToggle,
   });
 
@@ -33,7 +35,7 @@ class _NotificationSettingToggle extends StatelessWidget {
           height: 30,
           child: Switch(
             value: notification.enabled,
-            onChanged: notification.isUpdating
+            onChanged: isUpdating
                 ? null
                 : (value) => onToggle(notification.copyWith(enabled: value)),
             activeTrackColor: MyColor.primary,
