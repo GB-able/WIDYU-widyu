@@ -25,6 +25,10 @@ class _MediaCarousel extends StatelessWidget {
   Widget build(BuildContext context) {
     final isSingle = _itemCount == 1;
     final maxWidth = MediaQuery.sizeOf(context).width;
+    final viewportFraction = ((_itemWidth + _itemGap) / maxWidth).clamp(
+      0.1,
+      1.0,
+    );
 
     return Column(
       children: [
@@ -34,27 +38,38 @@ class _MediaCarousel extends StatelessWidget {
             child: Center(child: _buildItem(0)),
           )
         else
-          CarouselSlider(
-            items: List.generate(
-              _itemCount,
-              (index) => Padding(
-                padding: EdgeInsets.only(
-                  left: _itemGap,
-                  right: index == _itemCount - 1 ? _itemGap : 0,
+          NotificationListener<ScrollUpdateNotification>(
+            onNotification: (notification) {
+              final metrics = notification.metrics;
+              if (notification.depth != 0 || !metrics.hasContentDimensions) {
+                return false;
+              }
+              final index = metrics.pixels >= metrics.maxScrollExtent - 1
+                  ? _itemCount - 1
+                  : (metrics.pixels /
+                          (metrics.viewportDimension * viewportFraction))
+                      .round();
+              if (index != currIdx) onPageChanged(index);
+              return false;
+            },
+            child: CarouselSlider(
+              items: List.generate(
+                _itemCount,
+                (index) => Padding(
+                  padding: EdgeInsets.only(
+                    left: _itemGap,
+                    right: index == _itemCount - 1 ? _itemGap : 0,
+                  ),
+                  child: _buildItem(index),
                 ),
-                child: _buildItem(index),
               ),
-            ),
-            options: CarouselOptions(
-              height: _itemHeight,
-              aspectRatio: 4 / 5,
-              viewportFraction: ((_itemWidth + _itemGap) / maxWidth).clamp(
-                0.1,
-                1.0,
+              options: CarouselOptions(
+                height: _itemHeight,
+                aspectRatio: 4 / 5,
+                viewportFraction: viewportFraction,
+                padEnds: false,
+                enableInfiniteScroll: false,
               ),
-              padEnds: false,
-              enableInfiniteScroll: false,
-              onPageChanged: (index, _) => onPageChanged(index),
             ),
           ),
         Padding(
