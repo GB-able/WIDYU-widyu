@@ -6,6 +6,8 @@ import 'package:widyu/core/data/provider/album_provider.dart';
 import 'package:widyu/core/data/repository/album/album_repository.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
+import 'package:widyu/core/ui/widgets/custom_error_widget.dart';
+import 'package:widyu/core/ui/widgets/custom_loading_widget.dart';
 import 'package:widyu/core/ui/widgets/icon_widget.dart';
 import 'package:widyu/core/utils/calendar_config.dart';
 import 'package:widyu/core/utils/extensions/date_extension.dart';
