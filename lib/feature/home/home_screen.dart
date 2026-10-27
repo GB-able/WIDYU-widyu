@@ -162,7 +162,7 @@ class HomeScreen extends StatelessWidget {
             appBar: const _HomeAppBar(),
             body: LayoutBuilder(
               builder: (context, constraints) {
-                final backgroundHeight = constraints.maxHeight -
+                final backgroundMinHeight = constraints.maxHeight -
                     _CarouselMenu.sheetHeightOf(context) +
                     _CarouselMenu.sheetRadius;
 
@@ -172,95 +172,86 @@ class HomeScreen extends StatelessWidget {
                       top: 0,
                       left: 0,
                       right: 0,
-                      height: backgroundHeight,
-                      child: const WidyuAssetImage(
-                        name: 'img_375_home_background.png',
-                        fit: BoxFit.cover,
-                        alignment: Alignment.topCenter,
+                      child: ConstrainedBox(
+                        constraints:
+                            BoxConstraints(minHeight: backgroundMinHeight),
+                        child: const WidyuAssetImage(
+                          name: 'img_375_home_background.png',
+                          fit: BoxFit.cover,
+                          alignment: Alignment.topCenter,
+                        ),
                       ),
                     ),
-                    CustomScrollView(
-                      scrollBehavior: ScrollConfiguration.of(context)
-                          .copyWith(overscroll: false),
-                      slivers: [
-                        SliverFillRemaining(
-                          hasScrollBody: false,
-                          child: Padding(
-                            padding: EdgeInsets.only(
-                              top: Scaffold.of(context).appBarMaxHeight!,
-                            ),
+                    Padding(
+                      padding: EdgeInsets.only(
+                        top: Scaffold.of(context).appBarMaxHeight!,
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
                             child: Column(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 16),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      if (notification == null)
-                                        const SizedBox(height: 28)
-                                      else ...[
-                                        _NotificationView(
-                                          id: notification.notificationId,
-                                          icon: notification.icon,
-                                          description: notification.description,
-                                          onTap:
-                                              viewModel.markNotificationAsRead,
-                                        ),
-                                        const SizedBox(height: 10),
-                                      ],
-                                      _HomeGreetingView(
-                                        isLoading: uiState.isUserLoading,
-                                        name: uiState.name,
-                                      ),
-                                      const SizedBox(height: 26),
-                                      _WatchDataView(
-                                        isLoading: uiState.isHeartRateLoading,
-                                        isWearing: uiState.isWearing,
-                                        heartRate: uiState.heartRate,
-                                        status: uiState.heartRateStatus,
-                                        measuredAt: uiState.measuredAt,
-                                        onHeartRateClick:
-                                            viewModel.fetchHeartRate,
-                                      ),
-                                    ],
+                                if (notification == null)
+                                  const SizedBox(height: 28)
+                                else ...[
+                                  _NotificationView(
+                                    id: notification.notificationId,
+                                    icon: notification.icon,
+                                    description: notification.description,
+                                    onTap: viewModel.markNotificationAsRead,
                                   ),
+                                  const SizedBox(height: 10),
+                                ],
+                                _HomeGreetingView(
+                                  isLoading: uiState.isUserLoading,
+                                  name: uiState.name,
                                 ),
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 24),
-                                  child: _CarouselMenu(
-                                    isLoading: uiState.isSeniorCardLoading,
-                                    hasGoal: uiState.hasGoal,
-                                    thumbanils: uiState.thumbnails,
-                                    medicationStatus: uiState.medicationStatus,
-                                    hasStepGoal: uiState.hasStepGoal,
-                                    stepProgress: uiState.stepProgressOf(
-                                      context.select<WalkProvider, int>(
-                                          (p) => p.steps),
-                                    ),
-                                    hasHealthSchedule:
-                                        uiState.hasHealthSchedule,
-                                    onCameraTap: () =>
-                                        viewModel.takeMedicationPhoto(
-                                      showPrompt: (type, mode) =>
-                                          showPermissionRecoveryPrompt(
-                                              context, type, mode),
-                                    ),
-                                    onRouteTap: () =>
-                                        viewModel.openHealthScheduleRoute(
-                                      showPrompt: (type, mode) =>
-                                          showPermissionRecoveryPrompt(
-                                              context, type, mode),
-                                    ),
-                                  ),
+                                const SizedBox(height: 26),
+                                _WatchDataView(
+                                  isLoading: uiState.isHeartRateLoading,
+                                  isWearing: uiState.isWearing,
+                                  heartRate: uiState.heartRate,
+                                  status: uiState.heartRateStatus,
+                                  measuredAt: uiState.measuredAt,
+                                  onHeartRateClick: viewModel.fetchHeartRate,
                                 ),
                               ],
                             ),
                           ),
-                        ),
-                      ],
+                          Flexible(
+                            child: Padding(
+                              padding: const EdgeInsets.only(top: 24),
+                              child: _CarouselMenu(
+                                isLoading: uiState.isSeniorCardLoading,
+                                hasGoal: uiState.hasGoal,
+                                thumbanils: uiState.thumbnails,
+                                medicationStatus: uiState.medicationStatus,
+                                hasStepGoal: uiState.hasStepGoal,
+                                stepProgress: uiState.stepProgressOf(
+                                  context.select<WalkProvider, int>(
+                                      (p) => p.steps),
+                                ),
+                                hasHealthSchedule: uiState.hasHealthSchedule,
+                                onCameraTap: () =>
+                                    viewModel.takeMedicationPhoto(
+                                  showPrompt: (type, mode) =>
+                                      showPermissionRecoveryPrompt(
+                                          context, type, mode),
+                                ),
+                                onRouteTap: () =>
+                                    viewModel.openHealthScheduleRoute(
+                                  showPrompt: (type, mode) =>
+                                      showPermissionRecoveryPrompt(
+                                          context, type, mode),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 );

@@ -50,6 +50,7 @@ class _CarouselMenuState extends State<_CarouselMenu> {
   static const _carouselCardGap = 52.0;
   static const _carouselCardWidth = 220.0;
   static const _carouselCardMaxHeight = 278.0;
+  static const _carouselCardMinScale = 0.6;
   static const _sheetRadius = 40.0;
 
   static const _carouselIndicatorGap = 20.0;
@@ -115,41 +116,54 @@ class _CarouselMenuState extends State<_CarouselMenu> {
   Widget build(BuildContext context) {
     final controller = _controller!;
     final cards = _cards;
+    final bottomPadding =
+        BotNav.height + MediaQuery.paddingOf(context).bottom + 16;
 
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.only(
-        top: _carouselTopPadding,
-        bottom: BotNav.height + MediaQuery.paddingOf(context).bottom + 16,
-      ),
-      decoration: const BoxDecoration(
-        color: MyColor.grey100,
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(_sheetRadius),
-          topRight: Radius.circular(_sheetRadius),
-        ),
-      ),
-      child: _content(controller, cards),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final cardHeight = (constraints.maxHeight -
+                _carouselTopPadding -
+                _carouselIndicatorArea -
+                bottomPadding)
+            .clamp(_carouselCardMaxHeight * _carouselCardMinScale,
+                _carouselCardMaxHeight);
+
+        return Container(
+          width: double.infinity,
+          padding: EdgeInsets.only(
+            top: _carouselTopPadding,
+            bottom: bottomPadding,
+          ),
+          decoration: const BoxDecoration(
+            color: MyColor.grey100,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(_sheetRadius),
+              topRight: Radius.circular(_sheetRadius),
+            ),
+          ),
+          child: _content(controller, cards, cardHeight),
+        );
+      },
     );
   }
 
-  Widget _content(PageController controller, List<_CarouselCard> cards) {
-    const cardHeight = _carouselCardMaxHeight;
-    const contentHeight = cardHeight + _carouselIndicatorArea;
+  Widget _content(
+      PageController controller, List<_CarouselCard> cards, double cardHeight) {
+    final contentHeight = cardHeight + _carouselIndicatorArea;
 
     // 로딩
     if (widget.isLoading) {
-      return const SizedBox(
+      return SizedBox(
         height: contentHeight,
-        child: Center(child: CircularProgressIndicator()),
+        child: const Center(child: CircularProgressIndicator()),
       );
     }
 
     // 목표가 존재하지 않음
     if (!widget.hasGoal) {
-      return const SizedBox(
+      return SizedBox(
         height: contentHeight,
-        child: _CarouselEmptyView(),
+        child: const _CarouselEmptyView(),
       );
     }
 
@@ -183,15 +197,23 @@ class _CarouselMenuState extends State<_CarouselMenu> {
                 child: Align(
                   alignment: Alignment.topCenter,
                   child: SizedBox(
-                    width: _carouselCardWidth,
+                    width: _carouselCardWidth *
+                        cardHeight /
+                        _carouselCardMaxHeight,
                     height: cardHeight,
-                    child: GestureDetector(
-                      onTap: () => controller.animateToPage(
-                        index,
-                        duration: const Duration(milliseconds: 300),
-                        curve: Curves.easeOut,
+                    child: FittedBox(
+                      child: SizedBox(
+                        width: _carouselCardWidth,
+                        height: _carouselCardMaxHeight,
+                        child: GestureDetector(
+                          onTap: () => controller.animateToPage(
+                            index,
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.easeOut,
+                          ),
+                          child: _cardAt(index, cards),
+                        ),
                       ),
-                      child: _cardAt(index, cards),
                     ),
                   ),
                 ),
