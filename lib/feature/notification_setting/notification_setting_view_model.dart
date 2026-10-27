@@ -36,14 +36,20 @@ class NotificationSettingViewModel with ChangeNotifier {
     notifyListeners();
 
     try {
-      final result =
-          _repository.updateNotificationSettings(optimistic.toDomain());
-      if (result is Failure) {
+      final result = await _repository.updateNotificationSettings(
+          optimistic.toDomain(_uiState.policyRevision));
+      if (result is! Success<NotificationSetting>) {
         _rollback(oldNotifications);
         return;
       }
-      newNotifications[targetIndex] = optimistic.copyWith(isUpdating: false);
-      _uiState = _uiState.copyWith(notifications: [...newNotifications]);
+      newNotifications[targetIndex] = optimistic.copyWith(
+        enabled: result.data.enabled,
+        isUpdating: false,
+      );
+      _uiState = _uiState.copyWith(
+        notifications: [...newNotifications],
+        policyRevision: result.data.policyRevision,
+      );
       notifyListeners();
     } catch (_) {
       _rollback(oldNotifications);
@@ -63,7 +69,10 @@ class NotificationSettingViewModel with ChangeNotifier {
     final result = await _repository.fetchNotificationSettings();
     if (result is Success) {
       final data = (result as Success<List<NotificationSetting>>).data;
-      _uiState = _uiState.copyWith(notifications: data.toUiModel());
+      _uiState = _uiState.copyWith(
+        notifications: data.toUiModel(),
+        policyRevision: data.firstOrNull?.policyRevision ?? 0,
+      );
     } else {
       _uiEvent.add(const FetchNotificationSettingFailure());
     }

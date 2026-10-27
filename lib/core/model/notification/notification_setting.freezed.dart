@@ -17,6 +17,17 @@ mixin _$NotificationSetting {
   NotificationGroup get group;
   String get groupName;
   bool get enabled;
+  int get policyRevision;
+  @JsonKey(includeToJson: false)
+  bool get recipientEnabled;
+  @JsonKey(includeToJson: false)
+  bool get productPushEnabled;
+  @JsonKey(includeToJson: false)
+  bool get mandatoryProductPush;
+  @JsonKey(includeToJson: false)
+  bool get canEditProductPush;
+  @JsonKey(includeToJson: false)
+  String get devicePushStatus;
 
   /// Create a copy of NotificationSetting
   /// with the given fields replaced by the non-null parameter values.
@@ -37,16 +48,38 @@ mixin _$NotificationSetting {
             (identical(other.group, group) || other.group == group) &&
             (identical(other.groupName, groupName) ||
                 other.groupName == groupName) &&
-            (identical(other.enabled, enabled) || other.enabled == enabled));
+            (identical(other.enabled, enabled) || other.enabled == enabled) &&
+            (identical(other.policyRevision, policyRevision) ||
+                other.policyRevision == policyRevision) &&
+            (identical(other.recipientEnabled, recipientEnabled) ||
+                other.recipientEnabled == recipientEnabled) &&
+            (identical(other.productPushEnabled, productPushEnabled) ||
+                other.productPushEnabled == productPushEnabled) &&
+            (identical(other.mandatoryProductPush, mandatoryProductPush) ||
+                other.mandatoryProductPush == mandatoryProductPush) &&
+            (identical(other.canEditProductPush, canEditProductPush) ||
+                other.canEditProductPush == canEditProductPush) &&
+            (identical(other.devicePushStatus, devicePushStatus) ||
+                other.devicePushStatus == devicePushStatus));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, group, groupName, enabled);
+  int get hashCode => Object.hash(
+      runtimeType,
+      group,
+      groupName,
+      enabled,
+      policyRevision,
+      recipientEnabled,
+      productPushEnabled,
+      mandatoryProductPush,
+      canEditProductPush,
+      devicePushStatus);
 
   @override
   String toString() {
-    return 'NotificationSetting(group: $group, groupName: $groupName, enabled: $enabled)';
+    return 'NotificationSetting(group: $group, groupName: $groupName, enabled: $enabled, policyRevision: $policyRevision, recipientEnabled: $recipientEnabled, productPushEnabled: $productPushEnabled, mandatoryProductPush: $mandatoryProductPush, canEditProductPush: $canEditProductPush, devicePushStatus: $devicePushStatus)';
   }
 }
 
@@ -56,7 +89,16 @@ abstract mixin class $NotificationSettingCopyWith<$Res> {
           NotificationSetting value, $Res Function(NotificationSetting) _then) =
       _$NotificationSettingCopyWithImpl;
   @useResult
-  $Res call({NotificationGroup group, String groupName, bool enabled});
+  $Res call(
+      {NotificationGroup group,
+      String groupName,
+      bool enabled,
+      int policyRevision,
+      @JsonKey(includeToJson: false) bool recipientEnabled,
+      @JsonKey(includeToJson: false) bool productPushEnabled,
+      @JsonKey(includeToJson: false) bool mandatoryProductPush,
+      @JsonKey(includeToJson: false) bool canEditProductPush,
+      @JsonKey(includeToJson: false) String devicePushStatus});
 }
 
 /// @nodoc
@@ -75,6 +117,12 @@ class _$NotificationSettingCopyWithImpl<$Res>
     Object? group = null,
     Object? groupName = null,
     Object? enabled = null,
+    Object? policyRevision = null,
+    Object? recipientEnabled = null,
+    Object? productPushEnabled = null,
+    Object? mandatoryProductPush = null,
+    Object? canEditProductPush = null,
+    Object? devicePushStatus = null,
   }) {
     return _then(_self.copyWith(
       group: null == group
@@ -89,6 +137,30 @@ class _$NotificationSettingCopyWithImpl<$Res>
           ? _self.enabled
           : enabled // ignore: cast_nullable_to_non_nullable
               as bool,
+      policyRevision: null == policyRevision
+          ? _self.policyRevision
+          : policyRevision // ignore: cast_nullable_to_non_nullable
+              as int,
+      recipientEnabled: null == recipientEnabled
+          ? _self.recipientEnabled
+          : recipientEnabled // ignore: cast_nullable_to_non_nullable
+              as bool,
+      productPushEnabled: null == productPushEnabled
+          ? _self.productPushEnabled
+          : productPushEnabled // ignore: cast_nullable_to_non_nullable
+              as bool,
+      mandatoryProductPush: null == mandatoryProductPush
+          ? _self.mandatoryProductPush
+          : mandatoryProductPush // ignore: cast_nullable_to_non_nullable
+              as bool,
+      canEditProductPush: null == canEditProductPush
+          ? _self.canEditProductPush
+          : canEditProductPush // ignore: cast_nullable_to_non_nullable
+              as bool,
+      devicePushStatus: null == devicePushStatus
+          ? _self.devicePushStatus
+          : devicePushStatus // ignore: cast_nullable_to_non_nullable
+              as String,
     ));
   }
 }
@@ -186,14 +258,32 @@ extension NotificationSettingPatterns on NotificationSetting {
 
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>(
-    TResult Function(NotificationGroup group, String groupName, bool enabled)?
+    TResult Function(
+            NotificationGroup group,
+            String groupName,
+            bool enabled,
+            int policyRevision,
+            @JsonKey(includeToJson: false) bool recipientEnabled,
+            @JsonKey(includeToJson: false) bool productPushEnabled,
+            @JsonKey(includeToJson: false) bool mandatoryProductPush,
+            @JsonKey(includeToJson: false) bool canEditProductPush,
+            @JsonKey(includeToJson: false) String devicePushStatus)?
         $default, {
     required TResult orElse(),
   }) {
     final _that = this;
     switch (_that) {
       case _NotificationSetting() when $default != null:
-        return $default(_that.group, _that.groupName, _that.enabled);
+        return $default(
+            _that.group,
+            _that.groupName,
+            _that.enabled,
+            _that.policyRevision,
+            _that.recipientEnabled,
+            _that.productPushEnabled,
+            _that.mandatoryProductPush,
+            _that.canEditProductPush,
+            _that.devicePushStatus);
       case _:
         return orElse();
     }
@@ -214,13 +304,31 @@ extension NotificationSettingPatterns on NotificationSetting {
 
   @optionalTypeArgs
   TResult when<TResult extends Object?>(
-    TResult Function(NotificationGroup group, String groupName, bool enabled)
+    TResult Function(
+            NotificationGroup group,
+            String groupName,
+            bool enabled,
+            int policyRevision,
+            @JsonKey(includeToJson: false) bool recipientEnabled,
+            @JsonKey(includeToJson: false) bool productPushEnabled,
+            @JsonKey(includeToJson: false) bool mandatoryProductPush,
+            @JsonKey(includeToJson: false) bool canEditProductPush,
+            @JsonKey(includeToJson: false) String devicePushStatus)
         $default,
   ) {
     final _that = this;
     switch (_that) {
       case _NotificationSetting():
-        return $default(_that.group, _that.groupName, _that.enabled);
+        return $default(
+            _that.group,
+            _that.groupName,
+            _that.enabled,
+            _that.policyRevision,
+            _that.recipientEnabled,
+            _that.productPushEnabled,
+            _that.mandatoryProductPush,
+            _that.canEditProductPush,
+            _that.devicePushStatus);
       case _:
         throw StateError('Unexpected subclass');
     }
@@ -240,13 +348,31 @@ extension NotificationSettingPatterns on NotificationSetting {
 
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>(
-    TResult? Function(NotificationGroup group, String groupName, bool enabled)?
+    TResult? Function(
+            NotificationGroup group,
+            String groupName,
+            bool enabled,
+            int policyRevision,
+            @JsonKey(includeToJson: false) bool recipientEnabled,
+            @JsonKey(includeToJson: false) bool productPushEnabled,
+            @JsonKey(includeToJson: false) bool mandatoryProductPush,
+            @JsonKey(includeToJson: false) bool canEditProductPush,
+            @JsonKey(includeToJson: false) String devicePushStatus)?
         $default,
   ) {
     final _that = this;
     switch (_that) {
       case _NotificationSetting() when $default != null:
-        return $default(_that.group, _that.groupName, _that.enabled);
+        return $default(
+            _that.group,
+            _that.groupName,
+            _that.enabled,
+            _that.policyRevision,
+            _that.recipientEnabled,
+            _that.productPushEnabled,
+            _that.mandatoryProductPush,
+            _that.canEditProductPush,
+            _that.devicePushStatus);
       case _:
         return null;
     }
@@ -257,7 +383,15 @@ extension NotificationSettingPatterns on NotificationSetting {
 @JsonSerializable()
 class _NotificationSetting implements NotificationSetting {
   const _NotificationSetting(
-      {required this.group, required this.groupName, required this.enabled});
+      {required this.group,
+      required this.groupName,
+      required this.enabled,
+      required this.policyRevision,
+      @JsonKey(includeToJson: false) this.recipientEnabled = true,
+      @JsonKey(includeToJson: false) this.productPushEnabled = true,
+      @JsonKey(includeToJson: false) this.mandatoryProductPush = false,
+      @JsonKey(includeToJson: false) this.canEditProductPush = true,
+      @JsonKey(includeToJson: false) this.devicePushStatus = 'unknown'});
   factory _NotificationSetting.fromJson(Map<String, dynamic> json) =>
       _$NotificationSettingFromJson(json);
 
@@ -267,6 +401,23 @@ class _NotificationSetting implements NotificationSetting {
   final String groupName;
   @override
   final bool enabled;
+  @override
+  final int policyRevision;
+  @override
+  @JsonKey(includeToJson: false)
+  final bool recipientEnabled;
+  @override
+  @JsonKey(includeToJson: false)
+  final bool productPushEnabled;
+  @override
+  @JsonKey(includeToJson: false)
+  final bool mandatoryProductPush;
+  @override
+  @JsonKey(includeToJson: false)
+  final bool canEditProductPush;
+  @override
+  @JsonKey(includeToJson: false)
+  final String devicePushStatus;
 
   /// Create a copy of NotificationSetting
   /// with the given fields replaced by the non-null parameter values.
@@ -292,16 +443,38 @@ class _NotificationSetting implements NotificationSetting {
             (identical(other.group, group) || other.group == group) &&
             (identical(other.groupName, groupName) ||
                 other.groupName == groupName) &&
-            (identical(other.enabled, enabled) || other.enabled == enabled));
+            (identical(other.enabled, enabled) || other.enabled == enabled) &&
+            (identical(other.policyRevision, policyRevision) ||
+                other.policyRevision == policyRevision) &&
+            (identical(other.recipientEnabled, recipientEnabled) ||
+                other.recipientEnabled == recipientEnabled) &&
+            (identical(other.productPushEnabled, productPushEnabled) ||
+                other.productPushEnabled == productPushEnabled) &&
+            (identical(other.mandatoryProductPush, mandatoryProductPush) ||
+                other.mandatoryProductPush == mandatoryProductPush) &&
+            (identical(other.canEditProductPush, canEditProductPush) ||
+                other.canEditProductPush == canEditProductPush) &&
+            (identical(other.devicePushStatus, devicePushStatus) ||
+                other.devicePushStatus == devicePushStatus));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, group, groupName, enabled);
+  int get hashCode => Object.hash(
+      runtimeType,
+      group,
+      groupName,
+      enabled,
+      policyRevision,
+      recipientEnabled,
+      productPushEnabled,
+      mandatoryProductPush,
+      canEditProductPush,
+      devicePushStatus);
 
   @override
   String toString() {
-    return 'NotificationSetting(group: $group, groupName: $groupName, enabled: $enabled)';
+    return 'NotificationSetting(group: $group, groupName: $groupName, enabled: $enabled, policyRevision: $policyRevision, recipientEnabled: $recipientEnabled, productPushEnabled: $productPushEnabled, mandatoryProductPush: $mandatoryProductPush, canEditProductPush: $canEditProductPush, devicePushStatus: $devicePushStatus)';
   }
 }
 
@@ -313,7 +486,16 @@ abstract mixin class _$NotificationSettingCopyWith<$Res>
       __$NotificationSettingCopyWithImpl;
   @override
   @useResult
-  $Res call({NotificationGroup group, String groupName, bool enabled});
+  $Res call(
+      {NotificationGroup group,
+      String groupName,
+      bool enabled,
+      int policyRevision,
+      @JsonKey(includeToJson: false) bool recipientEnabled,
+      @JsonKey(includeToJson: false) bool productPushEnabled,
+      @JsonKey(includeToJson: false) bool mandatoryProductPush,
+      @JsonKey(includeToJson: false) bool canEditProductPush,
+      @JsonKey(includeToJson: false) String devicePushStatus});
 }
 
 /// @nodoc
@@ -332,6 +514,12 @@ class __$NotificationSettingCopyWithImpl<$Res>
     Object? group = null,
     Object? groupName = null,
     Object? enabled = null,
+    Object? policyRevision = null,
+    Object? recipientEnabled = null,
+    Object? productPushEnabled = null,
+    Object? mandatoryProductPush = null,
+    Object? canEditProductPush = null,
+    Object? devicePushStatus = null,
   }) {
     return _then(_NotificationSetting(
       group: null == group
@@ -346,6 +534,30 @@ class __$NotificationSettingCopyWithImpl<$Res>
           ? _self.enabled
           : enabled // ignore: cast_nullable_to_non_nullable
               as bool,
+      policyRevision: null == policyRevision
+          ? _self.policyRevision
+          : policyRevision // ignore: cast_nullable_to_non_nullable
+              as int,
+      recipientEnabled: null == recipientEnabled
+          ? _self.recipientEnabled
+          : recipientEnabled // ignore: cast_nullable_to_non_nullable
+              as bool,
+      productPushEnabled: null == productPushEnabled
+          ? _self.productPushEnabled
+          : productPushEnabled // ignore: cast_nullable_to_non_nullable
+              as bool,
+      mandatoryProductPush: null == mandatoryProductPush
+          ? _self.mandatoryProductPush
+          : mandatoryProductPush // ignore: cast_nullable_to_non_nullable
+              as bool,
+      canEditProductPush: null == canEditProductPush
+          ? _self.canEditProductPush
+          : canEditProductPush // ignore: cast_nullable_to_non_nullable
+              as bool,
+      devicePushStatus: null == devicePushStatus
+          ? _self.devicePushStatus
+          : devicePushStatus // ignore: cast_nullable_to_non_nullable
+              as String,
     ));
   }
 }

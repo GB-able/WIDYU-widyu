@@ -8,5 +8,6 @@ abstract class NotificationSettingUiState with _$NotificationSettingUiState {
   const factory NotificationSettingUiState({
     @Default(false) bool isLoading,
     @Default([]) List<NotificationSettingUiModel> notifications,
+    @Default(0) int policyRevision,
   }) = _NotificationSettingUiState;
 }
