@@ -93,8 +93,7 @@ class _FeedWidgetState extends State<FeedWidget> {
       ),
     );
     if (success == true && mounted && !albumProvider.isDisposed) {
-      unawaited(
-          context.push(AppRoute.post.withParams({'albumId': widget.albumId})));
+      unawaited(context.push(AppRoute.postOf(widget.albumId)));
     }
   }
 
@@ -306,8 +305,7 @@ class _FeedWidgetState extends State<FeedWidget> {
                       return;
                     }
 
-                    context.push(
-                        AppRoute.post.withParams({'albumId': widget.albumId}));
+                    context.push(AppRoute.postOf(widget.albumId));
                   },
                   child: const IconWidget(icon: 'comment', width: 24),
                 ),

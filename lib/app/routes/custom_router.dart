@@ -166,8 +166,13 @@ class CustomRouter {
           ),
           CustomGoRoute.slideRoute(
             route: AppRoute.post,
-            builder: (_, state) => PostScreen(
-                albumId: int.parse(state.pathParameters['albumId']!)),
+            builder: (_, state) {
+              final postId =
+                  int.tryParse(state.uri.queryParameters['postId'] ?? '');
+              return postId != null
+                  ? PostScreen(postId: postId)
+                  : const Scaffold(body: Center(child: Text('게시물을 찾을 수 없어요.')));
+            },
           ),
           CustomGoRoute.closeShellRoute(
             builder: (_, __, child) => ChangeNotifierProvider(
