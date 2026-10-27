@@ -7,12 +7,15 @@ import 'package:widyu/core/data/repository/myPage/my_page_repository.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
 import 'package:widyu/core/ui/widgets/custom_app_bar.dart';
+import 'package:widyu/core/ui/widgets/custom_dialog.dart';
+import 'package:widyu/core/ui/widgets/custom_error_widget.dart';
+import 'package:widyu/core/ui/widgets/custom_loading_widget.dart';
 import 'package:widyu/core/ui/widgets/icon_widget.dart';
 import 'package:widyu/core/ui/widgets/profile_widget.dart';
 import 'package:widyu/core/ui/widgets/ui_event_listener.dart';
 import 'package:widyu/core/utils/show_toast.dart';
 import 'package:widyu/feature/album/_widgets/feed_widget.dart';
-import 'package:widyu/feature/album/_widgets/retry_widget.dart';
+import 'package:widyu/feature/album/_widgets/unlock_dialog.dart';
 import 'package:widyu/feature/album/post/post_ui_event.dart';
 import 'package:widyu/feature/album/post/post_ui_state.dart';
 import 'package:widyu/feature/album/post/post_view_model.dart';
@@ -44,9 +47,27 @@ class PostScreen extends StatelessWidget {
 
           return UiEventListener(
             stream: viewModel.uiEvent,
-            onEvent: (event) => switch (event) {
-              SendCommentFailure() => showToast('댓글 등록에 실패했습니다.'),
-              SendReplyFailure() => showToast('답글 등록에 실패했습니다.'),
+            onEvent: (event) {
+              switch (event) {
+                case SendCommentFailure():
+                  showToast('댓글 등록에 실패했습니다.');
+                case SendReplyFailure():
+                  showToast('답글 등록에 실패했습니다.');
+                case FeedDeleted():
+                  showDialog<void>(
+                    context: context,
+                    barrierDismissible: false,
+                    builder: (_) => CustomDialog(
+                      title: '삭제된 게시물이에요',
+                      onPosTap: () => context.pop(),
+                    ),
+                  );
+                case FeedLocked():
+                  showUnlockDialog(context, postId).then((unlocked) {
+                    if (!context.mounted) return;
+                    unlocked ? viewModel.retry() : context.pop();
+                  });
+              }
             },
             child: PopScope(
               canPop: uiState.replyParentId == null,
@@ -59,15 +80,9 @@ class PostScreen extends StatelessWidget {
                   children: [
                     Expanded(
                       child: switch (uiState.status) {
-                        PostStatus.loading => const Center(
-                            child: CircularProgressIndicator(),
-                          ),
-                        PostStatus.error => RetryWidget(
-                            message: '피드를 불러오지 못했어요',
-                            onRetry: viewModel.retry,
-                          ),
-                        PostStatus.success when feed == null => RetryWidget(
-                            message: '피드를 불러오지 못했어요',
+                        PostStatus.loading => const CustomLoadingWidget(),
+                        PostStatus.error => CustomErrorWidget(
+                            errorMsg: '피드를 불러오지 못했어요',
                             onRetry: viewModel.retry,
                           ),
                         PostStatus.success => SingleChildScrollView(
@@ -128,7 +143,7 @@ class PostScreen extends StatelessWidget {
                           ),
                       },
                     ),
-                    if (!isLocked)
+                    if (feed != null && !isLocked)
                       _CommentTextField(
                         profileImage: myProfileImage,
                         controller: viewModel.commentController,
