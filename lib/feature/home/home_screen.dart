@@ -160,13 +160,7 @@ class HomeScreen extends StatelessWidget {
           child: Scaffold(
             backgroundColor: MyColor.grey100,
             extendBodyBehindAppBar: true,
-            appBar: _HomeAppBar(
-              hasUnreadNotification: uiState.hasUnreadNotification,
-              onNotificationTap: () async {
-                await context.push(AppRoute.notification.path);
-                await viewModel.fetchUnreadNotification();
-              },
-            ),
+            appBar: const _HomeAppBar(),
             body: LayoutBuilder(
               builder: (context, constraints) {
                 final backgroundHeight = constraints.maxHeight -
