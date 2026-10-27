@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:widyu/app/routes/app_route.dart';
 import 'package:widyu/app/routes/custom_page.dart';
 import 'package:widyu/app/routes/extra/edit_post_extra.dart';
+import 'package:widyu/app/routes/notification_tap_listener.dart';
 import 'package:widyu/app/routes/safety_check_listener.dart';
 import 'package:widyu/app/routes/user_session_scope.dart';
 import 'package:widyu/core/network/token_manager.dart';
@@ -92,7 +93,9 @@ class CustomRouter {
       ShellRoute(
         builder: (context, state, child) => UserSessionScope(
           child: SafetyCheckListener(
-            child: MedicationSessionScope(child: child),
+            child: NotificationTapListener(
+              child: MedicationSessionScope(child: child),
+            ),
           ),
         ),
         routes: [
