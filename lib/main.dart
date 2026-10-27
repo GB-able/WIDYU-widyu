@@ -1,101 +1,321 @@
+import 'dart:async';
+
+import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
+import 'package:intl/date_symbol_data_local.dart';
+import 'package:provider/provider.dart';
+import 'package:widyu/app/routes/custom_router.dart';
+import 'package:widyu/background_service.dart';
+import 'package:widyu/core/data/repository/album/album_repository.dart';
+import 'package:widyu/core/data/repository/album/album_repository_impl.dart';
+import 'package:widyu/core/data/repository/auth/auth_repository.dart';
+import 'package:widyu/core/data/repository/auth/auth_repository_impl.dart';
+import 'package:widyu/core/data/repository/goal/goal_repository.dart';
+import 'package:widyu/core/data/repository/goal/goal_repository_impl.dart';
+import 'package:widyu/core/data/repository/goal/medication_repository.dart';
+import 'package:widyu/core/data/repository/goal/medication_repository_impl.dart';
+import 'package:widyu/core/data/repository/goal/walk_repository.dart';
+import 'package:widyu/core/data/repository/goal/walk_repository_impl.dart';
+import 'package:widyu/core/data/repository/heartRate/heart_rate_repository.dart';
+import 'package:widyu/core/data/repository/heartRate/heart_rate_repository_impl.dart';
+import 'package:widyu/core/data/repository/home/home_repository.dart';
+import 'package:widyu/core/data/repository/home/home_repository_impl.dart';
+import 'package:widyu/core/data/repository/location/location_repository.dart';
+import 'package:widyu/core/data/repository/location/location_repository_impl.dart';
+import 'package:widyu/core/data/repository/myPage/my_page_repository.dart';
+import 'package:widyu/core/data/repository/myPage/my_page_repository_impl.dart';
+import 'package:widyu/core/data/repository/notification/notification_repository.dart';
+import 'package:widyu/core/data/repository/notification/notification_repository_impl.dart';
+import 'package:widyu/core/data/repository/point/point_repository.dart';
+import 'package:widyu/core/data/repository/point/point_repository_impl.dart';
+import 'package:widyu/core/data/source/album/album_remote_data_source.dart';
+import 'package:widyu/core/data/source/album/album_remote_data_source_impl.dart';
+import 'package:widyu/core/data/source/auth/auth_local_data_source.dart';
+import 'package:widyu/core/data/source/auth/auth_local_data_source_impl.dart';
+import 'package:widyu/core/data/source/auth/auth_remote_data_source.dart';
+import 'package:widyu/core/data/source/auth/auth_remote_data_source_impl.dart';
+import 'package:widyu/core/data/source/device/device_local_data_source.dart';
+import 'package:widyu/core/data/source/device/device_local_data_source_impl.dart';
+import 'package:widyu/core/data/source/goal/goal_remote_data_source.dart';
+import 'package:widyu/core/data/source/goal/goal_remote_data_source_impl.dart';
+import 'package:widyu/core/data/source/goal/medication_alarm_local_data_source.dart';
+import 'package:widyu/core/data/source/goal/medication_alarm_local_data_source_impl.dart';
+import 'package:widyu/core/data/source/goal/medication_remote_data_source.dart';
+import 'package:widyu/core/data/source/goal/medication_remote_data_source_impl.dart';
+import 'package:widyu/core/data/source/goal/walk_local_data_source.dart';
+import 'package:widyu/core/data/source/goal/walk_local_data_source_impl.dart';
+import 'package:widyu/core/data/source/goal/walk_remote_data_source.dart';
+import 'package:widyu/core/data/source/goal/walk_remote_data_source_impl.dart';
+import 'package:widyu/core/data/source/heartRate/heart_rate_local_data_source.dart';
+import 'package:widyu/core/data/source/heartRate/heart_rate_local_data_source_impl.dart';
+import 'package:widyu/core/data/source/heartRate/heart_rate_remote_data_source.dart';
+import 'package:widyu/core/data/source/heartRate/heart_rate_remote_data_source_impl.dart';
+import 'package:widyu/core/data/source/home/home_remote_data_source.dart';
+import 'package:widyu/core/data/source/home/home_remote_data_source_impl.dart';
+import 'package:widyu/core/data/source/location/location_local_data_source.dart';
+import 'package:widyu/core/data/source/location/location_local_data_source_impl.dart';
+import 'package:widyu/core/data/source/location/location_remote_data_source.dart';
+import 'package:widyu/core/data/source/location/location_remote_data_source_impl.dart';
+import 'package:widyu/core/data/source/myPage/my_page_remote_data_source.dart';
+import 'package:widyu/core/data/source/myPage/my_page_remote_data_source_impl.dart';
+import 'package:widyu/core/data/source/notification/notification_remote_data_source.dart';
+import 'package:widyu/core/data/source/notification/notification_remote_data_source_impl.dart';
+import 'package:widyu/core/data/source/point/point_remote_data_source.dart';
+import 'package:widyu/core/data/source/point/point_remote_data_source_impl.dart';
+import 'package:widyu/core/log/log.dart';
+import 'package:widyu/core/network/api_client.dart';
+import 'package:widyu/core/network/socket_client.dart';
+import 'package:widyu/core/network/token_manager.dart';
+import 'package:widyu/core/notification/local_notification_manager.dart';
+import 'package:widyu/core/notification/medication_push_manager.dart';
+import 'package:widyu/core/ui/theme/theme.dart';
+import 'package:widyu/core/utils/app_service_controller.dart';
+import 'package:widyu/core/utils/background_location_notice_controller.dart';
+import 'package:widyu/firebase_options.dart';
+import 'package:widyu/walk_background_service.dart';
 
 void main() {
-  runApp(const MyApp());
+  runZonedGuarded(
+    _bootstrap,
+    (error, stack) {
+      // onError는 바깥 zone에서 실행되어 print 차단이 적용되지 않으므로 직접 막는다.
+      if (!kReleaseMode) debugPrint('[main] 처리되지 않은 예외: $error\n$stack');
+    },
+    zoneSpecification: quietPrintInRelease,
+  );
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+Future<void> _bootstrap() async {
+  final WidgetsBinding widgetsBinding =
+      WidgetsFlutterBinding.ensureInitialized();
+  FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
 
-  // This widget is the root of your application.
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
-      ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+  FlutterError.onError = (details) {
+    FlutterError.presentError(details);
+    debugPrint('[main] FlutterError: ${details.exception}\n${details.stack}');
+  };
+
+  // 초기화 단계 중 하나가 실패하더라도 나머지 단계와 runApp 은 반드시 수행한다.
+  try {
+    await dotenv.load();
+  } catch (e, stack) {
+    debugPrint('[main] dotenv.load 실패: $e\n$stack');
+  }
+
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
     );
+  } catch (e, stack) {
+    debugPrint('[main] Firebase.initializeApp 실패: $e\n$stack');
   }
+
+  try {
+    await initializeService();
+  } catch (e, stack) {
+    debugPrint('[main] initializeService 실패: $e\n$stack');
+  }
+
+  try {
+    await initializeWalkService();
+  } catch (e) {
+    debugPrint('[main] 걸음수 백그라운드 초기화 실패: ${e.runtimeType}');
+  }
+
+  try {
+    await initializeDateFormatting('ko_KR');
+  } catch (e, stack) {
+    debugPrint('[main] initializeDateFormatting 실패: $e\n$stack');
+  }
+
+  try {
+    await initializeMedicationPush();
+    await LocalNotificationManager.initialize();
+  } catch (e, stack) {
+    debugPrint('[main] 알림 초기화 실패: $e\n$stack');
+  }
+
+  runApp(
+    MultiProvider(
+      providers: [
+        Provider<TokenManager>(create: (_) => TokenManager()),
+        ChangeNotifierProvider<AppServiceController>(
+          create: (_) => AppServiceController(),
+        ),
+        Provider<BackgroundLocationNoticeController>(
+          create: (_) => BackgroundLocationNoticeController(),
+          dispose: (_, controller) => controller.dispose(),
+        ),
+        Provider<ApiClient>(create: (_) => ApiClient()),
+        Provider<SocketClient>(create: (_) => SocketClient()),
+        ProxyProvider<ApiClient, MedicationRemoteDataSource>(
+          update: (_, apiClient, __) =>
+              MedicationRemoteDataSourceImpl(apiClient: apiClient),
+        ),
+        ProxyProvider<ApiClient, WalkRemoteDataSource>(
+          update: (_, apiClient, __) =>
+              WalkRemoteDataSourceImpl(apiClient: apiClient),
+        ),
+        ProxyProvider<ApiClient, GoalRemoteDataSource>(
+          update: (_, apiClient, __) =>
+              GoalRemoteDataSourceImpl(apiClient: apiClient),
+        ),
+        Provider<WalkLocalDataSource>(create: (_) => WalkLocalDataSourceImpl()),
+        ProxyProvider2<WalkLocalDataSource, WalkRemoteDataSource,
+            WalkRepository>(
+          update: (_, local, remote, __) => WalkRepositoryImpl(
+            localDataSource: local,
+            remoteDataSource: remote,
+          ),
+        ),
+        ProxyProvider<GoalRemoteDataSource, GoalRepository>(
+          update: (_, goal, __) =>
+              GoalRepositoryImpl(goalRemoteDataSource: goal),
+        ),
+        Provider<MedicationAlarmLocalDataSource>(
+            create: (_) => MedicationAlarmLocalDataSourceImpl()),
+        Provider<MedicationRepository>(
+          create: (context) => MedicationRepositoryImpl(
+            localDataSource: context.read<MedicationAlarmLocalDataSource>(),
+            remoteDataSource: context.read<MedicationRemoteDataSource>(),
+            currentMember: authenticatedMedicationMember,
+          ),
+        ),
+        ProxyProvider<ApiClient, AuthRemoteDataSource>(
+          update: (_, apiClient, __) =>
+              AuthRemoteDataSourceImpl(apiClient: apiClient),
+        ),
+        Provider<AuthLocalDataSource>(create: (_) => AuthLocalDataSourceImpl()),
+        ProxyProvider<ApiClient, HomeRemoteDataSource>(
+          update: (_, apiClient, __) =>
+              HomeRemoteDataSourceImpl(apiClient: apiClient),
+        ),
+        ProxyProvider<ApiClient, MyPageRemoteDataSource>(
+          update: (_, apiClient, __) =>
+              MyPageRemoteDataSourceImpl(apiClient: apiClient),
+        ),
+        ProxyProvider<ApiClient, NotificationRemoteDataSource>(
+          update: (_, apiClient, __) =>
+              NotificationRemoteDataSourceImpl(apiClient: apiClient),
+        ),
+        Provider<HeartRateLocalDataSource>(
+          create: (_) => HeartRateLocalDataSourceImpl(),
+        ),
+        Provider<DeviceLocalDataSource>(
+          create: (_) => DeviceLocalDataSourceImpl(),
+        ),
+        Provider<LocationLocalDataSource>(
+          create: (_) => LocationLocalDataSourceImpl(),
+        ),
+        ProxyProvider<SocketClient, LocationRemoteDataSource>(
+          update: (_, socketClient, __) =>
+              LocationRemoteDataSourceImpl(socketClient: socketClient),
+        ),
+        ProxyProvider<ApiClient, HeartRateRemoteDataSource>(
+          update: (_, apiClient, __) =>
+              HeartRateRemoteDataSourceImpl(apiClient: apiClient),
+        ),
+        ProxyProvider<ApiClient, AlbumRemoteDataSource>(
+          update: (_, apiClient, __) =>
+              AlbumRemoteDataSourceImpl(apiClient: apiClient),
+        ),
+        ProxyProvider<ApiClient, PointRemoteDataSource>(
+          update: (_, apiClient, __) =>
+              PointRemoteDataSourceImpl(apiClient: apiClient),
+        ),
+        ProxyProvider2<AuthRemoteDataSource, AuthLocalDataSource,
+            AuthRepository>(
+          update: (_, remote, local, __) => AuthRepositoryImpl(
+            remoteDatasource: remote,
+            localDataSource: local,
+          ),
+        ),
+        ProxyProvider<HomeRemoteDataSource, HomeRepository>(
+          update: (_, remote, __) =>
+              HomeRepositoryImpl(remoteDataSource: remote),
+        ),
+        ProxyProvider<MyPageRemoteDataSource, MyPageRepository>(
+          update: (_, remote, __) =>
+              MyPageRepositoryImpl(remoteDataSource: remote),
+        ),
+        ProxyProvider<NotificationRemoteDataSource, NotificationRepository>(
+          update: (_, remote, __) =>
+              NotificationRepositoryImpl(remoteDataSource: remote),
+        ),
+        ProxyProvider2<HeartRateLocalDataSource, HeartRateRemoteDataSource,
+            HeartRateRepository>(
+          update: (_, local, remote, __) => HeartRateRepositoryImpl(
+            localDataSource: local,
+            remoteDataSource: remote,
+          ),
+        ),
+        ProxyProvider4<LocationLocalDataSource, LocationRemoteDataSource,
+            AuthLocalDataSource, DeviceLocalDataSource, LocationRepository>(
+          update: (_, local, remote, authLocal, deviceLocal, __) =>
+              LocationRepositoryImpl(
+            localDataSource: local,
+            remoteDataSource: remote,
+            authLocalDataSource: authLocal,
+            deviceLocalDataSource: deviceLocal,
+          ),
+        ),
+        ProxyProvider<PointRemoteDataSource, PointRepository>(
+          update: (_, remote, __) =>
+              PointRepositoryImpl(remoteDataSource: remote),
+        ),
+        ProxyProvider<AlbumRemoteDataSource, AlbumRepository>(
+          update: (_, remote, __) =>
+              AlbumRepositoryImpl(remoteDataSource: remote),
+        ),
+      ],
+      child: const App(),
+    ),
+  );
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  final String title;
+class App extends StatefulWidget {
+  const App({super.key});
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<App> createState() => _AppState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+class _AppState extends State<App> with WidgetsBindingObserver {
+  late final AppServiceController _serviceController;
 
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _serviceController = context.read<AppServiceController>();
+    unawaited(_serviceController.start());
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      unawaited(_serviceController.refresh());
+    }
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
-    return Scaffold(
-      appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-      ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+    return MaterialApp.router(
+      title: '위듀',
+      theme: MyTheme.myTheme,
+      routerConfig: CustomRouter.router,
+      locale: const Locale('ko', 'KR'),
+      localizationsDelegates: GlobalMaterialLocalizations.delegates,
     );
   }
 }

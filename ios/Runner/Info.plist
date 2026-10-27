@@ -1,49 +1,92 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
-<dict>
-	<key>CFBundleDevelopmentRegion</key>
-	<string>$(DEVELOPMENT_LANGUAGE)</string>
-	<key>CFBundleDisplayName</key>
-	<string>Widyu</string>
-	<key>CFBundleExecutable</key>
-	<string>$(EXECUTABLE_NAME)</string>
-	<key>CFBundleIdentifier</key>
-	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
-	<key>CFBundleInfoDictionaryVersion</key>
-	<string>6.0</string>
-	<key>CFBundleName</key>
-	<string>widyu</string>
-	<key>CFBundlePackageType</key>
-	<string>APPL</string>
-	<key>CFBundleShortVersionString</key>
-	<string>$(FLUTTER_BUILD_NAME)</string>
-	<key>CFBundleSignature</key>
-	<string>????</string>
-	<key>CFBundleVersion</key>
-	<string>$(FLUTTER_BUILD_NUMBER)</string>
-	<key>LSRequiresIPhoneOS</key>
-	<true/>
-	<key>UILaunchStoryboardName</key>
-	<string>LaunchScreen</string>
-	<key>UIMainStoryboardFile</key>
-	<string>Main</string>
-	<key>UISupportedInterfaceOrientations</key>
-	<array>
-		<string>UIInterfaceOrientationPortrait</string>
-		<string>UIInterfaceOrientationLandscapeLeft</string>
-		<string>UIInterfaceOrientationLandscapeRight</string>
-	</array>
-	<key>UISupportedInterfaceOrientations~ipad</key>
-	<array>
-		<string>UIInterfaceOrientationPortrait</string>
-		<string>UIInterfaceOrientationPortraitUpsideDown</string>
-		<string>UIInterfaceOrientationLandscapeLeft</string>
-		<string>UIInterfaceOrientationLandscapeRight</string>
-	</array>
-	<key>CADisableMinimumFrameDurationOnPhone</key>
-	<true/>
-	<key>UIApplicationSupportsIndirectInputEvents</key>
-	<true/>
-</dict>
+	<dict>
+	   <key>NSAppTransportSecurity</key>
+        <dict>
+            <key>NSAllowsArbitraryLoads</key><true/>
+        </dict>
+		<key>CFBundleDevelopmentRegion</key>
+		<string>$(DEVELOPMENT_LANGUAGE)</string>
+		<key>CFBundleDisplayName</key>
+		<string>위듀</string>
+		<key>CFBundleExecutable</key>
+		<string>$(EXECUTABLE_NAME)</string>
+		<key>CFBundleIdentifier</key>
+		<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+		<key>CFBundleInfoDictionaryVersion</key>
+		<string>6.0</string>
+		<key>CFBundleName</key>
+		<string>widyu</string>
+		<key>CFBundlePackageType</key>
+		<string>APPL</string>
+		<key>CFBundleShortVersionString</key>
+		<string>$(FLUTTER_BUILD_NAME)</string>
+		<key>CFBundleSignature</key>
+		<string>????</string>
+		<key>CFBundleVersion</key>
+		<string>$(FLUTTER_BUILD_NUMBER)</string>
+		<key>LSRequiresIPhoneOS</key>
+		<true/>
+		<key>UILaunchStoryboardName</key>
+		<string>LaunchScreen</string>
+		<key>UIMainStoryboardFile</key>
+		<string>Main</string>
+		<key>UISupportedInterfaceOrientations</key>
+		<array>
+			<string>UIInterfaceOrientationPortrait</string>
+			<string>UIInterfaceOrientationLandscapeLeft</string>
+			<string>UIInterfaceOrientationLandscapeRight</string>
+		</array>
+		<key>UISupportedInterfaceOrientations~ipad</key>
+		<array>
+			<string>UIInterfaceOrientationPortrait</string>
+			<string>UIInterfaceOrientationPortraitUpsideDown</string>
+			<string>UIInterfaceOrientationLandscapeLeft</string>
+			<string>UIInterfaceOrientationLandscapeRight</string>
+		</array>
+		<key>CADisableMinimumFrameDurationOnPhone</key>
+		<true/>
+		<key>UIApplicationSupportsIndirectInputEvents</key>
+		<true/>
+		<key>UIStatusBarHidden</key>
+		<false/>
+		<key>NSPhotoLibraryUsageDescription</key>
+        <string>프로필 사진을 변경하기 위해 사진 라이브러리에 접근합니다.</string>
+        <key>NSAlarmKitUsageDescription</key>
+        <string>설정된 약 복용 시각에 알람을 울려 복용을 잊지 않도록 도와드립니다.</string>
+        <key>NSCameraUsageDescription</key>
+        <string>약 복용 인증 사진을 촬영하기 위해 카메라 접근 권한이 필요합니다.</string>
+        <key>NSMotionUsageDescription</key>
+        <string>실시간 걸음 수와 활동 상태를 측정하기 위해 동작 및 피트니스 접근 권한이 필요합니다.</string>
+        <key>NSPhotoLibraryAddUsageDescription</key>
+        <string>프로필 사진을 저장하기 위해 사진 라이브러리에 접근합니다.</string>
+        <key>NSLocationWhenInUseUsageDescription</key>
+        <string>앱 사용 중에 위치 정보를 수집합니다.</string>
+        <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+        <string>앱이 종료된 상태에서도 위치 정보를 수집합니다.</string>
+        <key>NSLocationAlwaysUsageDescription</key>
+        <string>백그라운드에서 위치 정보를 항상 수집합니다.</string>
+        <key>UIBackgroundModes</key>
+        <array>
+            <string>audio</string>
+            <string>location</string>
+            <string>fetch</string>
+            <string>processing</string>
+            <string>remote-notification</string>
+        </array>
+        <key>BGTaskSchedulerPermittedIdentifiers</key>
+        <array>
+            <string>com.widyu.medication.refresh</string>
+            <string>com.widucorp.widu.refresh</string>
+            <string>com.example.widyu.steps.refresh</string>
+        </array>
+        <key>NSHealthShareUsageDescription</key>
+        <string>걸음수를 읽어 매일 걷기 목표와 보호자 화면에 반영합니다.</string>
+        <key>LSApplicationQueriesSchemes</key>
+        <array>
+            <string>sms</string>
+            <string>kakaomap</string>
+        </array>
+	</dict>
 </plist>

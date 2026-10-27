@@ -1,0 +1,190 @@
+part of '../home_screen.dart';
+
+class _MedicationCard extends StatelessWidget {
+  final MedicationStatus medicationStatus;
+  final VoidCallback onCameraTap;
+  final bool isCentered;
+
+  const _MedicationCard({
+    required this.medicationStatus,
+    required this.onCameraTap,
+    required this.isCentered,
+  });
+
+  static const _medicationBlobSpecs = <_BlobSpec>[
+    _BlobSpec(
+      centerX: 0.58,
+      centerY: 0.25,
+      amplitudeX: 0.04,
+      amplitudeY: 0.04,
+      freqX: 1,
+      freqY: 1,
+      phaseX: 0.00,
+      phaseY: 0.25,
+      radius: 0.58,
+      opacity: 1.0,
+      aspect: 1.0,
+      angle: 0,
+      wobble: 0.02,
+      color: MyColor.primary600,
+      edgeColor: MyColor.primary350,
+    ),
+    _BlobSpec(
+      centerX: 0.0,
+      centerY: 1.0,
+      amplitudeX: 0.1,
+      amplitudeY: 0.1,
+      freqX: 1,
+      freqY: 2,
+      phaseX: 0.55,
+      phaseY: 0.70,
+      radius: 0.52,
+      opacity: 0.95,
+      aspect: 1.0,
+      angle: 0,
+      wobble: 0.02,
+      color: MyColor.primary700,
+      edgeColor: MyColor.primary50,
+    ),
+  ];
+
+  (int, int)? get _progress => switch (medicationStatus) {
+        MedicationAvailable(:final takenCount, :final totalCount) => (
+            takenCount,
+            totalCount
+          ),
+        MedicationUpcoming(:final takenCount, :final totalCount) => (
+            takenCount,
+            totalCount
+          ),
+        MedicationCompleted(:final totalCount) => (totalCount, totalCount),
+        MedicationMissed(:final takenCount, :final totalCount) => (
+            takenCount,
+            totalCount
+          ),
+        MedicationNone() || MedicationUnknown() => null,
+      };
+
+  /// 카운트다운 목표 시각과 시간 자리 표시 여부
+  (DateTime, bool)? get _countdown => switch (medicationStatus) {
+        MedicationAvailable(:final closesAt) => (closesAt, false),
+        MedicationUpcoming(:final opensAt) => (opensAt, true),
+        _ => null,
+      };
+
+  String? get _badgeLabel => switch (medicationStatus) {
+        MedicationAvailable() => null,
+        MedicationUpcoming() => '예정',
+        // 오늘 일정이 모두 지나면 미복용분이 있어도 완료로 표시
+        MedicationCompleted() || MedicationMissed() => '완료',
+        MedicationNone() || MedicationUnknown() => '인증 불가능',
+      };
+
+  bool get _isDimmed => _badgeLabel != null;
+
+  bool get _showCameraButton => switch (medicationStatus) {
+        MedicationAvailable() => true,
+        MedicationUpcoming() ||
+        MedicationCompleted() ||
+        MedicationMissed() ||
+        MedicationNone() ||
+        MedicationUnknown() =>
+          false,
+      };
+
+  static const _meshBackground = MeshGradientBackground(
+    baseColor: MyColor.white,
+    blobs: _medicationBlobSpecs,
+    blurSigma: 28,
+    topScrimAlpha: 0,
+  );
+
+  Widget get _pillImage => _SpringBounce(
+        isActive: isCentered,
+        child: Transform.translate(
+          offset: const Offset(34, 0),
+          child: FractionalTranslation(
+            translation: const Offset(0.05, 0.05),
+            child: Transform.scale(
+              scale: 1.1,
+              child: const WidyuAssetImage(
+                name: 'img_238_medicine.png',
+                fit: BoxFit.contain,
+              ),
+            ),
+          ),
+        ),
+      );
+
+  Widget get _background => Stack(
+        fit: StackFit.expand,
+        children: [
+          _meshBackground,
+          _pillImage,
+          if (_isDimmed)
+            ColoredBox(color: MyColor.black.withValues(alpha: 0.5)),
+        ],
+      );
+
+  Widget _statusBadge(String label) => Align(
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          decoration: BoxDecoration(
+            color: MyColor.white.withValues(alpha: 0.2),
+            borderRadius: BorderRadius.circular(10000),
+          ),
+          child: Text(
+            label,
+            style: MyTypo.title1.copyWith(color: MyColor.white),
+          ),
+        ),
+      );
+
+  @override
+  Widget build(BuildContext context) {
+    final progress = _progress;
+    final countdown = _countdown;
+    final badgeLabel = _badgeLabel;
+
+    return _CarouselCardShell(
+      title: '약 복용',
+      background: _background,
+      content: Stack(
+        fit: StackFit.expand,
+        children: [
+          if (badgeLabel != null) _statusBadge(badgeLabel),
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              spacing: 2,
+              children: [
+                if (countdown != null)
+                  _DoseCountdown(
+                    deadline: countdown.$1,
+                    showHours: countdown.$2,
+                  ),
+                if (_showCameraButton)
+                  Material(
+                    type: MaterialType.transparency,
+                    child: WidyuTextButton(
+                      onTap: onCameraTap,
+                      text: '카메라',
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          if (progress != null)
+            Align(
+              alignment: Alignment.topRight,
+              child: Text(
+                '${progress.$1}/${progress.$2}회',
+                style: MyTypo.title1.copyWith(color: MyColor.white),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}

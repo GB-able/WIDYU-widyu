@@ -1,0 +1,46 @@
+part of '../my_page_screen.dart';
+
+class _PointView extends StatelessWidget {
+  const _PointView();
+
+  @override
+  Widget build(BuildContext context) {
+    final store = context.watch<PointProvider>();
+    final point = store.point;
+    final isLoading = point == null && store.isLoading;
+
+    return Row(
+      children: [
+        Container(
+          width: 28,
+          height: 28,
+          decoration: const BoxDecoration(shape: BoxShape.circle),
+          child: const WidyuAssetImage(
+            name: 'img_28_point.png',
+            width: 28,
+            height: 28,
+          ),
+        ),
+        const SizedBox(width: 4),
+        Text('포인트', style: MyTypo.subTitle5.copyWith(color: MyColor.white)),
+        const Spacer(),
+        Skeletonizer(
+          enabled: isLoading,
+          child: Text(
+            isLoading ? '999P' : "${point ?? "- "}P",
+            style: MyTypo.title4.copyWith(color: MyColor.white),
+          ),
+        ),
+        IconButton(
+          onPressed: () => context.push(AppRoute.point.path),
+          icon: const WidyuIcon(
+            icon: 'ic_20_chevron_right.svg',
+            width: 20,
+            height: 20,
+            color: MyColor.white,
+          ),
+        )
+      ],
+    );
+  }
+}

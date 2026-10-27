@@ -5,9 +5,11 @@
 *.swp
 .DS_Store
 .atom/
+.build/
 .buildlog/
 .history
 .svn/
+.swiftpm/
 migrate_working_dir/
 
 # IntelliJ related
@@ -25,11 +27,14 @@ migrate_working_dir/
 **/doc/api/
 **/ios/Flutter/.last_build_id
 .dart_tool/
+pubspec.lock
 .flutter-plugins
 .flutter-plugins-dependencies
 .pub-cache/
 .pub/
 /build/
+packages/*/build/
+packages/*/android/build/
 
 # Symbolication related
 app.*.symbols
@@ -42,8 +47,26 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
+# Gradle local build cache (including Android directories in local packages)
+.gradle/
+
 # FVM Version Cache
 .fvm/
 
 # Environment Variables
 .env
+
+# AI
+CLAUDE.md
+AGENTS.md
+.claude/
+.cursor/
+
+# Firebase
+android/app/google-services.json
+ios/Runner/GoogleService-Info.plist
+lib/firebase_options.dart
+firebase.json
+
+# Docs
+docs/
