@@ -9,17 +9,15 @@ class _CalendarFeedList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (viewModel.isLoadingSelectedDay) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
+      return const CustomLoadingWidget();
     }
 
     final feeds = viewModel.selectedDayAlbumIds;
 
     if (feeds.isEmpty) {
       if (viewModel.hasErrorSelectedDay) {
-        return RetryWidget(
-          message: '피드를 불러오지 못했어요',
+        return CustomErrorWidget(
+          errorMsg: '피드를 불러오지 못했어요',
           onRetry: () => viewModel.retry(),
         );
       }

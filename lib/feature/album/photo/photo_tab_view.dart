@@ -11,6 +11,8 @@ import 'package:widyu/core/data/repository/album/album_repository.dart';
 import 'package:widyu/core/model/album/media.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
+import 'package:widyu/core/ui/widgets/custom_error_widget.dart';
+import 'package:widyu/core/ui/widgets/custom_loading_widget.dart';
 import 'package:widyu/core/ui/widgets/custom_network_image.dart';
 import 'package:widyu/core/ui/widgets/icon_widget.dart';
 import 'package:widyu/core/utils/extensions/int_extension.dart';
@@ -96,15 +98,13 @@ class _PhotoGridState extends State<_PhotoGrid> {
     final viewModel = context.watch<PhotoTabViewModel>();
 
     if (viewModel.isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
+      return const CustomLoadingWidget();
     }
 
     if (viewModel.isEmpty) {
       if (viewModel.hasError) {
-        return RetryWidget(
-          message: '앨범을 불러오지 못했어요',
+        return CustomErrorWidget(
+          errorMsg: '앨범을 불러오지 못했어요',
           onRetry: () => context.read<PhotoTabViewModel>().retry(),
         );
       }
