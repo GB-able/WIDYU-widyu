@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/widgets.dart';
 import 'package:widyu/core/data/repository/goal/walk_repository.dart';
+import 'package:widyu/core/log/log.dart';
 import 'package:widyu/core/network/token_manager.dart';
 import 'package:widyu/core/utils/extensions/walk_extension.dart';
 import 'package:widyu/walk_background_service.dart';
@@ -48,15 +49,15 @@ class WalkProvider with ChangeNotifier, WidgetsBindingObserver {
       if (permitted) {
         try {
           await startWalkBackgroundService();
-        } catch (error) {
-          debugPrint('[WalkProvider] 백그라운드 등록이 보류되었습니다: ${error.runtimeType}');
+        } catch (error, stack) {
+          WiduLog.data.w('걸음수 백그라운드 등록 보류', error: error, stackTrace: stack);
         }
         if (_disposed) return;
       }
       _startTimer();
       await refresh(full: true);
-    } catch (error) {
-      debugPrint('[WalkProvider] 걸음수 연동을 시작하지 못했습니다: ${error.runtimeType}');
+    } catch (error, stack) {
+      WiduLog.data.w('걸음수 연동 시작 실패', error: error, stackTrace: stack);
     }
     if (!_disposed) notifyListeners();
   }
@@ -106,8 +107,8 @@ class WalkProvider with ChangeNotifier, WidgetsBindingObserver {
         _hasHealthSteps = true;
       }
       notifyListeners();
-    } catch (error) {
-      debugPrint('[WalkProvider] 걸음수 동기화가 보류되었습니다: ${error.runtimeType}');
+    } catch (error, stack) {
+      WiduLog.data.w('걸음수 동기화 보류', error: error, stackTrace: stack);
     }
   }
 

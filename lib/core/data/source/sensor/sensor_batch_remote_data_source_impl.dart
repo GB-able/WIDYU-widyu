@@ -1,8 +1,7 @@
 import 'dart:convert';
-import 'dart:developer';
 
-import 'package:flutter/foundation.dart';
 import 'package:widyu/core/data/source/sensor/sensor_batch_remote_data_source.dart';
+import 'package:widyu/core/log/log.dart';
 import 'package:widyu/core/model/sensor/sensor_batch.dart';
 import 'package:widyu/core/model/sensor/sensor_dropped_record.dart';
 import 'package:widyu/core/model/sensor/sensor_result.dart';
@@ -31,8 +30,8 @@ class SensorBatchRemoteDataSourceImpl implements SensorBatchRemoteDataSource {
   static SensorResult? _parseResult(String raw) {
     try {
       return SensorResult.fromJson(jsonDecode(raw) as Map<String, dynamic>);
-    } catch (error) {
-      log('Sensor result parse failed: $error');
+    } catch (error, stack) {
+      WiduLog.data.w('센서 결과 파싱 실패', error: error, stackTrace: stack);
       return null;
     }
   }
@@ -59,12 +58,12 @@ class SensorBatchRemoteDataSourceImpl implements SensorBatchRemoteDataSource {
       if (status >= 200 && status < 300) return ResendOutcome.stored;
       // 본문·검증 오류(400/409/422)만 거절로 본다. 401/403 등 인증 문제는 토큰 갱신 뒤 다시 보내야 한다.
       if (status == 400 || status == 409 || status == 422) {
-        // 사유에 식별자가 섞일 수 있어 디버그에서만 찍는다.
-        if (kDebugMode) {
-          final data = response.data;
-          log('Sensor batch rejected: ${data is Map ? data['code'] : null} '
-              '${data is Map ? data['message'] : null}');
-        }
+        final data = response.data;
+        WiduLog.data.w('센서 배치 재전송 거절 status=$status '
+            'code=${data is Map ? data['code'] : null}');
+        // 사유에 식별자가 섞일 수 있어 trace로만 찍는다.
+        WiduLog.data.t(() => '센서 배치 거절 사유: '
+            '${data is Map ? data['message'] : null}');
         return ResendOutcome.rejected;
       }
       return ResendOutcome.retryLater;

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:widyu/core/log/log.dart';
 import 'package:widyu/core/model/permission/permission_recovery_prompt.dart';
 import 'package:widyu/core/model/permission/permission_type.dart';
 import 'package:widyu/core/storage/app_preference.dart';
@@ -70,7 +71,7 @@ class PermissionViewModel with ChangeNotifier {
         );
       }
     } catch (e, stack) {
-      debugPrint('[Permission] 권한 요청 실패: $e\n$stack');
+      WiduLog.ui.w('권한 요청 실패', error: e, stackTrace: stack);
     } finally {
       if (!_isDisposed) {
         _isRequesting = false;

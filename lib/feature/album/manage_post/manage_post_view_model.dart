@@ -5,6 +5,7 @@ import 'package:photo_manager/photo_manager.dart';
 import 'package:widyu/core/data/provider/album_provider.dart';
 import 'package:widyu/core/data/provider/point_provider.dart';
 import 'package:widyu/core/data/repository/album/album_repository.dart';
+import 'package:widyu/core/log/log.dart';
 import 'package:widyu/core/model/api/api_result.dart';
 import 'package:widyu/core/utils/show_toast.dart';
 
@@ -64,8 +65,7 @@ class ManagePostViewModel extends ChangeNotifier {
         content: content,
       );
       if (_albumProvider.isDisposed) return false;
-      if (result case Failure(:final message)) {
-        debugPrint('uploadFeed failed: $message');
+      if (result is Failure) {
         showToast('게시글 업로드에 실패했습니다');
         return false;
       }
@@ -74,8 +74,8 @@ class ManagePostViewModel extends ChangeNotifier {
         _albumProvider.loadUnlockedAlbumIds(),
       ]);
       return !_albumProvider.isDisposed;
-    } catch (e) {
-      debugPrint('uploadFeed failed: $e');
+    } catch (e, stack) {
+      WiduLog.ui.w('게시글 업로드 실패', error: e, stackTrace: stack);
       showToast('게시글 업로드에 실패했습니다');
       return false;
     } finally {

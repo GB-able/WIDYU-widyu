@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:widyu/core/log/log.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
 import 'package:widyu/core/ui/widgets/icon_widget.dart';
@@ -67,8 +68,8 @@ class _UnlockDialogState extends State<UnlockDialog> {
     var success = false;
     try {
       success = await purchase();
-    } catch (error) {
-      debugPrint('unlock failed: $error');
+    } catch (error, stack) {
+      WiduLog.ui.w('앨범 잠금 해제 실패', error: error, stackTrace: stack);
     }
     if (!mounted) return;
     if (success) {

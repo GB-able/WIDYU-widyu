@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:widyu/background_service.dart';
+import 'package:widyu/core/log/log.dart';
 import 'package:widyu/core/model/location/location_service_state.dart';
 import 'package:widyu/core/network/token_manager.dart';
 import 'package:widyu/core/utils/location_service_manager.dart';
@@ -145,7 +146,7 @@ class AppServiceController extends ChangeNotifier {
         _autoStartEnabled = canRun;
       }
     } catch (error, stack) {
-      debugPrint('[AppServiceController] 서비스 상태 반영 실패: $error\n$stack');
+      WiduLog.bg.w('서비스 상태 반영 실패', error: error, stackTrace: stack);
       failed = true;
     }
     if (!_isCurrent(generation)) return;
@@ -156,7 +157,7 @@ class AppServiceController extends ChangeNotifier {
         await _stopBackground();
       }
     } catch (error, stack) {
-      debugPrint('[AppServiceController] 서비스 상태 반영 실패: $error\n$stack');
+      WiduLog.bg.w('서비스 상태 반영 실패', error: error, stackTrace: stack);
       failed = true;
     }
     _setServiceError(failed);
@@ -175,7 +176,7 @@ class AppServiceController extends ChangeNotifier {
   Future<void> _enqueue(Future<void> Function() operation) {
     final next = _queue.then((_) => operation(), onError: (_) => operation());
     _queue = next.catchError((Object error, StackTrace stack) {
-      debugPrint('[AppServiceController] 작업 실패: $error\n$stack');
+      WiduLog.bg.w('서비스 제어 작업 실패', error: error, stackTrace: stack);
     });
     return _queue;
   }
@@ -193,12 +194,12 @@ class AppServiceController extends ChangeNotifier {
         if (_autoStartEnabled != false) await _setAutoStart(false);
         _autoStartEnabled = false;
       } catch (error, stack) {
-        debugPrint('[AppServiceController] 자동 시작 해제 실패: $error\n$stack');
+        WiduLog.bg.w('자동 시작 해제 실패', error: error, stackTrace: stack);
       }
       try {
         await _stopBackground();
       } catch (error, stack) {
-        debugPrint('[AppServiceController] 서비스 종료 실패: $error\n$stack');
+        WiduLog.bg.w('서비스 종료 실패', error: error, stackTrace: stack);
       }
     }));
     super.dispose();

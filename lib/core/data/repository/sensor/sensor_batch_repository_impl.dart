@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'dart:collection';
-import 'dart:developer';
 
 import 'package:widyu/core/data/repository/sensor/sensor_batch_repository.dart';
 import 'package:widyu/core/data/source/sensor/sensor_batch_local_data_source.dart';
 import 'package:widyu/core/data/source/sensor/sensor_batch_remote_data_source.dart';
+import 'package:widyu/core/log/log.dart';
 import 'package:widyu/core/model/sensor/sensor_batch.dart';
 import 'package:widyu/core/model/sensor/sensor_batch_config.dart';
 import 'package:widyu/core/model/sensor/sensor_message.dart';
@@ -54,7 +54,7 @@ class SensorBatchRepositoryImpl implements SensorBatchRepository {
     _batches = _localDataSource.getSensorBatches().listen(
           _onMessage,
           onError: (Object error, StackTrace stackTrace) =>
-              log('Sensor batch stream error: $error', stackTrace: stackTrace),
+              WiduLog.data.w('센서 배치 스트림 오류', error: error, stackTrace: stackTrace),
         );
     _results = _remoteDataSource.results.listen(_onResult);
     _connection = _remoteDataSource.connectionState.listen((connected) {
@@ -95,7 +95,7 @@ class SensorBatchRepositoryImpl implements SensorBatchRepository {
             seq: record.fromSeq,
           );
         } else {
-          log('Sensor dropped record send failed: '
+          WiduLog.data.w('센서 유실 기록 전송 실패 '
               'session=${record.sessionId} '
               'seq=${record.fromSeq}..${record.toSeq}');
         }
@@ -116,7 +116,7 @@ class SensorBatchRepositoryImpl implements SensorBatchRepository {
     final removed =
         _pending.remove(result.batchId)?.batch ?? _removeQueued(result.batchId);
     if (result.result == SensorResult.rejected) {
-      log('Sensor batch rejected seq=${removed?.seq ?? result.seq}');
+      WiduLog.data.w('센서 배치 거절 seq=${removed?.seq ?? result.seq}');
     }
     if (removed != null) _consume(removed);
   }
@@ -140,7 +140,8 @@ class SensorBatchRepositoryImpl implements SensorBatchRepository {
       final oldest = _pending.keys.first;
       final dropped = _pending.remove(oldest);
       // Data Layer 에는 남아 있어 다음 기동 때 다시 흘러온다.
-      log('Sensor batch ack wait full; dropped oldest seq=${dropped?.batch.seq}');
+      WiduLog.data.w(
+          '센서 배치 응답 대기열 가득 참, 가장 오래된 항목 폐기 seq=${dropped?.batch.seq}');
     }
     _pending[batch.batchId] = (batch: batch, sentAt: DateTime.now());
   }
@@ -160,7 +161,7 @@ class SensorBatchRepositoryImpl implements SensorBatchRepository {
     if (_queue.length == _queueMax) {
       final dropped = _queue.removeFirst();
       // Data Layer 에는 남아 있어 다음 기동 때 다시 흘러온다.
-      log('Sensor batch resend queue full; dropped oldest seq=${dropped.seq}');
+      WiduLog.data.w('센서 배치 재전송 큐 가득 참, 가장 오래된 항목 폐기 seq=${dropped.seq}');
     }
     _queue.addLast(batch);
   }
@@ -175,7 +176,7 @@ class SensorBatchRepositoryImpl implements SensorBatchRepository {
         final outcome = await _remoteDataSource.resendBatch(batch);
         if (outcome == ResendOutcome.retryLater) return;
         if (outcome == ResendOutcome.rejected) {
-          log('Sensor batch rejected seq=${batch.seq}');
+          WiduLog.data.w('센서 배치 거절 seq=${batch.seq}');
         }
         _consume(batch);
         // await 사이에 큐가 바뀌었을 수 있으므로 같은 객체일 때만 뺀다.
@@ -184,7 +185,7 @@ class SensorBatchRepositoryImpl implements SensorBatchRepository {
         }
       }
     } catch (error, stackTrace) {
-      log('Sensor batch resend failed: $error', stackTrace: stackTrace);
+      WiduLog.data.w('센서 배치 재전송 실패', error: error, stackTrace: stackTrace);
     } finally {
       _isResending = false;
     }

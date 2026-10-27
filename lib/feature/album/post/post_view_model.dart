@@ -83,8 +83,7 @@ class PostViewModel extends ChangeNotifier {
         _update(
           (s) => s.copyWith(status: PostStatus.success, feed: _normalize(data)),
         );
-      case Failure(:final message):
-        debugPrint('fetchFeed failed: $message');
+      case Failure():
         _update((s) => s.copyWith(status: PostStatus.error));
     }
   }
@@ -119,8 +118,6 @@ class PostViewModel extends ChangeNotifier {
           feed: feed.copyWith(comments: [...feed.comments, newComment]));
       _albumProvider.onCommentAdded(id);
       if (!_disposed) commentController.clear();
-    } else if (result case Failure(:final message)) {
-      debugPrint('createComment failed: $message');
     }
 
     _update((s) => s.copyWith(isBusy: false));
@@ -136,8 +133,7 @@ class PostViewModel extends ChangeNotifier {
     try {
       final result = await _repository.deleteComment(commentId);
       if (_albumProvider.isDisposed) return false;
-      if (result case Failure(:final message)) {
-        debugPrint('deleteComment failed: $message');
+      if (result is Failure) {
         return false;
       }
 

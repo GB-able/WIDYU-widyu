@@ -47,8 +47,7 @@ class AlbumProvider with ChangeNotifier {
       content: content,
     );
     if (_disposed || isDeleted(albumId)) return false;
-    if (result case Failure(:final message)) {
-      debugPrint(message);
+    if (result is Failure) {
       return false;
     }
     final post = _posts[albumId];
@@ -96,8 +95,7 @@ class AlbumProvider with ChangeNotifier {
       final result = await _repository.unlockFeed(albumId);
       if (_disposed || isDeleted(albumId)) return false;
 
-      if (result case Failure(:final message)) {
-        debugPrint(message);
+      if (result is Failure) {
         return false;
       }
 
@@ -180,8 +178,7 @@ class AlbumProvider with ChangeNotifier {
     if (_disposed || isDeleted(albumId)) return;
     _pendingLikeIds.remove(albumId);
 
-    if (result case Failure(:final message)) {
-      debugPrint(message);
+    if (result is Failure) {
       _stats[albumId] = statOf(
         albumId,
       ).copyWith(isLiked: wasLiked, likeCount: before.likeCount);
@@ -194,8 +191,7 @@ class AlbumProvider with ChangeNotifier {
     if (isDeleted(albumId)) return true;
     final result = await _repository.deleteFeed(albumId);
 
-    if (result case Failure(:final message)) {
-      debugPrint(message);
+    if (result is Failure) {
       return false;
     }
 

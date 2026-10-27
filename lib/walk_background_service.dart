@@ -7,6 +7,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:widyu/core/data/repository/goal/walk_repository_impl.dart';
 import 'package:widyu/core/data/source/goal/walk_local_data_source_impl.dart';
 import 'package:widyu/core/data/source/goal/walk_remote_data_source_impl.dart';
+import 'package:widyu/core/log/log.dart';
 import 'package:widyu/core/network/api_client.dart';
 import 'package:widyu/core/network/token_manager.dart';
 import 'package:workmanager/workmanager.dart';
@@ -23,9 +24,8 @@ void onWalkStart() {
     try {
       await syncWalkBackground();
       return true;
-    } catch (error) {
-      debugPrint(
-          '[walk_background_service] 백그라운드 동기화 실패: ${error.runtimeType}');
+    } catch (error, stack) {
+      WiduLog.bg.w('걸음수 백그라운드 동기화 실패', error: error, stackTrace: stack);
       return false;
     }
   });
@@ -40,9 +40,8 @@ Future<void> onIosWalkBackground() async {
     await channel.invokeMethod<void>('ready');
     await syncWalkBackground();
     succeeded = true;
-  } catch (error) {
-    debugPrint(
-        '[walk_background_service] HealthKit 백그라운드 동기화 실패: ${error.runtimeType}');
+  } catch (error, stack) {
+    WiduLog.bg.w('HealthKit 백그라운드 동기화 실패', error: error, stackTrace: stack);
   } finally {
     await channel.invokeMethod<void>('complete', succeeded);
   }
@@ -65,9 +64,8 @@ Future<void> syncWalkBackground() async {
     if (result.unauthorized) {
       await stopWalkBackgroundService();
     }
-  } catch (error) {
-    debugPrint(
-        '[walk_background_service] 백그라운드 동기화가 보류되었습니다: ${error.runtimeType}');
+  } catch (error, stack) {
+    WiduLog.bg.w('걸음수 백그라운드 동기화 보류', error: error, stackTrace: stack);
   }
 }
 
