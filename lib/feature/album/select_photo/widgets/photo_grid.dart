@@ -42,9 +42,7 @@ class _PhotoGridState extends State<_PhotoGrid> {
       builder: (context, state, _) {
         final (assets, isLoading) = state;
         if (isLoading) {
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
+          return const CustomLoadingWidget();
         }
         _scheduleScrollCheck();
         return GridView.builder(

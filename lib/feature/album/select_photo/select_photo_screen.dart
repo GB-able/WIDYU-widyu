@@ -8,6 +8,7 @@ import 'package:widyu/app/routes/app_route.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
 import 'package:widyu/core/ui/widgets/custom_dialog.dart';
+import 'package:widyu/core/ui/widgets/custom_loading_widget.dart';
 import 'package:widyu/core/ui/widgets/icon_widget.dart';
 import 'package:widyu/core/ui/widgets/widyu_text_button.dart';
 import 'package:widyu/core/utils/extensions/int_extension.dart';
@@ -35,9 +36,7 @@ class SelectPhotoScreen extends StatelessWidget {
             children: [
               Expanded(
                 child: viewModel.photoPermission == null
-                    ? const Center(
-                        child: CircularProgressIndicator(),
-                      )
+                    ? const CustomLoadingWidget()
                     : viewModel.hasPhotoPermission
                         ? const _PhotoGrid()
                         : _PermissionDeniedWidget(viewModel: viewModel),
