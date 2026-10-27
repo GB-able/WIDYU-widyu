@@ -264,12 +264,13 @@ extension NotificationSettingUiStatePatterns on NotificationSettingUiState {
 
 /// @nodoc
 
-class _NotificationSettingUiState implements NotificationSettingUiState {
+class _NotificationSettingUiState extends NotificationSettingUiState {
   const _NotificationSettingUiState(
       {this.isLoading = false,
       final List<NotificationSettingUiModel> notifications = const [],
       this.policyRevision = 0})
-      : _notifications = notifications;
+      : _notifications = notifications,
+        super._();
 
   @override
   @JsonKey()

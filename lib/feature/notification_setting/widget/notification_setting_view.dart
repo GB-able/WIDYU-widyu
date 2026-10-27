@@ -2,10 +2,12 @@ part of '../notification_setting_screen.dart';
 
 class _NotificationSettingView extends StatelessWidget {
   final List<NotificationSettingUiModel> notifications;
+  final bool isUpdating;
   final ValueChanged<NotificationSettingUiModel> onToggle;
 
   const _NotificationSettingView({
     required this.notifications,
+    required this.isUpdating,
     required this.onToggle,
   });
 
@@ -26,6 +28,7 @@ class _NotificationSettingView extends StatelessWidget {
               padding: const EdgeInsets.only(bottom: 16),
               child: _NotificationSettingToggle(
                 notification: notifications[index],
+                isUpdating: isUpdating,
                 onToggle: onToggle,
               ),
             ),

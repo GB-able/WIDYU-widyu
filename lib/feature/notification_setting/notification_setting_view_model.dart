@@ -24,6 +24,8 @@ class NotificationSettingViewModel with ChangeNotifier {
 
   Future<void> updateNotificationSetting(
       NotificationSettingUiModel notification) async {
+    if (_uiState.isUpdating) return;
+
     final oldNotifications = _uiState.notifications;
     final targetIndex =
         oldNotifications.indexWhere((item) => item.group == notification.group);
