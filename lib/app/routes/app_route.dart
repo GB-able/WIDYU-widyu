@@ -24,4 +24,6 @@ enum AppRoute {
 
   final String path;
   const AppRoute(this.path);
+
+  static String postOf(int postId) => '${post.path}?postId=$postId';
 }

@@ -8,6 +8,7 @@ import 'package:widyu/app/routes/app_route.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
 import 'package:widyu/core/ui/widgets/custom_dialog.dart';
+import 'package:widyu/core/ui/widgets/custom_loading_widget.dart';
 import 'package:widyu/core/ui/widgets/icon_widget.dart';
 import 'package:widyu/core/ui/widgets/widyu_text_button.dart';
 import 'package:widyu/core/utils/extensions/int_extension.dart';
@@ -35,9 +36,7 @@ class SelectPhotoScreen extends StatelessWidget {
             children: [
               Expanded(
                 child: viewModel.photoPermission == null
-                    ? const Center(
-                        child: CircularProgressIndicator(),
-                      )
+                    ? const CustomLoadingWidget()
                     : viewModel.hasPhotoPermission
                         ? const _PhotoGrid()
                         : _PermissionDeniedWidget(viewModel: viewModel),
@@ -55,27 +54,27 @@ class SelectPhotoScreen extends StatelessWidget {
                         enable: viewModel.selected.isNotEmpty,
                       )
                     : Column(
-                        spacing: 10,
+                        spacing: 8,
                         children: [
-                          WidyuTextButton(
-                            onTap: () => viewModel.requestAlbumPermission(),
-                            text: '설정에서 권한 허용하기',
-                          ),
                           GestureDetector(
                             onTap: () => context.pop(),
                             child: Container(
                               width: double.infinity,
-                              height: 44,
+                              height: 40,
                               color: Colors.transparent,
                               alignment: Alignment.center,
                               child: Text(
                                 '나중에 하기',
                                 style: MyTypo.button.copyWith(
-                                  color: MyColor.black,
+                                  color: MyColor.grey600,
                                 ),
                                 textAlign: TextAlign.center,
                               ),
                             ),
+                          ),
+                          WidyuTextButton(
+                            onTap: () => viewModel.requestAlbumPermission(),
+                            text: '설정에서 권한 허용하기',
                           ),
                         ],
                       ),

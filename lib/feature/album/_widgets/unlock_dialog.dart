@@ -1,9 +1,44 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+import 'package:widyu/app/routes/app_route.dart';
+import 'package:widyu/core/data/provider/album_provider.dart';
+import 'package:widyu/core/data/provider/point_provider.dart';
 import 'package:widyu/core/log/log.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
 import 'package:widyu/core/ui/widgets/icon_widget.dart';
 import 'package:widyu/core/ui/widgets/widyu_text_button.dart';
+
+Future<bool> showUnlockDialog(BuildContext context, int albumId) async {
+  final albumProvider = context.read<AlbumProvider>();
+  if (albumProvider.isUnlocking(albumId)) return false;
+  final price = albumProvider.postOf(albumId)?.price;
+  if (price == null) return false;
+  final point = context.read<PointProvider>().point;
+
+  if (point != null && point < price) {
+    await showDialog<void>(
+      context: context,
+      builder: (_) => UnlockDialog.notEnough(
+        price: price,
+        point: point,
+        onTap: () => context.go(AppRoute.goal.path),
+      ),
+    );
+    return false;
+  }
+
+  final success = await showDialog<bool>(
+    context: context,
+    builder: (_) => UnlockDialog.purchase(
+      price: price,
+      point: point,
+      onPurchase: () => albumProvider.unlock(albumId),
+    ),
+  );
+  return success == true && !albumProvider.isDisposed;
+}
 
 class UnlockDialog extends StatefulWidget {
   const UnlockDialog({

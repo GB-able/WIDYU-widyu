@@ -9,8 +9,10 @@ import 'package:widyu/core/model/album/album_comment_create_request.dart';
 import 'package:widyu/core/model/album/album_comment_update_request.dart';
 import 'package:widyu/core/model/album/comment.dart';
 import 'package:widyu/core/model/album/feed_detail.dart';
+import 'package:widyu/core/model/album/member.dart';
 import 'package:widyu/core/model/api/api_result.dart';
 import 'package:widyu/core/model/myPage/user/user.dart';
+import 'package:widyu/feature/album/post/post_ui_event.dart';
 import 'package:widyu/feature/album/post/post_ui_state.dart';
 
 class PostViewModel extends ChangeNotifier {
@@ -21,7 +23,9 @@ class PostViewModel extends ChangeNotifier {
     required AlbumProvider albumProvider,
   })  : _repository = repository,
         _myPageRepository = myPageRepository,
-        _albumProvider = albumProvider;
+        _albumProvider = albumProvider {
+    editFocusNode.addListener(_cancelEditOnBlur);
+  }
 
   bool _disposed = false;
   @override
@@ -35,6 +39,16 @@ class PostViewModel extends ChangeNotifier {
   final int id;
 
   final commentController = TextEditingController();
+  final commentFocusNode = FocusNode();
+  final editController = TextEditingController();
+  final editFocusNode = FocusNode();
+
+  final _uiEvent = StreamController<PostUiEvent>.broadcast();
+  Stream<PostUiEvent> get uiEvent => _uiEvent.stream;
+
+  void _emit(PostUiEvent event) {
+    if (!_uiEvent.isClosed) _uiEvent.add(event);
+  }
 
   PostUiState _uiState = const PostUiState();
   PostUiState get uiState => _uiState;
@@ -42,6 +56,47 @@ class PostViewModel extends ChangeNotifier {
   void _update(PostUiState Function(PostUiState) change) {
     _uiState = change(_uiState);
     notifyListeners();
+  }
+
+  List<Comment> get visibleComments {
+    final comments = _uiState.feed?.comments ?? const <Comment>[];
+    final parentId = _uiState.replyParentId;
+    if (parentId == null) return comments;
+    return comments.where((e) => e.commentId == parentId).toList();
+  }
+
+  void startReply(int parentCommentId) {
+    commentController.clear();
+    commentFocusNode.requestFocus();
+    _update((s) => s.copyWith(replyParentId: parentCommentId));
+  }
+
+  void cancelReply() {
+    commentController.clear();
+    commentFocusNode.unfocus();
+    _update((s) => s.copyWith(replyParentId: null));
+  }
+
+  void startEdit(Comment target) {
+    editController.text = target.content;
+    _update((s) => s.copyWith(editingCommentId: target.commentId));
+  }
+
+  void _cancelEditOnBlur() {
+    if (editFocusNode.hasFocus || _uiState.editingCommentId == null) return;
+    _update((s) => s.copyWith(editingCommentId: null));
+  }
+
+  Future<void> submitEdit() async {
+    final commentId = _uiState.editingCommentId;
+    final content = editController.text.trim();
+    if (commentId == null || content.isEmpty) return;
+
+    if (!await editComment(commentId, content)) {
+      _emit(const EditCommentFailure());
+      return;
+    }
+    _update((s) => s.copyWith(editingCommentId: null));
   }
 
   Comment _mine(Comment data) => data.copyWith(
@@ -84,8 +139,16 @@ class PostViewModel extends ChangeNotifier {
         _update(
           (s) => s.copyWith(status: PostStatus.success, feed: _normalize(data)),
         );
-      case Failure():
-        _update((s) => s.copyWith(status: PostStatus.error));
+        _markViewed();
+      case Failure(:final code):
+        switch (code) {
+          case 'ALBUM_4040':
+            _emit(const FeedDeleted());
+          case 'ALBUM_4031':
+            _emit(const FeedLocked());
+          default:
+            _update((s) => s.copyWith(status: PostStatus.error));
+        }
     }
   }
 
@@ -96,6 +159,22 @@ class PostViewModel extends ChangeNotifier {
     }
 
     _update((s) => s.copyWith(me: result.data));
+    _markViewed();
+  }
+
+  void _markViewed() {
+    final feed = _uiState.feed;
+    final me = _uiState.me;
+    if (feed == null ||
+        me == null ||
+        feed.author.id == me.memberId ||
+        !_albumProvider.isUnlocked(id)) {
+      return;
+    }
+    _albumProvider.addViewer(
+      id,
+      Member(id: me.memberId, name: me.name, profileImage: me.profileImage),
+    );
   }
 
   Future<void> retry() => init();
@@ -105,6 +184,16 @@ class PostViewModel extends ChangeNotifier {
     final content = commentController.text.trim();
     final feed = _uiState.feed;
     if (content.isEmpty || _uiState.isBusy || feed == null) return;
+
+    final parentId = _uiState.replyParentId;
+    if (parentId != null) {
+      if (!await sendReply(parentId, content)) {
+        _emit(const SendReplyFailure());
+      } else if (!_disposed) {
+        commentController.clear();
+      }
+      return;
+    }
 
     _update((s) => s.copyWith(isBusy: true));
 
@@ -120,6 +209,8 @@ class PostViewModel extends ChangeNotifier {
           feed: feed.copyWith(comments: [...feed.comments, newComment]));
       _albumProvider.onCommentAdded(id);
       if (!_disposed) commentController.clear();
+    } else {
+      _emit(const SendCommentFailure());
     }
 
     _update((s) => s.copyWith(isBusy: false));
@@ -163,9 +254,16 @@ class PostViewModel extends ChangeNotifier {
       }
 
       if (removed == 0) return false;
-      WiduLog.ui.i('댓글 삭제 성공 albumId=$id commentId=$commentId removed=$removed');
+      WiduLog.ui
+          .i('댓글 삭제 성공 albumId=$id commentId=$commentId removed=$removed');
 
-      _uiState = _uiState.copyWith(feed: feed.copyWith(comments: comments));
+      _uiState = _uiState.copyWith(
+        feed: feed.copyWith(comments: comments),
+        replyParentId:
+            comments.any((e) => e.commentId == _uiState.replyParentId)
+                ? _uiState.replyParentId
+                : null,
+      );
       _albumProvider.onCommentDeleted(id, count: removed);
       return true;
     } finally {
@@ -268,6 +366,10 @@ class PostViewModel extends ChangeNotifier {
   void dispose() {
     _disposed = true;
     commentController.dispose();
+    commentFocusNode.dispose();
+    editController.dispose();
+    editFocusNode.dispose();
+    _uiEvent.close();
     super.dispose();
   }
 }

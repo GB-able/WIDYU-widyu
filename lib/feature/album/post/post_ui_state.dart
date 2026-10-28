@@ -13,5 +13,7 @@ abstract class PostUiState with _$PostUiState {
     @Default(false) bool isBusy,
     FeedDetail? feed,
     User? me,
+    int? replyParentId,
+    int? editingCommentId,
   }) = _PostUiState;
 }

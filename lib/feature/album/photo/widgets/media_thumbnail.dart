@@ -17,7 +17,7 @@ class _MediaThumbnail extends StatelessWidget {
           _confirmUnlock(context);
           return;
         }
-        context.push(AppRoute.post.path, extra: media.postId);
+        unawaited(context.push(AppRoute.postOf(media.postId)));
       },
       child: Stack(
         fit: StackFit.expand,
@@ -86,7 +86,7 @@ class _MediaThumbnail extends StatelessWidget {
       ),
     );
     if (success == true && context.mounted && !albumProvider.isDisposed) {
-      unawaited(context.push(AppRoute.post.path, extra: media.postId));
+      unawaited(context.push(AppRoute.postOf(media.postId)));
     }
   }
 

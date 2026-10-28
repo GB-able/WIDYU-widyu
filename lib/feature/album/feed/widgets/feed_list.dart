@@ -35,15 +35,13 @@ class _FeedListState extends State<_FeedList> {
     final viewModel = context.watch<FeedTabViewModel>();
 
     if (viewModel.isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
+      return const CustomLoadingWidget();
     }
 
     if (viewModel.isEmpty) {
       if (viewModel.hasError) {
-        return RetryWidget(
-          message: '피드를 불러오지 못했어요',
+        return CustomErrorWidget(
+          errorMsg: '피드를 불러오지 못했어요',
           onRetry: () => context.read<FeedTabViewModel>().retry(),
         );
       }

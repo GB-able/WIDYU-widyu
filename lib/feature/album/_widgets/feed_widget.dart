@@ -7,7 +7,6 @@ import 'package:provider/provider.dart';
 import 'package:widyu/app/routes/app_route.dart';
 import 'package:widyu/app/routes/extra/edit_post_extra.dart';
 import 'package:widyu/core/data/provider/album_provider.dart';
-import 'package:widyu/core/data/provider/point_provider.dart';
 import 'package:widyu/core/model/album/album_post.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
@@ -66,34 +65,8 @@ class _FeedWidgetState extends State<FeedWidget> {
   }
 
   Future<void> _confirmUnlock() async {
-    final albumProvider = context.read<AlbumProvider>();
-    if (albumProvider.isUnlocking(widget.albumId)) return;
-    final price = albumProvider.postOf(widget.albumId)?.price;
-    if (price == null) return;
-    final point = context.read<PointProvider>().point;
-
-    if (point != null && point < price) {
-      unawaited(showDialog<void>(
-        context: context,
-        builder: (_) => UnlockDialog.notEnough(
-          price: price,
-          point: point,
-          onTap: () => context.go(AppRoute.goal.path),
-        ),
-      ));
-      return;
-    }
-
-    final success = await showDialog<bool>(
-      context: context,
-      builder: (_) => UnlockDialog.purchase(
-        price: price,
-        point: point,
-        onPurchase: () => albumProvider.unlock(widget.albumId),
-      ),
-    );
-    if (success == true && mounted && !albumProvider.isDisposed) {
-      unawaited(context.push(AppRoute.post.path, extra: widget.albumId));
+    if (await showUnlockDialog(context, widget.albumId) && mounted) {
+      unawaited(context.push(AppRoute.postOf(widget.albumId)));
     }
   }
 
@@ -305,7 +278,7 @@ class _FeedWidgetState extends State<FeedWidget> {
                       return;
                     }
 
-                    context.push(AppRoute.post.path, extra: widget.albumId);
+                    context.push(AppRoute.postOf(widget.albumId));
                   },
                   child: const IconWidget(icon: 'comment', width: 24),
                 ),
@@ -322,6 +295,8 @@ class _FeedWidgetState extends State<FeedWidget> {
         const SizedBox(height: 8),
         Text(_formatDate(feed.createdAt), style: MyTypo.subTitle3),
         const SizedBox(height: 4),
+        if (isLocked && feed.content.trim().isNotEmpty)
+          Text(_lockedPreview(feed.content), style: MyTypo.body2),
         if (!isLocked)
           ExpandableText(
             text: feed.content,
@@ -334,6 +309,11 @@ class _FeedWidgetState extends State<FeedWidget> {
       ],
     );
   }
+}
+
+String _lockedPreview(String content) {
+  final chars = content.trim().characters;
+  return '${chars.take(chars.length < 5 ? 1 : 5)}...';
 }
 
 String _formatDate(DateTime date) {
