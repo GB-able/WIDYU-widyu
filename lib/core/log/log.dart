@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:logger/logger.dart';
 
-/// 카테고리별 로거. release에서는 보낼 곳이 없으므로 전부 끈다(작업지시서 L1).
+/// 카테고리별 로거. 통신 원문·예외 원문이 섞일 수 있으므로 debug 빌드에서만 출력한다(작업지시서 L1).
 /// 콘솔·logcat에서 `WidU`로 검색하면 앱 로그 전체를, `WidU_DATA`처럼 검색하면 해당 카테고리만 본다.
 /// 메시지는 고정 문구로 쓰고 예외는 error·stackTrace로 넘긴다(docs/logging-strategy.md §9).
 /// 본문처럼 만들기 비싼 메시지는 클로저로 넘기면 필터를 통과한 뒤에만 평가된다.
@@ -31,9 +31,9 @@ abstract final class WiduLog {
 }
 
 Logger _logger(String category) => Logger(
-      // 기본 DevelopmentFilter는 assert 기반이라 profile에서도 전부 버린다.
+      // profile·release는 끈다. 출력 여부를 assert가 아닌 kDebugMode로 명시하려고 ProductionFilter를 쓴다.
       filter: ProductionFilter(),
-      level: kReleaseMode ? Level.off : Level.all,
+      level: kDebugMode ? Level.all : Level.off,
       printer: PrettyPrinter(methodCount: 0),
       output: _DebugPrintOutput('[WidU_$category]'),
     );
