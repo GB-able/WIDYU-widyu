@@ -28,6 +28,35 @@ class PostScreen extends StatelessWidget {
 
   final int postId;
 
+  void _handleEvent(
+    BuildContext context,
+    PostViewModel viewModel,
+    PostUiEvent event,
+  ) {
+    switch (event) {
+      case SendCommentFailure():
+        showToast('댓글 등록에 실패했습니다.');
+      case SendReplyFailure():
+        showToast('답글 등록에 실패했습니다.');
+      case EditCommentFailure():
+        showToast('댓글 수정에 실패했습니다.');
+      case FeedDeleted():
+        showDialog<void>(
+          context: context,
+          barrierDismissible: false,
+          builder: (_) => CustomDialog(
+            title: '삭제된 게시물이에요',
+            onPosTap: () => context.pop(),
+          ),
+        );
+      case FeedLocked():
+        showUnlockDialog(context, postId).then((unlocked) {
+          if (!context.mounted) return;
+          unlocked ? viewModel.retry() : context.pop();
+        });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
@@ -47,28 +76,7 @@ class PostScreen extends StatelessWidget {
 
           return UiEventListener(
             stream: viewModel.uiEvent,
-            onEvent: (event) {
-              switch (event) {
-                case SendCommentFailure():
-                  showToast('댓글 등록에 실패했습니다.');
-                case SendReplyFailure():
-                  showToast('답글 등록에 실패했습니다.');
-                case FeedDeleted():
-                  showDialog<void>(
-                    context: context,
-                    barrierDismissible: false,
-                    builder: (_) => CustomDialog(
-                      title: '삭제된 게시물이에요',
-                      onPosTap: () => context.pop(),
-                    ),
-                  );
-                case FeedLocked():
-                  showUnlockDialog(context, postId).then((unlocked) {
-                    if (!context.mounted) return;
-                    unlocked ? viewModel.retry() : context.pop();
-                  });
-              }
-            },
+            onEvent: (event) => _handleEvent(context, viewModel, event),
             child: PopScope(
               canPop: uiState.replyParentId == null,
               onPopInvokedWithResult: (didPop, _) {
@@ -131,8 +139,11 @@ class PostScreen extends StatelessWidget {
                                             spacing: 20,
                                             children: viewModel.visibleComments
                                                 .map(
-                                                  (e) =>
-                                                      CommentCard(comment: e),
+                                                  (e) => CommentCard(
+                                                    comment: e,
+                                                    editingId: uiState
+                                                        .editingCommentId,
+                                                  ),
                                                 )
                                                 .toList(),
                                           ),
