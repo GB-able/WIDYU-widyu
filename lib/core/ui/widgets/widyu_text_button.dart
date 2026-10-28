@@ -51,7 +51,7 @@ class WidyuTextButton extends StatelessWidget {
         borderRadius: radius,
         child: SizedBox(
           width: double.infinity,
-          height: 52,
+          height: 56,
           child: Center(
             child: isLoading
                 ? SizedBox(
