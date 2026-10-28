@@ -54,27 +54,27 @@ class SelectPhotoScreen extends StatelessWidget {
                         enable: viewModel.selected.isNotEmpty,
                       )
                     : Column(
-                        spacing: 10,
+                        spacing: 8,
                         children: [
-                          WidyuTextButton(
-                            onTap: () => viewModel.requestAlbumPermission(),
-                            text: '설정에서 권한 허용하기',
-                          ),
                           GestureDetector(
                             onTap: () => context.pop(),
                             child: Container(
                               width: double.infinity,
-                              height: 44,
+                              height: 40,
                               color: Colors.transparent,
                               alignment: Alignment.center,
                               child: Text(
                                 '나중에 하기',
                                 style: MyTypo.button.copyWith(
-                                  color: MyColor.black,
+                                  color: MyColor.grey600,
                                 ),
                                 textAlign: TextAlign.center,
                               ),
                             ),
+                          ),
+                          WidyuTextButton(
+                            onTap: () => viewModel.requestAlbumPermission(),
+                            text: '설정에서 권한 허용하기',
                           ),
                         ],
                       ),
