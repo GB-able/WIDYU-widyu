@@ -9,6 +9,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:widyu/app/routes/app_route.dart';
 import 'package:widyu/core/data/repository/goal/medication_repository.dart';
+import 'package:widyu/core/log/log.dart';
 import 'package:widyu/core/model/goal/medication/medication_point_result.dart';
 import 'package:widyu/core/notification/medication_push_manager.dart';
 import 'package:widyu/core/ui/widgets/medication_reward_dialog.dart';
@@ -88,7 +89,8 @@ class _MedicationSessionScopeState extends State<MedicationSessionScope>
 
   void onMessage(RemoteMessage message) {
     if (!isMedicationChange(message)) return;
-    debugPrint('[MedicationSync] 포그라운드 푸시 수신: ${message.data}');
+    WiduLog.data.i('약 복용 일정 변경 푸시 수신');
+    WiduLog.data.t(() => '약 복용 푸시 data: ${message.data}');
     unawaited(repository.syncAlarmSchedule());
   }
 

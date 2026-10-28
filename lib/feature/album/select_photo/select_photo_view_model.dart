@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_manager/photo_manager.dart';
+import 'package:widyu/core/log/log.dart';
 import 'package:widyu/core/utils/show_toast.dart';
 
 const _maxVideoDurationSeconds = 60;
@@ -164,8 +165,8 @@ class SelectPhotoViewModel extends ChangeNotifier {
               !ids.contains(e.id),
         ),
       ];
-    } catch (e) {
-      debugPrint(e.toString());
+    } catch (e, stack) {
+      WiduLog.ui.w('사진 목록 불러오기 실패', error: e, stackTrace: stack);
     } finally {
       _loading.remove(filter);
       notifyListeners();

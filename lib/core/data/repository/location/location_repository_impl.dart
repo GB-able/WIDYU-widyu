@@ -1,12 +1,12 @@
 import 'dart:async';
 import 'dart:collection';
-import 'dart:developer';
 
 import 'package:widyu/core/data/repository/location/location_repository.dart';
 import 'package:widyu/core/data/source/auth/auth_local_data_source.dart';
 import 'package:widyu/core/data/source/device/device_local_data_source.dart';
 import 'package:widyu/core/data/source/location/location_local_data_source.dart';
 import 'package:widyu/core/data/source/location/location_remote_data_source.dart';
+import 'package:widyu/core/log/log.dart';
 import 'package:widyu/core/model/location/location_config.dart';
 import 'package:widyu/core/model/location/location_update_request.dart';
 import 'package:widyu/core/model/location/user_location.dart';
@@ -66,7 +66,7 @@ class LocationRepositoryImpl implements LocationRepository {
     _locationSubscription = _localDataSource.getLocation().listen(
       (location) => _send(location, LocationReason.move),
       onError: (Object error, StackTrace stackTrace) =>
-          log('Error in location stream: $error', stackTrace: stackTrace),
+          WiduLog.data.w('위치 스트림 오류', error: error, stackTrace: stackTrace),
     );
     _connection = _remoteDataSource.connectionState.listen((connected) {
       if (connected) _resendQueued();
@@ -101,7 +101,7 @@ class LocationRepositoryImpl implements LocationRepository {
     _memberId ??= await _authLocalDataSource.getMemberId();
     final memberId = _memberId;
     if (deviceId == null || memberId == null) {
-      log('Location upload skipped: memberId or deviceId is missing');
+      WiduLog.data.d('memberId·deviceId가 없어 위치 업로드 생략');
       return;
     }
     if (!_active) return;
@@ -129,7 +129,7 @@ class LocationRepositoryImpl implements LocationRepository {
   void _enqueue(LocationUpdateRequest request) {
     if (_queue.length == _queueMax) {
       final dropped = _queue.removeFirst();
-      log('Location resend queue full; dropped oldest seq=${dropped.seq}');
+      WiduLog.data.w('위치 재전송 큐 가득 참, 가장 오래된 항목 폐기 seq=${dropped.seq}');
     }
     _queue.addLast(request);
   }

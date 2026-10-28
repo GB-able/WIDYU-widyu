@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/widgets.dart';
 import 'package:widyu/core/data/repository/myPage/my_page_repository.dart';
+import 'package:widyu/core/log/log.dart';
 import 'package:widyu/core/model/api/api_result.dart';
 import 'package:widyu/core/model/myPage/profile/user_profile.dart';
 import 'package:widyu/feature/profile/profile_ui_event.dart';
@@ -34,13 +35,16 @@ class ProfileViewModel with ChangeNotifier {
       _uiState = _uiState.copyWith(name: oldName);
       notifyListeners();
       _uiEvent.add(const UpdateNameFailure());
+      return;
     }
+    WiduLog.ui.i('이름 변경 성공');
   }
 
   Future<void> updateProfileImage(File file) async {
     final result = await _repository.updateProfileImage(file);
 
     if (result is Success) {
+      WiduLog.ui.i('프로필 사진 변경 성공');
       await _fetchUserProfile();
     } else {
       _uiEvent.add(const UpdateProfileImageFailure());

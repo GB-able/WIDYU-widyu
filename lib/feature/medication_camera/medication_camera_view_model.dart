@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:medication_alarm/medication_alarm.dart';
 import 'package:widyu/core/data/provider/point_provider.dart';
 import 'package:widyu/core/data/repository/goal/medication_repository.dart';
+import 'package:widyu/core/log/log.dart';
 import 'package:widyu/core/model/goal/medication/medication_point_result.dart';
 import 'package:widyu/feature/medication_camera/medication_camera_ui_event.dart';
 import 'package:widyu/feature/medication_camera/medication_camera_ui_state.dart';
@@ -75,6 +76,8 @@ class MedicationCameraViewModel extends ChangeNotifier {
         result = await _medicationRepository.verifyMedication(occurrence, photo);
         _pending.remove(occurrence);
       }
+      // 인증한 복용 횟수는 약 복용 정보라 남기지 않는다(docs/logging-strategy.md §6.1).
+      WiduLog.ui.i('약 복용 인증 성공 earnedPoints=${result.earnedPoints}');
       await _pointProvider.refresh();
       if (!_disposed) _uiEvent.add(VerifySuccess(result));
     } catch (_) {

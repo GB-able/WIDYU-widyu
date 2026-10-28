@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:ui';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -119,12 +118,12 @@ Future<void> connectSocket(SocketClient socketClient) async {
         final result = await authRepository.fetchSocketToken();
         return result is Success<String> ? result.data : null;
       } catch (e, stack) {
-        debugPrint('[background_service] 소켓 토큰 발급 실패: $e\n$stack');
+        WiduLog.bg.w('소켓 토큰 발급 실패', error: e, stackTrace: stack);
         return null;
       }
     });
   } catch (e, stack) {
-    debugPrint('[background_service] 소켓 연결 실패: $e\n$stack');
+    WiduLog.bg.w('소켓 연결 실패', error: e, stackTrace: stack);
   }
 }
 
@@ -134,10 +133,8 @@ void onStart(ServiceInstance service) {
   runZonedGuarded(
     () => _onStart(service),
     (error, stack) {
-      // onError는 바깥 zone에서 실행되어 print 차단이 적용되지 않으므로 직접 막는다.
-      if (!kReleaseMode) {
-        debugPrint('[background_service] 처리되지 않은 예외: $error\n$stack');
-      }
+      // onError는 바깥 zone에서 실행되어 print 차단이 적용되지 않지만, 로거는 release에서 꺼져 있다.
+      WiduLog.bg.e('zone', error: error, stackTrace: stack);
     },
     zoneSpecification: quietPrintInRelease,
   );
@@ -146,20 +143,25 @@ void onStart(ServiceInstance service) {
 Future<void> _onStart(ServiceInstance service) async {
   WidgetsFlutterBinding.ensureInitialized();
   DartPluginRegistrant.ensureInitialized();
-  await dotenv.load();
+  try {
+    await dotenv.load();
+  } catch (e, stack) {
+    WiduLog.bg.e('dotenv.load 실패', error: e, stackTrace: stack);
+  }
 
   if (!await TokenManager().hasToken()) {
+    WiduLog.bg.i('로그인 토큰이 없어 서비스 종료');
     try {
       if (service is AndroidServiceInstance) {
         await service.setAutoStartOnBootMode(false);
       }
     } catch (error, stack) {
-      debugPrint('[background_service] 초기 자동 시작 해제 실패: $error\n$stack');
+      WiduLog.bg.w('초기 자동 시작 해제 실패', error: error, stackTrace: stack);
     }
     try {
       await service.stopSelf();
     } catch (error, stack) {
-      debugPrint('[background_service] 초기 종료 실패: $error\n$stack');
+      WiduLog.bg.w('초기 종료 실패', error: error, stackTrace: stack);
     }
     return;
   }
@@ -179,12 +181,13 @@ Future<void> _onStart(ServiceInstance service) async {
   Future<void> shutdown() async {
     if (isShuttingDown) return;
     isShuttingDown = true;
+    WiduLog.bg.i('서비스 종료');
     try {
       if (service is AndroidServiceInstance) {
         await service.setAutoStartOnBootMode(false);
       }
     } catch (error, stack) {
-      debugPrint('[background_service] 자동 시작 해제 실패: $error\n$stack');
+      WiduLog.bg.w('자동 시작 해제 실패', error: error, stackTrace: stack);
     }
     try {
       await locationServiceState?.cancel();
@@ -196,7 +199,7 @@ Future<void> _onStart(ServiceInstance service) async {
       socketClient.disconnect();
       await service.stopSelf();
     } catch (error, stack) {
-      debugPrint('[background_service] 종료 실패: $error\n$stack');
+      WiduLog.bg.w('종료 실패', error: error, stackTrace: stack);
     }
   }
 
@@ -205,8 +208,10 @@ Future<void> _onStart(ServiceInstance service) async {
       LocationServiceManager.locationServiceState.listen((state) {
     // 위치를 못 쓰더라도 심박수 전송은 계속해야 하므로 업로드만 끈다.
     if (state.isAvailable) {
+      WiduLog.bg.i('위치 업로드 시작');
       locationRepository.startLocationUpload();
     } else {
+      WiduLog.bg.i('위치 서비스를 쓸 수 없어 위치 업로드 중지');
       locationRepository.stopLocationUpload();
     }
   });
@@ -214,6 +219,7 @@ Future<void> _onStart(ServiceInstance service) async {
   heartRateRepository.observeHeartRate();
   sensorBatchRepository.observeSensorBatches();
   sensorConfigRepository.start();
+  WiduLog.bg.i('서비스 시작');
 
   if (service is AndroidServiceInstance) {
     service.on('setAsForeground').listen((event) {
@@ -241,7 +247,7 @@ Future<void> _enqueueBackgroundService(Future<void> Function() operation) {
     onError: (_) => operation(),
   );
   _backgroundServiceQueue = next.catchError((Object error, StackTrace stack) {
-    debugPrint('[background_service] 서비스 제어 실패: $error\n$stack');
+    WiduLog.bg.w('서비스 제어 실패', error: error, stackTrace: stack);
   });
   return next;
 }

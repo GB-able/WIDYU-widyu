@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:widyu/core/log/log.dart';
 
 /// FCM 메시지를 수신했을 때 로컬 푸시를 띄우기 위한 범용 래퍼.
 /// 알림 표시/취소, 알림 탭 처리(콜드 스타트 포함)를 담당한다.
@@ -58,16 +58,12 @@ class LocalNotificationManager {
       _hasInitialLaunch = true;
       _initialPayload = launchDetails?.notificationResponse?.payload;
       // 서버가 내려준 payload 원문은 디버그 빌드에서만 남긴다(법적 요건 L1).
-      if (kDebugMode) {
-        debugPrint('[LocalNotificationManager] 알림으로 앱 실행: $_initialPayload');
-      }
+      WiduLog.ui.t(() => '알림으로 앱 실행: $_initialPayload');
     }
   }
 
   static void _onNotificationTapped(NotificationResponse response) {
-    if (kDebugMode) {
-      debugPrint('[LocalNotificationManager] 알림 탭: ${response.payload}');
-    }
+    WiduLog.ui.t(() => '알림 탭: ${response.payload}');
     _notificationTapped.add(response.payload);
   }
 
@@ -144,8 +140,8 @@ class LocalNotificationManager {
         ),
         payload: payload,
       );
-    } catch (e) {
-      debugPrint('[LocalNotificationManager] 알림 표시 실패: $e');
+    } catch (e, stack) {
+      WiduLog.ui.w('알림 표시 실패', error: e, stackTrace: stack);
     }
   }
 

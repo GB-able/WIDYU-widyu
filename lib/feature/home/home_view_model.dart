@@ -8,6 +8,7 @@ import 'package:widyu/core/data/repository/home/home_repository.dart';
 import 'package:widyu/core/data/repository/location/location_repository.dart';
 import 'package:widyu/core/data/repository/myPage/my_page_repository.dart';
 import 'package:widyu/core/data/repository/notification/notification_repository.dart';
+import 'package:widyu/core/log/log.dart';
 import 'package:widyu/core/model/api/api_result.dart';
 import 'package:widyu/core/model/goal/medication/medication_point_result.dart';
 import 'package:widyu/core/model/heartRate/heart_rate_response.dart';
@@ -226,7 +227,10 @@ class HomeViewModel with ChangeNotifier {
 
     final result =
         await _notificationRepository.readNotification(notificationId);
-    if (result is Success) return;
+    if (result is Success) {
+      WiduLog.ui.i('알림 읽음 처리 성공 notificationId=$notificationId');
+      return;
+    }
 
     final current = [..._uiState.notifications];
     current.insert(index.clamp(0, current.length), removed);

@@ -1,10 +1,10 @@
 import 'dart:async';
-import 'dart:developer';
 
 import 'package:rxdart/rxdart.dart';
 import 'package:widyu/core/data/repository/heartRate/heart_rate_repository.dart';
 import 'package:widyu/core/data/source/heartRate/heart_rate_local_data_source.dart';
 import 'package:widyu/core/data/source/heartRate/heart_rate_remote_data_source.dart';
+import 'package:widyu/core/log/log.dart';
 import 'package:widyu/core/model/api/api_result.dart';
 import 'package:widyu/core/model/heartRate/heart_rate.dart';
 import 'package:widyu/core/model/heartRate/heart_rate_response.dart';
@@ -33,7 +33,8 @@ class HeartRateRepositoryImpl implements HeartRateRepository {
         .throttleTime(_statusRefreshInterval)
         .listen(
           (_) => _sendHeartRateStatus(),
-          onError: (Object e) => log('Stream Error: $e'),
+          onError: (Object e, StackTrace stack) =>
+              WiduLog.data.w('심박 스트림 오류', error: e, stackTrace: stack),
         );
   }
 

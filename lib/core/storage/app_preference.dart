@@ -1,5 +1,5 @@
-import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:widyu/core/log/log.dart';
 import 'package:widyu/core/storage/preference_key.dart';
 
 /// 보안이 필요 없는 로컬 설정 값을 다루는 래퍼.
@@ -23,7 +23,7 @@ class AppPreference {
       _prefs = await SharedPreferences.getInstance();
       return _prefs;
     } catch (e, stack) {
-      debugPrint('[AppPreference] 초기화 실패: $e\n$stack');
+      WiduLog.data.w('AppPreference 초기화 실패', error: e, stackTrace: stack);
       return null;
     }
   }
@@ -33,7 +33,8 @@ class AppPreference {
       final prefs = await _getPrefs();
       return prefs?.getBool(key.name) ?? defaultValue;
     } catch (e, stack) {
-      debugPrint('[AppPreference] ${key.name} 읽기 실패: $e\n$stack');
+      WiduLog.data.w('AppPreference ${key.name} 읽기 실패',
+          error: e, stackTrace: stack);
       return defaultValue;
     }
   }
@@ -43,7 +44,8 @@ class AppPreference {
       final prefs = await _getPrefs();
       await prefs?.setBool(key.name, value);
     } catch (e, stack) {
-      debugPrint('[AppPreference] ${key.name} 저장 실패: $e\n$stack');
+      WiduLog.data.w('AppPreference ${key.name} 저장 실패',
+          error: e, stackTrace: stack);
     }
   }
 
@@ -52,7 +54,8 @@ class AppPreference {
       final prefs = await _getPrefs();
       return prefs?.getString(key.name);
     } catch (e, stack) {
-      debugPrint('[AppPreference] ${key.name} 읽기 실패: $e\n$stack');
+      WiduLog.data.w('AppPreference ${key.name} 읽기 실패',
+          error: e, stackTrace: stack);
       return null;
     }
   }
@@ -62,7 +65,8 @@ class AppPreference {
       final prefs = await _getPrefs();
       await prefs?.setString(key.name, value);
     } catch (e, stack) {
-      debugPrint('[AppPreference] ${key.name} 저장 실패: $e\n$stack');
+      WiduLog.data.w('AppPreference ${key.name} 저장 실패',
+          error: e, stackTrace: stack);
     }
   }
 }

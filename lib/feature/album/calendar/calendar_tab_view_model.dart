@@ -131,8 +131,7 @@ class CalendarTabViewModel extends ChangeNotifier {
     switch (result) {
       case Success<List<int>>(:final data):
         _daysWithEvents = data.toSet();
-      case Failure(:final message):
-        debugPrint('loadCalendar failed: $message');
+      case Failure():
         _daysWithEvents = {};
     }
 
@@ -179,8 +178,7 @@ class CalendarTabViewModel extends ChangeNotifier {
           nextCursor: data.nextCursor,
           hasNext: data.hasNext,
         );
-      case Failure(:final message):
-        debugPrint('loadFeeds failed: $message');
+      case Failure():
         _feedStates[normalized] = const DateFeedState(hasError: true);
     }
     notifyListeners();
@@ -224,8 +222,7 @@ class CalendarTabViewModel extends ChangeNotifier {
           hasNext: data.hasNext,
           isLoadingMore: false,
         );
-      case Failure(:final message):
-        debugPrint('loadMoreFeeds failed: $message');
+      case Failure():
         _feedStates[normalized] = current.copyWith(
           isLoadingMore: false,
           hasError: true,

@@ -6,6 +6,7 @@ import 'package:widyu/app/routes/app_route.dart';
 import 'package:widyu/app/routes/custom_page.dart';
 import 'package:widyu/app/routes/extra/edit_post_extra.dart';
 import 'package:widyu/app/routes/user_session_scope.dart';
+import 'package:widyu/core/log/log.dart';
 import 'package:widyu/core/network/token_manager.dart';
 import 'package:widyu/core/ui/widgets/bot_nav.dart';
 import 'package:widyu/feature/album/album_screen.dart';
@@ -63,7 +64,8 @@ class CustomRouter {
       return null;
     },
     onException: (context, state, router) {
-      debugPrint('[Router] 매칭되는 경로 없음: ${state.uri}');
+      // 경로에 사용자 값이 섞일 수 있어 URI는 남기지 않는다.
+      WiduLog.ui.w('unmatched_route');
       router.go(AppRoute.splash.path);
     },
     routes: [

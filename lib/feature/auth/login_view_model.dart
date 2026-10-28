@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get_phone_number/get_phone_number.dart';
 import 'package:widyu/core/data/repository/auth/auth_repository.dart';
+import 'package:widyu/core/log/log.dart';
 import 'package:widyu/core/model/api/api_result.dart';
 import 'package:widyu/core/model/permission/permission_type.dart';
 import 'package:widyu/core/utils/permission_manager.dart';
@@ -164,6 +165,7 @@ class LoginViewModel with ChangeNotifier {
     final result = await _authRepository.login(inviteCode, _phoneNumber!);
     switch (result) {
       case Success():
+        WiduLog.ui.i('로그인 성공');
         onSuccess();
       case Failure(statusCode: 404):
         changeState(LoginCodeState(

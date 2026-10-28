@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:widyu/core/log/log.dart';
 import 'package:widyu/core/model/token/token_pair.dart';
 import 'package:widyu/core/network/token_manager.dart';
 
@@ -61,6 +62,7 @@ class TokenInterceptor extends Interceptor {
           _reissueCompleter = Completer<String>();
           try {
             newAccessToken = await _reissue();
+            WiduLog.network.i('토큰 재발급 성공');
             _reissueCompleter!.complete(newAccessToken);
           } catch (e) {
             _reissueCompleter!.completeError(e);
@@ -74,7 +76,9 @@ class TokenInterceptor extends Interceptor {
         final retryResponse = await _dio.fetch<dynamic>(err.requestOptions);
         handler.resolve(retryResponse);
         return;
-      } catch (e) {
+      } catch (e, stack) {
+        // 재발급이나 재요청이 실패하면 토큰을 모두 지우므로 사실상 로그아웃된다.
+        WiduLog.network.w('토큰 재발급·재요청 실패로 토큰 삭제', error: e, stackTrace: stack);
         await _tokenManager.removeAll();
         super.onError(err, handler);
         return;

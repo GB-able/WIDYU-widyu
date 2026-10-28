@@ -3,8 +3,8 @@ import 'dart:io';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/foundation.dart';
 import 'package:widyu/core/data/repository/notification/notification_repository.dart';
+import 'package:widyu/core/log/log.dart';
 import 'package:widyu/core/model/api/api_result.dart';
 import 'package:widyu/core/network/token_manager.dart';
 
@@ -18,7 +18,7 @@ class FcmTokenService {
 
   void start() {
     if (Firebase.apps.isEmpty) {
-      debugPrint('[FCM] Firebase가 초기화되지 않아 토큰 등록을 건너뜁니다.');
+      WiduLog.data.w('Firebase 미초기화로 FCM 토큰 등록 생략');
       return;
     }
     unawaited(_fetchToken().then((token) {
@@ -35,12 +35,12 @@ class FcmTokenService {
       await FirebaseMessaging.instance.requestPermission();
 
       if (Platform.isIOS && await _waitForApnsToken() == null) {
-        debugPrint('[FCM] APNs 토큰이 발급되지 않아 등록을 미룹니다.');
+        WiduLog.data.i('APNs 토큰 미발급으로 FCM 토큰 등록 연기');
         return null;
       }
       return await FirebaseMessaging.instance.getToken();
-    } catch (error) {
-      debugPrint('[FCM] 등록 토큰 발급 실패: $error');
+    } catch (error, stack) {
+      WiduLog.data.w('FCM 토큰 발급 실패', error: error, stackTrace: stack);
       return null;
     }
   }
@@ -51,16 +51,15 @@ class FcmTokenService {
         return;
       }
 
-      debugPrint('[FCM] 현재 토큰을 서버로 전송합니다.');
       final result = await _repository.registerFcmToken(token);
       switch (result) {
         case Success():
-          debugPrint('[FCM] 토큰 등록 성공');
-        case Failure(:final message):
-          debugPrint('[FCM] 토큰 등록 실패: $message');
+          WiduLog.data.i('FCM 토큰 등록 성공');
+        case Failure():
+          WiduLog.data.w('FCM 토큰 등록 실패');
       }
-    } catch (error) {
-      debugPrint('[FCM] 토큰 등록 중 예외 발생: $error');
+    } catch (error, stack) {
+      WiduLog.data.w('FCM 토큰 등록 중 예외', error: error, stackTrace: stack);
     }
   }
 
@@ -73,12 +72,12 @@ class FcmTokenService {
       final result = await _repository.deactivateFcmToken(token);
       switch (result) {
         case Success():
-          debugPrint('[FCM] 토큰 비활성화 성공');
-        case Failure(:final message):
-          debugPrint('[FCM] 토큰 비활성화 실패: $message');
+          WiduLog.data.i('FCM 토큰 비활성화 성공');
+        case Failure():
+          WiduLog.data.w('FCM 토큰 비활성화 실패');
       }
-    } catch (error) {
-      debugPrint('[FCM] 토큰 비활성화 중 예외 발생: $error');
+    } catch (error, stack) {
+      WiduLog.data.w('FCM 토큰 비활성화 중 예외', error: error, stackTrace: stack);
     }
   }
 

@@ -5,6 +5,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:widyu/core/data/provider/point_provider.dart';
 import 'package:widyu/core/data/repository/auth/auth_repository.dart';
 import 'package:widyu/core/data/repository/myPage/my_page_repository.dart';
+import 'package:widyu/core/log/log.dart';
 import 'package:widyu/core/model/api/api_result.dart';
 import 'package:widyu/core/model/myPage/user/user.dart';
 import 'package:widyu/core/notification/fcm_token_service.dart';
@@ -61,6 +62,7 @@ class MyPageViewModel with ChangeNotifier {
   Future<void> logout() async {
     await _fcmTokenService.deactivateToken();
     if (await _authRepository.logout() is Success) {
+      WiduLog.ui.i('로그아웃 성공');
       _uiEvent.add(const LogoutSuccess());
     } else {
       _fcmTokenService.start();

@@ -1,9 +1,9 @@
 import 'dart:io';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:medication_alarm/medication_alarm.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:widyu/core/log/log.dart';
 import 'package:widyu/core/model/permission/permission_type.dart';
 import 'package:widyu/core/utils/settings_return_controller.dart';
 
@@ -76,7 +76,7 @@ class PermissionManager {
           return mapStatus(await Permission.camera.status);
       }
     } catch (e, stack) {
-      debugPrint('[PermissionManager] $type 권한 확인 실패: $e\n$stack');
+      WiduLog.data.w('$type 권한 확인 실패', error: e, stackTrace: stack);
       return PermissionRequestResult.denied;
     }
   }
@@ -88,7 +88,7 @@ class PermissionManager {
     try {
       return await permission.shouldShowRequestRationale;
     } catch (e, stack) {
-      debugPrint('[PermissionManager] $type 권한 안내 확인 실패: $e\n$stack');
+      WiduLog.data.w('$type 권한 안내 확인 실패', error: e, stackTrace: stack);
       return false;
     }
   }
@@ -147,7 +147,7 @@ class PermissionManager {
           return mapStatus(await Permission.camera.request());
       }
     } catch (e, stack) {
-      debugPrint('[PermissionManager] $type 권한 요청 실패: $e\n$stack');
+      WiduLog.data.w('$type 권한 요청 실패', error: e, stackTrace: stack);
       return PermissionRequestResult.denied;
     }
   }
@@ -157,7 +157,7 @@ class PermissionManager {
     try {
       return await Permission.locationAlways.isGranted;
     } catch (e, stack) {
-      debugPrint('[PermissionManager] 위치 항상 허용 확인 실패: $e\n$stack');
+      WiduLog.data.w('위치 항상 허용 확인 실패', error: e, stackTrace: stack);
       return false;
     }
   }
@@ -168,7 +168,7 @@ class PermissionManager {
     try {
       return mapStatus(await Permission.locationAlways.request());
     } catch (e, stack) {
-      debugPrint('[PermissionManager] 위치 항상 허용 요청 실패: $e\n$stack');
+      WiduLog.data.w('위치 항상 허용 요청 실패', error: e, stackTrace: stack);
       return PermissionRequestResult.denied;
     }
   }
@@ -178,7 +178,7 @@ class PermissionManager {
     try {
       return await Permission.location.serviceStatus.isEnabled;
     } catch (e, stack) {
-      debugPrint('[PermissionManager] 위치 서비스 상태 확인 실패: $e\n$stack');
+      WiduLog.data.w('위치 서비스 상태 확인 실패', error: e, stackTrace: stack);
       return false;
     }
   }
@@ -188,7 +188,7 @@ class PermissionManager {
     try {
       return await openAppSettings();
     } catch (e, stack) {
-      debugPrint('[PermissionManager] 설정 화면 이동 실패: $e\n$stack');
+      WiduLog.data.w('설정 화면 이동 실패', error: e, stackTrace: stack);
       return false;
     }
   }

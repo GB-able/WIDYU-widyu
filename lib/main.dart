@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -82,8 +81,8 @@ void main() {
   runZonedGuarded(
     _bootstrap,
     (error, stack) {
-      // onError는 바깥 zone에서 실행되어 print 차단이 적용되지 않으므로 직접 막는다.
-      if (!kReleaseMode) debugPrint('[main] 처리되지 않은 예외: $error\n$stack');
+      // onError는 바깥 zone에서 실행되어 print 차단이 적용되지 않지만, 로거는 release에서 꺼져 있다.
+      WiduLog.global.e('zone', error: error, stackTrace: stack);
     },
     zoneSpecification: quietPrintInRelease,
   );
@@ -94,16 +93,11 @@ Future<void> _bootstrap() async {
       WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
 
-  FlutterError.onError = (details) {
-    FlutterError.presentError(details);
-    debugPrint('[main] FlutterError: ${details.exception}\n${details.stack}');
-  };
-
   // 초기화 단계 중 하나가 실패하더라도 나머지 단계와 runApp 은 반드시 수행한다.
   try {
     await dotenv.load();
   } catch (e, stack) {
-    debugPrint('[main] dotenv.load 실패: $e\n$stack');
+    WiduLog.data.w('dotenv.load 실패', error: e, stackTrace: stack);
   }
 
   try {
@@ -111,32 +105,32 @@ Future<void> _bootstrap() async {
       options: DefaultFirebaseOptions.currentPlatform,
     );
   } catch (e, stack) {
-    debugPrint('[main] Firebase.initializeApp 실패: $e\n$stack');
+    WiduLog.data.w('Firebase 초기화 실패', error: e, stackTrace: stack);
   }
 
   try {
     await initializeService();
   } catch (e, stack) {
-    debugPrint('[main] initializeService 실패: $e\n$stack');
+    WiduLog.bg.w('백그라운드 서비스 초기화 실패', error: e, stackTrace: stack);
   }
 
   try {
     await initializeWalkService();
-  } catch (e) {
-    debugPrint('[main] 걸음수 백그라운드 초기화 실패: ${e.runtimeType}');
+  } catch (e, stack) {
+    WiduLog.bg.w('걸음수 백그라운드 초기화 실패', error: e, stackTrace: stack);
   }
 
   try {
     await initializeDateFormatting('ko_KR');
   } catch (e, stack) {
-    debugPrint('[main] initializeDateFormatting 실패: $e\n$stack');
+    WiduLog.ui.w('날짜 포맷 초기화 실패', error: e, stackTrace: stack);
   }
 
   try {
     await initializeMedicationPush();
     await LocalNotificationManager.initialize();
   } catch (e, stack) {
-    debugPrint('[main] 알림 초기화 실패: $e\n$stack');
+    WiduLog.data.w('알림 초기화 실패', error: e, stackTrace: stack);
   }
 
   runApp(

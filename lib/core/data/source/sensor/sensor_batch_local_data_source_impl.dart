@@ -1,9 +1,8 @@
 import 'dart:convert';
-import 'dart:developer';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:widyu/core/data/source/sensor/sensor_batch_local_data_source.dart';
+import 'package:widyu/core/log/log.dart';
 import 'package:widyu/core/model/sensor/sensor_message.dart';
 
 class SensorBatchLocalDataSourceImpl implements SensorBatchLocalDataSource {
@@ -32,12 +31,9 @@ class SensorBatchLocalDataSourceImpl implements SensorBatchLocalDataSource {
         SensorMessageDropped() => message,
       };
     } catch (error, stackTrace) {
-      // 파싱 예외 메시지는 원문 센서 값을 품을 수 있어 디버그 빌드에서만 남긴다.
-      if (kDebugMode) {
-        log('Sensor message parse failed: $error', stackTrace: stackTrace);
-      } else {
-        log('Sensor message parse failed.');
-      }
+      // 파싱 예외 메시지는 원문 센서 값을 품을 수 있어 고정 문구로 남긴다.
+      WiduLog.data.w('센서 메시지 파싱 실패 ${error.runtimeType}',
+          error: error, stackTrace: stackTrace);
       return null;
     }
   }
@@ -55,9 +51,9 @@ class SensorBatchLocalDataSourceImpl implements SensorBatchLocalDataSource {
       'stream': stream,
       'session_id': sessionId,
       'seq': seq,
-    }).catchError((Object error) {
+    }).catchError((Object error, StackTrace stack) {
       // 못 지우면 다음 기동 때 다시 보내질 뿐이고, 서버가 batch_id 로 중복을 거른다.
-      log('Sensor item consume failed: $error');
+      WiduLog.data.w('센서 항목 소비 실패 seq=$seq', error: error, stackTrace: stack);
     });
   }
 }
