@@ -7,12 +7,13 @@ import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
 import 'package:widyu/core/ui/widgets/custom_network_image.dart';
 import 'package:widyu/core/ui/widgets/dash_border.dart';
-import 'package:widyu/core/ui/widgets/icon_widget.dart';
+import 'package:widyu/core/ui/widgets/widu_icon.dart';
 import 'package:widyu/core/utils/extensions/duration_extension.dart';
 import 'package:widyu/core/utils/extensions/string_extension.dart';
 import 'package:widyu/core/utils/medication_verification_launcher.dart';
 import 'package:widyu/feature/goal/_widget/icon_tile.dart';
 import 'package:widyu/feature/goal/main/goal_screen.dart';
+import 'package:widyu/gen/assets.gen.dart';
 
 const _boxHeight = 100.0;
 const _boxRadius = 10.0;
@@ -203,8 +204,8 @@ class _VerifyPhotoBox extends StatelessWidget {
                     shape: BoxShape.circle,
                     border: Border.all(color: MyColor.primary)),
                 alignment: Alignment.center,
-                child: const IconWidget(
-                  icon: 'camera_add',
+                child: WiduIcon(
+                  icon: Assets.icons.ic24CameraAdd,
                   width: 24,
                   height: 24,
                   color: MyColor.orange600,
@@ -303,8 +304,7 @@ class _VerifyEmptyBox extends StatelessWidget {
         spacing: 4,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Image.asset(
-            'assets/images/img_40_medicine_disabled.png',
+          Assets.images.img40MedicineDisabled.image(
             width: 40,
             height: 40,
           ),
@@ -336,7 +336,7 @@ class _AlarmTimeRow extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       spacing: 6,
       children: [
-        IconWidget(icon: 'time', width: 20, color: color),
+        WiduIcon(icon: Assets.icons.ic20Time, width: 20, color: color),
         Text(
           alarmTime.twelveHourTime,
           style: MyTypo.subTitle1.copyWith(

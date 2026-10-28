@@ -8,12 +8,13 @@ import 'package:widyu/core/data/repository/myPage/my_page_repository.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
 import 'package:widyu/core/ui/widgets/ui_event_listener.dart';
-import 'package:widyu/core/ui/widgets/widyu_icon.dart';
+import 'package:widyu/core/ui/widgets/widu_icon.dart';
 import 'package:widyu/core/utils/extensions/string_extension.dart';
 import 'package:widyu/core/utils/show_toast.dart';
 import 'package:widyu/feature/profile/profile_ui_event.dart';
 import 'package:widyu/feature/profile/profile_ui_state.dart';
 import 'package:widyu/feature/profile/profile_view_model.dart';
+import 'package:widyu/gen/assets.gen.dart';
 
 part 'widget/profile_app_bar.dart';
 part 'widget/profile_edit_view.dart';

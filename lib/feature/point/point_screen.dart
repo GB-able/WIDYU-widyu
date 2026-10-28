@@ -7,13 +7,13 @@ import 'package:widyu/core/data/repository/myPage/my_page_repository.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
 import 'package:widyu/core/ui/widgets/ui_event_listener.dart';
-import 'package:widyu/core/ui/widgets/widyu_asset_image.dart';
-import 'package:widyu/core/ui/widgets/widyu_icon.dart';
+import 'package:widyu/core/ui/widgets/widu_icon.dart';
 import 'package:widyu/core/utils/show_toast.dart';
 import 'package:widyu/feature/point/point_ui_event.dart';
 import 'package:widyu/feature/point/point_ui_model.dart';
 import 'package:widyu/feature/point/point_ui_state.dart';
 import 'package:widyu/feature/point/point_view_model.dart';
+import 'package:widyu/gen/assets.gen.dart';
 
 part 'widget/point_app_bar.dart';
 part 'widget/point_history_view.dart';

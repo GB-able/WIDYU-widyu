@@ -18,8 +18,7 @@ class _TotalPointView extends StatelessWidget {
       ),
       child: Row(
         children: [
-          const WidyuAssetImage(
-            name: 'img_28_point.png',
+          Assets.images.img28Point.image(
             width: 28,
             height: 28,
           ),

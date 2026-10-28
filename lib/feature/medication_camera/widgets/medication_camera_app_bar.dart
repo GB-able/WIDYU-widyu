@@ -21,8 +21,8 @@ class _MedicationCameraAppBar extends StatelessWidget
       centerTitle: true,
       leading: IconButton(
         onPressed: enabled ? () => context.pop() : null,
-        icon: const WidyuIcon(
-          icon: 'ic_24_arrow_left_bold.svg',
+        icon: WiduIcon(
+          icon: Assets.icons.ic24ArrowLeftBold,
           width: 24,
           height: 24,
           color: MyColor.white,

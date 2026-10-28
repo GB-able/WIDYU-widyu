@@ -10,9 +10,9 @@ import 'package:widyu/core/ui/widgets/custom_app_bar.dart';
 import 'package:widyu/core/ui/widgets/custom_dialog.dart';
 import 'package:widyu/core/ui/widgets/custom_error_widget.dart';
 import 'package:widyu/core/ui/widgets/custom_loading_widget.dart';
-import 'package:widyu/core/ui/widgets/icon_widget.dart';
 import 'package:widyu/core/ui/widgets/profile_widget.dart';
 import 'package:widyu/core/ui/widgets/ui_event_listener.dart';
+import 'package:widyu/core/ui/widgets/widu_icon.dart';
 import 'package:widyu/core/utils/show_toast.dart';
 import 'package:widyu/feature/album/_widgets/feed_widget.dart';
 import 'package:widyu/feature/album/_widgets/unlock_dialog.dart';
@@ -20,6 +20,7 @@ import 'package:widyu/feature/album/post/post_ui_event.dart';
 import 'package:widyu/feature/album/post/post_ui_state.dart';
 import 'package:widyu/feature/album/post/post_view_model.dart';
 import 'package:widyu/feature/album/post/widgets/comment_card.dart';
+import 'package:widyu/gen/assets.gen.dart';
 
 part 'widgets/comment_text_field.dart';
 

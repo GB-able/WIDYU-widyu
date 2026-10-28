@@ -30,8 +30,8 @@ class _ProfileImageView extends StatelessWidget {
           child: ClipOval(
             child: IgnorePointer(
               child: profileImage.isEmpty
-                  ? const WidyuIcon(
-                      icon: 'ic_104_profile.svg',
+                  ? WiduIcon(
+                      icon: Assets.icons.ic104Profile,
                       width: 104,
                       height: 104,
                     )
@@ -50,8 +50,8 @@ class _ProfileImageView extends StatelessWidget {
                           ),
                         );
                       },
-                      errorBuilder: (_, __, ___) => const WidyuIcon(
-                        icon: 'ic_104_profile.svg',
+                      errorBuilder: (_, __, ___) => WiduIcon(
+                        icon: Assets.icons.ic104Profile,
                         width: 104,
                         height: 104,
                       ),
@@ -75,8 +75,8 @@ class _ProfileImageView extends StatelessWidget {
               child: InkWell(
                 onTap: _pickImage,
                 customBorder: const CircleBorder(),
-                child: const WidyuIcon(
-                  icon: 'ic_24_plus_orange.svg',
+                child: WiduIcon(
+                  icon: Assets.icons.ic24PlusOrange,
                   width: 24,
                   height: 24,
                 ),

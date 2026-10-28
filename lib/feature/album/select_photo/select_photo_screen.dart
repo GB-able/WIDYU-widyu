@@ -9,10 +9,11 @@ import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
 import 'package:widyu/core/ui/widgets/custom_dialog.dart';
 import 'package:widyu/core/ui/widgets/custom_loading_widget.dart';
-import 'package:widyu/core/ui/widgets/icon_widget.dart';
+import 'package:widyu/core/ui/widgets/widu_icon.dart';
 import 'package:widyu/core/ui/widgets/widyu_text_button.dart';
 import 'package:widyu/core/utils/extensions/int_extension.dart';
 import 'package:widyu/feature/album/select_photo/select_photo_view_model.dart';
+import 'package:widyu/gen/assets.gen.dart';
 
 part 'widgets/permission_denied_widget.dart';
 part 'widgets/photo_grid.dart';

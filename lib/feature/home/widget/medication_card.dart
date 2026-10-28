@@ -107,8 +107,7 @@ class _MedicationCard extends StatelessWidget {
             translation: const Offset(0.05, 0.05),
             child: Transform.scale(
               scale: 1.1,
-              child: const WidyuAssetImage(
-                name: 'img_238_medicine.png',
+              child: Assets.images.img238Medicine.image(
                 fit: BoxFit.contain,
               ),
             ),

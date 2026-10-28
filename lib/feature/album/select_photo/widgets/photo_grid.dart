@@ -91,7 +91,7 @@ class _CameraTile extends StatelessWidget {
           alignment: Alignment.center,
           child: viewModel.isCapturing
               ? const CircularProgressIndicator()
-              : const IconWidget(icon: 'camera', width: 64),
+              : WiduIcon(icon: Assets.icons.ic64Camera, width: 64),
         ),
       ),
     );

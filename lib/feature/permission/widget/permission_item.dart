@@ -17,8 +17,8 @@ class _PermissionItem extends StatelessWidget {
             color: MyColor.grey200,
             shape: BoxShape.circle,
           ),
-          child: WidyuIcon(
-            icon: permission.iconName,
+          child: WiduIcon(
+            icon: permission.icon,
             width: 18,
             height: 18,
           ),

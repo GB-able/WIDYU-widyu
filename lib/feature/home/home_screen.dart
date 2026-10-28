@@ -24,11 +24,9 @@ import 'package:widyu/core/model/home/medication_status.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
 import 'package:widyu/core/ui/widgets/bot_nav.dart';
-import 'package:widyu/core/ui/widgets/icon_widget.dart';
 import 'package:widyu/core/ui/widgets/medication_reward_dialog.dart';
 import 'package:widyu/core/ui/widgets/ui_event_listener.dart';
-import 'package:widyu/core/ui/widgets/widyu_asset_image.dart';
-import 'package:widyu/core/ui/widgets/widyu_icon.dart';
+import 'package:widyu/core/ui/widgets/widu_icon.dart';
 import 'package:widyu/core/ui/widgets/widyu_permission_dialog.dart';
 import 'package:widyu/core/ui/widgets/widyu_text_button.dart';
 import 'package:widyu/core/utils/background_location_notice_controller.dart';
@@ -38,6 +36,7 @@ import 'package:widyu/feature/home/home_ui_event.dart';
 import 'package:widyu/feature/home/home_ui_state.dart';
 import 'package:widyu/feature/home/home_view_model.dart';
 import 'package:widyu/feature/permission/permission_ui_model.dart';
+import 'package:widyu/gen/assets.gen.dart';
 
 part 'widget/album_card.dart';
 part 'widget/carousel_card_shell.dart';
@@ -175,8 +174,7 @@ class HomeScreen extends StatelessWidget {
                       child: ConstrainedBox(
                         constraints:
                             BoxConstraints(minHeight: backgroundMinHeight),
-                        child: const WidyuAssetImage(
-                          name: 'img_375_home_background.png',
+                        child: Assets.images.img375HomeBackground.image(
                           fit: BoxFit.cover,
                           alignment: Alignment.topCenter,
                         ),

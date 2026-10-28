@@ -5,12 +5,13 @@ import 'package:widyu/core/data/repository/notification/notification_repository.
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
 import 'package:widyu/core/ui/widgets/ui_event_listener.dart';
-import 'package:widyu/core/ui/widgets/widyu_icon.dart';
+import 'package:widyu/core/ui/widgets/widu_icon.dart';
 import 'package:widyu/core/utils/show_toast.dart';
 import 'package:widyu/feature/notification_setting/notification_setting_ui_event.dart';
 import 'package:widyu/feature/notification_setting/notification_setting_ui_model.dart';
 import 'package:widyu/feature/notification_setting/notification_setting_ui_state.dart';
 import 'package:widyu/feature/notification_setting/notification_setting_view_model.dart';
+import 'package:widyu/gen/assets.gen.dart';
 
 part 'widget/notification_setting_app_bar.dart';
 part 'widget/notification_setting_toggle.dart';

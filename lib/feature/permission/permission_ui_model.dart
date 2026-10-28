@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:widyu/core/model/permission/permission_recovery_prompt.dart';
 import 'package:widyu/core/model/permission/permission_type.dart';
 import 'package:widyu/core/ui/widgets/permission_recovery_dialog.dart';
+import 'package:widyu/gen/assets.gen.dart';
 
 extension PermissionTypeDisplay on PermissionType {
   String get title => switch (this) {
@@ -24,14 +25,14 @@ extension PermissionTypeDisplay on PermissionType {
         PermissionType.camera => '의약품 복용 촬영, 이미지 저장 및 글 작성 시 사진 첨부',
       };
 
-  String get iconName => switch (this) {
-        PermissionType.notification => 'ic_18_notification.svg',
-        PermissionType.alarm => 'ic_18_alarm.svg',
-        PermissionType.id => 'ic_18_profile.svg',
-        PermissionType.phone => 'ic_18_phone.svg',
-        PermissionType.location => 'ic_18_location.svg',
-        PermissionType.fitness => 'ic_18_fitness.svg',
-        PermissionType.camera => 'ic_18_camera.svg',
+  SvgGenImage get icon => switch (this) {
+        PermissionType.notification => Assets.icons.ic18Notification,
+        PermissionType.alarm => Assets.icons.ic18Alarm,
+        PermissionType.id => Assets.icons.ic18Profile,
+        PermissionType.phone => Assets.icons.ic18Phone,
+        PermissionType.location => Assets.icons.ic18Location,
+        PermissionType.fitness => Assets.icons.ic18Fitness,
+        PermissionType.camera => Assets.icons.ic18Camera,
       };
 
   /// 앱 이용에 반드시 필요한 권한인지 여부.

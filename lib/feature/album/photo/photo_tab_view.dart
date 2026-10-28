@@ -14,13 +14,14 @@ import 'package:widyu/core/ui/theme/typos.dart';
 import 'package:widyu/core/ui/widgets/custom_error_widget.dart';
 import 'package:widyu/core/ui/widgets/custom_loading_widget.dart';
 import 'package:widyu/core/ui/widgets/custom_network_image.dart';
-import 'package:widyu/core/ui/widgets/icon_widget.dart';
+import 'package:widyu/core/ui/widgets/widu_icon.dart';
 import 'package:widyu/core/utils/extensions/int_extension.dart';
 import 'package:widyu/feature/album/_widgets/album_empty_widget.dart';
 import 'package:widyu/feature/album/_widgets/lock_overlay.dart';
 import 'package:widyu/feature/album/_widgets/retry_widget.dart';
 import 'package:widyu/feature/album/_widgets/unlock_dialog.dart';
 import 'package:widyu/feature/album/photo/photo_tab_view_model.dart';
+import 'package:widyu/gen/assets.gen.dart';
 
 part 'widgets/media_thumbnail.dart';
 part 'widgets/month_title.dart';

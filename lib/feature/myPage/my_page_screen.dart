@@ -11,14 +11,14 @@ import 'package:widyu/core/notification/fcm_token_service.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
 import 'package:widyu/core/ui/widgets/ui_event_listener.dart';
-import 'package:widyu/core/ui/widgets/widyu_asset_image.dart';
+import 'package:widyu/core/ui/widgets/widu_icon.dart';
 import 'package:widyu/core/ui/widgets/widyu_divider.dart';
-import 'package:widyu/core/ui/widgets/widyu_icon.dart';
 import 'package:widyu/core/utils/app_service_controller.dart';
 import 'package:widyu/core/utils/show_toast.dart';
 import 'package:widyu/feature/myPage/my_page_ui_event.dart';
 import 'package:widyu/feature/myPage/my_page_ui_state.dart';
 import 'package:widyu/feature/myPage/my_page_view_model.dart';
+import 'package:widyu/gen/assets.gen.dart';
 
 part 'widget/header_content.dart';
 part 'widget/information_menu_view.dart';

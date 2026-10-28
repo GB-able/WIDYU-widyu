@@ -10,7 +10,7 @@ class _PermissionDeniedWidget extends StatelessWidget {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Image.asset('assets/images/img_100_photo.png', width: 100),
+        Assets.images.img100Photo.image(width: 100),
         const SizedBox(height: 16),
         Text(
           '앨범 접근 권한이 필요합니다!',

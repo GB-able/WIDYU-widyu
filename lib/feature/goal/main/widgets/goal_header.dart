@@ -36,8 +36,7 @@ class _PointBanner extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16),
         child: Row(
           children: [
-            const WidyuAssetImage(
-                name: 'img_28_point.png', width: 28, height: 28),
+            Assets.images.img28Point.image(width: 28, height: 28),
             const SizedBox(width: 4),
             Text(
               '포인트',

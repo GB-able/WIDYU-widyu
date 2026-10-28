@@ -82,8 +82,8 @@ class _ProfileNameViewState extends State<_ProfileNameView> {
                     style: MyTypo.helper.copyWith(color: MyColor.green600),
                   ),
                 )
-              : const WidyuIcon(
-                  icon: 'ic_24_edit.svg',
+              : WiduIcon(
+                  icon: Assets.icons.ic24Edit,
                   width: 24,
                   height: 24,
                 ),

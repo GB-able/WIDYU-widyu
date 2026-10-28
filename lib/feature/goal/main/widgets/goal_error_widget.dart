@@ -13,8 +13,7 @@ class _GoalErrorWidget extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const WidyuAssetImage(
-                name: 'img_100_mascot_crying.png', width: 100),
+            Assets.images.img100MascotCrying.image(width: 100),
             const SizedBox(height: 16),
             Text(
               '목표 정보를 불러오지 못했어요.',

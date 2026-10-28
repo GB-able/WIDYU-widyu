@@ -7,8 +7,9 @@ import 'package:widyu/core/data/provider/point_provider.dart';
 import 'package:widyu/core/log/log.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
-import 'package:widyu/core/ui/widgets/icon_widget.dart';
+import 'package:widyu/core/ui/widgets/widu_icon.dart';
 import 'package:widyu/core/ui/widgets/widyu_text_button.dart';
+import 'package:widyu/gen/assets.gen.dart';
 
 Future<bool> showUnlockDialog(BuildContext context, int albumId) async {
   final albumProvider = context.read<AlbumProvider>();
@@ -51,27 +52,27 @@ class UnlockDialog extends StatefulWidget {
     required this.onTap,
   }) : onPurchase = null;
 
-  const UnlockDialog.purchase({
+  UnlockDialog.purchase({
     super.key,
     required this.price,
     required this.point,
     required this.onPurchase,
   })  : onTap = null,
-        image = 'assets/images/img_112_unlock.png',
+        image = Assets.images.img112Unlock,
         title = '새로운 소식을 구매할까요?',
         buttonText = '구매하기';
 
-  const UnlockDialog.notEnough({
+  UnlockDialog.notEnough({
     super.key,
     required this.price,
     required this.point,
     required this.onTap,
   })  : onPurchase = null,
-        image = 'assets/images/img_112_warning.png',
+        image = Assets.images.img112Warning,
         title = '포인트가 부족해요',
         buttonText = '포인트 모으러 가기';
 
-  final String image;
+  final AssetGenImage image;
   final String title;
   final int price;
   final int? point;
@@ -141,10 +142,10 @@ class _UnlockDialogState extends State<UnlockDialog> {
                         GestureDetector(
                           onTap: _loading ? null : () => Navigator.pop(context),
                           behavior: HitTestBehavior.translucent,
-                          child: const Padding(
-                            padding: EdgeInsets.all(2),
-                            child: IconWidget(
-                              icon: 'close',
+                          child: Padding(
+                            padding: const EdgeInsets.all(2),
+                            child: WiduIcon(
+                              icon: Assets.icons.ic16Close,
                               width: 16,
                               color: MyColor.grey700,
                             ),
@@ -153,7 +154,7 @@ class _UnlockDialogState extends State<UnlockDialog> {
                       ],
                     ),
                     const SizedBox(height: 24),
-                    Image.asset(widget.image, width: 112, height: 112),
+                    widget.image.image(width: 112, height: 112),
                     const SizedBox(height: 16),
                     Text(
                       widget.title,

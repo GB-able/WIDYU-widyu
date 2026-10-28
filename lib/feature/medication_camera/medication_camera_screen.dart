@@ -11,11 +11,12 @@ import 'package:widyu/core/data/repository/goal/medication_repository.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
 import 'package:widyu/core/ui/widgets/ui_event_listener.dart';
-import 'package:widyu/core/ui/widgets/widyu_icon.dart';
+import 'package:widyu/core/ui/widgets/widu_icon.dart';
 import 'package:widyu/core/utils/show_toast.dart';
 import 'package:widyu/feature/medication_camera/medication_camera_ui_event.dart';
 import 'package:widyu/feature/medication_camera/medication_camera_ui_state.dart';
 import 'package:widyu/feature/medication_camera/medication_camera_view_model.dart';
+import 'package:widyu/gen/assets.gen.dart';
 
 part 'widgets/camera_capture_view.dart';
 part 'widgets/medication_camera_app_bar.dart';

@@ -7,10 +7,11 @@ import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
 import 'package:widyu/core/ui/widgets/bot_nav.dart';
 import 'package:widyu/core/ui/widgets/custom_app_bar.dart';
-import 'package:widyu/core/ui/widgets/icon_widget.dart';
+import 'package:widyu/core/ui/widgets/widu_icon.dart';
 import 'package:widyu/feature/album/calendar/calendar_tab_view.dart';
 import 'package:widyu/feature/album/feed/feed_tab_view.dart';
 import 'package:widyu/feature/album/photo/photo_tab_view.dart';
+import 'package:widyu/gen/assets.gen.dart';
 
 class AlbumScreen extends StatefulWidget {
   const AlbumScreen({super.key});
@@ -51,8 +52,8 @@ class _AlbumScreenState extends State<AlbumScreen>
           GestureDetector(
             behavior: HitTestBehavior.translucent,
             onTap: () => {}, // [TODO] 알림 페이지 생성 후 연결
-            child: const IconWidget(
-              icon: 'notification',
+            child: WiduIcon(
+              icon: Assets.icons.ic22Notification,
               width: 22,
               color: MyColor.grey600,
             ),
@@ -121,7 +122,7 @@ class _AlbumScreenState extends State<AlbumScreen>
                 mainAxisSize: MainAxisSize.min,
                 spacing: 4,
                 children: [
-                  const IconWidget(icon: 'plus', width: 13),
+                  WiduIcon(icon: Assets.icons.ic13Plus, width: 13),
                   Text(
                     '올리기',
                     style: MyTypo.button.copyWith(color: MyColor.white),

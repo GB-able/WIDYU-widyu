@@ -2,7 +2,7 @@ part of '../my_page_screen.dart';
 
 class _TextMenu extends StatelessWidget {
   final String title;
-  final String? asset;
+  final SvgGenImage? asset;
   final VoidCallback onClick;
 
   const _TextMenu({
@@ -25,13 +25,13 @@ class _TextMenu extends StatelessWidget {
           child: Row(
             children: [
               if (asset != null) ...[
-                WidyuIcon(icon: asset!, width: 24, height: 24),
+                WiduIcon(icon: asset!, width: 24, height: 24),
                 const SizedBox(width: 8),
               ],
               Text(title, style: MyTypo.body1.copyWith(color: MyColor.black)),
               const Spacer(),
-              const WidyuIcon(
-                icon: 'ic_20_chevron_right.svg',
+              WiduIcon(
+                icon: Assets.icons.ic20ChevronRight,
                 width: 20,
                 height: 20,
                 color: MyColor.grey400,
