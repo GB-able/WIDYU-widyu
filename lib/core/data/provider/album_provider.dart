@@ -5,6 +5,7 @@ import 'package:widyu/core/model/album/album_post.dart';
 import 'package:widyu/core/model/album/album_stat.dart';
 import 'package:widyu/core/model/album/album_unlock.dart';
 import 'package:widyu/core/model/album/feed_base.dart';
+import 'package:widyu/core/model/album/member.dart';
 import 'package:widyu/core/model/api/api_result.dart';
 
 class AlbumProvider with ChangeNotifier {
@@ -211,6 +212,14 @@ class AlbumProvider with ChangeNotifier {
     });
     notifyListeners();
     return true;
+  }
+
+  void addViewer(int albumId, Member viewer) {
+    if (_disposed || isDeleted(albumId)) return;
+    final post = _posts[albumId];
+    if (post == null || post.viewers.any((v) => v.id == viewer.id)) return;
+    _posts[albumId] = post.copyWith(viewers: [...post.viewers, viewer]);
+    notifyListeners();
   }
 
   void onCommentAdded(int albumId) => _addCommentCount(albumId, 1);
