@@ -60,6 +60,7 @@ class PermissionViewModel with ChangeNotifier {
         showPrompt,
       );
       if (_isDisposed) return;
+      WiduLog.ui.i('권한 요청 완료 denied=${denied.map((e) => e.name).toList()}');
 
       // 2. 거절된 권한 안내는 요청이 모두 끝난 뒤 한 번만 발행한다.
       if (denied.isNotEmpty) {

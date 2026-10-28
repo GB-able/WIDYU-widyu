@@ -208,8 +208,10 @@ Future<void> _onStart(ServiceInstance service) async {
       LocationServiceManager.locationServiceState.listen((state) {
     // 위치를 못 쓰더라도 심박수 전송은 계속해야 하므로 업로드만 끈다.
     if (state.isAvailable) {
+      WiduLog.bg.i('위치 업로드 시작');
       locationRepository.startLocationUpload();
     } else {
+      WiduLog.bg.i('위치 서비스를 쓸 수 없어 위치 업로드 중지');
       locationRepository.stopLocationUpload();
     }
   });

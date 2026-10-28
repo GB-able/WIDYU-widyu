@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/widgets.dart';
 import 'package:widyu/core/data/repository/myPage/my_page_repository.dart';
+import 'package:widyu/core/log/log.dart';
 import 'package:widyu/core/model/api/api_result.dart';
 import 'package:widyu/core/model/myPage/contact/contact.dart';
 import 'package:widyu/feature/contact/contact_ui_event.dart';
@@ -27,6 +28,7 @@ class ContactViewModel with ChangeNotifier {
 
     final result = await _repository.updateRepresentativeContact(memberId);
     if (result is Success) {
+      WiduLog.ui.i('대표 연락처 변경 성공 memberId=$memberId');
       await _fetchContact();
     } else {
       _uiEvent.add(const UpdateRepresentativeContactFailure());

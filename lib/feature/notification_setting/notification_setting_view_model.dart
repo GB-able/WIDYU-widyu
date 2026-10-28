@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:widyu/core/data/repository/notification/notification_repository.dart';
+import 'package:widyu/core/log/log.dart';
 import 'package:widyu/core/model/api/api_result.dart';
 import 'package:widyu/core/model/notification/notification_setting.dart';
 import 'package:widyu/feature/notification_setting/notification_setting_ui_event.dart';
@@ -47,6 +48,8 @@ class NotificationSettingViewModel with ChangeNotifier {
         _rollback(oldNotifications);
         return;
       }
+      WiduLog.ui.i('알림 설정 변경 성공 '
+          'group=${notification.group.name} enabled=${result.data.enabled}');
       newNotifications[targetIndex] = optimistic.copyWith(
         enabled: result.data.enabled,
         isUpdating: false,

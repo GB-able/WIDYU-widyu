@@ -62,8 +62,11 @@ Future<void> syncWalkBackground() async {
     );
     final result = await repository.sync(memberId: memberId, background: true);
     if (result.unauthorized) {
+      WiduLog.bg.w('인증 만료로 걸음수 백그라운드 동기화 중단');
       await stopWalkBackgroundService();
+      return;
     }
+    WiduLog.bg.i('걸음수 백그라운드 동기화 완료 uploaded=${result.uploaded}');
   } catch (error, stack) {
     WiduLog.bg.w('걸음수 백그라운드 동기화 보류', error: error, stackTrace: stack);
   }

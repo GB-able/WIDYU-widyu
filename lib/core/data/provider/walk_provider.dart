@@ -95,11 +95,15 @@ class WalkProvider with ChangeNotifier, WidgetsBindingObserver {
       );
       if (_disposed) return;
       if (result.unauthorized) {
+        WiduLog.data.w('인증 만료로 걸음수 동기화 중단');
         _timer?.cancel();
         _tracking = false;
         _memberId = null;
         await stopWalkBackgroundService();
         if (_disposed) return;
+      } else {
+        // 걸음 수는 건강값이라 남기지 않는다(docs/logging-strategy.md §6.1).
+        WiduLog.data.d('걸음수 동기화 완료 uploaded=${result.uploaded}');
       }
       if (result.date == today && result.steps != null) {
         _date = result.date;

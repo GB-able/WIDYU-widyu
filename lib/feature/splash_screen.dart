@@ -60,6 +60,9 @@ class _SplashScreenState extends State<SplashScreen> {
       await Future<void>.delayed(const Duration(milliseconds: 1500));
       if (!mounted) return;
 
+      WiduLog.ui.i('스플래시 진입 경로 next=$nextPath '
+          'permissionGuide=${!permissionGuideShown}');
+
       context.pushReplacement(
         permissionGuideShown
             ? nextPath

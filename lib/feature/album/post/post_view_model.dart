@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:widyu/core/data/provider/album_provider.dart';
 import 'package:widyu/core/data/repository/album/album_repository.dart';
 import 'package:widyu/core/data/repository/myPage/my_page_repository.dart';
+import 'package:widyu/core/log/log.dart';
 import 'package:widyu/core/model/album/album_comment_create_request.dart';
 import 'package:widyu/core/model/album/album_comment_update_request.dart';
 import 'package:widyu/core/model/album/comment.dart';
@@ -113,6 +114,7 @@ class PostViewModel extends ChangeNotifier {
     );
     if (_albumProvider.isDisposed) return;
     if (result case Success<Comment>(:final data)) {
+      WiduLog.ui.i('댓글 작성 성공 albumId=$id commentId=${data.commentId}');
       final newComment = _mine(data);
       _uiState = _uiState.copyWith(
           feed: feed.copyWith(comments: [...feed.comments, newComment]));
@@ -161,6 +163,7 @@ class PostViewModel extends ChangeNotifier {
       }
 
       if (removed == 0) return false;
+      WiduLog.ui.i('댓글 삭제 성공 albumId=$id commentId=$commentId removed=$removed');
 
       _uiState = _uiState.copyWith(feed: feed.copyWith(comments: comments));
       _albumProvider.onCommentDeleted(id, count: removed);
@@ -192,6 +195,8 @@ class PostViewModel extends ChangeNotifier {
         return false;
       }
 
+      WiduLog.ui.i('답글 작성 성공 albumId=$id '
+          'parentCommentId=$parentCommentId commentId=${result.data.commentId}');
       final newReply = _mine(result.data);
       _uiState = _uiState.copyWith(
           feed: feed.copyWith(
@@ -229,6 +234,7 @@ class PostViewModel extends ChangeNotifier {
         return false;
       }
 
+      WiduLog.ui.i('댓글 수정 성공 albumId=$id commentId=$commentId');
       final updated = result.data.content;
       _uiState = _uiState.copyWith(
           feed: feed.copyWith(

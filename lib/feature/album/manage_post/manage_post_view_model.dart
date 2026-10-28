@@ -69,6 +69,7 @@ class ManagePostViewModel extends ChangeNotifier {
         showToast('게시글 업로드에 실패했습니다');
         return false;
       }
+      WiduLog.ui.i('게시글 업로드 성공 media=${files.length}');
       await Future.wait([
         _pointProvider.refresh(),
         _albumProvider.loadUnlockedAlbumIds(),

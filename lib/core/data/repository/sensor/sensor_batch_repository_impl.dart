@@ -170,6 +170,7 @@ class SensorBatchRepositoryImpl implements SensorBatchRepository {
     if (!_active || _isResending || _queue.isEmpty) return;
     _isResending = true;
     // retryLater 면 멈춰 순서를 지키고 다음 연결 신호·재시도 타이머에 다시 시도한다.
+    var stored = 0;
     try {
       while (_active && _queue.isNotEmpty) {
         final batch = _queue.first;
@@ -177,12 +178,18 @@ class SensorBatchRepositoryImpl implements SensorBatchRepository {
         if (outcome == ResendOutcome.retryLater) return;
         if (outcome == ResendOutcome.rejected) {
           WiduLog.data.w('센서 배치 거절 seq=${batch.seq}');
+        } else {
+          stored++;
+          WiduLog.data.d('센서 배치 재전송 완료 seq=${batch.seq}');
         }
         _consume(batch);
         // await 사이에 큐가 바뀌었을 수 있으므로 같은 객체일 때만 뺀다.
         if (_queue.isNotEmpty && identical(_queue.first, batch)) {
           _queue.removeFirst();
         }
+      }
+      if (_queue.isEmpty) {
+        WiduLog.data.i('센서 배치 재전송 대기열 비움 stored=$stored');
       }
     } catch (error, stackTrace) {
       WiduLog.data.w('센서 배치 재전송 실패', error: error, stackTrace: stackTrace);

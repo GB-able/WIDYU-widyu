@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:widyu/core/data/provider/point_provider.dart';
 import 'package:widyu/core/data/repository/album/album_repository.dart';
+import 'package:widyu/core/log/log.dart';
 import 'package:widyu/core/model/album/album_post.dart';
 import 'package:widyu/core/model/album/album_stat.dart';
 import 'package:widyu/core/model/album/album_unlock.dart';
@@ -50,6 +51,7 @@ class AlbumProvider with ChangeNotifier {
     if (result is Failure) {
       return false;
     }
+    WiduLog.ui.i('게시글 수정 성공 albumId=$albumId');
     final post = _posts[albumId];
     if (post != null) _posts[albumId] = post.copyWith(content: content);
     notifyListeners();
@@ -100,6 +102,7 @@ class AlbumProvider with ChangeNotifier {
       }
 
       final unlockedId = (result as Success<AlbumUnlock>).data.albumId;
+      WiduLog.ui.i('게시글 잠금 해제 성공 albumId=$albumId');
       _unlockedIds
         ..add(albumId)
         ..add(unlockedId);
@@ -183,7 +186,9 @@ class AlbumProvider with ChangeNotifier {
         albumId,
       ).copyWith(isLiked: wasLiked, likeCount: before.likeCount);
       notifyListeners();
+      return;
     }
+    WiduLog.ui.i('${wasLiked ? '좋아요 취소' : '좋아요'} 성공 albumId=$albumId');
   }
 
   Future<bool> deleteFeed(int albumId) async {
@@ -195,6 +200,7 @@ class AlbumProvider with ChangeNotifier {
       return false;
     }
 
+    WiduLog.ui.i('게시글 삭제 성공 albumId=$albumId');
     if (_disposed) return false;
     _posts.remove(albumId);
     _stats.remove(albumId);
