@@ -9,6 +9,7 @@ import 'package:widyu/core/model/album/album_comment_create_request.dart';
 import 'package:widyu/core/model/album/album_comment_update_request.dart';
 import 'package:widyu/core/model/album/comment.dart';
 import 'package:widyu/core/model/album/feed_detail.dart';
+import 'package:widyu/core/model/album/member.dart';
 import 'package:widyu/core/model/api/api_result.dart';
 import 'package:widyu/core/model/myPage/user/user.dart';
 import 'package:widyu/feature/album/post/post_ui_event.dart';
@@ -112,6 +113,7 @@ class PostViewModel extends ChangeNotifier {
         _update(
           (s) => s.copyWith(status: PostStatus.success, feed: _normalize(data)),
         );
+        _markViewed();
       case Failure(:final code):
         switch (code) {
           case 'ALBUM_4040':
@@ -131,6 +133,22 @@ class PostViewModel extends ChangeNotifier {
     }
 
     _update((s) => s.copyWith(me: result.data));
+    _markViewed();
+  }
+
+  void _markViewed() {
+    final feed = _uiState.feed;
+    final me = _uiState.me;
+    if (feed == null ||
+        me == null ||
+        feed.author.id == me.memberId ||
+        !_albumProvider.isUnlocked(id)) {
+      return;
+    }
+    _albumProvider.addViewer(
+      id,
+      Member(id: me.memberId, name: me.name, profileImage: me.profileImage),
+    );
   }
 
   Future<void> retry() => init();
