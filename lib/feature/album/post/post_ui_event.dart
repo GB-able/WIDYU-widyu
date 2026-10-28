@@ -10,6 +10,10 @@ class SendReplyFailure extends PostUiEvent {
   const SendReplyFailure();
 }
 
+class EditCommentFailure extends PostUiEvent {
+  const EditCommentFailure();
+}
+
 class FeedDeleted extends PostUiEvent {
   const FeedDeleted();
 }

@@ -23,7 +23,9 @@ class PostViewModel extends ChangeNotifier {
     required AlbumProvider albumProvider,
   })  : _repository = repository,
         _myPageRepository = myPageRepository,
-        _albumProvider = albumProvider;
+        _albumProvider = albumProvider {
+    editFocusNode.addListener(_cancelEditOnBlur);
+  }
 
   bool _disposed = false;
   @override
@@ -38,6 +40,8 @@ class PostViewModel extends ChangeNotifier {
 
   final commentController = TextEditingController();
   final commentFocusNode = FocusNode();
+  final editController = TextEditingController();
+  final editFocusNode = FocusNode();
 
   final _uiEvent = StreamController<PostUiEvent>.broadcast();
   Stream<PostUiEvent> get uiEvent => _uiEvent.stream;
@@ -71,6 +75,28 @@ class PostViewModel extends ChangeNotifier {
     commentController.clear();
     commentFocusNode.unfocus();
     _update((s) => s.copyWith(replyParentId: null));
+  }
+
+  void startEdit(Comment target) {
+    editController.text = target.content;
+    _update((s) => s.copyWith(editingCommentId: target.commentId));
+  }
+
+  void _cancelEditOnBlur() {
+    if (editFocusNode.hasFocus || _uiState.editingCommentId == null) return;
+    _update((s) => s.copyWith(editingCommentId: null));
+  }
+
+  Future<void> submitEdit() async {
+    final commentId = _uiState.editingCommentId;
+    final content = editController.text.trim();
+    if (commentId == null || content.isEmpty) return;
+
+    if (!await editComment(commentId, content)) {
+      _emit(const EditCommentFailure());
+      return;
+    }
+    _update((s) => s.copyWith(editingCommentId: null));
   }
 
   Comment _mine(Comment data) => data.copyWith(
@@ -341,6 +367,8 @@ class PostViewModel extends ChangeNotifier {
     _disposed = true;
     commentController.dispose();
     commentFocusNode.dispose();
+    editController.dispose();
+    editFocusNode.dispose();
     _uiEvent.close();
     super.dispose();
   }

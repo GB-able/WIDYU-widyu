@@ -14,5 +14,6 @@ abstract class PostUiState with _$PostUiState {
     FeedDetail? feed,
     User? me,
     int? replyParentId,
+    int? editingCommentId,
   }) = _PostUiState;
 }
