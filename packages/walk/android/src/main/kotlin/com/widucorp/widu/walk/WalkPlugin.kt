@@ -1,4 +1,4 @@
-package com.example.widyu.walk
+package com.widucorp.widu.walk
 
 import android.Manifest
 import android.content.Context
@@ -23,7 +23,7 @@ class WalkPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
 
     override fun onAttachedToEngine(binding: FlutterPlugin.FlutterPluginBinding) {
         context = binding.applicationContext
-        channel = MethodChannel(binding.binaryMessenger, "com.example.widyu/walk")
+        channel = MethodChannel(binding.binaryMessenger, "com.widucorp.widu/walk")
         channel.setMethodCallHandler(this)
     }
 
