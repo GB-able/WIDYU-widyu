@@ -88,10 +88,10 @@ class MedicationCameraViewModel extends ChangeNotifier {
       WiduLog.ui.i('약 복용 인증 성공 earnedPoints=${result.earnedPoints}');
       await _pointRepository.refresh();
       if (!_disposed) _uiEvent.add(VerifySuccess(result));
-    } catch (_) {
+    } catch (e) {
       if (_disposed) return;
       _update(_uiState.copyWith(isBusy: false));
-      _uiEvent.add(const VerifyFailure());
+      _uiEvent.add(VerifyFailure(e is StateError ? e.message : e.toString()));
     }
   }
 

@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:camera/camera.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
@@ -106,8 +107,16 @@ class _MedicationCameraViewState extends State<_MedicationCameraView>
         await _showNotice('인증 가능 시간이 지났어요.');
       case VerifySuccess(:final result):
         context.pop(result);
-      case VerifyFailure():
-        showToast('복용 인증에 실패했어요.');
+      case VerifyFailure(:final reason):
+        if (!kDebugMode) {
+          showToast('복용 인증에 실패했어요.');
+          return;
+        }
+        await showDialog<void>(
+          context: context,
+          builder: (_) =>
+              CustomDialog(title: '복용 인증에 실패했어요.', description: reason),
+        );
     }
   }
 

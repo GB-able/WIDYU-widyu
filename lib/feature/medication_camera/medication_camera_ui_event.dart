@@ -19,5 +19,7 @@ class VerifySuccess extends MedicationCameraUiEvent {
 }
 
 class VerifyFailure extends MedicationCameraUiEvent {
-  const VerifyFailure();
+  const VerifyFailure(this.reason);
+
+  final String reason;
 }
