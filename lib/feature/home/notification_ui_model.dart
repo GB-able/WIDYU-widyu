@@ -1,6 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:widyu/core/model/notification/notification.dart';
 import 'package:widyu/core/model/notification/notification_category.dart';
+import 'package:widyu/gen/assets.gen.dart';
 
 part 'notification_ui_model.freezed.dart';
 
@@ -8,7 +9,7 @@ part 'notification_ui_model.freezed.dart';
 abstract class NotificationUiModel with _$NotificationUiModel {
   const factory NotificationUiModel({
     required int notificationId,
-    required String icon,
+    required AssetGenImage? icon,
     required String description,
   }) = _NotificationUiModel;
 }
@@ -28,20 +29,20 @@ extension NotificationMapper on List<Notification> {
 }
 
 extension NotificationCategoryMapper on NotificationCategory {
-  String toIcon() {
+  AssetGenImage? toIcon() {
     return switch (this) {
-      NotificationCategory.album => 'img_24_album.png',
+      NotificationCategory.album => Assets.images.img24Album,
       // 아이콘 추가 필요
-      NotificationCategory.target => '',
-      NotificationCategory.healthSchedule => 'img_24_health.png',
-      NotificationCategory.walk => 'img_24_walk.png',
-      NotificationCategory.medicineSchedule => 'img_24_medicine.png',
+      NotificationCategory.target => null,
+      NotificationCategory.healthSchedule => Assets.images.img24Health,
+      NotificationCategory.walk => Assets.images.img24Walk,
+      NotificationCategory.medicineSchedule => Assets.images.img24Medicine,
       // 아이콘 추가 필요
-      NotificationCategory.heartMessage => '',
-      NotificationCategory.safeZone => 'img_24_location.png',
-      NotificationCategory.locationNotice => 'img_24_location.png',
+      NotificationCategory.heartMessage => null,
+      NotificationCategory.safeZone => Assets.images.img24Location,
+      NotificationCategory.locationNotice => Assets.images.img24Location,
       // 아이콘 추가 필요
-      NotificationCategory.etc => '',
+      NotificationCategory.etc => null,
     };
   }
 }

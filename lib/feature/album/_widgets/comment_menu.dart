@@ -4,9 +4,10 @@ import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/effects.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
 import 'package:widyu/core/ui/widgets/custom_dialog.dart';
-import 'package:widyu/core/ui/widgets/icon_widget.dart';
+import 'package:widyu/core/ui/widgets/widu_icon.dart';
 import 'package:widyu/core/utils/show_toast.dart';
 import 'package:widyu/feature/album/post/post_view_model.dart';
+import 'package:widyu/gen/assets.gen.dart';
 
 class CommentMoreButton extends StatefulWidget {
   const CommentMoreButton({
@@ -72,7 +73,7 @@ class _CommentMoreButtonState extends State<CommentMoreButton> {
         behavior: HitTestBehavior.opaque,
         child: Padding(
           padding: widget.padding,
-          child: const IconWidget(icon: 'more', width: 18),
+          child: WiduIcon(icon: Assets.icons.ic18More, width: 18),
         ),
       ),
     );
@@ -98,7 +99,7 @@ class _CommentMenu extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           _CommentMenuItem(
-            icon: 'edit',
+            icon: Assets.icons.ic16Edit,
             label: '편집하기',
             padding: const EdgeInsets.fromLTRB(18, 8, 18, 6),
             onTap: onEdit,
@@ -111,7 +112,7 @@ class _CommentMenu extends StatelessWidget {
             color: MyColor.grey300,
           ),
           _CommentMenuItem(
-            icon: 'delete',
+            icon: Assets.icons.ic16Delete,
             label: '삭제하기',
             padding: const EdgeInsets.fromLTRB(18, 6, 18, 8),
             onTap: onDelete,
@@ -130,7 +131,7 @@ class _CommentMenuItem extends StatelessWidget {
     required this.onTap,
   });
 
-  final String icon;
+  final SvgGenImage icon;
   final String label;
   final EdgeInsets padding;
   final VoidCallback onTap;
@@ -145,7 +146,7 @@ class _CommentMenuItem extends StatelessWidget {
         child: Row(
           spacing: 12,
           children: [
-            IconWidget(icon: icon, width: 16),
+            WiduIcon(icon: icon, width: 16),
             Text(
               label,
               style: MyTypo.helper2.copyWith(color: MyColor.grey600),

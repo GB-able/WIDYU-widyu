@@ -37,7 +37,7 @@ class _MediaThumbnail extends StatelessWidget {
                       shape: BoxShape.circle,
                       color: MyColor.white.withValues(alpha: 0.24),
                     ),
-                    child: const IconWidget(icon: 'play', width: 18),
+                    child: WiduIcon(icon: Assets.icons.ic18Play, width: 18),
                   ),
                 ),
               ),

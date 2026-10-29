@@ -13,8 +13,8 @@ import 'package:widyu/core/ui/theme/typos.dart';
 import 'package:widyu/core/ui/widgets/custom_dialog.dart';
 import 'package:widyu/core/ui/widgets/custom_network_image.dart';
 import 'package:widyu/core/ui/widgets/expandable_text.dart';
-import 'package:widyu/core/ui/widgets/icon_widget.dart';
 import 'package:widyu/core/ui/widgets/profile_widget.dart';
+import 'package:widyu/core/ui/widgets/widu_icon.dart';
 import 'package:widyu/core/utils/extensions/date_extension.dart';
 import 'package:widyu/core/utils/show_toast.dart';
 import 'package:widyu/feature/album/_widgets/feed_menu_sheet.dart';
@@ -22,6 +22,7 @@ import 'package:widyu/feature/album/_widgets/feed_video_widget.dart';
 import 'package:widyu/feature/album/_widgets/lock_overlay.dart';
 import 'package:widyu/feature/album/_widgets/unlock_dialog.dart';
 import 'package:widyu/feature/album/_widgets/viewers_row.dart';
+import 'package:widyu/gen/assets.gen.dart';
 
 class FeedWidget extends StatefulWidget {
   const FeedWidget({
@@ -158,9 +159,9 @@ class _FeedWidgetState extends State<FeedWidget> {
                 GestureDetector(
                   onTap: showMenu,
                   behavior: HitTestBehavior.opaque,
-                  child: const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 4),
-                    child: IconWidget(icon: 'more', width: 24),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    child: WiduIcon(icon: Assets.icons.ic24More, width: 24),
                   ),
                 ),
             ],
@@ -255,8 +256,10 @@ class _FeedWidgetState extends State<FeedWidget> {
                       : () => context.read<AlbumProvider>().toggleLike(
                             widget.albumId,
                           ),
-                  child: IconWidget(
-                    icon: stat.isLiked ? 'like_on' : 'like_off',
+                  child: WiduIcon(
+                    icon: stat.isLiked
+                        ? Assets.icons.ic24LikeOn
+                        : Assets.icons.ic24LikeOff,
                     width: 24,
                   ),
                 ),
@@ -280,7 +283,7 @@ class _FeedWidgetState extends State<FeedWidget> {
 
                     context.push(AppRoute.postOf(widget.albumId));
                   },
-                  child: const IconWidget(icon: 'comment', width: 24),
+                  child: WiduIcon(icon: Assets.icons.ic24Comment, width: 24),
                 ),
                 Text(
                   stat.commentCount.toString(),

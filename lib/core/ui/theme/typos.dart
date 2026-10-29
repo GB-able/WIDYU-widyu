@@ -1,16 +1,17 @@
 import 'package:flutter/cupertino.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
+import 'package:widyu/gen/fonts.gen.dart';
 
 class MyTypo {
   static const typoBase = TextStyle(
-    fontFamily: 'Pretendard',
+    fontFamily: FontFamily.pretendard,
     overflow: TextOverflow.ellipsis,
     leadingDistribution: TextLeadingDistribution.even,
     color: MyColor.black,
   );
 
   static const kccGanpanBase = TextStyle(
-    fontFamily: 'KCCGanpan',
+    fontFamily: FontFamily.kCCGanpan,
     overflow: TextOverflow.ellipsis,
     leadingDistribution: TextLeadingDistribution.even,
     color: MyColor.black,

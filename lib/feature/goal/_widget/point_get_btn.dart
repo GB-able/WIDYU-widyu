@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
+import 'package:widyu/gen/assets.gen.dart';
 
 class PointGetBtn extends StatelessWidget {
   final int point;
@@ -23,8 +24,7 @@ class PointGetBtn extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             spacing: 8,
             children: [
-              Image.asset(
-                'assets/images/img_20_point.png',
+              Assets.images.img20Point.image(
                 width: 20,
                 height: 20,
               ),

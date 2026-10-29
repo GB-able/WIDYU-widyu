@@ -244,9 +244,8 @@ class _CarouselEmptyView extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
       child: Column(
         children: [
-          const Expanded(
-            child: WidyuAssetImage(
-              name: 'img_card_character.png',
+          Expanded(
+            child: Assets.images.imgCardCharacter.image(
               width: _characterWidth,
               height: _characterHeight,
               fit: BoxFit.contain,

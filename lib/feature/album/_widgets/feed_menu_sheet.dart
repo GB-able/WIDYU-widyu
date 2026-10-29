@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
-import 'package:widyu/core/ui/widgets/icon_widget.dart';
+import 'package:widyu/core/ui/widgets/widu_icon.dart';
+import 'package:widyu/gen/assets.gen.dart';
 
 class FeedMenuSheet extends StatelessWidget {
   const FeedMenuSheet({super.key, this.onEdit, this.onDelete});
@@ -28,8 +29,8 @@ class FeedMenuSheet extends StatelessWidget {
                 children: [
                   if (onEdit != null) ...[
                     _MenuTile(
-                      icon: const IconWidget(
-                        icon: 'edit',
+                      icon: WiduIcon(
+                        icon: Assets.icons.ic18Edit,
                         width: 18,
                         color: MyColor.black,
                       ),
@@ -43,8 +44,8 @@ class FeedMenuSheet extends StatelessWidget {
                     const Divider(height: 1, color: MyColor.grey200),
                   ],
                   _MenuTile(
-                    icon: const IconWidget(
-                      icon: 'delete',
+                    icon: WiduIcon(
+                      icon: Assets.icons.ic18Delete,
                       width: 18,
                       color: MyColor.red,
                     ),

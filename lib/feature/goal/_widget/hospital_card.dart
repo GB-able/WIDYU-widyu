@@ -58,8 +58,8 @@ class HospitalCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                // const IconWidget(
-                //   icon: "chevron_right",
+                // WiduIcon(
+                //   icon: Assets.icons.ic16ChevronRight,
                 //   width: 16,
                 //   color: MyColor.grey500,
                 // ),

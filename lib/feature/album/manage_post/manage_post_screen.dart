@@ -14,9 +14,10 @@ import 'package:widyu/core/ui/theme/effects.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
 import 'package:widyu/core/ui/widgets/custom_app_bar.dart';
 import 'package:widyu/core/ui/widgets/custom_network_image.dart';
-import 'package:widyu/core/ui/widgets/icon_widget.dart';
+import 'package:widyu/core/ui/widgets/widu_icon.dart';
 import 'package:widyu/core/ui/widgets/widyu_text_button.dart';
 import 'package:widyu/feature/album/manage_post/manage_post_view_model.dart';
+import 'package:widyu/gen/assets.gen.dart';
 
 part 'widgets/asset_video_preview.dart';
 part 'widgets/media_carousel.dart';
@@ -61,7 +62,7 @@ class ManagePostScreen extends StatelessWidget {
                   }
                   Navigator.of(context).popUntil((route) => route.isFirst);
                 },
-                child: const IconWidget(icon: 'close', width: 24),
+                child: WiduIcon(icon: Assets.icons.ic24Close, width: 24),
               ),
             ],
           ),

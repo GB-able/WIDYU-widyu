@@ -98,9 +98,8 @@ class _WalkingGoalEmpty extends StatelessWidget {
           const ColoredBox(color: MyColor.white),
           Transform.translate(
             offset: const Offset(0, 24),
-            child: const Center(
-              child: WidyuAssetImage(
-                name: 'img_178_walk.png',
+            child: Center(
+              child: Assets.images.img178Walk.image(
                 fit: BoxFit.contain,
               ),
             ),
