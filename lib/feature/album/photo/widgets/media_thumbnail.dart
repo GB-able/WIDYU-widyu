@@ -1,16 +1,18 @@
 part of '../photo_tab_view.dart';
 
 class _MediaThumbnail extends StatelessWidget {
-  const _MediaThumbnail({required this.media});
+  const _MediaThumbnail({
+    required this.media,
+    required this.isLocked,
+    required this.onRequestUnlock,
+  });
 
   final Media media;
+  final bool isLocked;
+  final Future<bool> Function() onRequestUnlock;
 
   @override
   Widget build(BuildContext context) {
-    final isLocked = context.select(
-      (AlbumProvider p) => !p.isUnlocked(media.postId),
-    );
-
     return GestureDetector(
       onTap: () {
         if (isLocked) {
@@ -58,34 +60,7 @@ class _MediaThumbnail extends StatelessWidget {
   }
 
   Future<void> _confirmUnlock(BuildContext context) async {
-    final albumProvider = context.read<AlbumProvider>();
-
-    if (albumProvider.isUnlocking(media.postId)) return;
-
-    final price = media.price;
-    final point = context.read<PointRepository>().currentStatus.point;
-
-    if (point != null && point < price) {
-      unawaited(showDialog<void>(
-        context: context,
-        builder: (_) => UnlockDialog.notEnough(
-          price: price,
-          point: point,
-          onTap: () => context.go(AppRoute.goal.path),
-        ),
-      ));
-      return;
-    }
-
-    final success = await showDialog<bool>(
-      context: context,
-      builder: (_) => UnlockDialog.purchase(
-        price: price,
-        point: point,
-        onPurchase: () => albumProvider.unlock(media.postId),
-      ),
-    );
-    if (success == true && context.mounted && !albumProvider.isDisposed) {
+    if (await onRequestUnlock() && context.mounted) {
       unawaited(context.push(AppRoute.postOf(media.postId)));
     }
   }

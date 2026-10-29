@@ -6,7 +6,6 @@ import 'package:photo_manager_image_provider/photo_manager_image_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
 import 'package:widyu/app/routes/extra/edit_post_extra.dart';
-import 'package:widyu/core/data/provider/album_provider.dart';
 import 'package:widyu/core/data/repository/album/album_repository.dart';
 import 'package:widyu/core/data/repository/point/point_repository.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
@@ -42,11 +41,14 @@ class ManagePostScreen extends StatelessWidget {
     return ChangeNotifierProvider(
       create: (context) => ManagePostViewModel(
         repository: context.read<AlbumRepository>(),
-        albumProvider: context.read<AlbumProvider>(),
         pointRepository: context.read<PointRepository>(),
         initialContent: extra == null
             ? null
-            : context.read<AlbumProvider>().postOf(extra!.albumId)?.content ??
+            : context
+                    .read<AlbumRepository>()
+                    .currentCache
+                    .postOf(extra!.albumId)
+                    ?.content ??
                 extra!.content,
       ),
       child: Consumer<ManagePostViewModel>(

@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import 'package:widyu/core/data/provider/album_provider.dart';
+import 'package:widyu/app/routes/app_route.dart';
 import 'package:widyu/core/data/repository/album/album_repository.dart';
 import 'package:widyu/core/data/repository/myPage/my_page_repository.dart';
+import 'package:widyu/core/data/repository/point/point_repository.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
 import 'package:widyu/core/ui/widgets/custom_app_bar.dart';
@@ -29,6 +30,21 @@ class PostScreen extends StatelessWidget {
 
   final int postId;
 
+  // 탭(이벤트) 시점의 캐시와 포인트로 판단한다.
+  Future<bool> _requestUnlock(BuildContext context) async {
+    final repository = context.read<AlbumRepository>();
+    final cache = repository.currentCache;
+    final success = await showUnlockDialog(
+      context,
+      price: cache.postOf(postId)?.price,
+      point: context.read<PointRepository>().currentStatus.point,
+      isUnlocking: cache.isUnlocking(postId),
+      onPurchase: () => repository.unlock(postId),
+      onGoToGoal: () => context.go(AppRoute.goal.path),
+    );
+    return success && !repository.isDisposed;
+  }
+
   void _handleEvent(
     BuildContext context,
     PostViewModel viewModel,
@@ -51,7 +67,7 @@ class PostScreen extends StatelessWidget {
           ),
         );
       case FeedLocked():
-        showUnlockDialog(context, postId).then((unlocked) {
+        _requestUnlock(context).then((unlocked) {
           if (!context.mounted) return;
           unlocked ? viewModel.retry() : context.pop();
         });
@@ -65,15 +81,15 @@ class PostScreen extends StatelessWidget {
         id: postId,
         repository: context.read<AlbumRepository>(),
         myPageRepository: context.read<MyPageRepository>(),
-        albumProvider: context.read<AlbumProvider>(),
       )..init(),
       child: Consumer<PostViewModel>(
         builder: (context, viewModel, _) {
           final uiState = viewModel.uiState;
           final feed = uiState.feed;
           final myProfileImage = uiState.me?.profileImage;
-          final isLocked = feed != null &&
-              context.select((AlbumProvider p) => !p.isUnlocked(feed.albumId));
+          final cache = viewModel.cache;
+          final post = cache.postOf(postId);
+          final isLocked = feed != null && !cache.isUnlocked(feed.albumId);
 
           return UiEventListener(
             stream: viewModel.uiEvent,
@@ -100,12 +116,20 @@ class PostScreen extends StatelessWidget {
                                 Padding(
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 16),
-                                  child: FeedWidget(
-                                    albumId: postId,
-                                    key: ValueKey(postId),
-                                    isDetail: true,
-                                    onDeleted: () => context.pop(),
-                                  ),
+                                  child: post == null
+                                      ? const SizedBox.shrink()
+                                      : FeedWidget(
+                                          feed: post,
+                                          stat: cache.statOf(postId),
+                                          isLocked: !cache.isUnlocked(postId),
+                                          onToggleLike: viewModel.toggleLike,
+                                          onDelete: viewModel.deleteFeed,
+                                          onRequestUnlock: () =>
+                                              _requestUnlock(context),
+                                          key: ValueKey(postId),
+                                          isDetail: true,
+                                          onDeleted: () => context.pop(),
+                                        ),
                                 ),
                                 if (!isLocked) ...[
                                   const Divider(

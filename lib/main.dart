@@ -9,8 +9,6 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:provider/provider.dart';
 import 'package:widyu/app/routes/custom_router.dart';
 import 'package:widyu/background_service.dart';
-import 'package:widyu/core/data/repository/album/album_repository.dart';
-import 'package:widyu/core/data/repository/album/album_repository_impl.dart';
 import 'package:widyu/core/data/repository/auth/auth_repository.dart';
 import 'package:widyu/core/data/repository/auth/auth_repository_impl.dart';
 import 'package:widyu/core/data/repository/goal/goal_repository.dart';
@@ -245,10 +243,6 @@ Future<void> _bootstrap() async {
             authLocalDataSource: authLocal,
             deviceLocalDataSource: deviceLocal,
           ),
-        ),
-        ProxyProvider<AlbumRemoteDataSource, AlbumRepository>(
-          update: (_, remote, __) =>
-              AlbumRepositoryImpl(remoteDataSource: remote),
         ),
       ],
       child: const App(),

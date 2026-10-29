@@ -1,10 +1,15 @@
 part of '../calendar_tab_view.dart';
 
 class _CalendarFeedList extends StatelessWidget {
-  const _CalendarFeedList({required this.viewModel, required this.controller});
+  const _CalendarFeedList({
+    required this.viewModel,
+    required this.controller,
+    required this.onRequestUnlock,
+  });
 
   final CalendarTabViewModel viewModel;
   final ScrollController controller;
+  final Future<bool> Function(int albumId) onRequestUnlock;
 
   @override
   Widget build(BuildContext context) {
@@ -13,6 +18,7 @@ class _CalendarFeedList extends StatelessWidget {
     }
 
     final feeds = viewModel.selectedDayAlbumIds;
+    final cache = viewModel.cache;
 
     if (feeds.isEmpty) {
       if (viewModel.hasErrorSelectedDay) {
@@ -43,7 +49,12 @@ class _CalendarFeedList extends StatelessWidget {
         final albumId = feeds[index];
         return FeedWidget(
           key: ValueKey(albumId),
-          albumId: albumId,
+          feed: cache.postOf(albumId)!,
+          stat: cache.statOf(albumId),
+          isLocked: !cache.isUnlocked(albumId),
+          onToggleLike: () => viewModel.toggleLike(albumId),
+          onDelete: () => viewModel.deleteFeed(albumId),
+          onRequestUnlock: () => onRequestUnlock(albumId),
           isContentExpanded: viewModel.isContentExpanded(albumId),
           onContentExpandChanged: (expanded) =>
               viewModel.setContentExpanded(albumId, expanded),

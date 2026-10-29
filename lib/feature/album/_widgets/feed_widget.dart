@@ -3,11 +3,10 @@ import 'dart:async';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
 import 'package:widyu/app/routes/app_route.dart';
 import 'package:widyu/app/routes/extra/edit_post_extra.dart';
-import 'package:widyu/core/data/provider/album_provider.dart';
 import 'package:widyu/core/model/album/album_post.dart';
+import 'package:widyu/core/model/album/album_stat.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
 import 'package:widyu/core/ui/widgets/custom_dialog.dart';
@@ -20,21 +19,30 @@ import 'package:widyu/core/utils/show_toast.dart';
 import 'package:widyu/feature/album/_widgets/feed_menu_sheet.dart';
 import 'package:widyu/feature/album/_widgets/feed_video_widget.dart';
 import 'package:widyu/feature/album/_widgets/lock_overlay.dart';
-import 'package:widyu/feature/album/_widgets/unlock_dialog.dart';
 import 'package:widyu/feature/album/_widgets/viewers_row.dart';
 import 'package:widyu/gen/assets.gen.dart';
 
 class FeedWidget extends StatefulWidget {
   const FeedWidget({
     super.key,
-    required this.albumId,
+    required this.feed,
+    required this.stat,
+    required this.isLocked,
+    required this.onToggleLike,
+    required this.onDelete,
+    required this.onRequestUnlock,
     this.isDetail = false,
     this.isContentExpanded = true,
     this.onContentExpandChanged,
     this.onDeleted,
   });
 
-  final int albumId;
+  final AlbumPost feed;
+  final AlbumStat stat;
+  final bool isLocked;
+  final VoidCallback onToggleLike;
+  final Future<bool> Function() onDelete;
+  final Future<bool> Function() onRequestUnlock;
   final bool isDetail;
   final bool isContentExpanded;
   final ValueChanged<bool>? onContentExpandChanged;
@@ -66,8 +74,8 @@ class _FeedWidgetState extends State<FeedWidget> {
   }
 
   Future<void> _confirmUnlock() async {
-    if (await showUnlockDialog(context, widget.albumId) && mounted) {
-      unawaited(context.push(AppRoute.postOf(widget.albumId)));
+    if (await widget.onRequestUnlock() && mounted) {
+      unawaited(context.push(AppRoute.postOf(widget.feed.albumId)));
     }
   }
 
@@ -81,8 +89,7 @@ class _FeedWidgetState extends State<FeedWidget> {
   }
 
   Future<void> editFeed() async {
-    final feed = context.read<AlbumProvider>().postOf(widget.albumId);
-    if (feed == null) return;
+    final feed = widget.feed;
     await context.push(
       AppRoute.managePost.path,
       extra: EditPostExtra(
@@ -107,8 +114,7 @@ class _FeedWidgetState extends State<FeedWidget> {
   }
 
   Future<void> deleteFeed() async {
-    final albumProvider = context.read<AlbumProvider>();
-    final success = await albumProvider.deleteFeed(widget.albumId);
+    final success = await widget.onDelete();
 
     if (!mounted) return;
 
@@ -122,16 +128,11 @@ class _FeedWidgetState extends State<FeedWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final feed = context.select((AlbumProvider p) => p.postOf(widget.albumId));
-    if (feed == null) return const SizedBox.shrink();
+    final feed = widget.feed;
+    final stat = widget.stat;
+    final isLocked = widget.isLocked;
     final thumbnailWidth = MediaQuery.of(context).size.width - 32;
     final thumbnailHeight = thumbnailWidth * 5 / 4;
-
-    final stat = context.select((AlbumProvider p) => p.statOf(widget.albumId));
-
-    final isLocked = context.select(
-      (AlbumProvider p) => !p.isUnlocked(widget.albumId),
-    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -251,11 +252,7 @@ class _FeedWidgetState extends State<FeedWidget> {
               spacing: 4,
               children: [
                 GestureDetector(
-                  onTap: isLocked
-                      ? _confirmUnlock
-                      : () => context.read<AlbumProvider>().toggleLike(
-                            widget.albumId,
-                          ),
+                  onTap: isLocked ? _confirmUnlock : widget.onToggleLike,
                   child: WiduIcon(
                     icon: stat.isLiked
                         ? Assets.icons.ic24LikeOn
@@ -281,7 +278,7 @@ class _FeedWidgetState extends State<FeedWidget> {
                       return;
                     }
 
-                    context.push(AppRoute.postOf(widget.albumId));
+                    context.push(AppRoute.postOf(feed.albumId));
                   },
                   child: WiduIcon(icon: Assets.icons.ic24Comment, width: 24),
                 ),

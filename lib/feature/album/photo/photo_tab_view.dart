@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:widyu/app/routes/app_route.dart';
-import 'package:widyu/core/data/provider/album_provider.dart';
 import 'package:widyu/core/data/repository/album/album_repository.dart';
 import 'package:widyu/core/data/repository/point/point_repository.dart';
 import 'package:widyu/core/model/album/media.dart';
@@ -56,7 +55,6 @@ class PhotoTabView extends StatelessWidget {
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (context) => PhotoTabViewModel(
-        albumProvider: context.read<AlbumProvider>(),
         repository: context.read<AlbumRepository>(),
       )..init(),
       child: const _PhotoGrid(),
@@ -94,9 +92,24 @@ class _PhotoGridState extends State<_PhotoGrid> {
     }
   }
 
+  // 사진 탭은 게시물 캐시가 없을 수 있어 미디어의 가격을 쓴다.
+  Future<bool> _requestUnlock(Media media) async {
+    final repository = context.read<AlbumRepository>();
+    final success = await showUnlockDialog(
+      context,
+      price: media.price,
+      point: context.read<PointRepository>().currentStatus.point,
+      isUnlocking: repository.currentCache.isUnlocking(media.postId),
+      onPurchase: () => repository.unlock(media.postId),
+      onGoToGoal: () => context.go(AppRoute.goal.path),
+    );
+    return success && !repository.isDisposed;
+  }
+
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<PhotoTabViewModel>();
+    final cache = viewModel.cache;
 
     if (viewModel.isLoading) {
       return const CustomLoadingWidget();
@@ -136,8 +149,14 @@ class _PhotoGridState extends State<_PhotoGrid> {
                       childAspectRatio: 3 / 4,
                     ),
                     delegate: SliverChildBuilderDelegate(
-                      (context, index) =>
-                          _MediaThumbnail(media: section.media[index]),
+                      (context, index) {
+                        final media = section.media[index];
+                        return _MediaThumbnail(
+                          media: media,
+                          isLocked: !cache.isUnlocked(media.postId),
+                          onRequestUnlock: () => _requestUnlock(media),
+                        );
+                      },
                       childCount: section.media.length,
                     ),
                   ),

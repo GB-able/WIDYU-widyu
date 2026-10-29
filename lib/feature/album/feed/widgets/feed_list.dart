@@ -30,9 +30,25 @@ class _FeedListState extends State<_FeedList> {
     }
   }
 
+  // 탭 시점의 캐시와 포인트로 판단한다.
+  Future<bool> _requestUnlock(int albumId) async {
+    final repository = context.read<AlbumRepository>();
+    final cache = repository.currentCache;
+    final success = await showUnlockDialog(
+      context,
+      price: cache.postOf(albumId)?.price,
+      point: context.read<PointRepository>().currentStatus.point,
+      isUnlocking: cache.isUnlocking(albumId),
+      onPurchase: () => repository.unlock(albumId),
+      onGoToGoal: () => context.go(AppRoute.goal.path),
+    );
+    return success && !repository.isDisposed;
+  }
+
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<FeedTabViewModel>();
+    final cache = viewModel.cache;
 
     if (viewModel.isLoading) {
       return const CustomLoadingWidget();
@@ -80,7 +96,12 @@ class _FeedListState extends State<_FeedList> {
           final albumId = feeds[index];
           return FeedWidget(
             key: ValueKey(albumId),
-            albumId: albumId,
+            feed: cache.postOf(albumId)!,
+            stat: cache.statOf(albumId),
+            isLocked: !cache.isUnlocked(albumId),
+            onToggleLike: () => viewModel.toggleLike(albumId),
+            onDelete: () => viewModel.deleteFeed(albumId),
+            onRequestUnlock: () => _requestUnlock(albumId),
             isContentExpanded: viewModel.isContentExpanded(albumId),
             onContentExpandChanged: (expanded) =>
                 viewModel.setContentExpanded(albumId, expanded),

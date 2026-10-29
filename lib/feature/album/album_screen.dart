@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:widyu/app/routes/app_route.dart';
-import 'package:widyu/core/data/provider/album_provider.dart';
+import 'package:widyu/core/data/repository/album/album_repository.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
 import 'package:widyu/core/ui/widgets/bot_nav.dart';
@@ -30,9 +30,9 @@ class _AlbumScreenState extends State<AlbumScreen>
     _tabController = TabController(length: 3, vsync: this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      final albumProvider = context.read<AlbumProvider>();
-      albumProvider.loadLikedAlbumIds();
-      albumProvider.loadUnlockedAlbumIds();
+      final repository = context.read<AlbumRepository>();
+      repository.loadLikedAlbumIds();
+      repository.loadUnlockedAlbumIds();
     });
   }
 
