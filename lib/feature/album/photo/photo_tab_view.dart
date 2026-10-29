@@ -108,15 +108,19 @@ class _PhotoGridState extends State<_PhotoGrid> {
 
   @override
   Widget build(BuildContext context) {
-    final viewModel = context.watch<PhotoTabViewModel>();
-    final cache = viewModel.cache;
+    // 목록 단위 상태만 구독하고, 썸네일은 아래 Selector로 잠금 여부만 구독한다.
+    final (isLoading, hasError, isLoadingMore) = context.select(
+      (PhotoTabViewModel vm) => (vm.isLoading, vm.hasError, vm.isLoadingMore),
+    );
+    // 리스트는 최상위 값이어야 DeepCollectionEquality로 비교된다.
+    final items = context.select((PhotoTabViewModel vm) => vm.items);
 
-    if (viewModel.isLoading) {
+    if (isLoading) {
       return const CustomLoadingWidget();
     }
 
-    if (viewModel.isEmpty) {
-      if (viewModel.hasError) {
+    if (items.isEmpty) {
+      if (hasError) {
         return CustomErrorWidget(
           errorMsg: '앨범을 불러오지 못했어요',
           onRetry: () => context.read<PhotoTabViewModel>().retry(),
@@ -125,7 +129,7 @@ class _PhotoGridState extends State<_PhotoGrid> {
       return const AlbumEmptyWidget();
     }
 
-    final sections = _groupByMonth(viewModel.items);
+    final sections = _groupByMonth(items);
 
     return RefreshIndicator(
       color: MyColor.primary,
@@ -151,10 +155,14 @@ class _PhotoGridState extends State<_PhotoGrid> {
                     delegate: SliverChildBuilderDelegate(
                       (context, index) {
                         final media = section.media[index];
-                        return _MediaThumbnail(
-                          media: media,
-                          isLocked: !cache.isUnlocked(media.postId),
-                          onRequestUnlock: () => _requestUnlock(media),
+                        return Selector<PhotoTabViewModel, bool>(
+                          selector: (_, vm) =>
+                              !vm.cache.isUnlocked(media.postId),
+                          builder: (context, isLocked, _) => _MediaThumbnail(
+                            media: media,
+                            isLocked: isLocked,
+                            onRequestUnlock: () => _requestUnlock(media),
+                          ),
                         );
                       },
                       childCount: section.media.length,
@@ -162,7 +170,7 @@ class _PhotoGridState extends State<_PhotoGrid> {
                   ),
                   const SliverToBoxAdapter(child: SizedBox(height: 20)),
                 ],
-                if (viewModel.isLoadingMore)
+                if (isLoadingMore)
                   const SliverToBoxAdapter(
                     child: Padding(
                       padding: EdgeInsets.symmetric(vertical: 16),
@@ -171,7 +179,7 @@ class _PhotoGridState extends State<_PhotoGrid> {
                       ),
                     ),
                   )
-                else if (viewModel.hasError)
+                else if (hasError)
                   SliverToBoxAdapter(
                     child: RetryWidget(
                       onRetry: () => context.read<PhotoTabViewModel>().retry(),

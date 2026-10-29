@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 import 'package:widyu/app/routes/app_route.dart';
 import 'package:widyu/core/data/repository/album/album_repository.dart';
 import 'package:widyu/core/data/repository/point/point_repository.dart';
+import 'package:widyu/core/model/album/album_post.dart';
+import 'package:widyu/core/model/album/album_stat.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/widgets/custom_error_widget.dart';
 import 'package:widyu/core/ui/widgets/custom_loading_widget.dart';

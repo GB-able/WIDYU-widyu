@@ -5,6 +5,8 @@ import 'package:widyu/app/routes/app_route.dart';
 import 'package:widyu/core/data/repository/album/album_repository.dart';
 import 'package:widyu/core/data/repository/myPage/my_page_repository.dart';
 import 'package:widyu/core/data/repository/point/point_repository.dart';
+import 'package:widyu/core/model/album/album_post.dart';
+import 'package:widyu/core/model/album/album_stat.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
 import 'package:widyu/core/ui/widgets/custom_app_bar.dart';
@@ -82,14 +84,20 @@ class PostScreen extends StatelessWidget {
         repository: context.read<AlbumRepository>(),
         myPageRepository: context.read<MyPageRepository>(),
       )..init(),
-      child: Consumer<PostViewModel>(
-        builder: (context, viewModel, _) {
-          final uiState = viewModel.uiState;
+      // 화면은 uiState와 잠금 여부만 구독하고, 피드는 아래 Selector로 따로 구독한다.
+      child: Selector<PostViewModel, (PostUiState, bool)>(
+        selector: (_, vm) {
+          final feed = vm.uiState.feed;
+          return (
+            vm.uiState,
+            feed != null && !vm.cache.isUnlocked(feed.albumId),
+          );
+        },
+        builder: (context, state, _) {
+          final viewModel = context.read<PostViewModel>();
+          final (uiState, isLocked) = state;
           final feed = uiState.feed;
           final myProfileImage = uiState.me?.profileImage;
-          final cache = viewModel.cache;
-          final post = cache.postOf(postId);
-          final isLocked = feed != null && !cache.isUnlocked(feed.albumId);
 
           return UiEventListener(
             stream: viewModel.uiEvent,
@@ -116,20 +124,32 @@ class PostScreen extends StatelessWidget {
                                 Padding(
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 16),
-                                  child: post == null
-                                      ? const SizedBox.shrink()
-                                      : FeedWidget(
-                                          feed: post,
-                                          stat: cache.statOf(postId),
-                                          isLocked: !cache.isUnlocked(postId),
-                                          onToggleLike: viewModel.toggleLike,
-                                          onDelete: viewModel.deleteFeed,
-                                          onRequestUnlock: () =>
-                                              _requestUnlock(context),
-                                          key: ValueKey(postId),
-                                          isDetail: true,
-                                          onDeleted: () => context.pop(),
-                                        ),
+                                  child: Selector<PostViewModel,
+                                      (AlbumPost?, AlbumStat, bool)>(
+                                    selector: (_, vm) => (
+                                      vm.cache.postOf(postId),
+                                      vm.cache.statOf(postId),
+                                      vm.cache.isUnlocked(postId),
+                                    ),
+                                    builder: (context, row, _) {
+                                      final (post, stat, isUnlocked) = row;
+                                      if (post == null) {
+                                        return const SizedBox.shrink();
+                                      }
+                                      return FeedWidget(
+                                        feed: post,
+                                        stat: stat,
+                                        isLocked: !isUnlocked,
+                                        onToggleLike: viewModel.toggleLike,
+                                        onDelete: viewModel.deleteFeed,
+                                        onRequestUnlock: () =>
+                                            _requestUnlock(context),
+                                        key: ValueKey(postId),
+                                        isDetail: true,
+                                        onDeleted: () => context.pop(),
+                                      );
+                                    },
+                                  ),
                                 ),
                                 if (!isLocked) ...[
                                   const Divider(

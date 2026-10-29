@@ -47,15 +47,20 @@ class _FeedListState extends State<_FeedList> {
 
   @override
   Widget build(BuildContext context) {
-    final viewModel = context.watch<FeedTabViewModel>();
-    final cache = viewModel.cache;
+    // 목록 단위 상태만 구독하고, 각 행은 아래 Selector로 자기 데이터만 구독한다.
+    final viewModel = context.read<FeedTabViewModel>();
+    final (isLoading, hasError, isLoadingMore) = context.select(
+      (FeedTabViewModel vm) => (vm.isLoading, vm.hasError, vm.isLoadingMore),
+    );
+    // 리스트는 최상위 값이어야 DeepCollectionEquality로 비교된다.
+    final feeds = context.select((FeedTabViewModel vm) => vm.items);
 
-    if (viewModel.isLoading) {
+    if (isLoading) {
       return const CustomLoadingWidget();
     }
 
-    if (viewModel.isEmpty) {
-      if (viewModel.hasError) {
+    if (feeds.isEmpty) {
+      if (hasError) {
         return CustomErrorWidget(
           errorMsg: '피드를 불러오지 못했어요',
           onRetry: () => context.read<FeedTabViewModel>().retry(),
@@ -64,8 +69,7 @@ class _FeedListState extends State<_FeedList> {
       return const AlbumEmptyWidget();
     }
 
-    final feeds = viewModel.items;
-    final hasFooter = viewModel.isLoadingMore || viewModel.hasError;
+    final hasFooter = isLoadingMore || hasError;
 
     return RefreshIndicator(
       color: MyColor.primary,
@@ -78,7 +82,7 @@ class _FeedListState extends State<_FeedList> {
         separatorBuilder: (context, index) => const SizedBox(height: 12),
         itemBuilder: (context, index) {
           if (index == feeds.length) {
-            if (viewModel.isLoadingMore) {
+            if (isLoadingMore) {
               return const Padding(
                 padding: EdgeInsets.symmetric(vertical: 16),
                 child: Center(
@@ -86,7 +90,7 @@ class _FeedListState extends State<_FeedList> {
                 ),
               );
             }
-            if (viewModel.hasError) {
+            if (hasError) {
               return RetryWidget(
                 onRetry: () => context.read<FeedTabViewModel>().retry(),
               );
@@ -94,17 +98,31 @@ class _FeedListState extends State<_FeedList> {
             return null;
           }
           final albumId = feeds[index];
-          return FeedWidget(
+          return Selector<FeedTabViewModel,
+              (AlbumPost?, AlbumStat, bool, bool)>(
             key: ValueKey(albumId),
-            feed: cache.postOf(albumId)!,
-            stat: cache.statOf(albumId),
-            isLocked: !cache.isUnlocked(albumId),
-            onToggleLike: () => viewModel.toggleLike(albumId),
-            onDelete: () => viewModel.deleteFeed(albumId),
-            onRequestUnlock: () => _requestUnlock(albumId),
-            isContentExpanded: viewModel.isContentExpanded(albumId),
-            onContentExpandChanged: (expanded) =>
-                viewModel.setContentExpanded(albumId, expanded),
+            selector: (_, vm) => (
+              vm.cache.postOf(albumId),
+              vm.cache.statOf(albumId),
+              vm.cache.isUnlocked(albumId),
+              vm.isContentExpanded(albumId),
+            ),
+            builder: (context, row, _) {
+              final (post, stat, isUnlocked, isContentExpanded) = row;
+              // 행은 목록과 따로 구독하므로 캐시에서 빠진 게시물일 수 있다.
+              if (post == null) return const SizedBox.shrink();
+              return FeedWidget(
+                feed: post,
+                stat: stat,
+                isLocked: !isUnlocked,
+                onToggleLike: () => viewModel.toggleLike(albumId),
+                onDelete: () => viewModel.deleteFeed(albumId),
+                onRequestUnlock: () => _requestUnlock(albumId),
+                isContentExpanded: isContentExpanded,
+                onContentExpandChanged: (expanded) =>
+                    viewModel.setContentExpanded(albumId, expanded),
+              );
+            },
           );
         },
       ),
