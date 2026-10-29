@@ -1,4 +1,4 @@
-package com.widyu.medication_alarm
+package com.widucorp.widu.medication_alarm
 
 import android.app.PendingIntent
 import android.app.Service
@@ -35,7 +35,7 @@ class AlarmPlaybackService : Service() {
             this,
             2,
             Intent(this, AlarmReceiver::class.java)
-                .setAction("com.widyu.medication.STOP")
+                .setAction("com.widucorp.widu.medication.STOP")
                 .setData(android.net.Uri.parse("widyu-alarm://stop/$id"))
                 .putExtra("groupId", id),
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE

@@ -1,4 +1,4 @@
-package com.widyu.medication_alarm
+package com.widucorp.widu.medication_alarm
 
 import android.content.Context
 import org.json.JSONArray

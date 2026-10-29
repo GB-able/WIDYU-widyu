@@ -1,9 +1,9 @@
-group 'com.widyu.medication_alarm'
+group 'com.widucorp.widu.medication_alarm'
 version '1.0-SNAPSHOT'
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 android {
-    namespace 'com.widyu.medication_alarm'
+    namespace 'com.widucorp.widu.medication_alarm'
     compileSdk 36
     defaultConfig { minSdk 26 }
     compileOptions {

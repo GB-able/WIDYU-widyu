@@ -1,4 +1,4 @@
-package com.widyu.medication_alarm
+package com.widucorp.widu.medication_alarm
 
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -8,7 +8,7 @@ import androidx.core.content.ContextCompat
 class AlarmReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         val id = intent.getStringExtra("groupId") ?: return
-        if (intent.action == "com.widyu.medication.STOP") {
+        if (intent.action == "com.widucorp.widu.medication.STOP") {
             MedicationAlarmPlugin.stop(context, id)
             return
         }

@@ -1,4 +1,4 @@
-package com.widyu.medication_alarm
+package com.widucorp.widu.medication_alarm
 
 import android.app.AlarmManager
 import android.app.NotificationChannel
@@ -257,7 +257,7 @@ internal class AlarmScheduler(private val context: Context) {
     private fun same(a: JSONObject, b: JSONObject) = a.toString() == b.toString()
     private fun operation(group: JSONObject) = PendingIntent.getBroadcast(
         context, 0,
-        Intent(context, AlarmReceiver::class.java).setAction("com.widyu.medication.FIRE")
+        Intent(context, AlarmReceiver::class.java).setAction("com.widucorp.widu.medication.FIRE")
             .setData(android.net.Uri.parse("widyu-alarm://fire/${group.getString("groupId")}"))
             .putExtra("groupId", group.getString("groupId")),
         PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
