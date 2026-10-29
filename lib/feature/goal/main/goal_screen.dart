@@ -6,11 +6,11 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:widyu/app/routes/app_route.dart';
-import 'package:widyu/core/data/provider/point_provider.dart';
 import 'package:widyu/core/data/provider/walk_provider.dart';
 import 'package:widyu/core/data/repository/goal/goal_repository.dart';
 import 'package:widyu/core/data/repository/goal/medication_repository.dart';
 import 'package:widyu/core/data/repository/location/location_repository.dart';
+import 'package:widyu/core/data/repository/point/point_repository.dart';
 import 'package:widyu/core/model/goal/medication/medication_point_result.dart';
 import 'package:widyu/core/model/goal/weekly_goal_status_response.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
@@ -94,7 +94,7 @@ class _GoalScreenState extends State<GoalScreen> {
     return ChangeNotifierProvider(
       create: (context) => GoalViewModel(
         repository: context.read<GoalRepository>(),
-        pointProvider: context.read<PointProvider>(),
+        pointRepository: context.read<PointRepository>(),
         stepProvider: context.read<WalkProvider>(),
         locationRepository: context.read<LocationRepository>(),
         medicationRepository: context.read<MedicationRepository>(),
@@ -126,6 +126,7 @@ class _GoalScreenState extends State<GoalScreen> {
                             child: _GoalHeader(
                               key: _headerKey,
                               summary: uiState.weeklyStatuses,
+                              point: uiState.point,
                             ),
                           ),
                         ),

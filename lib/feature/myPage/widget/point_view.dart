@@ -1,13 +1,14 @@
 part of '../my_page_screen.dart';
 
 class _PointView extends StatelessWidget {
-  const _PointView();
+  const _PointView({required this.point, required this.isPointLoading});
+
+  final int? point;
+  final bool isPointLoading;
 
   @override
   Widget build(BuildContext context) {
-    final store = context.watch<PointProvider>();
-    final point = store.point;
-    final isLoading = point == null && store.isLoading;
+    final isLoading = point == null && isPointLoading;
 
     return Row(
       children: [

@@ -4,11 +4,15 @@ class _MyPageHeader extends StatelessWidget {
   final String? profileImage;
   final String? name;
   final bool isLoading;
+  final int? point;
+  final bool isPointLoading;
 
   const _MyPageHeader({
     required this.profileImage,
     required this.name,
     required this.isLoading,
+    required this.point,
+    required this.isPointLoading,
   });
 
   @override
@@ -27,6 +31,8 @@ class _MyPageHeader extends StatelessWidget {
         profileImage: profileImage,
         name: name,
         isLoading: isLoading,
+        point: point,
+        isPointLoading: isPointLoading,
       ),
     );
   }

@@ -3,8 +3,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:widyu/core/data/provider/album_provider.dart';
-import 'package:widyu/core/data/provider/point_provider.dart';
 import 'package:widyu/core/data/repository/album/album_repository.dart';
+import 'package:widyu/core/data/repository/point/point_repository.dart';
 import 'package:widyu/core/log/log.dart';
 import 'package:widyu/core/model/api/api_result.dart';
 import 'package:widyu/core/utils/show_toast.dart';
@@ -13,18 +13,18 @@ class ManagePostViewModel extends ChangeNotifier {
   ManagePostViewModel({
     required AlbumRepository repository,
     required AlbumProvider albumProvider,
-    required PointProvider pointProvider,
+    required PointRepository pointRepository,
     String? initialContent,
   })  : _repository = repository,
         _albumProvider = albumProvider,
-        _pointProvider = pointProvider {
+        _pointRepository = pointRepository {
     if (initialContent != null) _contentCtrl.text = initialContent;
     _contentCtrl.addListener(notifyListeners);
   }
 
   final AlbumRepository _repository;
   final AlbumProvider _albumProvider;
-  final PointProvider _pointProvider;
+  final PointRepository _pointRepository;
 
   final _contentCtrl = TextEditingController();
   int _currIdx = 0;
@@ -71,7 +71,7 @@ class ManagePostViewModel extends ChangeNotifier {
       }
       WiduLog.ui.i('게시글 업로드 성공 media=${files.length}');
       await Future.wait([
-        _pointProvider.refresh(),
+        _pointRepository.refresh(),
         _albumProvider.loadUnlockedAlbumIds(),
       ]);
       return !_albumProvider.isDisposed;

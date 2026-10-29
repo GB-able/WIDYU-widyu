@@ -63,7 +63,7 @@ class _MediaThumbnail extends StatelessWidget {
     if (albumProvider.isUnlocking(media.postId)) return;
 
     final price = media.price;
-    final point = context.read<PointProvider>().point;
+    final point = context.read<PointRepository>().currentStatus.point;
 
     if (point != null && point < price) {
       unawaited(showDialog<void>(

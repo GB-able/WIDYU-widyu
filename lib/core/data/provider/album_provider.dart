@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
-import 'package:widyu/core/data/provider/point_provider.dart';
 import 'package:widyu/core/data/repository/album/album_repository.dart';
+import 'package:widyu/core/data/repository/point/point_repository.dart';
 import 'package:widyu/core/log/log.dart';
 import 'package:widyu/core/model/album/album_post.dart';
 import 'package:widyu/core/model/album/album_stat.dart';
@@ -11,13 +11,13 @@ import 'package:widyu/core/model/api/api_result.dart';
 
 class AlbumProvider with ChangeNotifier {
   final AlbumRepository _repository;
-  final PointProvider _pointProvider;
+  final PointRepository _pointRepository;
 
   AlbumProvider({
     required AlbumRepository repository,
-    required PointProvider pointProvider,
+    required PointRepository pointRepository,
   })  : _repository = repository,
-        _pointProvider = pointProvider;
+        _pointRepository = pointRepository;
 
   bool _disposed = false;
 
@@ -109,7 +109,7 @@ class AlbumProvider with ChangeNotifier {
         ..add(unlockedId);
       notifyListeners();
 
-      await _pointProvider.refresh();
+      await _pointRepository.refresh();
       return !_disposed && !isDeleted(albumId);
     } finally {
       if (!_disposed) {

@@ -3,7 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:widyu/app/routes/app_route.dart';
 import 'package:widyu/core/data/provider/album_provider.dart';
-import 'package:widyu/core/data/provider/point_provider.dart';
+import 'package:widyu/core/data/repository/point/point_repository.dart';
 import 'package:widyu/core/log/log.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
@@ -16,7 +16,7 @@ Future<bool> showUnlockDialog(BuildContext context, int albumId) async {
   if (albumProvider.isUnlocking(albumId)) return false;
   final price = albumProvider.postOf(albumId)?.price;
   if (price == null) return false;
-  final point = context.read<PointProvider>().point;
+  final point = context.read<PointRepository>().currentStatus.point;
 
   if (point != null && point < price) {
     await showDialog<void>(

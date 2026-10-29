@@ -4,11 +4,15 @@ class _HeaderContent extends StatelessWidget {
   final String? profileImage;
   final String? name;
   final bool isLoading;
+  final int? point;
+  final bool isPointLoading;
 
   const _HeaderContent({
     required this.profileImage,
     required this.name,
     required this.isLoading,
+    required this.point,
+    required this.isPointLoading,
   });
 
   @override
@@ -21,7 +25,7 @@ class _HeaderContent extends StatelessWidget {
           name: name,
         ),
         const SizedBox(height: 20),
-        const _PointView(),
+        _PointView(point: point, isPointLoading: isPointLoading),
       ],
     );
   }

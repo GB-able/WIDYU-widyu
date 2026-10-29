@@ -29,8 +29,6 @@ import 'package:widyu/core/data/repository/myPage/my_page_repository.dart';
 import 'package:widyu/core/data/repository/myPage/my_page_repository_impl.dart';
 import 'package:widyu/core/data/repository/notification/notification_repository.dart';
 import 'package:widyu/core/data/repository/notification/notification_repository_impl.dart';
-import 'package:widyu/core/data/repository/point/point_repository.dart';
-import 'package:widyu/core/data/repository/point/point_repository_impl.dart';
 import 'package:widyu/core/data/source/album/album_remote_data_source.dart';
 import 'package:widyu/core/data/source/album/album_remote_data_source_impl.dart';
 import 'package:widyu/core/data/source/auth/auth_local_data_source.dart';
@@ -256,10 +254,6 @@ Future<void> _bootstrap() async {
             authLocalDataSource: authLocal,
             deviceLocalDataSource: deviceLocal,
           ),
-        ),
-        ProxyProvider<PointRemoteDataSource, PointRepository>(
-          update: (_, remote, __) =>
-              PointRepositoryImpl(remoteDataSource: remote),
         ),
         ProxyProvider<AlbumRemoteDataSource, AlbumRepository>(
           update: (_, remote, __) =>
