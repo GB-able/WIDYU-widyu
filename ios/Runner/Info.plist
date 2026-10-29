@@ -79,7 +79,7 @@
         <array>
             <string>com.widucorp.widu.medication.refresh</string>
             <string>com.widucorp.widu.refresh</string>
-            <string>com.example.widyu.steps.refresh</string>
+            <string>com.widucorp.widu.steps.refresh</string>
         </array>
         <key>NSHealthShareUsageDescription</key>
         <string>걸음수를 읽어 매일 걷기 목표와 보호자 화면에 반영합니다.</string>
