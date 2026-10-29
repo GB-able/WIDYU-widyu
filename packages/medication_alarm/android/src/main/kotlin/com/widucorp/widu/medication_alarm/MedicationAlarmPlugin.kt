@@ -55,6 +55,7 @@ class MedicationAlarmPlugin : FlutterPlugin, MethodChannel.MethodCallHandler,
                                 4819
                             )
                         } else if (!caps.getBoolean("authorized")) openSettings(activity, "exact")
+                        else if (!caps.getBoolean("fullScreen")) openSettings(activity, "fullScreen")
                         scheduler.capabilities()
                     }
 
