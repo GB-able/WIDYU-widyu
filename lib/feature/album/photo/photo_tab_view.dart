@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:widyu/app/routes/app_route.dart';
-import 'package:widyu/core/data/provider/album_provider.dart';
 import 'package:widyu/core/data/repository/album/album_repository.dart';
 import 'package:widyu/core/data/repository/point/point_repository.dart';
 import 'package:widyu/core/model/album/media.dart';
@@ -56,7 +55,6 @@ class PhotoTabView extends StatelessWidget {
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (context) => PhotoTabViewModel(
-        albumProvider: context.read<AlbumProvider>(),
         repository: context.read<AlbumRepository>(),
       )..init(),
       child: const _PhotoGrid(),
@@ -94,16 +92,35 @@ class _PhotoGridState extends State<_PhotoGrid> {
     }
   }
 
+  // 사진 탭은 게시물 캐시가 없을 수 있어 미디어의 가격을 쓴다.
+  Future<bool> _requestUnlock(Media media) async {
+    final repository = context.read<AlbumRepository>();
+    final success = await showUnlockDialog(
+      context,
+      price: media.price,
+      point: context.read<PointRepository>().currentStatus.point,
+      isUnlocking: repository.currentCache.isUnlocking(media.postId),
+      onPurchase: () => repository.unlock(media.postId),
+      onGoToGoal: () => context.go(AppRoute.goal.path),
+    );
+    return success && !repository.isDisposed;
+  }
+
   @override
   Widget build(BuildContext context) {
-    final viewModel = context.watch<PhotoTabViewModel>();
+    // 목록 단위 상태만 구독하고, 썸네일은 아래 Selector로 잠금 여부만 구독한다.
+    final (isLoading, hasError, isLoadingMore) = context.select(
+      (PhotoTabViewModel vm) => (vm.isLoading, vm.hasError, vm.isLoadingMore),
+    );
+    // 리스트는 최상위 값이어야 DeepCollectionEquality로 비교된다.
+    final items = context.select((PhotoTabViewModel vm) => vm.items);
 
-    if (viewModel.isLoading) {
+    if (isLoading) {
       return const CustomLoadingWidget();
     }
 
-    if (viewModel.isEmpty) {
-      if (viewModel.hasError) {
+    if (items.isEmpty) {
+      if (hasError) {
         return CustomErrorWidget(
           errorMsg: '앨범을 불러오지 못했어요',
           onRetry: () => context.read<PhotoTabViewModel>().retry(),
@@ -112,7 +129,7 @@ class _PhotoGridState extends State<_PhotoGrid> {
       return const AlbumEmptyWidget();
     }
 
-    final sections = _groupByMonth(viewModel.items);
+    final sections = _groupByMonth(items);
 
     return RefreshIndicator(
       color: MyColor.primary,
@@ -136,14 +153,24 @@ class _PhotoGridState extends State<_PhotoGrid> {
                       childAspectRatio: 3 / 4,
                     ),
                     delegate: SliverChildBuilderDelegate(
-                      (context, index) =>
-                          _MediaThumbnail(media: section.media[index]),
+                      (context, index) {
+                        final media = section.media[index];
+                        return Selector<PhotoTabViewModel, bool>(
+                          selector: (_, vm) =>
+                              !vm.cache.isUnlocked(media.postId),
+                          builder: (context, isLocked, _) => _MediaThumbnail(
+                            media: media,
+                            isLocked: isLocked,
+                            onRequestUnlock: () => _requestUnlock(media),
+                          ),
+                        );
+                      },
                       childCount: section.media.length,
                     ),
                   ),
                   const SliverToBoxAdapter(child: SizedBox(height: 20)),
                 ],
-                if (viewModel.isLoadingMore)
+                if (isLoadingMore)
                   const SliverToBoxAdapter(
                     child: Padding(
                       padding: EdgeInsets.symmetric(vertical: 16),
@@ -152,7 +179,7 @@ class _PhotoGridState extends State<_PhotoGrid> {
                       ),
                     ),
                   )
-                else if (viewModel.hasError)
+                else if (hasError)
                   SliverToBoxAdapter(
                     child: RetryWidget(
                       onRetry: () => context.read<PhotoTabViewModel>().retry(),

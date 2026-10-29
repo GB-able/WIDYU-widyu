@@ -1,9 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
-import 'package:widyu/app/routes/app_route.dart';
-import 'package:widyu/core/data/provider/album_provider.dart';
-import 'package:widyu/core/data/repository/point/point_repository.dart';
 import 'package:widyu/core/log/log.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
@@ -11,12 +6,16 @@ import 'package:widyu/core/ui/widgets/widu_icon.dart';
 import 'package:widyu/core/ui/widgets/widyu_text_button.dart';
 import 'package:widyu/gen/assets.gen.dart';
 
-Future<bool> showUnlockDialog(BuildContext context, int albumId) async {
-  final albumProvider = context.read<AlbumProvider>();
-  if (albumProvider.isUnlocking(albumId)) return false;
-  final price = albumProvider.postOf(albumId)?.price;
+Future<bool> showUnlockDialog(
+  BuildContext context, {
+  required int? price,
+  required int? point,
+  required bool isUnlocking,
+  required Future<bool> Function() onPurchase,
+  required VoidCallback onGoToGoal,
+}) async {
+  if (isUnlocking) return false;
   if (price == null) return false;
-  final point = context.read<PointRepository>().currentStatus.point;
 
   if (point != null && point < price) {
     await showDialog<void>(
@@ -24,7 +23,7 @@ Future<bool> showUnlockDialog(BuildContext context, int albumId) async {
       builder: (_) => UnlockDialog.notEnough(
         price: price,
         point: point,
-        onTap: () => context.go(AppRoute.goal.path),
+        onTap: onGoToGoal,
       ),
     );
     return false;
@@ -35,10 +34,10 @@ Future<bool> showUnlockDialog(BuildContext context, int albumId) async {
     builder: (_) => UnlockDialog.purchase(
       price: price,
       point: point,
-      onPurchase: () => albumProvider.unlock(albumId),
+      onPurchase: onPurchase,
     ),
   );
-  return success == true && !albumProvider.isDisposed;
+  return success == true;
 }
 
 class UnlockDialog extends StatefulWidget {

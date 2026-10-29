@@ -1,12 +1,13 @@
 import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
-import 'package:widyu/core/data/provider/album_provider.dart';
 import 'package:widyu/core/data/repository/album/album_repository.dart';
+import 'package:widyu/core/data/repository/album/album_repository_impl.dart';
 import 'package:widyu/core/data/repository/goal/walk_repository.dart';
 import 'package:widyu/core/data/repository/goal/walk_repository_impl.dart';
 import 'package:widyu/core/data/repository/notification/notification_repository.dart';
 import 'package:widyu/core/data/repository/point/point_repository.dart';
 import 'package:widyu/core/data/repository/point/point_repository_impl.dart';
+import 'package:widyu/core/data/source/album/album_remote_data_source.dart';
 import 'package:widyu/core/data/source/goal/walk_local_data_source.dart';
 import 'package:widyu/core/data/source/goal/walk_remote_data_source.dart';
 import 'package:widyu/core/data/source/point/point_remote_data_source.dart';
@@ -50,11 +51,12 @@ class UserSessionScope extends StatelessWidget {
           )..start(),
           dispose: (_, tracker) => tracker.dispose(),
         ),
-        ChangeNotifierProvider<AlbumProvider>(
-          create: (context) => AlbumProvider(
-            repository: context.read<AlbumRepository>(),
+        Provider<AlbumRepository>(
+          create: (context) => AlbumRepositoryImpl(
+            remoteDataSource: context.read<AlbumRemoteDataSource>(),
             pointRepository: context.read<PointRepository>(),
           ),
+          dispose: (_, repository) => repository.dispose(),
         ),
       ],
       child: child,
