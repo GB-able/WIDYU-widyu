@@ -3,8 +3,8 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:medication_alarm/medication_alarm.dart';
-import 'package:widyu/core/data/provider/point_provider.dart';
 import 'package:widyu/core/data/repository/goal/medication_repository.dart';
+import 'package:widyu/core/data/repository/point/point_repository.dart';
 import 'package:widyu/core/model/goal/medication/medication_point_result.dart';
 import 'package:widyu/feature/medication_camera/medication_camera_ui_event.dart';
 import 'package:widyu/feature/medication_camera/medication_camera_view_model.dart';
@@ -26,7 +26,7 @@ class _Alarm extends Fake implements MedicationRepository {
   }
 }
 
-class _Point extends Fake implements PointProvider {
+class _Point extends Fake implements PointRepository {
   @override
   Future<void> refresh() async {}
 }
@@ -39,7 +39,7 @@ void main() {
     final alarm = _Alarm();
     final vm = MedicationCameraViewModel(
       medicationRepository: alarm,
-      pointProvider: _Point(),
+      pointRepository: _Point(),
       group: {
         'memberId': '1',
         'occurrences': [

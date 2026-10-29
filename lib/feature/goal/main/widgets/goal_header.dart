@@ -1,9 +1,10 @@
 part of '../goal_screen.dart';
 
 class _GoalHeader extends StatelessWidget {
-  const _GoalHeader({super.key, required this.summary});
+  const _GoalHeader({super.key, required this.summary, required this.point});
 
   final List<GoalRateStatus>? summary;
+  final int? point;
 
   @override
   Widget build(BuildContext context) {
@@ -12,7 +13,7 @@ class _GoalHeader extends StatelessWidget {
       child: Column(
         spacing: 24,
         children: [
-          const _PointBanner(),
+          _PointBanner(point: point),
           _WeeklyCard(summary: summary ?? const []),
         ],
       ),
@@ -21,12 +22,12 @@ class _GoalHeader extends StatelessWidget {
 }
 
 class _PointBanner extends StatelessWidget {
-  const _PointBanner();
+  const _PointBanner({required this.point});
+
+  final int? point;
 
   @override
   Widget build(BuildContext context) {
-    final point = context.select<PointProvider, int?>((store) => store.point);
-
     return GestureDetector(
       onTap: () => context.push(AppRoute.point.path),
       child: Container(

@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'package:widyu/core/data/provider/point_provider.dart';
 import 'package:widyu/core/data/repository/myPage/my_page_repository.dart';
+import 'package:widyu/core/data/repository/point/point_repository.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
 import 'package:widyu/core/ui/widgets/ui_event_listener.dart';
@@ -34,7 +34,7 @@ class PointScreen extends StatelessWidget {
     return ChangeNotifierProvider(
       create: (context) => PointViewModel(
         repository: context.read<MyPageRepository>(),
-        pointProvider: context.read<PointProvider>(),
+        pointRepository: context.read<PointRepository>(),
       ),
       builder: (context, child) {
         final uiEvent = context.read<PointViewModel>().uiEvent;
@@ -53,7 +53,7 @@ class PointScreen extends StatelessWidget {
                     child: Column(
                       children: [
                         const SizedBox(height: 16),
-                        const _TotalPointView(),
+                        _TotalPointView(point: uiState.point),
                         const SizedBox(height: 16),
                         Expanded(
                           child:

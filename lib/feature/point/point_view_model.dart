@@ -1,8 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/widgets.dart';
-import 'package:widyu/core/data/provider/point_provider.dart';
 import 'package:widyu/core/data/repository/myPage/my_page_repository.dart';
+import 'package:widyu/core/data/repository/point/point_repository.dart';
 import 'package:widyu/core/model/api/api_result.dart';
 import 'package:widyu/core/model/myPage/point/point_history.dart';
 import 'package:widyu/feature/point/point_ui_event.dart';
@@ -11,7 +11,8 @@ import 'package:widyu/feature/point/point_ui_state.dart';
 
 class PointViewModel with ChangeNotifier {
   final MyPageRepository _repository;
-  final PointProvider _pointProvider;
+  final PointRepository _pointRepository;
+  late final StreamSubscription<PointStatus> _pointStatus;
 
   PointUiState _uiState = const PointUiState();
   PointUiState get uiState => _uiState;
@@ -21,9 +22,14 @@ class PointViewModel with ChangeNotifier {
 
   PointViewModel({
     required MyPageRepository repository,
-    required PointProvider pointProvider,
+    required PointRepository pointRepository,
   })  : _repository = repository,
-        _pointProvider = pointProvider {
+        _pointRepository = pointRepository {
+    _uiState = _uiState.copyWith(point: pointRepository.currentStatus.point);
+    _pointStatus = pointRepository.status.listen((status) {
+      _uiState = _uiState.copyWith(point: status.point);
+      notifyListeners();
+    });
     _fetchPointHistory();
   }
 
@@ -34,7 +40,7 @@ class PointViewModel with ChangeNotifier {
     final result = await _repository.fetchPointHistory();
     if (result is Success) {
       final data = (result as Success<PointHistory>).data;
-      _pointProvider.sync(data.currentPoints);
+      _pointRepository.sync(data.currentPoints);
       _uiState = _uiState.copyWith(
         histories: data.histories
             .map((point) => point.toUiModel())
@@ -50,6 +56,7 @@ class PointViewModel with ChangeNotifier {
 
   @override
   void dispose() {
+    _pointStatus.cancel();
     _uiEvent.close();
     super.dispose();
   }

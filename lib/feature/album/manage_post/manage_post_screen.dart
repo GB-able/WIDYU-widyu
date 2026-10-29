@@ -7,8 +7,8 @@ import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
 import 'package:widyu/app/routes/extra/edit_post_extra.dart';
 import 'package:widyu/core/data/provider/album_provider.dart';
-import 'package:widyu/core/data/provider/point_provider.dart';
 import 'package:widyu/core/data/repository/album/album_repository.dart';
+import 'package:widyu/core/data/repository/point/point_repository.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/effects.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
@@ -43,7 +43,7 @@ class ManagePostScreen extends StatelessWidget {
       create: (context) => ManagePostViewModel(
         repository: context.read<AlbumRepository>(),
         albumProvider: context.read<AlbumProvider>(),
-        pointProvider: context.read<PointProvider>(),
+        pointRepository: context.read<PointRepository>(),
         initialContent: extra == null
             ? null
             : context.read<AlbumProvider>().postOf(extra!.albumId)?.content ??
