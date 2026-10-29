@@ -6,9 +6,9 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:widyu/app/routes/app_route.dart';
-import 'package:widyu/core/data/provider/walk_provider.dart';
 import 'package:widyu/core/data/repository/goal/goal_repository.dart';
 import 'package:widyu/core/data/repository/goal/medication_repository.dart';
+import 'package:widyu/core/data/repository/goal/walk_repository.dart';
 import 'package:widyu/core/data/repository/location/location_repository.dart';
 import 'package:widyu/core/data/repository/point/point_repository.dart';
 import 'package:widyu/core/model/goal/medication/medication_point_result.dart';
@@ -22,6 +22,7 @@ import 'package:widyu/core/ui/widgets/widu_icon.dart';
 import 'package:widyu/core/ui/widgets/widyu_text_button.dart';
 import 'package:widyu/core/utils/extensions/date_extension.dart';
 import 'package:widyu/core/utils/show_toast.dart';
+import 'package:widyu/core/utils/walk_tracker.dart';
 import 'package:widyu/feature/goal/_widget/goal_empty_card.dart';
 import 'package:widyu/feature/goal/_widget/hospital_card.dart';
 import 'package:widyu/feature/goal/_widget/medication_card.dart';
@@ -95,7 +96,8 @@ class _GoalScreenState extends State<GoalScreen> {
       create: (context) => GoalViewModel(
         repository: context.read<GoalRepository>(),
         pointRepository: context.read<PointRepository>(),
-        stepProvider: context.read<WalkProvider>(),
+        walkTracker: context.read<WalkTracker>(),
+        walkRepository: context.read<WalkRepository>(),
         locationRepository: context.read<LocationRepository>(),
         medicationRepository: context.read<MedicationRepository>(),
       ),
@@ -144,6 +146,7 @@ class _GoalScreenState extends State<GoalScreen> {
                                 ),
                                 child: _GoalContent(
                                   state: uiState.cards,
+                                  steps: uiState.steps,
                                   onRetry: viewModel.refresh,
                                   onMedicationVerified:
                                       viewModel.onMedicationVerified,

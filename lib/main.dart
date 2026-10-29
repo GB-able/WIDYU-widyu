@@ -17,8 +17,6 @@ import 'package:widyu/core/data/repository/goal/goal_repository.dart';
 import 'package:widyu/core/data/repository/goal/goal_repository_impl.dart';
 import 'package:widyu/core/data/repository/goal/medication_repository.dart';
 import 'package:widyu/core/data/repository/goal/medication_repository_impl.dart';
-import 'package:widyu/core/data/repository/goal/walk_repository.dart';
-import 'package:widyu/core/data/repository/goal/walk_repository_impl.dart';
 import 'package:widyu/core/data/repository/heartRate/heart_rate_repository.dart';
 import 'package:widyu/core/data/repository/heartRate/heart_rate_repository_impl.dart';
 import 'package:widyu/core/data/repository/home/home_repository.dart';
@@ -157,13 +155,6 @@ Future<void> _bootstrap() async {
               GoalRemoteDataSourceImpl(apiClient: apiClient),
         ),
         Provider<WalkLocalDataSource>(create: (_) => WalkLocalDataSourceImpl()),
-        ProxyProvider2<WalkLocalDataSource, WalkRemoteDataSource,
-            WalkRepository>(
-          update: (_, local, remote, __) => WalkRepositoryImpl(
-            localDataSource: local,
-            remoteDataSource: remote,
-          ),
-        ),
         ProxyProvider<GoalRemoteDataSource, GoalRepository>(
           update: (_, goal, __) =>
               GoalRepositoryImpl(goalRemoteDataSource: goal),

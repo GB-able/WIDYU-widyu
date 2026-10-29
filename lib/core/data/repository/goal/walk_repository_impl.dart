@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
+import 'package:rxdart/rxdart.dart';
 import 'package:widyu/core/data/repository/goal/walk_repository.dart';
 import 'package:widyu/core/data/source/goal/walk_local_data_source.dart';
 import 'package:widyu/core/data/source/goal/walk_remote_data_source.dart';
@@ -22,6 +23,31 @@ class WalkRepositoryImpl implements WalkRepository {
   final DateTime Function() now;
   final TokenManager _tokenManager = TokenManager();
 
+  final _todaySteps = BehaviorSubject<int>.seeded(0);
+  String? _date;
+  int? _steps;
+  bool _hasHealthSteps = false;
+  bool _disposed = false;
+
+  // 재생되는 마지막 값이 어제 것일 수 있어 받는 시점의 날짜로 다시 계산한다.
+  @override
+  Stream<int> get todaySteps =>
+      _todaySteps.stream.map((_) => currentTodaySteps);
+
+  @override
+  int get currentTodaySteps => _date == now().walkDate ? _steps ?? 0 : 0;
+
+  void _emit() {
+    if (_disposed) return;
+    _todaySteps.add(currentTodaySteps);
+  }
+
+  @override
+  void dispose() {
+    _disposed = true;
+    _todaySteps.close();
+  }
+
   @override
   Future<bool> ensurePermission() => _localDataSource.ensurePermission();
 
@@ -31,6 +57,48 @@ class WalkRepositoryImpl implements WalkRepository {
     bool full = false,
     bool Function()? isCancelled,
     bool background = false,
+  }) async {
+    final today = now().walkDate;
+    if (_date != today) {
+      _date = today;
+      _steps = null;
+      _hasHealthSteps = false;
+      _emit();
+    }
+    final result = await _sync(
+      memberId: memberId,
+      full: full,
+      isCancelled: isCancelled,
+      background: background,
+    );
+    if (result.date == now().walkDate && result.steps != null) {
+      _date = result.date;
+      _steps = result.steps;
+      _hasHealthSteps = true;
+    }
+    _emit();
+    return result;
+  }
+
+  @override
+  void applyServerSteps(int serverSteps, {required String date}) {
+    final today = now().walkDate;
+    if (_disposed ||
+        date != today ||
+        serverSteps < 0 ||
+        (_date == today && _hasHealthSteps)) {
+      return;
+    }
+    _date = date;
+    _steps = serverSteps;
+    _emit();
+  }
+
+  Future<WalkSaveResult> _sync({
+    required String memberId,
+    required bool full,
+    required bool Function()? isCancelled,
+    required bool background,
   }) async {
     final budget = background && Platform.isIOS
         ? const Duration(seconds: 18)
