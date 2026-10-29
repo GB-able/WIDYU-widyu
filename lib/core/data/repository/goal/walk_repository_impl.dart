@@ -29,8 +29,10 @@ class WalkRepositoryImpl implements WalkRepository {
   bool _hasHealthSteps = false;
   bool _disposed = false;
 
+  // 재생되는 마지막 값이 어제 것일 수 있어 받는 시점의 날짜로 다시 계산한다.
   @override
-  Stream<int> get todaySteps => _todaySteps.stream;
+  Stream<int> get todaySteps =>
+      _todaySteps.stream.map((_) => currentTodaySteps);
 
   @override
   int get currentTodaySteps => _date == now().walkDate ? _steps ?? 0 : 0;
