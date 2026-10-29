@@ -10,6 +10,7 @@ import 'package:widyu/core/data/repository/goal/medication_repository.dart';
 import 'package:widyu/core/data/repository/point/point_repository.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
+import 'package:widyu/core/ui/widgets/custom_dialog.dart';
 import 'package:widyu/core/ui/widgets/ui_event_listener.dart';
 import 'package:widyu/core/ui/widgets/widu_icon.dart';
 import 'package:widyu/core/utils/show_toast.dart';
@@ -89,19 +90,20 @@ class _MedicationCameraViewState extends State<_MedicationCameraView>
     context.pop();
   }
 
+  Future<void> _showNotice(String message) async {
+    await showDialog<void>(
+      context: context,
+      builder: (_) => CustomDialog(title: message),
+    );
+    if (mounted) context.pop();
+  }
+
   Future<void> _handleEvent(MedicationCameraUiEvent event) async {
     switch (event) {
       case OccurrenceNotFound():
-        await showDialog<void>(
-          context: context,
-          builder: (context) => AlertDialog(
-            content: const Text('존재하지 않는 복약 일정이에요.'),
-            actions: [
-              TextButton(onPressed: context.pop, child: const Text('확인')),
-            ],
-          ),
-        );
-        if (mounted) context.pop();
+        await _showNotice('존재하지 않는 복약 일정이에요.');
+      case VerifyWindowClosed():
+        await _showNotice('인증 가능 시간이 지났어요.');
       case VerifySuccess(:final result):
         context.pop(result);
       case VerifyFailure():

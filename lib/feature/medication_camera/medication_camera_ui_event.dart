@@ -8,6 +8,10 @@ class OccurrenceNotFound extends MedicationCameraUiEvent {
   const OccurrenceNotFound();
 }
 
+class VerifyWindowClosed extends MedicationCameraUiEvent {
+  const VerifyWindowClosed();
+}
+
 class VerifySuccess extends MedicationCameraUiEvent {
   const VerifySuccess(this.result);
 
