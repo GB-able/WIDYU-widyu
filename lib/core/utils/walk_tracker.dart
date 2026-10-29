@@ -4,11 +4,11 @@ import 'package:flutter/widgets.dart';
 import 'package:widyu/core/data/repository/goal/walk_repository.dart';
 import 'package:widyu/core/log/log.dart';
 import 'package:widyu/core/network/token_manager.dart';
-import 'package:widyu/core/utils/extensions/walk_extension.dart';
 import 'package:widyu/walk_background_service.dart';
 
-class WalkProvider with ChangeNotifier, WidgetsBindingObserver {
-  WalkProvider({
+/// 로그인 세션 동안 걸음 수를 주기적으로 동기화한다.
+class WalkTracker with WidgetsBindingObserver {
+  WalkTracker({
     required WalkRepository repository,
   }) : _repository = repository;
 
@@ -17,17 +17,9 @@ class WalkProvider with ChangeNotifier, WidgetsBindingObserver {
   Future<void>? _starting;
   Future<void>? _refreshing;
   String? _memberId;
-  String? _date;
-  int? _steps;
-  bool _hasHealthSteps = false;
   bool _disposed = false;
   bool _observing = false;
   bool _tracking = false;
-
-  String get today => DateTime.now().walkDate;
-  int get steps => _date == today ? _steps ?? 0 : 0;
-  bool get hasTodaySteps => _date == today && _steps != null;
-  bool get isTracking => !_disposed && _tracking;
 
   Future<void> start() {
     if (_disposed || _tracking) return Future.value();
@@ -59,7 +51,6 @@ class WalkProvider with ChangeNotifier, WidgetsBindingObserver {
     } catch (error, stack) {
       WiduLog.data.w('걸음수 연동 시작 실패', error: error, stackTrace: stack);
     }
-    if (!_disposed) notifyListeners();
   }
 
   void _startTimer() {
@@ -81,12 +72,6 @@ class WalkProvider with ChangeNotifier, WidgetsBindingObserver {
   }
 
   Future<void> _refresh({required bool full}) async {
-    if (_date != today) {
-      _date = today;
-      _steps = null;
-      _hasHealthSteps = false;
-      notifyListeners();
-    }
     try {
       final result = await _repository.sync(
         memberId: _memberId!,
@@ -100,32 +85,13 @@ class WalkProvider with ChangeNotifier, WidgetsBindingObserver {
         _tracking = false;
         _memberId = null;
         await stopWalkBackgroundService();
-        if (_disposed) return;
       } else {
         // 걸음 수는 건강값이라 남기지 않는다(docs/logging-strategy.md §6.1).
         WiduLog.data.d('걸음수 동기화 완료 uploaded=${result.uploaded}');
       }
-      if (result.date == today && result.steps != null) {
-        _date = result.date;
-        _steps = result.steps;
-        _hasHealthSteps = true;
-      }
-      notifyListeners();
     } catch (error, stack) {
       WiduLog.data.w('걸음수 동기화 보류', error: error, stackTrace: stack);
     }
-  }
-
-  void applyServerSteps(int serverSteps, {required String date}) {
-    if (_disposed ||
-        date != today ||
-        serverSteps < 0 ||
-        (_date == today && _hasHealthSteps)) {
-      return;
-    }
-    _date = date;
-    _steps = serverSteps;
-    notifyListeners();
   }
 
   @override
@@ -139,12 +105,10 @@ class WalkProvider with ChangeNotifier, WidgetsBindingObserver {
     }
   }
 
-  @override
   void dispose() {
     _disposed = true;
     _tracking = false;
     _timer?.cancel();
     if (_observing) WidgetsBinding.instance.removeObserver(this);
-    super.dispose();
   }
 }

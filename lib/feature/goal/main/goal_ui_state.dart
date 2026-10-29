@@ -36,6 +36,7 @@ abstract class GoalUiState with _$GoalUiState {
     @Default(true) bool isWeeklyLoading,
     @Default([]) List<GoalRateStatus> weeklyStatuses,
     int? point,
+    @Default(0) int steps,
   }) = _GoalUiState;
 
   bool get isLoading => isWeeklyLoading || cards is GoalCardsLoading;

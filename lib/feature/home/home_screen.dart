@@ -12,8 +12,8 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:widyu/app/routes/app_route.dart';
-import 'package:widyu/core/data/provider/walk_provider.dart';
 import 'package:widyu/core/data/repository/goal/medication_repository.dart';
+import 'package:widyu/core/data/repository/goal/walk_repository.dart';
 import 'package:widyu/core/data/repository/heartRate/heart_rate_repository.dart';
 import 'package:widyu/core/data/repository/home/home_repository.dart';
 import 'package:widyu/core/data/repository/location/location_repository.dart';
@@ -140,7 +140,7 @@ class HomeScreen extends StatelessWidget {
           notificationRepository: context.read<NotificationRepository>(),
           heartRateRepository: context.read<HeartRateRepository>(),
           locationRepository: context.read<LocationRepository>(),
-          stepProvider: context.read<WalkProvider>(),
+          walkRepository: context.read<WalkRepository>(),
           medicationRepository: context.read<MedicationRepository>(),
           noticeController: context.read<BackgroundLocationNoticeController>(),
         );
@@ -228,10 +228,7 @@ class HomeScreen extends StatelessWidget {
                                 thumbanils: uiState.thumbnails,
                                 medicationStatus: uiState.medicationStatus,
                                 hasStepGoal: uiState.hasStepGoal,
-                                stepProgress: uiState.stepProgressOf(
-                                  context.select<WalkProvider, int>(
-                                      (p) => p.steps),
-                                ),
+                                stepProgress: uiState.stepProgress,
                                 hasHealthSchedule: uiState.hasHealthSchedule,
                                 onCameraTap: () =>
                                     viewModel.takeMedicationPhoto(
