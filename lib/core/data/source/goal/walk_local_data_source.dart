@@ -13,6 +13,8 @@ abstract class WalkLocalDataSource {
 
   Future<int?> readSteps(DateTime start, DateTime end);
 
+  Stream<int> get liveStepCounts;
+
   Future<Map<String, dynamic>> readState(String memberId);
 
   Future<void> saveState(String memberId, Map<String, dynamic> state);

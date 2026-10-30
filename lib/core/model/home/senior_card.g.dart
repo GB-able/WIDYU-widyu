@@ -77,15 +77,21 @@ Map<String, dynamic> _$MedicationSummaryToJson(_MedicationSummary instance) =>
 _MedicationDoseStatus _$MedicationDoseStatusFromJson(
         Map<String, dynamic> json) =>
     _MedicationDoseStatus(
+      scheduleId: (json['scheduleId'] as num?)?.toInt(),
       doseTime: json['doseTime'] as String?,
       taken: json['taken'] as bool? ?? false,
+      doseCount: (json['doseCount'] as num?)?.toInt(),
+      proofImageUrl: json['proofImageUrl'] as String?,
     );
 
 Map<String, dynamic> _$MedicationDoseStatusToJson(
         _MedicationDoseStatus instance) =>
     <String, dynamic>{
+      'scheduleId': instance.scheduleId,
       'doseTime': instance.doseTime,
       'taken': instance.taken,
+      'doseCount': instance.doseCount,
+      'proofImageUrl': instance.proofImageUrl,
     };
 
 _Album _$AlbumFromJson(Map<String, dynamic> json) => _Album(

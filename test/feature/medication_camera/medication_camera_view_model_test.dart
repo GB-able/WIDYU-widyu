@@ -10,7 +10,6 @@ import 'package:widyu/feature/medication_camera/medication_camera_ui_event.dart'
 import 'package:widyu/feature/medication_camera/medication_camera_view_model.dart';
 
 class _Alarm extends Fake implements MedicationRepository {
-
   final verified = <int>[];
   Future<MedicationPointResult> Function(MedicationOccurrence) onVerify =
       (_) async => const MedicationPointResult(earnedPoints: 10);
@@ -35,7 +34,7 @@ void main() {
   final photo = File('/tmp/pill.jpg');
 
   Future<(MedicationCameraViewModel, _Alarm, List<MedicationCameraUiEvent>)>
-      setUp({List<int> scheduleIds = const [7]}) async {
+      setUp({List<int> scheduleIds = const [7], DateTime? scheduledAt}) async {
     final alarm = _Alarm();
     final vm = MedicationCameraViewModel(
       medicationRepository: alarm,
@@ -44,7 +43,12 @@ void main() {
         'memberId': '1',
         'occurrences': [
           for (final id in scheduleIds)
-            {'scheduleId': id, 'localDate': '2026-10-19'},
+            {
+              'scheduleId': id,
+              'localDate': '2026-10-19',
+              if (scheduledAt != null)
+                'scheduledAt': scheduledAt.millisecondsSinceEpoch,
+            },
         ],
       },
     );
@@ -57,6 +61,14 @@ void main() {
     await vm.load();
     return (vm, alarm, events);
   }
+
+  test('인증 가능 시간이 지난 회차는 만료로 알린다', () async {
+    final (_, alarm, events) = await setUp(
+        scheduledAt: DateTime.now().subtract(const Duration(hours: 2)));
+    await Future<void>.delayed(Duration.zero);
+    expect(events.single, isA<VerifyWindowClosed>());
+    expect(alarm.verified, isEmpty);
+  });
 
   test('인증 실패 시 실패를 알리고 다시 촬영할 수 있다', () async {
     final (vm, alarm, events) = await setUp();

@@ -107,7 +107,11 @@ class GoalViewModel with ChangeNotifier {
 
         final walk = home.data.walk;
         if (walk != null) {
-          _walkRepository.applyServerSteps(walk.actual, date: requestedDay);
+          _walkRepository.applyServerSteps(
+            walk.actual,
+            date: requestedDay,
+            goal: walk.goal,
+          );
         }
 
         _uiState = _uiState.copyWith(
@@ -116,7 +120,7 @@ class GoalViewModel with ChangeNotifier {
             walk: home.data.walk,
             hospital: home.data.hospital,
             verifyRemaining: remaining,
-            verifyStatus: medicine?.proofImage != null
+            verifyStatus: medicine?.isDoneAt(DateTime.now()) == true
                 ? MedicationVerifyStatus.verified
                 : remaining > Duration.zero
                     ? MedicationVerifyStatus.pending

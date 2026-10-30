@@ -1,7 +1,7 @@
 import 'package:flutter/services.dart';
 
 class WalkRecording {
-  static const _channel = MethodChannel('com.example.widyu/walk');
+  static const _channel = MethodChannel('com.widucorp.widu/walk');
 
   Future<bool> isAvailable() async =>
       await _channel.invokeMethod<bool>('isAvailable') ?? false;

@@ -45,20 +45,27 @@ class MedicationCameraViewModel extends ChangeNotifier {
   }
 
   Future<void> load() async {
+    var expired = false;
     try {
       final state = await _medicationRepository.alarmState();
       if (state['memberId'] == _group['memberId']) {
         final now = DateTime.now();
-        for (final target in (_group['occurrences'] as List).cast<Map<dynamic, dynamic>>()) {
+        for (final target
+            in (_group['occurrences'] as List).cast<Map<dynamic, dynamic>>()) {
           final occurrence =
               MedicationOccurrence.fromJson(Map<String, dynamic>.from(target));
-          if (occurrence.canVerify(now)) _pending.add(occurrence);
+          if (occurrence.canVerify(now)) {
+            _pending.add(occurrence);
+          } else {
+            expired = true;
+          }
         }
       }
     } catch (_) {}
     if (_disposed) return;
     if (_pending.isEmpty) {
-      _uiEvent.add(const OccurrenceNotFound());
+      _uiEvent.add(
+          expired ? const VerifyWindowClosed() : const OccurrenceNotFound());
       return;
     }
     _update(_uiState.copyWith(isReady: true));
@@ -73,17 +80,18 @@ class MedicationCameraViewModel extends ChangeNotifier {
     try {
       late MedicationPointResult result;
       for (final occurrence in [..._pending]) {
-        result = await _medicationRepository.verifyMedication(occurrence, photo);
+        result =
+            await _medicationRepository.verifyMedication(occurrence, photo);
         _pending.remove(occurrence);
       }
       // 인증한 복용 횟수는 약 복용 정보라 남기지 않는다(docs/logging-strategy.md §6.1).
       WiduLog.ui.i('약 복용 인증 성공 earnedPoints=${result.earnedPoints}');
       await _pointRepository.refresh();
       if (!_disposed) _uiEvent.add(VerifySuccess(result));
-    } catch (_) {
+    } catch (e) {
       if (_disposed) return;
       _update(_uiState.copyWith(isBusy: false));
-      _uiEvent.add(const VerifyFailure());
+      _uiEvent.add(VerifyFailure(e is StateError ? e.message : e.toString()));
     }
   }
 

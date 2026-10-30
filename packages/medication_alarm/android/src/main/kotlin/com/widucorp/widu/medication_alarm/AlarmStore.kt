@@ -1,4 +1,4 @@
-package com.widyu.medication_alarm
+package com.widucorp.widu.medication_alarm
 
 import android.content.Context
 import org.json.JSONArray
@@ -56,15 +56,14 @@ internal object AlarmStore {
     fun enqueueLaunch(context: Context, group: JSONObject) = synchronized(lock) {
         val state = read(context)
         if (group.optString("memberId") != state.optString("memberId")) return@synchronized
-        val pending = array(state, "launches")
-        if (objects(pending).none {
-                it.getJSONObject("group").getString("groupId") == group.getString("groupId")
-            }) {
-            pending.put(
-                JSONObject().put("eventId", UUID.randomUUID().toString())
-                    .put("memberId", state.getString("memberId")).put("group", group)
+        val pending = objects(array(state, "launches")).firstOrNull()
+        if (pending?.getJSONObject("group")?.getString("groupId") != group.getString("groupId")) {
+            state.put(
+                "launches", JSONArray().put(
+                    JSONObject().put("eventId", UUID.randomUUID().toString())
+                        .put("memberId", state.getString("memberId")).put("group", group)
+                )
             )
-            state.put("launches", JSONArray(objects(pending).takeLast(8)))
             write(context, state)
         }
         MedicationAlarmPlugin.emit()

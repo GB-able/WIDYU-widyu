@@ -1,11 +1,11 @@
-group 'com.example.widyu.walk'
+group 'com.widucorp.widu.walk'
 version '1.0-SNAPSHOT'
 
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 
 android {
-    namespace 'com.example.widyu.walk'
+    namespace 'com.widucorp.widu.walk'
     compileSdk 36
 
     defaultConfig {

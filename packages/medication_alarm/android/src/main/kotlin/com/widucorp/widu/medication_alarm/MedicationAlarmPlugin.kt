@@ -1,4 +1,4 @@
-package com.widyu.medication_alarm
+package com.widucorp.widu.medication_alarm
 
 import android.Manifest
 import android.app.Activity
@@ -28,9 +28,9 @@ class MedicationAlarmPlugin : FlutterPlugin, MethodChannel.MethodCallHandler,
     private var sink: EventChannel.EventSink? = null
     override fun onAttachedToEngine(binding: FlutterPlugin.FlutterPluginBinding) {
         context = binding.applicationContext
-        channel = MethodChannel(binding.binaryMessenger, "com.widyu/medication_alarm")
+        channel = MethodChannel(binding.binaryMessenger, "com.widucorp.widu/medication_alarm")
         channel.setMethodCallHandler(this)
-        eventChannel = EventChannel(binding.binaryMessenger, "com.widyu/medication_alarm/events")
+        eventChannel = EventChannel(binding.binaryMessenger, "com.widucorp.widu/medication_alarm/events")
         eventChannel.setStreamHandler(this)
     }
 
@@ -55,6 +55,7 @@ class MedicationAlarmPlugin : FlutterPlugin, MethodChannel.MethodCallHandler,
                                 4819
                             )
                         } else if (!caps.getBoolean("authorized")) openSettings(activity, "exact")
+                        else if (!caps.getBoolean("fullScreen")) openSettings(activity, "fullScreen")
                         scheduler.capabilities()
                     }
 

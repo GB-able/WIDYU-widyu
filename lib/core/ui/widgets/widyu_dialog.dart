@@ -13,7 +13,7 @@ class WidyuDialog extends StatelessWidget {
   const WidyuDialog({
     super.key,
     required this.child,
-    this.insetPadding = const EdgeInsets.symmetric(horizontal: 24),
+    this.insetPadding = const EdgeInsets.symmetric(horizontal: 16),
     this.contentPadding = const EdgeInsets.all(16),
     this.onClose,
   });
