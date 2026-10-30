@@ -69,6 +69,7 @@ class PermissionRecoveryDialog extends StatelessWidget {
                   : '$permissionName 권한이 필요해요',
               style: MyTypo.title1,
               textAlign: TextAlign.center,
+              overflow: TextOverflow.visible,
             ),
             const SizedBox(height: 8),
             Text(
@@ -77,6 +78,7 @@ class PermissionRecoveryDialog extends StatelessWidget {
                   : description,
               style: MyTypo.body1.copyWith(color: MyColor.grey600),
               textAlign: TextAlign.center,
+              overflow: TextOverflow.visible,
             ),
             const SizedBox(height: 16),
             Row(
