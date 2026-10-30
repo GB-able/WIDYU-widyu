@@ -115,8 +115,7 @@ class _MedicationSessionScopeState extends State<MedicationSessionScope>
   }
 
   Future<void> refreshActiveAlarm() async {
-    if (Platform.isAndroid ||
-        !mounted ||
+    if (!mounted ||
         !ready ||
         readingAlarm ||
         alarmActionBusy ||
