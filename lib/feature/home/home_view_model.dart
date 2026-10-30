@@ -373,7 +373,11 @@ class HomeViewModel with ChangeNotifier {
       final albums = data.albums;
       final walk = data.walk;
       if (walk?.actual case final actual?) {
-        _walkRepository.applyServerSteps(actual, date: requestedDay);
+        _walkRepository.applyServerSteps(
+          actual,
+          date: requestedDay,
+          goal: walk?.goal,
+        );
       }
       final schedule = data.healthSchedule;
       _medicine = data.medicine;

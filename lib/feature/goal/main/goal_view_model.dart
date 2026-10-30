@@ -107,7 +107,11 @@ class GoalViewModel with ChangeNotifier {
 
         final walk = home.data.walk;
         if (walk != null) {
-          _walkRepository.applyServerSteps(walk.actual, date: requestedDay);
+          _walkRepository.applyServerSteps(
+            walk.actual,
+            date: requestedDay,
+            goal: walk.goal,
+          );
         }
 
         _uiState = _uiState.copyWith(
