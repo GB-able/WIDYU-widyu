@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:widyu/core/model/goal/medication/medication.dart';
 import 'package:widyu/core/model/goal/medication/medication_point_result.dart';
@@ -45,9 +46,7 @@ class MedicationCard extends StatelessWidget {
   final ValueChanged<MedicationPointResult> onVerified;
 
   _VerifyState _resolveState(DateTime now) {
-    final isDone = proofPhoto != null || medicine.proofImage != null;
-
-    if (isDone) {
+    if (medicine.isDoneAt(now)) {
       return medicine.isVerifyExpiredAt(now)
           ? _VerifyState.expiredDone
           : _VerifyState.openDone;
@@ -59,7 +58,8 @@ class MedicationCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final state = _resolveState(DateTime.now());
+    final now = clock.now();
+    final state = _resolveState(now);
 
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 20),
@@ -95,15 +95,16 @@ class MedicationCard extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: _VerifyCard(
               state: state,
-              alarmTime: medicine.nextAlarmTime,
-              doseCount: medicine.nextDoseCount,
-              proofImage: medicine.proofImage,
+              alarmTime: medicine.alarmTimeAt(now),
+              doseCount: medicine.doseCountAt(now),
+              proofImage: medicine.proofImageAt(now),
               proofPhoto: proofPhoto,
               verifyRemaining: verifyRemaining,
               onOpenVerification: () async {
+                final tapped = clock.now();
                 final result = await openMedicationForSchedule(
-                    context, medicine.medicineScheduleId, DateTime.now(),
-                    doseCount: medicine.nextDoseCount);
+                    context, medicine.scheduleIdAt(tapped), tapped,
+                    doseCount: medicine.doseCountAt(tapped));
                 if (result != null) onVerified(result);
               },
             ),

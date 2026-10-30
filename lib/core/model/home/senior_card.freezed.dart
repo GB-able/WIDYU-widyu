@@ -1375,9 +1375,12 @@ class __$MedicationSummaryCopyWithImpl<$Res>
 
 /// @nodoc
 mixin _$MedicationDoseStatus {
+  int? get scheduleId;
   String? get doseTime;
   @JsonKey(defaultValue: false)
   bool get taken;
+  int? get doseCount;
+  String? get proofImageUrl;
 
   /// Create a copy of MedicationDoseStatus
   /// with the given fields replaced by the non-null parameter values.
@@ -1395,18 +1398,25 @@ mixin _$MedicationDoseStatus {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is MedicationDoseStatus &&
+            (identical(other.scheduleId, scheduleId) ||
+                other.scheduleId == scheduleId) &&
             (identical(other.doseTime, doseTime) ||
                 other.doseTime == doseTime) &&
-            (identical(other.taken, taken) || other.taken == taken));
+            (identical(other.taken, taken) || other.taken == taken) &&
+            (identical(other.doseCount, doseCount) ||
+                other.doseCount == doseCount) &&
+            (identical(other.proofImageUrl, proofImageUrl) ||
+                other.proofImageUrl == proofImageUrl));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, doseTime, taken);
+  int get hashCode => Object.hash(
+      runtimeType, scheduleId, doseTime, taken, doseCount, proofImageUrl);
 
   @override
   String toString() {
-    return 'MedicationDoseStatus(doseTime: $doseTime, taken: $taken)';
+    return 'MedicationDoseStatus(scheduleId: $scheduleId, doseTime: $doseTime, taken: $taken, doseCount: $doseCount, proofImageUrl: $proofImageUrl)';
   }
 }
 
@@ -1416,7 +1426,12 @@ abstract mixin class $MedicationDoseStatusCopyWith<$Res> {
           $Res Function(MedicationDoseStatus) _then) =
       _$MedicationDoseStatusCopyWithImpl;
   @useResult
-  $Res call({String? doseTime, @JsonKey(defaultValue: false) bool taken});
+  $Res call(
+      {int? scheduleId,
+      String? doseTime,
+      @JsonKey(defaultValue: false) bool taken,
+      int? doseCount,
+      String? proofImageUrl});
 }
 
 /// @nodoc
@@ -1432,10 +1447,17 @@ class _$MedicationDoseStatusCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
+    Object? scheduleId = freezed,
     Object? doseTime = freezed,
     Object? taken = null,
+    Object? doseCount = freezed,
+    Object? proofImageUrl = freezed,
   }) {
     return _then(_self.copyWith(
+      scheduleId: freezed == scheduleId
+          ? _self.scheduleId
+          : scheduleId // ignore: cast_nullable_to_non_nullable
+              as int?,
       doseTime: freezed == doseTime
           ? _self.doseTime
           : doseTime // ignore: cast_nullable_to_non_nullable
@@ -1444,6 +1466,14 @@ class _$MedicationDoseStatusCopyWithImpl<$Res>
           ? _self.taken
           : taken // ignore: cast_nullable_to_non_nullable
               as bool,
+      doseCount: freezed == doseCount
+          ? _self.doseCount
+          : doseCount // ignore: cast_nullable_to_non_nullable
+              as int?,
+      proofImageUrl: freezed == proofImageUrl
+          ? _self.proofImageUrl
+          : proofImageUrl // ignore: cast_nullable_to_non_nullable
+              as String?,
     ));
   }
 }
@@ -1542,14 +1572,19 @@ extension MedicationDoseStatusPatterns on MedicationDoseStatus {
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>(
     TResult Function(
-            String? doseTime, @JsonKey(defaultValue: false) bool taken)?
+            int? scheduleId,
+            String? doseTime,
+            @JsonKey(defaultValue: false) bool taken,
+            int? doseCount,
+            String? proofImageUrl)?
         $default, {
     required TResult orElse(),
   }) {
     final _that = this;
     switch (_that) {
       case _MedicationDoseStatus() when $default != null:
-        return $default(_that.doseTime, _that.taken);
+        return $default(_that.scheduleId, _that.doseTime, _that.taken,
+            _that.doseCount, _that.proofImageUrl);
       case _:
         return orElse();
     }
@@ -1570,13 +1605,19 @@ extension MedicationDoseStatusPatterns on MedicationDoseStatus {
 
   @optionalTypeArgs
   TResult when<TResult extends Object?>(
-    TResult Function(String? doseTime, @JsonKey(defaultValue: false) bool taken)
+    TResult Function(
+            int? scheduleId,
+            String? doseTime,
+            @JsonKey(defaultValue: false) bool taken,
+            int? doseCount,
+            String? proofImageUrl)
         $default,
   ) {
     final _that = this;
     switch (_that) {
       case _MedicationDoseStatus():
-        return $default(_that.doseTime, _that.taken);
+        return $default(_that.scheduleId, _that.doseTime, _that.taken,
+            _that.doseCount, _that.proofImageUrl);
       case _:
         throw StateError('Unexpected subclass');
     }
@@ -1597,13 +1638,18 @@ extension MedicationDoseStatusPatterns on MedicationDoseStatus {
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>(
     TResult? Function(
-            String? doseTime, @JsonKey(defaultValue: false) bool taken)?
+            int? scheduleId,
+            String? doseTime,
+            @JsonKey(defaultValue: false) bool taken,
+            int? doseCount,
+            String? proofImageUrl)?
         $default,
   ) {
     final _that = this;
     switch (_that) {
       case _MedicationDoseStatus() when $default != null:
-        return $default(_that.doseTime, _that.taken);
+        return $default(_that.scheduleId, _that.doseTime, _that.taken,
+            _that.doseCount, _that.proofImageUrl);
       case _:
         return null;
     }
@@ -1614,16 +1660,25 @@ extension MedicationDoseStatusPatterns on MedicationDoseStatus {
 @JsonSerializable()
 class _MedicationDoseStatus implements MedicationDoseStatus {
   const _MedicationDoseStatus(
-      {required this.doseTime,
-      @JsonKey(defaultValue: false) required this.taken});
+      {this.scheduleId,
+      required this.doseTime,
+      @JsonKey(defaultValue: false) required this.taken,
+      this.doseCount,
+      this.proofImageUrl});
   factory _MedicationDoseStatus.fromJson(Map<String, dynamic> json) =>
       _$MedicationDoseStatusFromJson(json);
 
+  @override
+  final int? scheduleId;
   @override
   final String? doseTime;
   @override
   @JsonKey(defaultValue: false)
   final bool taken;
+  @override
+  final int? doseCount;
+  @override
+  final String? proofImageUrl;
 
   /// Create a copy of MedicationDoseStatus
   /// with the given fields replaced by the non-null parameter values.
@@ -1646,18 +1701,25 @@ class _MedicationDoseStatus implements MedicationDoseStatus {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _MedicationDoseStatus &&
+            (identical(other.scheduleId, scheduleId) ||
+                other.scheduleId == scheduleId) &&
             (identical(other.doseTime, doseTime) ||
                 other.doseTime == doseTime) &&
-            (identical(other.taken, taken) || other.taken == taken));
+            (identical(other.taken, taken) || other.taken == taken) &&
+            (identical(other.doseCount, doseCount) ||
+                other.doseCount == doseCount) &&
+            (identical(other.proofImageUrl, proofImageUrl) ||
+                other.proofImageUrl == proofImageUrl));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, doseTime, taken);
+  int get hashCode => Object.hash(
+      runtimeType, scheduleId, doseTime, taken, doseCount, proofImageUrl);
 
   @override
   String toString() {
-    return 'MedicationDoseStatus(doseTime: $doseTime, taken: $taken)';
+    return 'MedicationDoseStatus(scheduleId: $scheduleId, doseTime: $doseTime, taken: $taken, doseCount: $doseCount, proofImageUrl: $proofImageUrl)';
   }
 }
 
@@ -1669,7 +1731,12 @@ abstract mixin class _$MedicationDoseStatusCopyWith<$Res>
       __$MedicationDoseStatusCopyWithImpl;
   @override
   @useResult
-  $Res call({String? doseTime, @JsonKey(defaultValue: false) bool taken});
+  $Res call(
+      {int? scheduleId,
+      String? doseTime,
+      @JsonKey(defaultValue: false) bool taken,
+      int? doseCount,
+      String? proofImageUrl});
 }
 
 /// @nodoc
@@ -1685,10 +1752,17 @@ class __$MedicationDoseStatusCopyWithImpl<$Res>
   @override
   @pragma('vm:prefer-inline')
   $Res call({
+    Object? scheduleId = freezed,
     Object? doseTime = freezed,
     Object? taken = null,
+    Object? doseCount = freezed,
+    Object? proofImageUrl = freezed,
   }) {
     return _then(_MedicationDoseStatus(
+      scheduleId: freezed == scheduleId
+          ? _self.scheduleId
+          : scheduleId // ignore: cast_nullable_to_non_nullable
+              as int?,
       doseTime: freezed == doseTime
           ? _self.doseTime
           : doseTime // ignore: cast_nullable_to_non_nullable
@@ -1697,6 +1771,14 @@ class __$MedicationDoseStatusCopyWithImpl<$Res>
           ? _self.taken
           : taken // ignore: cast_nullable_to_non_nullable
               as bool,
+      doseCount: freezed == doseCount
+          ? _self.doseCount
+          : doseCount // ignore: cast_nullable_to_non_nullable
+              as int?,
+      proofImageUrl: freezed == proofImageUrl
+          ? _self.proofImageUrl
+          : proofImageUrl // ignore: cast_nullable_to_non_nullable
+              as String?,
     ));
   }
 }

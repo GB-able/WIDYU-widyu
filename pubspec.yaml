@@ -58,6 +58,7 @@ dependencies:
   app_settings: ^7.0.0
   flutter_local_notifications: ^20.1.0
   cached_network_image: ^3.4.1
+  clock: ^1.1.2
   health: 13.3.1
   workmanager: 0.10.10
   sqflite: ^2.4.2

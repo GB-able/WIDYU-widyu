@@ -145,12 +145,15 @@ class HomeViewModel with ChangeNotifier {
       if (_isDisposed) return;
       switch (outcome) {
         case _CameraPermissionOutcome.ready:
-          final scheduleId = _medicine?.medicineScheduleId;
+          final status = _uiState.medicationStatus;
+          final available = status is MedicationAvailable ? status : null;
+          final scheduleId =
+              available?.scheduleId ?? _medicine?.medicineScheduleId;
           _emit(scheduleId == null
               ? const MedicationScheduleUnavailable()
               : NavigateToMedicationCamera(
                   scheduleId,
-                  doseCount: _medicine?.nextDoseCount,
+                  doseCount: available?.doseCount ?? _medicine?.nextDoseCount,
                 ));
         case _CameraPermissionOutcome.settingsGranted:
           _emit(const CameraPermissionSettingsGranted());

@@ -116,7 +116,7 @@ class GoalViewModel with ChangeNotifier {
             walk: home.data.walk,
             hospital: home.data.hospital,
             verifyRemaining: remaining,
-            verifyStatus: medicine?.proofImage != null
+            verifyStatus: medicine?.isDoneAt(DateTime.now()) == true
                 ? MedicationVerifyStatus.verified
                 : remaining > Duration.zero
                     ? MedicationVerifyStatus.pending

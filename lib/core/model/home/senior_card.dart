@@ -49,8 +49,11 @@ abstract class MedicationSummary with _$MedicationSummary {
 @freezed
 abstract class MedicationDoseStatus with _$MedicationDoseStatus {
   const factory MedicationDoseStatus({
+    int? scheduleId,
     required String? doseTime,
     @JsonKey(defaultValue: false) required bool taken,
+    int? doseCount,
+    String? proofImageUrl,
   }) = _MedicationDoseStatus;
 
   factory MedicationDoseStatus.fromJson(Map<String, dynamic> json) =>
