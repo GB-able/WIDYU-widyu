@@ -3,7 +3,8 @@ import 'package:go_router/go_router.dart';
 import 'package:widyu/app/routes/app_route.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
-import 'package:widyu/core/ui/widgets/icon_widget.dart';
+import 'package:widyu/core/ui/widgets/widu_icon.dart';
+import 'package:widyu/gen/assets.gen.dart';
 
 class BotNav extends StatelessWidget {
   static const height = 64.0;
@@ -12,11 +13,11 @@ class BotNav extends StatelessWidget {
 
   const BotNav({super.key, required this.navigationShell});
 
-  static const _routes = <({AppRoute route, String label, String icon})>[
-    (route: AppRoute.home, label: '홈', icon: 'home'),
-    (route: AppRoute.goal, label: '목표', icon: 'health'),
-    (route: AppRoute.album, label: '앨범', icon: 'album'),
-    (route: AppRoute.my, label: '내정보', icon: 'user'),
+  static final _routes = <({AppRoute route, String label, SvgGenImage icon})>[
+    (route: AppRoute.home, label: '홈', icon: Assets.icons.ic24Home),
+    (route: AppRoute.goal, label: '목표', icon: Assets.icons.ic24Health),
+    (route: AppRoute.album, label: '앨범', icon: Assets.icons.ic24Album),
+    (route: AppRoute.my, label: '내정보', icon: Assets.icons.ic24User),
   ];
 
   @override
@@ -53,9 +54,9 @@ class BotNav extends StatelessWidget {
         unselectedLabelStyle: MyTypo.helper.copyWith(color: MyColor.grey400),
         items: _routes
             .map((route) => BottomNavigationBarItem(
-                  icon: IconWidget(
+                  icon: WiduIcon(
                       icon: route.icon, width: 24, color: MyColor.grey400),
-                  activeIcon: IconWidget(
+                  activeIcon: WiduIcon(
                       icon: route.icon, width: 24, color: MyColor.grey800),
                   label: route.label,
                 ))

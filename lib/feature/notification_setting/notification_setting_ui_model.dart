@@ -50,9 +50,10 @@ extension NotificationSettingsMapper on List<NotificationSetting> {
 }
 
 extension NotificationSettingUiModelMapper on NotificationSettingUiModel {
-  NotificationSetting toDomain() => NotificationSetting(
+  NotificationSetting toDomain(int policyRevision) => NotificationSetting(
         group: group,
         groupName: group.name,
         enabled: enabled,
+        policyRevision: policyRevision,
       );
 }

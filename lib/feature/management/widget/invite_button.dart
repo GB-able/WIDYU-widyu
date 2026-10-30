@@ -32,13 +32,13 @@ class _InviteButton extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       _ShareItem(
-                        icon: 'ic_70_kakaotalk.svg',
+                        icon: Assets.icons.ic70Kakaotalk,
                         label: '카카오톡으로\n공유하기',
                         onTap: () {},
                       ),
                       const SizedBox(width: 55),
                       _ShareItem(
-                        icon: 'ic_70_message.svg',
+                        icon: Assets.icons.ic70Message,
                         label: '문자로\n공유하기',
                         onTap: () => _shareViaSms(familyCode),
                       ),

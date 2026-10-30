@@ -58,20 +58,31 @@ dependencies:
   app_settings: ^7.0.0
   flutter_local_notifications: ^20.1.0
   cached_network_image: ^3.4.1
+  clock: ^1.1.2
   health: 13.3.1
   workmanager: 0.10.10
   sqflite: ^2.4.2
   path: ^1.9.1
+  logger: ^2.8.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
 
   flutter_lints: ^4.0.0
-  build_runner: ^2.10.4
+  build_runner: ^2.15.1
   freezed: ^3.2.3
   json_serializable: ^6.11.2
   fake_async: ^1.3.3
+  flutter_gen_runner: ^5.15.0
+
+flutter_gen:
+  output: lib/gen/
+  integrations:
+    flutter_svg: true
+  assets:
+    exclude:
+      - .env
 
 flutter:
   uses-material-design: true

@@ -1,13 +1,14 @@
 import 'dart:async';
 
 import 'package:flutter/widgets.dart';
-import 'package:widyu/core/data/provider/walk_provider.dart';
 import 'package:widyu/core/data/repository/goal/medication_repository.dart';
+import 'package:widyu/core/data/repository/goal/walk_repository.dart';
 import 'package:widyu/core/data/repository/heartRate/heart_rate_repository.dart';
 import 'package:widyu/core/data/repository/home/home_repository.dart';
 import 'package:widyu/core/data/repository/location/location_repository.dart';
 import 'package:widyu/core/data/repository/myPage/my_page_repository.dart';
 import 'package:widyu/core/data/repository/notification/notification_repository.dart';
+import 'package:widyu/core/log/log.dart';
 import 'package:widyu/core/model/api/api_result.dart';
 import 'package:widyu/core/model/goal/medication/medication_point_result.dart';
 import 'package:widyu/core/model/heartRate/heart_rate_response.dart';
@@ -20,6 +21,7 @@ import 'package:widyu/core/model/notification/notification_page.dart';
 import 'package:widyu/core/model/permission/permission_recovery_prompt.dart';
 import 'package:widyu/core/model/permission/permission_type.dart';
 import 'package:widyu/core/utils/background_location_notice_controller.dart';
+import 'package:widyu/core/utils/extensions/walk_extension.dart';
 import 'package:widyu/core/utils/kakao_map_launcher.dart';
 import 'package:widyu/core/utils/permission_manager.dart';
 import 'package:widyu/core/utils/permission_recovery_controller.dart';
@@ -42,7 +44,7 @@ class HomeViewModel with ChangeNotifier {
   final NotificationRepository _notificationRepository;
   final HeartRateRepository _heartRateRepository;
   final LocationRepository _locationRepository;
-  final WalkProvider _stepProvider;
+  final WalkRepository _walkRepository;
   final PermissionRecoveryController _permissionRecoveryController;
 
   /// 소유권은 main.dart 의 Provider 에 있으므로 여기서 dispose 하지 않는다.
@@ -62,6 +64,7 @@ class HomeViewModel with ChangeNotifier {
 
   StreamSubscription<bool>? _watchConnection;
   late final StreamSubscription<void> _medicationChanges;
+  late final StreamSubscription<int> _todaySteps;
 
   // 갱신용 타이머
   Timer? _medicationTicker;
@@ -78,7 +81,7 @@ class HomeViewModel with ChangeNotifier {
     required NotificationRepository notificationRepository,
     required HeartRateRepository heartRateRepository,
     required LocationRepository locationRepository,
-    required WalkProvider stepProvider,
+    required WalkRepository walkRepository,
     required MedicationRepository medicationRepository,
     PermissionRecoveryController? permissionRecoveryController,
     BackgroundLocationNoticeController? noticeController,
@@ -93,12 +96,17 @@ class HomeViewModel with ChangeNotifier {
         _notificationRepository = notificationRepository,
         _myPageRepository = myPageRepository,
         _locationRepository = locationRepository,
-        _stepProvider = stepProvider,
+        _walkRepository = walkRepository,
         _permissionRecoveryController =
             permissionRecoveryController ?? PermissionRecoveryController(),
         _noticeController =
             noticeController ?? BackgroundLocationNoticeController(),
         _openRoute = openRoute ?? KakaoMapLauncher.openRoute {
+    _uiState = _uiState.copyWith(steps: walkRepository.currentTodaySteps);
+    _todaySteps = walkRepository.todaySteps.listen((steps) {
+      _uiState = _uiState.copyWith(steps: steps);
+      notifyListeners();
+    });
     unawaited(_fetchNotification());
     unawaited(_fetchUser());
     unawaited(_observeWatchConnection());
@@ -110,7 +118,7 @@ class HomeViewModel with ChangeNotifier {
     _medicationTicker = Timer.periodic(
       const Duration(seconds: 30),
       (_) {
-        if (_seniorCardDay != _stepProvider.today) {
+        if (_seniorCardDay != DateTime.now().walkDate) {
           unawaited(_fetchSeniorCard());
         } else {
           _applyMedicationStatus();
@@ -137,12 +145,15 @@ class HomeViewModel with ChangeNotifier {
       if (_isDisposed) return;
       switch (outcome) {
         case _CameraPermissionOutcome.ready:
-          final scheduleId = _medicine?.medicineScheduleId;
+          final status = _uiState.medicationStatus;
+          final available = status is MedicationAvailable ? status : null;
+          final scheduleId =
+              available?.scheduleId ?? _medicine?.medicineScheduleId;
           _emit(scheduleId == null
               ? const MedicationScheduleUnavailable()
               : NavigateToMedicationCamera(
                   scheduleId,
-                  doseCount: _medicine?.nextDoseCount,
+                  doseCount: available?.doseCount ?? _medicine?.nextDoseCount,
                 ));
         case _CameraPermissionOutcome.settingsGranted:
           _emit(const CameraPermissionSettingsGranted());
@@ -226,7 +237,10 @@ class HomeViewModel with ChangeNotifier {
 
     final result =
         await _notificationRepository.readNotification(notificationId);
-    if (result is Success) return;
+    if (result is Success) {
+      WiduLog.ui.i('알림 읽음 처리 성공 notificationId=$notificationId');
+      return;
+    }
 
     final current = [..._uiState.notifications];
     current.insert(index.clamp(0, current.length), removed);
@@ -348,7 +362,7 @@ class HomeViewModel with ChangeNotifier {
   }
 
   Future<void> _fetchSeniorCard() async {
-    final requestedDay = _stepProvider.today;
+    final requestedDay = DateTime.now().walkDate;
     _seniorCardDay = requestedDay;
     _uiState = _uiState.copyWith(isSeniorCardLoading: true);
     notifyListeners();
@@ -359,7 +373,11 @@ class HomeViewModel with ChangeNotifier {
       final albums = data.albums;
       final walk = data.walk;
       if (walk?.actual case final actual?) {
-        _stepProvider.applyServerSteps(actual, date: requestedDay);
+        _walkRepository.applyServerSteps(
+          actual,
+          date: requestedDay,
+          goal: walk?.goal,
+        );
       }
       final schedule = data.healthSchedule;
       _medicine = data.medicine;
@@ -417,6 +435,7 @@ class HomeViewModel with ChangeNotifier {
     _permissionRecoveryController.dispose();
     _watchConnection?.cancel();
     _medicationChanges.cancel();
+    _todaySteps.cancel();
     _medicationTicker?.cancel();
     _uiEvent.close();
     super.dispose();

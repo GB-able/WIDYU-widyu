@@ -3,9 +3,9 @@ import 'package:go_router/go_router.dart';
 import 'package:widyu/core/model/permission/permission_recovery_prompt.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
-import 'package:widyu/core/ui/widgets/widyu_asset_image.dart';
 import 'package:widyu/core/ui/widgets/widyu_dialog.dart';
 import 'package:widyu/core/ui/widgets/widyu_text_button.dart';
+import 'package:widyu/gen/assets.gen.dart';
 
 /// 권한 요청을 다시 안내하고 사용자의 다음 선택만 반환하는 dialog.
 class PermissionRecoveryDialog extends StatelessWidget {
@@ -58,8 +58,7 @@ class PermissionRecoveryDialog extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const WidyuAssetImage(
-              name: 'img_94_warning.png',
+            Assets.images.img94Warning.image(
               width: 94,
               height: 94,
             ),
@@ -70,6 +69,7 @@ class PermissionRecoveryDialog extends StatelessWidget {
                   : '$permissionName 권한이 필요해요',
               style: MyTypo.title1,
               textAlign: TextAlign.center,
+              overflow: TextOverflow.visible,
             ),
             const SizedBox(height: 8),
             Text(
@@ -78,6 +78,7 @@ class PermissionRecoveryDialog extends StatelessWidget {
                   : description,
               style: MyTypo.body1.copyWith(color: MyColor.grey600),
               textAlign: TextAlign.center,
+              overflow: TextOverflow.visible,
             ),
             const SizedBox(height: 16),
             Row(

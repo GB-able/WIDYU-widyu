@@ -6,7 +6,7 @@ import 'package:widyu/core/model/notification/notification_setting.dart';
 abstract class NotificationRepository {
   Future<ApiResult<List<NotificationSetting>>> fetchNotificationSettings();
 
-  Future<ApiResult<void>> updateNotificationSettings(
+  Future<ApiResult<NotificationSetting>> updateNotificationSettings(
       NotificationSetting setting);
 
   Future<ApiResult<NotificationPage>> fetchNotificationPage(int? cursor,

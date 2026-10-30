@@ -4,21 +4,21 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:widyu/app/routes/app_route.dart';
-import 'package:widyu/core/data/provider/point_provider.dart';
 import 'package:widyu/core/data/repository/auth/auth_repository.dart';
 import 'package:widyu/core/data/repository/myPage/my_page_repository.dart';
+import 'package:widyu/core/data/repository/point/point_repository.dart';
 import 'package:widyu/core/notification/fcm_token_service.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
 import 'package:widyu/core/ui/widgets/ui_event_listener.dart';
-import 'package:widyu/core/ui/widgets/widyu_asset_image.dart';
+import 'package:widyu/core/ui/widgets/widu_icon.dart';
 import 'package:widyu/core/ui/widgets/widyu_divider.dart';
-import 'package:widyu/core/ui/widgets/widyu_icon.dart';
 import 'package:widyu/core/utils/app_service_controller.dart';
 import 'package:widyu/core/utils/show_toast.dart';
 import 'package:widyu/feature/myPage/my_page_ui_event.dart';
 import 'package:widyu/feature/myPage/my_page_ui_state.dart';
 import 'package:widyu/feature/myPage/my_page_view_model.dart';
+import 'package:widyu/gen/assets.gen.dart';
 
 part 'widget/header_content.dart';
 part 'widget/information_menu_view.dart';
@@ -51,7 +51,7 @@ class MyPageScreen extends StatelessWidget {
       create: (context) => MyPageViewModel(
         repository: context.read<MyPageRepository>(),
         authRepository: context.read<AuthRepository>(),
-        pointProvider: context.read<PointProvider>(),
+        pointRepository: context.read<PointRepository>(),
         fcmTokenService: context.read<FcmTokenService>(),
       ),
       builder: (context, child) {
@@ -70,6 +70,8 @@ class MyPageScreen extends StatelessWidget {
                   profileImage: uiState.profileImage,
                   name: uiState.name,
                   isLoading: uiState.isLoading,
+                  point: uiState.point,
+                  isPointLoading: uiState.isPointLoading,
                 ),
                 Expanded(
                   child: SingleChildScrollView(

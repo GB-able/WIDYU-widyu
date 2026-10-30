@@ -28,7 +28,7 @@ class CustomDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     return Dialog(
       backgroundColor: MyColor.transparent,
-      insetPadding: const EdgeInsets.symmetric(horizontal: 32),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 16),
       child: Container(
         width: double.infinity,
         decoration: BoxDecoration(
@@ -40,7 +40,7 @@ class CustomDialog extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Padding(
-              padding: const EdgeInsets.fromLTRB(24, 32, 24, 32),
+              padding: const EdgeInsets.fromLTRB(16, 28, 16, 24),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -48,6 +48,7 @@ class CustomDialog extends StatelessWidget {
                     title,
                     style: MyTypo.title3.copyWith(color: MyColor.grey800),
                     textAlign: TextAlign.center,
+                    overflow: TextOverflow.visible,
                   ),
                   if (description != null) ...[
                     const SizedBox(height: 8),
@@ -55,12 +56,12 @@ class CustomDialog extends StatelessWidget {
                       description!,
                       style: MyTypo.body2.copyWith(color: MyColor.grey500),
                       textAlign: TextAlign.center,
+                      overflow: TextOverflow.visible,
                     ),
                   ],
                 ],
               ),
             ),
-            const Divider(height: 1, thickness: 1, color: MyColor.grey100),
             SizedBox(
               height: 56,
               child: Row(
@@ -75,11 +76,6 @@ class CustomDialog extends StatelessWidget {
                           onNegTap?.call();
                         },
                       ),
-                    ),
-                    const VerticalDivider(
-                      width: 1,
-                      thickness: 1,
-                      color: MyColor.grey100,
                     ),
                   ],
                   Expanded(

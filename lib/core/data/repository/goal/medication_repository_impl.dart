@@ -1,11 +1,11 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:flutter/foundation.dart';
 import 'package:medication_alarm/medication_alarm.dart';
 import 'package:widyu/core/data/repository/goal/medication_repository.dart';
 import 'package:widyu/core/data/source/goal/medication_alarm_local_data_source.dart';
 import 'package:widyu/core/data/source/goal/medication_remote_data_source.dart';
+import 'package:widyu/core/log/log.dart';
 import 'package:widyu/core/model/api/api_result.dart';
 import 'package:widyu/core/model/goal/medication/medication_point_result.dart';
 import 'package:widyu/core/utils/extensions/api_result_extension.dart';
@@ -95,14 +95,14 @@ class MedicationRepositoryImpl extends MedicationRepository {
           (await _session())?.session != session) {
         return;
       }
-      debugPrint('[MedicationSync] revision ${state['revision']} → '
+      WiduLog.data.d('약 복용 일정 revision ${state['revision']} → '
           '${schedule.revision}, schedules=${schedule.schedules.length}');
       final status = await _apply(session, schedule.toJson(), timeZone);
-      debugPrint('[MedicationSync] applySchedule status=${status['status']} '
+      WiduLog.data.d('약 복용 알림 적용 status=${status['status']} '
           'applied=${status['appliedRevision']} '
           'count=${status['scheduledCount']} failures=${status['failures']}');
-    } catch (e) {
-      debugPrint('[MedicationSync] sync 실패: $e');
+    } catch (e, stack) {
+      WiduLog.data.w('약 복용 일정 동기화 실패', error: e, stackTrace: stack);
     }
   }
 

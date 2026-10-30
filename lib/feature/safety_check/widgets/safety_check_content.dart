@@ -18,8 +18,8 @@ class _SafetyCheckContent extends StatelessWidget {
             Column(
               spacing: 16,
               children: [
-                const WidyuIcon(
-                  icon: 'ic_66_warning.svg',
+                WiduIcon(
+                  icon: Assets.icons.ic66Warning,
                   width: 66,
                   height: 66,
                 ),

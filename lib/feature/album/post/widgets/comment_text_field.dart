@@ -80,8 +80,8 @@ class _CommentTextField extends StatelessWidget {
                         GestureDetector(
                           onTap: onCancelReply,
                           behavior: HitTestBehavior.opaque,
-                          child: const IconWidget(
-                            icon: 'close_fill',
+                          child: WiduIcon(
+                            icon: Assets.icons.ic24CloseFill,
                             width: 24,
                           ),
                         ),
@@ -95,7 +95,8 @@ class _CommentTextField extends StatelessWidget {
                             color: MyColor.primary,
                             shape: BoxShape.circle,
                           ),
-                          child: const IconWidget(icon: 'send', width: 36),
+                          child:
+                              WiduIcon(icon: Assets.icons.ic36Send, width: 36),
                         ),
                       ),
                     ],

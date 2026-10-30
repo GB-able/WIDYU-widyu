@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:math' as math;
 
 import 'package:dio/dio.dart';
+import 'package:rxdart/rxdart.dart';
 import 'package:widyu/core/data/repository/goal/walk_repository.dart';
 import 'package:widyu/core/data/source/goal/walk_local_data_source.dart';
 import 'package:widyu/core/data/source/goal/walk_remote_data_source.dart';
@@ -22,8 +24,139 @@ class WalkRepositoryImpl implements WalkRepository {
   final DateTime Function() now;
   final TokenManager _tokenManager = TokenManager();
 
+  final _todaySteps = BehaviorSubject<int>.seeded(0);
+  String? _date;
+  int? _steps;
+  bool _hasHealthSteps = false;
+  bool _disposed = false;
+  final _syncRequests = StreamController<void>.broadcast();
+  Future<void>? _reading;
+  int? _goal;
+  int? _anchorSteps;
+  int? _anchorCount;
+  int? _lastCount;
+  String? _achievedSyncDate;
+  String? _liveCrossDate;
+
+  // 재생되는 마지막 값이 어제 것일 수 있어 받는 시점의 날짜로 다시 계산한다.
+  @override
+  Stream<int> get todaySteps =>
+      _todaySteps.stream.map((_) => currentTodaySteps);
+
+  @override
+  int get currentTodaySteps => _date == now().walkDate ? _steps ?? 0 : 0;
+
+  void _emit() {
+    if (_disposed) return;
+    _todaySteps.add(currentTodaySteps);
+  }
+
+  @override
+  Stream<void> get syncRequests => _syncRequests.stream;
+
+  @override
+  void dispose() {
+    _disposed = true;
+    _todaySteps.close();
+    _syncRequests.close();
+  }
+
   @override
   Future<bool> ensurePermission() => _localDataSource.ensurePermission();
+
+  @override
+  Stream<int> get liveStepCounts => _localDataSource.liveStepCounts;
+
+  @override
+  void applyLiveCount(int count) {
+    if (_disposed) return;
+    _resetIfDayChanged();
+    _lastCount = count;
+    var anchorSteps = _anchorSteps;
+    if (anchorSteps == null) {
+      _anchorSteps = anchorSteps = _steps ?? 0;
+      _anchorCount = count;
+    }
+    var anchorCount = _anchorCount;
+    if (anchorCount == null || count < anchorCount) {
+      _anchorCount = anchorCount = count;
+    }
+    final steps = anchorSteps + (count - anchorCount);
+    _steps = steps;
+    _emit();
+    final goal = _goal;
+    final today = now().walkDate;
+    if (goal != null &&
+        goal > 0 &&
+        steps >= goal &&
+        anchorSteps < goal &&
+        _liveCrossDate != today) {
+      _liveCrossDate = today;
+      unawaited(refreshTodaySteps());
+    }
+  }
+
+  @override
+  Future<void> refreshTodaySteps() {
+    if (_disposed) return Future.value();
+    return _reading ??= _refreshTodaySteps().whenComplete(() => _reading = null);
+  }
+
+  Future<void> _refreshTodaySteps() async {
+    _resetIfDayChanged();
+    final instant = now();
+    int? steps;
+    try {
+      steps = await _localDataSource.readSteps(
+        instant.walkDate.walkStartOf,
+        instant,
+      );
+    } catch (_) {
+      return;
+    }
+    if (_disposed || steps == null || steps < 0) return;
+    _anchor(steps);
+  }
+
+  // 건강값이 폰 센서보다 큰 동안(예: 워치 걸음) 실시간으로 올라간 표시가
+  // 재앵커 때 되돌아가지 않도록 현재 표시값을 하한으로 둔다.
+  void _anchor(int steps) {
+    _date = now().walkDate;
+    _anchorSteps = math.max(steps, _steps ?? 0);
+    _anchorCount = _lastCount;
+    _steps = _anchorSteps;
+    _hasHealthSteps = true;
+    _emit();
+    _syncIfAchieved();
+  }
+
+  void _resetIfDayChanged() {
+    final today = now().walkDate;
+    if (_date == today) return;
+    _date = today;
+    _steps = null;
+    _anchorSteps = null;
+    _anchorCount = null;
+    _hasHealthSteps = false;
+    _emit();
+  }
+
+  void _syncIfAchieved() {
+    final goal = _goal;
+    final anchorSteps = _anchorSteps;
+    final today = now().walkDate;
+    if (_disposed ||
+        goal == null ||
+        goal <= 0 ||
+        anchorSteps == null ||
+        _date != today ||
+        anchorSteps < goal ||
+        _achievedSyncDate == today) {
+      return;
+    }
+    _achievedSyncDate = today;
+    _syncRequests.add(null);
+  }
 
   @override
   Future<WalkSaveResult> sync({
@@ -31,6 +164,46 @@ class WalkRepositoryImpl implements WalkRepository {
     bool full = false,
     bool Function()? isCancelled,
     bool background = false,
+  }) async {
+    _resetIfDayChanged();
+    final result = await _sync(
+      memberId: memberId,
+      full: full,
+      isCancelled: isCancelled,
+      background: background,
+    );
+    final steps = result.steps;
+    if (result.date == now().walkDate && steps != null) {
+      _anchor(steps);
+    } else {
+      _emit();
+    }
+    return result;
+  }
+
+  @override
+  void applyServerSteps(int serverSteps, {required String date, int? goal}) {
+    if (_disposed) return;
+    final today = now().walkDate;
+    if (goal != null) {
+      _goal = goal;
+      _syncIfAchieved();
+    }
+    if (date != today ||
+        serverSteps < 0 ||
+        (_date == today && _hasHealthSteps)) {
+      return;
+    }
+    _date = date;
+    _steps = serverSteps;
+    _emit();
+  }
+
+  Future<WalkSaveResult> _sync({
+    required String memberId,
+    required bool full,
+    required bool Function()? isCancelled,
+    required bool background,
   }) async {
     final budget = background && Platform.isIOS
         ? const Duration(seconds: 18)

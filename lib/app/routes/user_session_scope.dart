@@ -1,13 +1,18 @@
 import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
-import 'package:widyu/core/data/provider/album_provider.dart';
-import 'package:widyu/core/data/provider/point_provider.dart';
-import 'package:widyu/core/data/provider/walk_provider.dart';
 import 'package:widyu/core/data/repository/album/album_repository.dart';
+import 'package:widyu/core/data/repository/album/album_repository_impl.dart';
 import 'package:widyu/core/data/repository/goal/walk_repository.dart';
+import 'package:widyu/core/data/repository/goal/walk_repository_impl.dart';
 import 'package:widyu/core/data/repository/notification/notification_repository.dart';
 import 'package:widyu/core/data/repository/point/point_repository.dart';
+import 'package:widyu/core/data/repository/point/point_repository_impl.dart';
+import 'package:widyu/core/data/source/album/album_remote_data_source.dart';
+import 'package:widyu/core/data/source/goal/walk_local_data_source.dart';
+import 'package:widyu/core/data/source/goal/walk_remote_data_source.dart';
+import 'package:widyu/core/data/source/point/point_remote_data_source.dart';
 import 'package:widyu/core/notification/fcm_token_service.dart';
+import 'package:widyu/core/utils/walk_tracker.dart';
 
 /// 로그인 후 사용하는 화면들이 공유하는 저장소
 class UserSessionScope extends StatelessWidget {
@@ -26,21 +31,32 @@ class UserSessionScope extends StatelessWidget {
           )..start(),
           dispose: (_, service) => service.dispose(),
         ),
-        ChangeNotifierProvider<PointProvider>(
-          create: (context) =>
-              PointProvider(repository: context.read<PointRepository>()),
+        Provider<PointRepository>(
+          create: (context) => PointRepositoryImpl(
+            remoteDataSource: context.read<PointRemoteDataSource>(),
+          ),
+          dispose: (_, repository) => repository.dispose(),
         ),
-        ChangeNotifierProvider<WalkProvider>(
+        Provider<WalkRepository>(
+          create: (context) => WalkRepositoryImpl(
+            localDataSource: context.read<WalkLocalDataSource>(),
+            remoteDataSource: context.read<WalkRemoteDataSource>(),
+          ),
+          dispose: (_, repository) => repository.dispose(),
+        ),
+        Provider<WalkTracker>(
           lazy: false,
-          create: (context) => WalkProvider(
+          create: (context) => WalkTracker(
             repository: context.read<WalkRepository>(),
           )..start(),
+          dispose: (_, tracker) => tracker.dispose(),
         ),
-        ChangeNotifierProvider<AlbumProvider>(
-          create: (context) => AlbumProvider(
-            repository: context.read<AlbumRepository>(),
-            pointProvider: context.read<PointProvider>(),
+        Provider<AlbumRepository>(
+          create: (context) => AlbumRepositoryImpl(
+            remoteDataSource: context.read<AlbumRemoteDataSource>(),
+            pointRepository: context.read<PointRepository>(),
           ),
+          dispose: (_, repository) => repository.dispose(),
         ),
       ],
       child: child,

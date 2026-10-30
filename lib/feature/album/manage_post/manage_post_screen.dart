@@ -6,17 +6,17 @@ import 'package:photo_manager_image_provider/photo_manager_image_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
 import 'package:widyu/app/routes/extra/edit_post_extra.dart';
-import 'package:widyu/core/data/provider/album_provider.dart';
-import 'package:widyu/core/data/provider/point_provider.dart';
 import 'package:widyu/core/data/repository/album/album_repository.dart';
+import 'package:widyu/core/data/repository/point/point_repository.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/effects.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
 import 'package:widyu/core/ui/widgets/custom_app_bar.dart';
 import 'package:widyu/core/ui/widgets/custom_network_image.dart';
-import 'package:widyu/core/ui/widgets/icon_widget.dart';
+import 'package:widyu/core/ui/widgets/widu_icon.dart';
 import 'package:widyu/core/ui/widgets/widyu_text_button.dart';
 import 'package:widyu/feature/album/manage_post/manage_post_view_model.dart';
+import 'package:widyu/gen/assets.gen.dart';
 
 part 'widgets/asset_video_preview.dart';
 part 'widgets/media_carousel.dart';
@@ -41,11 +41,14 @@ class ManagePostScreen extends StatelessWidget {
     return ChangeNotifierProvider(
       create: (context) => ManagePostViewModel(
         repository: context.read<AlbumRepository>(),
-        albumProvider: context.read<AlbumProvider>(),
-        pointProvider: context.read<PointProvider>(),
+        pointRepository: context.read<PointRepository>(),
         initialContent: extra == null
             ? null
-            : context.read<AlbumProvider>().postOf(extra!.albumId)?.content ??
+            : context
+                    .read<AlbumRepository>()
+                    .currentCache
+                    .postOf(extra!.albumId)
+                    ?.content ??
                 extra!.content,
       ),
       child: Consumer<ManagePostViewModel>(
@@ -61,7 +64,7 @@ class ManagePostScreen extends StatelessWidget {
                   }
                   Navigator.of(context).popUntil((route) => route.isFirst);
                 },
-                child: const IconWidget(icon: 'close', width: 24),
+                child: WiduIcon(icon: Assets.icons.ic24Close, width: 24),
               ),
             ],
           ),

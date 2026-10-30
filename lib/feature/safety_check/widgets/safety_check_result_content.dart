@@ -15,8 +15,7 @@ class _SafetyCheckResultContent extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       spacing: 16,
       children: [
-        const WidyuAssetImage(
-          name: 'img_125_check.png',
+        Assets.images.img125Check.image(
           width: 124,
           height: 124,
         ),

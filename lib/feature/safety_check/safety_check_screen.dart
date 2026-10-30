@@ -9,12 +9,12 @@ import 'package:widyu/core/notification/safety_push_manager.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
 import 'package:widyu/core/ui/widgets/ui_event_listener.dart';
-import 'package:widyu/core/ui/widgets/widyu_asset_image.dart';
-import 'package:widyu/core/ui/widgets/widyu_icon.dart';
+import 'package:widyu/core/ui/widgets/widu_icon.dart';
 import 'package:widyu/core/utils/show_toast.dart';
 import 'package:widyu/feature/safety_check/safety_check_ui_event.dart';
 import 'package:widyu/feature/safety_check/safety_check_ui_state.dart';
 import 'package:widyu/feature/safety_check/safety_check_view_model.dart';
+import 'package:widyu/gen/assets.gen.dart';
 
 part 'widgets/safety_check_content.dart';
 part 'widgets/safety_check_result_content.dart';

@@ -1,19 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:table_calendar/table_calendar.dart';
-import 'package:widyu/core/data/provider/album_provider.dart';
+import 'package:widyu/app/routes/app_route.dart';
 import 'package:widyu/core/data/repository/album/album_repository.dart';
+import 'package:widyu/core/data/repository/point/point_repository.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
 import 'package:widyu/core/ui/widgets/custom_error_widget.dart';
 import 'package:widyu/core/ui/widgets/custom_loading_widget.dart';
-import 'package:widyu/core/ui/widgets/icon_widget.dart';
+import 'package:widyu/core/ui/widgets/widu_icon.dart';
 import 'package:widyu/core/utils/calendar_config.dart';
 import 'package:widyu/core/utils/extensions/date_extension.dart';
 import 'package:widyu/feature/album/_widgets/feed_widget.dart';
 import 'package:widyu/feature/album/_widgets/retry_widget.dart';
+import 'package:widyu/feature/album/_widgets/unlock_dialog.dart';
 import 'package:widyu/feature/album/calendar/calendar_tab_view_model.dart';
+import 'package:widyu/gen/assets.gen.dart';
 
 part 'widgets/calendar_feed_list.dart';
 part 'widgets/calendar_grid.dart';
@@ -51,7 +55,6 @@ class CalendarTabView extends StatelessWidget {
     return ChangeNotifierProvider(
       create: (context) => CalendarTabViewModel(
         repository: context.read<AlbumRepository>(),
-        albumProvider: context.read<AlbumProvider>(),
       )..init(),
       child: const _CalendarTabContent(),
     );
@@ -168,6 +171,21 @@ class _CalendarTabContentState extends State<_CalendarTabContent>
     );
   }
 
+  // 탭 시점의 캐시와 포인트로 판단한다.
+  Future<bool> _requestUnlock(int albumId) async {
+    final repository = context.read<AlbumRepository>();
+    final cache = repository.currentCache;
+    final success = await showUnlockDialog(
+      context,
+      price: cache.postOf(albumId)?.price,
+      point: context.read<PointRepository>().currentStatus.point,
+      isUnlocking: cache.isUnlocking(albumId),
+      onPurchase: () => repository.unlock(albumId),
+      onGoToGoal: () => context.go(AppRoute.goal.path),
+    );
+    return success && !repository.isDisposed;
+  }
+
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<CalendarTabViewModel>();
@@ -195,6 +213,7 @@ class _CalendarTabContentState extends State<_CalendarTabContent>
             child: _CalendarFeedList(
               viewModel: viewModel,
               controller: _scrollController,
+              onRequestUnlock: _requestUnlock,
             ),
           ),
         ),

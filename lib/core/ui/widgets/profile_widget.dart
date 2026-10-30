@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:widyu/core/ui/widgets/widyu_icon.dart';
+import 'package:widyu/core/ui/widgets/widu_icon.dart';
+import 'package:widyu/gen/assets.gen.dart';
 
 class ProfileWidget extends StatelessWidget {
   const ProfileWidget({super.key, this.profileImage, this.size = 40});
@@ -31,8 +32,8 @@ class ProfileWidget extends StatelessWidget {
     );
   }
 
-  Widget get _placeholder => WidyuIcon(
-        icon: 'ic_76_profile.svg',
+  Widget get _placeholder => WiduIcon(
+        icon: Assets.icons.ic76Profile,
         width: size,
         height: size,
       );

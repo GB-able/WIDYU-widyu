@@ -351,10 +351,9 @@ final class MedicationAlarmCoordinator {
         var state = try load()
         // groups are retained after firing; callbacks must not depend on a live Dart listener.
         guard let group = group(for: id, in: state), group["memberId"] as? String == state["memberId"] as? String else { return }
-        var launches = state["launches"] as? [[String: Any]] ?? []
-        if !launches.contains(where: { ($0["group"] as? [String: Any])?["groupId"] as? String == group["groupId"] as? String }) {
-            launches.append(["eventId": UUID().uuidString, "memberId": state["memberId"]!, "group": group])
-            state["launches"] = Array(launches.suffix(8)); try save(state)
+        let launches = state["launches"] as? [[String: Any]] ?? []
+        if (launches.first?["group"] as? [String: Any])?["groupId"] as? String != group["groupId"] as? String {
+            state["launches"] = [["eventId": UUID().uuidString, "memberId": state["memberId"]!, "group": group]]; try save(state)
         }
     }
     private func title(_ group: [String: Any]) -> String {

@@ -8,5 +8,7 @@ abstract class MyPageUiState with _$MyPageUiState {
     @Default(false) bool isLoading,
     @Default(null) String? profileImage,
     @Default(null) String? name,
+    int? point,
+    @Default(false) bool isPointLoading,
   }) = _MyPageUiState;
 }

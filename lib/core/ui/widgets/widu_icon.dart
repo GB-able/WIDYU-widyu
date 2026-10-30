@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
+import 'package:widyu/gen/assets.gen.dart';
 
-class WidyuIcon extends StatelessWidget {
-  final String icon;
+class WiduIcon extends StatelessWidget {
+  final SvgGenImage icon;
   final double? width;
   final double? height;
   final Color? color;
 
-  const WidyuIcon({
+  const WiduIcon({
     super.key,
     required this.icon,
     this.width,
@@ -17,8 +17,7 @@ class WidyuIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SvgPicture.asset(
-      'assets/icons/$icon',
+    return icon.svg(
       width: width,
       height: height,
       colorFilter:

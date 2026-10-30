@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
-// import 'package:widyu/core/ui/widgets/icon_widget.dart';
 import 'package:widyu/feature/goal/main/goal_screen.dart';
+import 'package:widyu/gen/assets.gen.dart';
 
 extension GoalTypeUI on GoalType {
   String get title => switch (this) {
@@ -15,6 +15,12 @@ extension GoalTypeUI on GoalType {
         GoalType.medicine => '복용하실 약을 추가하고 알림을 받아보세요.',
         GoalType.walk => '달성할 걷기를 추가하고 알림을 받아보세요.',
         GoalType.hospital => '예약한 병원 일정을 추가하고 알림을 받아보세요.',
+      };
+
+  AssetGenImage get image => switch (this) {
+        GoalType.medicine => Assets.images.img50Medicine,
+        GoalType.walk => Assets.images.img50Walk,
+        GoalType.hospital => Assets.images.img50Hospital,
       };
 }
 
@@ -46,8 +52,7 @@ class GoalEmptyCard extends StatelessWidget {
         ),
         child: Column(
           children: [
-            Image.asset(
-              'assets/images/img_50_${type.name}.png',
+            type.image.image(
               width: 50,
               height: 50,
             ),
@@ -81,8 +86,8 @@ class GoalEmptyCard extends StatelessWidget {
             //       spacing: 4,
             //       mainAxisAlignment: MainAxisAlignment.center,
             //       children: [
-            //         const IconWidget(
-            //           icon: "plus_small",
+            //         WiduIcon(
+            //           icon: Assets.icons.ic24PlusSmall,
             //           width: 24,
             //           color: MyColor.primary,
             //         ),

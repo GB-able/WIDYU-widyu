@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:widyu/core/data/provider/walk_provider.dart';
 import 'package:widyu/core/data/repository/goal/medication_repository.dart';
 import 'package:widyu/core/data/repository/goal/walk_repository.dart';
 import 'package:widyu/core/data/repository/heartRate/heart_rate_repository.dart';
@@ -95,7 +94,13 @@ class _Location extends Fake implements LocationRepository {
   }
 }
 
-class _Walk extends Fake implements WalkRepository {}
+class _Walk extends Fake implements WalkRepository {
+  @override
+  Stream<int> get todaySteps => const Stream.empty();
+
+  @override
+  int get currentTodaySteps => 0;
+}
 
 class _Medication extends Fake implements MedicationRepository {
   // 테스트 하나가 끝나면 함께 버려지는 가짜 스트림이라 닫지 않는다.
@@ -128,7 +133,7 @@ class _Harness {
       notificationRepository: _Notification(),
       heartRateRepository: _HeartRate(),
       locationRepository: location,
-      stepProvider: WalkProvider(repository: _Walk()),
+      walkRepository: _Walk(),
       medicationRepository: medication,
       permissionRecoveryController: PermissionRecoveryController(
         statusReader: (_) => readPermission?.call() ?? Future.value(permission),

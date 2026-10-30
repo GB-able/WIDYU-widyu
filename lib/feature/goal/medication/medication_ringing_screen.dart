@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
+import 'package:widyu/gen/assets.gen.dart';
 
 class MedicationRingingScreen extends StatefulWidget {
   const MedicationRingingScreen({
@@ -57,15 +58,15 @@ class _MedicationRingingScreenState extends State<MedicationRingingScreen> {
           body: SafeArea(
             child: Column(children: [
               const SizedBox(height: 24),
-              Image.asset('assets/images/img_64_logo.png',
-                  width: 64, fit: BoxFit.contain),
+              Assets.images.img64Logo
+                  .image(width: 64, fit: BoxFit.contain),
               const Spacer(flex: 5),
               Center(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Image.asset('assets/images/img_93_mascot_medicine.png',
-                        width: 93, fit: BoxFit.contain),
+                    Assets.images.img93MascotMedicine
+                        .image(width: 93, fit: BoxFit.contain),
                     const SizedBox(height: 12),
                     Text('$doseLabel정',
                         style: MyTypo.title1.copyWith(color: MyColor.primary)),

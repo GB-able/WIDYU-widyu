@@ -25,11 +25,11 @@ class _WatchDataView extends StatelessWidget {
     };
   }
 
-  String _statusIcon(HeartRateStatus status) {
+  SvgGenImage _statusIcon(HeartRateStatus status) {
     return switch (status) {
-      HeartRateStatus.normal => 'ic_50_heart_rate_normal.svg',
-      HeartRateStatus.emergency => 'ic_50_heart_rate_warning.svg',
-      HeartRateStatus.unknown => 'ic_50_heart_rate_disconnect.svg',
+      HeartRateStatus.normal => Assets.icons.ic50HeartRateNormal,
+      HeartRateStatus.emergency => Assets.icons.ic50HeartRateWarning,
+      HeartRateStatus.unknown => Assets.icons.ic50HeartRateDisconnect,
     };
   }
 
@@ -59,10 +59,10 @@ class _WatchDataView extends StatelessWidget {
                 child: Row(
                   spacing: 8,
                   children: [
-                    WidyuIcon(
+                    WiduIcon(
                       icon: isWearing
-                          ? 'ic_50_wearing.svg'
-                          : 'ic_50_heart_rate_disconnect.svg',
+                          ? Assets.icons.ic50Wearing
+                          : Assets.icons.ic50HeartRateDisconnect,
                     ),
                     Text(
                       isWearing ? '착용 중' : '미착용',
@@ -79,13 +79,12 @@ class _WatchDataView extends StatelessWidget {
             child: Stack(
               clipBehavior: Clip.none,
               children: [
-                const Positioned(
+                Positioned(
                   top: -108,
                   right: -16,
                   child: IgnorePointer(
                     child: RepaintBoundary(
-                      child: WidyuAssetImage(
-                          name: 'img_111_mascot.png', width: 111),
+                      child: Assets.images.img111Mascot.image(width: 111),
                     ),
                   ),
                 ),
@@ -104,7 +103,7 @@ class _WatchDataView extends StatelessWidget {
                           child: Row(
                             spacing: 8,
                             children: [
-                              WidyuIcon(icon: _statusIcon(status)),
+                              WiduIcon(icon: _statusIcon(status)),
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 spacing: 2,

@@ -21,6 +21,8 @@ mixin _$Medication {
   String get nextAlarmTime;
   @JsonKey(name: 'proofImageUrl')
   String? get proofImage;
+  @JsonKey(defaultValue: [])
+  List<MedicationDoseStatus> get scheduleStatuses;
   bool? get isReward;
 
   /// Create a copy of Medication
@@ -50,18 +52,28 @@ mixin _$Medication {
                 other.nextAlarmTime == nextAlarmTime) &&
             (identical(other.proofImage, proofImage) ||
                 other.proofImage == proofImage) &&
+            const DeepCollectionEquality()
+                .equals(other.scheduleStatuses, scheduleStatuses) &&
             (identical(other.isReward, isReward) ||
                 other.isReward == isReward));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, medicineScheduleId, takenCount,
-      totalCount, nextDoseCount, nextAlarmTime, proofImage, isReward);
+  int get hashCode => Object.hash(
+      runtimeType,
+      medicineScheduleId,
+      takenCount,
+      totalCount,
+      nextDoseCount,
+      nextAlarmTime,
+      proofImage,
+      const DeepCollectionEquality().hash(scheduleStatuses),
+      isReward);
 
   @override
   String toString() {
-    return 'Medication(medicineScheduleId: $medicineScheduleId, takenCount: $takenCount, totalCount: $totalCount, nextDoseCount: $nextDoseCount, nextAlarmTime: $nextAlarmTime, proofImage: $proofImage, isReward: $isReward)';
+    return 'Medication(medicineScheduleId: $medicineScheduleId, takenCount: $takenCount, totalCount: $totalCount, nextDoseCount: $nextDoseCount, nextAlarmTime: $nextAlarmTime, proofImage: $proofImage, scheduleStatuses: $scheduleStatuses, isReward: $isReward)';
   }
 }
 
@@ -78,6 +90,7 @@ abstract mixin class $MedicationCopyWith<$Res> {
       int nextDoseCount,
       String nextAlarmTime,
       @JsonKey(name: 'proofImageUrl') String? proofImage,
+      @JsonKey(defaultValue: []) List<MedicationDoseStatus> scheduleStatuses,
       bool? isReward});
 }
 
@@ -99,6 +112,7 @@ class _$MedicationCopyWithImpl<$Res> implements $MedicationCopyWith<$Res> {
     Object? nextDoseCount = null,
     Object? nextAlarmTime = null,
     Object? proofImage = freezed,
+    Object? scheduleStatuses = null,
     Object? isReward = freezed,
   }) {
     return _then(_self.copyWith(
@@ -126,6 +140,10 @@ class _$MedicationCopyWithImpl<$Res> implements $MedicationCopyWith<$Res> {
           ? _self.proofImage
           : proofImage // ignore: cast_nullable_to_non_nullable
               as String?,
+      scheduleStatuses: null == scheduleStatuses
+          ? _self.scheduleStatuses
+          : scheduleStatuses // ignore: cast_nullable_to_non_nullable
+              as List<MedicationDoseStatus>,
       isReward: freezed == isReward
           ? _self.isReward
           : isReward // ignore: cast_nullable_to_non_nullable
@@ -234,6 +252,8 @@ extension MedicationPatterns on Medication {
             int nextDoseCount,
             String nextAlarmTime,
             @JsonKey(name: 'proofImageUrl') String? proofImage,
+            @JsonKey(defaultValue: [])
+            List<MedicationDoseStatus> scheduleStatuses,
             bool? isReward)?
         $default, {
     required TResult orElse(),
@@ -248,6 +268,7 @@ extension MedicationPatterns on Medication {
             _that.nextDoseCount,
             _that.nextAlarmTime,
             _that.proofImage,
+            _that.scheduleStatuses,
             _that.isReward);
       case _:
         return orElse();
@@ -276,6 +297,8 @@ extension MedicationPatterns on Medication {
             int nextDoseCount,
             String nextAlarmTime,
             @JsonKey(name: 'proofImageUrl') String? proofImage,
+            @JsonKey(defaultValue: [])
+            List<MedicationDoseStatus> scheduleStatuses,
             bool? isReward)
         $default,
   ) {
@@ -289,6 +312,7 @@ extension MedicationPatterns on Medication {
             _that.nextDoseCount,
             _that.nextAlarmTime,
             _that.proofImage,
+            _that.scheduleStatuses,
             _that.isReward);
       case _:
         throw StateError('Unexpected subclass');
@@ -316,6 +340,8 @@ extension MedicationPatterns on Medication {
             int nextDoseCount,
             String nextAlarmTime,
             @JsonKey(name: 'proofImageUrl') String? proofImage,
+            @JsonKey(defaultValue: [])
+            List<MedicationDoseStatus> scheduleStatuses,
             bool? isReward)?
         $default,
   ) {
@@ -329,6 +355,7 @@ extension MedicationPatterns on Medication {
             _that.nextDoseCount,
             _that.nextAlarmTime,
             _that.proofImage,
+            _that.scheduleStatuses,
             _that.isReward);
       case _:
         return null;
@@ -346,8 +373,11 @@ class _Medication extends Medication {
       required this.nextDoseCount,
       required this.nextAlarmTime,
       @JsonKey(name: 'proofImageUrl') required this.proofImage,
+      @JsonKey(defaultValue: [])
+      required final List<MedicationDoseStatus> scheduleStatuses,
       this.isReward})
-      : super._();
+      : _scheduleStatuses = scheduleStatuses,
+        super._();
   factory _Medication.fromJson(Map<String, dynamic> json) =>
       _$MedicationFromJson(json);
 
@@ -364,6 +394,16 @@ class _Medication extends Medication {
   @override
   @JsonKey(name: 'proofImageUrl')
   final String? proofImage;
+  final List<MedicationDoseStatus> _scheduleStatuses;
+  @override
+  @JsonKey(defaultValue: [])
+  List<MedicationDoseStatus> get scheduleStatuses {
+    if (_scheduleStatuses is EqualUnmodifiableListView)
+      return _scheduleStatuses;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_scheduleStatuses);
+  }
+
   @override
   final bool? isReward;
 
@@ -399,18 +439,28 @@ class _Medication extends Medication {
                 other.nextAlarmTime == nextAlarmTime) &&
             (identical(other.proofImage, proofImage) ||
                 other.proofImage == proofImage) &&
+            const DeepCollectionEquality()
+                .equals(other._scheduleStatuses, _scheduleStatuses) &&
             (identical(other.isReward, isReward) ||
                 other.isReward == isReward));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, medicineScheduleId, takenCount,
-      totalCount, nextDoseCount, nextAlarmTime, proofImage, isReward);
+  int get hashCode => Object.hash(
+      runtimeType,
+      medicineScheduleId,
+      takenCount,
+      totalCount,
+      nextDoseCount,
+      nextAlarmTime,
+      proofImage,
+      const DeepCollectionEquality().hash(_scheduleStatuses),
+      isReward);
 
   @override
   String toString() {
-    return 'Medication(medicineScheduleId: $medicineScheduleId, takenCount: $takenCount, totalCount: $totalCount, nextDoseCount: $nextDoseCount, nextAlarmTime: $nextAlarmTime, proofImage: $proofImage, isReward: $isReward)';
+    return 'Medication(medicineScheduleId: $medicineScheduleId, takenCount: $takenCount, totalCount: $totalCount, nextDoseCount: $nextDoseCount, nextAlarmTime: $nextAlarmTime, proofImage: $proofImage, scheduleStatuses: $scheduleStatuses, isReward: $isReward)';
   }
 }
 
@@ -429,6 +479,7 @@ abstract mixin class _$MedicationCopyWith<$Res>
       int nextDoseCount,
       String nextAlarmTime,
       @JsonKey(name: 'proofImageUrl') String? proofImage,
+      @JsonKey(defaultValue: []) List<MedicationDoseStatus> scheduleStatuses,
       bool? isReward});
 }
 
@@ -450,6 +501,7 @@ class __$MedicationCopyWithImpl<$Res> implements _$MedicationCopyWith<$Res> {
     Object? nextDoseCount = null,
     Object? nextAlarmTime = null,
     Object? proofImage = freezed,
+    Object? scheduleStatuses = null,
     Object? isReward = freezed,
   }) {
     return _then(_Medication(
@@ -477,6 +529,10 @@ class __$MedicationCopyWithImpl<$Res> implements _$MedicationCopyWith<$Res> {
           ? _self.proofImage
           : proofImage // ignore: cast_nullable_to_non_nullable
               as String?,
+      scheduleStatuses: null == scheduleStatuses
+          ? _self._scheduleStatuses
+          : scheduleStatuses // ignore: cast_nullable_to_non_nullable
+              as List<MedicationDoseStatus>,
       isReward: freezed == isReward
           ? _self.isReward
           : isReward // ignore: cast_nullable_to_non_nullable

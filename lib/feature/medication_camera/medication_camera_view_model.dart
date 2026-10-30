@@ -3,15 +3,16 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:medication_alarm/medication_alarm.dart';
-import 'package:widyu/core/data/provider/point_provider.dart';
 import 'package:widyu/core/data/repository/goal/medication_repository.dart';
+import 'package:widyu/core/data/repository/point/point_repository.dart';
+import 'package:widyu/core/log/log.dart';
 import 'package:widyu/core/model/goal/medication/medication_point_result.dart';
 import 'package:widyu/feature/medication_camera/medication_camera_ui_event.dart';
 import 'package:widyu/feature/medication_camera/medication_camera_ui_state.dart';
 
 class MedicationCameraViewModel extends ChangeNotifier {
   final MedicationRepository _medicationRepository;
-  final PointProvider _pointProvider;
+  final PointRepository _pointRepository;
   final Map<String, dynamic> _group;
   final _pending = <MedicationOccurrence>[];
   bool _disposed = false;
@@ -24,10 +25,10 @@ class MedicationCameraViewModel extends ChangeNotifier {
 
   MedicationCameraViewModel({
     required MedicationRepository medicationRepository,
-    required PointProvider pointProvider,
+    required PointRepository pointRepository,
     required Map<String, dynamic> group,
   })  : _medicationRepository = medicationRepository,
-        _pointProvider = pointProvider,
+        _pointRepository = pointRepository,
         _group = group;
 
   String? get doseLabel {
@@ -44,6 +45,7 @@ class MedicationCameraViewModel extends ChangeNotifier {
   }
 
   Future<void> load() async {
+    var expired = false;
     try {
       final state = await _medicationRepository.alarmState();
       if (state['memberId'] == _group['memberId']) {
@@ -52,13 +54,18 @@ class MedicationCameraViewModel extends ChangeNotifier {
             in (_group['occurrences'] as List).cast<Map<dynamic, dynamic>>()) {
           final occurrence =
               MedicationOccurrence.fromJson(Map<String, dynamic>.from(target));
-          if (occurrence.canVerify(now)) _pending.add(occurrence);
+          if (occurrence.canVerify(now)) {
+            _pending.add(occurrence);
+          } else {
+            expired = true;
+          }
         }
       }
     } catch (_) {}
     if (_disposed) return;
     if (_pending.isEmpty) {
-      _uiEvent.add(const OccurrenceNotFound());
+      _uiEvent.add(
+          expired ? const VerifyWindowClosed() : const OccurrenceNotFound());
       return;
     }
     _update(_uiState.copyWith(isReady: true));
@@ -77,12 +84,14 @@ class MedicationCameraViewModel extends ChangeNotifier {
             await _medicationRepository.verifyMedication(occurrence, photo);
         _pending.remove(occurrence);
       }
-      await _pointProvider.refresh();
+      // 인증한 복용 횟수는 약 복용 정보라 남기지 않는다(docs/logging-strategy.md §6.1).
+      WiduLog.ui.i('약 복용 인증 성공 earnedPoints=${result.earnedPoints}');
+      await _pointRepository.refresh();
       if (!_disposed) _uiEvent.add(VerifySuccess(result));
-    } catch (_) {
+    } catch (e) {
       if (_disposed) return;
       _update(_uiState.copyWith(isBusy: false));
-      _uiEvent.add(const VerifyFailure());
+      _uiEvent.add(VerifyFailure(e is StateError ? e.message : e.toString()));
     }
   }
 

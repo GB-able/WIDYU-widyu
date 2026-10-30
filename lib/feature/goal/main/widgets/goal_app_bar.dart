@@ -18,8 +18,8 @@ class _GoalAppBar extends StatelessWidget implements PreferredSizeWidget {
           GestureDetector(
             behavior: HitTestBehavior.translucent,
             onTap: () => context.push(AppRoute.notification.path),
-            child: const IconWidget(
-              icon: 'notification',
+            child: WiduIcon(
+              icon: Assets.icons.ic22Notification,
               width: 22,
               color: MyColor.grey600,
             ),

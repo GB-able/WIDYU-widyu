@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:widyu/core/data/repository/notification/notification_repository.dart';
+import 'package:widyu/core/log/log.dart';
 import 'package:widyu/core/model/api/api_result.dart';
 import 'package:widyu/core/model/notification/notification_setting.dart';
 import 'package:widyu/feature/notification_setting/notification_setting_ui_event.dart';
@@ -17,6 +18,8 @@ class NotificationSettingViewModel with ChangeNotifier {
   final _uiEvent = StreamController<NotificationSettingUiEvent>.broadcast();
   Stream<NotificationSettingUiEvent> get uiEvent => _uiEvent.stream;
 
+  bool _disposed = false;
+
   NotificationSettingViewModel({required NotificationRepository repository})
       : _repository = repository {
     _fetchNotificationSettings();
@@ -24,6 +27,8 @@ class NotificationSettingViewModel with ChangeNotifier {
 
   Future<void> updateNotificationSetting(
       NotificationSettingUiModel notification) async {
+    if (_uiState.isUpdating) return;
+
     final oldNotifications = _uiState.notifications;
     final targetIndex =
         oldNotifications.indexWhere((item) => item.group == notification.group);
@@ -36,17 +41,26 @@ class NotificationSettingViewModel with ChangeNotifier {
     notifyListeners();
 
     try {
-      final result =
-          _repository.updateNotificationSettings(optimistic.toDomain());
-      if (result is Failure) {
+      final result = await _repository.updateNotificationSettings(
+          optimistic.toDomain(_uiState.policyRevision));
+      if (_disposed) return;
+      if (result is! Success<NotificationSetting>) {
         _rollback(oldNotifications);
         return;
       }
-      newNotifications[targetIndex] = optimistic.copyWith(isUpdating: false);
-      _uiState = _uiState.copyWith(notifications: [...newNotifications]);
+      WiduLog.ui.i('알림 설정 변경 성공 '
+          'group=${notification.group.name} enabled=${result.data.enabled}');
+      newNotifications[targetIndex] = optimistic.copyWith(
+        enabled: result.data.enabled,
+        isUpdating: false,
+      );
+      _uiState = _uiState.copyWith(
+        notifications: [...newNotifications],
+        policyRevision: result.data.policyRevision,
+      );
       notifyListeners();
     } catch (_) {
-      _rollback(oldNotifications);
+      if (!_disposed) _rollback(oldNotifications);
     }
   }
 
@@ -61,9 +75,13 @@ class NotificationSettingViewModel with ChangeNotifier {
     notifyListeners();
 
     final result = await _repository.fetchNotificationSettings();
+    if (_disposed) return;
     if (result is Success) {
       final data = (result as Success<List<NotificationSetting>>).data;
-      _uiState = _uiState.copyWith(notifications: data.toUiModel());
+      _uiState = _uiState.copyWith(
+        notifications: data.toUiModel(),
+        policyRevision: data.firstOrNull?.policyRevision ?? 0,
+      );
     } else {
       _uiEvent.add(const FetchNotificationSettingFailure());
     }
@@ -73,6 +91,7 @@ class NotificationSettingViewModel with ChangeNotifier {
 
   @override
   void dispose() {
+    _disposed = true;
     _uiEvent.close();
     super.dispose();
   }

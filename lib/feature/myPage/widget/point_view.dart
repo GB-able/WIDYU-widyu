@@ -1,13 +1,14 @@
 part of '../my_page_screen.dart';
 
 class _PointView extends StatelessWidget {
-  const _PointView();
+  const _PointView({required this.point, required this.isPointLoading});
+
+  final int? point;
+  final bool isPointLoading;
 
   @override
   Widget build(BuildContext context) {
-    final store = context.watch<PointProvider>();
-    final point = store.point;
-    final isLoading = point == null && store.isLoading;
+    final isLoading = point == null && isPointLoading;
 
     return Row(
       children: [
@@ -15,8 +16,7 @@ class _PointView extends StatelessWidget {
           width: 28,
           height: 28,
           decoration: const BoxDecoration(shape: BoxShape.circle),
-          child: const WidyuAssetImage(
-            name: 'img_28_point.png',
+          child: Assets.images.img28Point.image(
             width: 28,
             height: 28,
           ),
@@ -33,8 +33,8 @@ class _PointView extends StatelessWidget {
         ),
         IconButton(
           onPressed: () => context.push(AppRoute.point.path),
-          icon: const WidyuIcon(
-            icon: 'ic_20_chevron_right.svg',
+          icon: WiduIcon(
+            icon: Assets.icons.ic20ChevronRight,
             width: 20,
             height: 20,
             color: MyColor.white,

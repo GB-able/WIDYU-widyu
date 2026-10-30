@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:widyu/core/log/log.dart';
 import 'package:widyu/core/model/api/infinite_page_result.dart';
 
 mixin InfiniteScrollMixin<T> on ChangeNotifier {
@@ -50,9 +51,9 @@ mixin InfiniteScrollMixin<T> on ChangeNotifier {
         ..addAll(result.items);
       _nextCursor = result.nextCursor;
       _hasNext = result.hasNext;
-    } catch (e) {
+    } catch (e, stack) {
       if (_disposed || generation != _requestGeneration) return;
-      debugPrint('$runtimeType init failed: $e');
+      WiduLog.ui.w('$runtimeType 첫 페이지 불러오기 실패', error: e, stackTrace: stack);
       _hasError = true;
     } finally {
       if (!_disposed && generation == _requestGeneration) {
@@ -77,9 +78,9 @@ mixin InfiniteScrollMixin<T> on ChangeNotifier {
       _items.addAll(result.items);
       _nextCursor = result.nextCursor;
       _hasNext = result.hasNext;
-    } catch (e) {
+    } catch (e, stack) {
       if (_disposed || generation != _requestGeneration) return;
-      debugPrint('$runtimeType loadMore failed: $e');
+      WiduLog.ui.w('$runtimeType 다음 페이지 불러오기 실패', error: e, stackTrace: stack);
       _hasError = true;
     } finally {
       if (!_disposed && generation == _requestGeneration) {

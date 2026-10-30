@@ -1,21 +1,24 @@
 import 'dart:io';
 
 import 'package:camera/camera.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
-import 'package:widyu/core/data/provider/point_provider.dart';
 import 'package:widyu/core/data/repository/goal/medication_repository.dart';
+import 'package:widyu/core/data/repository/point/point_repository.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
+import 'package:widyu/core/ui/widgets/custom_dialog.dart';
 import 'package:widyu/core/ui/widgets/ui_event_listener.dart';
-import 'package:widyu/core/ui/widgets/widyu_icon.dart';
+import 'package:widyu/core/ui/widgets/widu_icon.dart';
 import 'package:widyu/core/utils/show_toast.dart';
 import 'package:widyu/feature/medication_camera/medication_camera_ui_event.dart';
 import 'package:widyu/feature/medication_camera/medication_camera_ui_state.dart';
 import 'package:widyu/feature/medication_camera/medication_camera_view_model.dart';
+import 'package:widyu/gen/assets.gen.dart';
 
 part 'widgets/camera_capture_view.dart';
 part 'widgets/medication_camera_app_bar.dart';
@@ -41,7 +44,7 @@ class MedicationCameraScreen extends StatelessWidget {
     return ChangeNotifierProvider(
       create: (context) => MedicationCameraViewModel(
         medicationRepository: context.read<MedicationRepository>(),
-        pointProvider: context.read<PointProvider>(),
+        pointRepository: context.read<PointRepository>(),
         group: group,
       )..load(),
       child: const _MedicationCameraView(),
@@ -88,23 +91,32 @@ class _MedicationCameraViewState extends State<_MedicationCameraView>
     context.pop();
   }
 
+  Future<void> _showNotice(String message) async {
+    await showDialog<void>(
+      context: context,
+      builder: (_) => CustomDialog(title: message),
+    );
+    if (mounted) context.pop();
+  }
+
   Future<void> _handleEvent(MedicationCameraUiEvent event) async {
     switch (event) {
       case OccurrenceNotFound():
-        await showDialog<void>(
-          context: context,
-          builder: (context) => AlertDialog(
-            content: const Text('존재하지 않는 복약 일정이에요.'),
-            actions: [
-              TextButton(onPressed: context.pop, child: const Text('확인')),
-            ],
-          ),
-        );
-        if (mounted) context.pop();
+        await _showNotice('존재하지 않는 복약 일정이에요.');
+      case VerifyWindowClosed():
+        await _showNotice('인증 가능 시간이 지났어요.');
       case VerifySuccess(:final result):
         context.pop(result);
-      case VerifyFailure():
-        showToast('복용 인증에 실패했어요.');
+      case VerifyFailure(:final reason):
+        if (!kDebugMode) {
+          showToast('복용 인증에 실패했어요.');
+          return;
+        }
+        await showDialog<void>(
+          context: context,
+          builder: (_) =>
+              CustomDialog(title: '복용 인증에 실패했어요.', description: reason),
+        );
     }
   }
 

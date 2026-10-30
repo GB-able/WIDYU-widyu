@@ -1,7 +1,7 @@
 part of '../management_screen.dart';
 
 class _ShareItem extends StatelessWidget {
-  final String icon;
+  final SvgGenImage icon;
   final String label;
   final VoidCallback onTap;
 
@@ -17,7 +17,7 @@ class _ShareItem extends StatelessWidget {
       children: [
         GestureDetector(
           onTap: onTap,
-          child: WidyuIcon(icon: icon, width: 70, height: 70),
+          child: WiduIcon(icon: icon, width: 70, height: 70),
         ),
         const SizedBox(height: 10),
         Text(

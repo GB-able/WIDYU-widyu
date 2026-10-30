@@ -3,8 +3,8 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:medication_alarm/medication_alarm.dart';
-import 'package:widyu/core/data/provider/point_provider.dart';
 import 'package:widyu/core/data/repository/goal/medication_repository.dart';
+import 'package:widyu/core/data/repository/point/point_repository.dart';
 import 'package:widyu/core/model/goal/medication/medication_point_result.dart';
 import 'package:widyu/feature/medication_camera/medication_camera_ui_event.dart';
 import 'package:widyu/feature/medication_camera/medication_camera_view_model.dart';
@@ -25,7 +25,7 @@ class _Alarm extends Fake implements MedicationRepository {
   }
 }
 
-class _Point extends Fake implements PointProvider {
+class _Point extends Fake implements PointRepository {
   @override
   Future<void> refresh() async {}
 }
@@ -34,16 +34,21 @@ void main() {
   final photo = File('/tmp/pill.jpg');
 
   Future<(MedicationCameraViewModel, _Alarm, List<MedicationCameraUiEvent>)>
-      setUp({List<int> scheduleIds = const [7]}) async {
+      setUp({List<int> scheduleIds = const [7], DateTime? scheduledAt}) async {
     final alarm = _Alarm();
     final vm = MedicationCameraViewModel(
       medicationRepository: alarm,
-      pointProvider: _Point(),
+      pointRepository: _Point(),
       group: {
         'memberId': '1',
         'occurrences': [
           for (final id in scheduleIds)
-            {'scheduleId': id, 'localDate': '2026-10-19'},
+            {
+              'scheduleId': id,
+              'localDate': '2026-10-19',
+              if (scheduledAt != null)
+                'scheduledAt': scheduledAt.millisecondsSinceEpoch,
+            },
         ],
       },
     );
@@ -56,6 +61,14 @@ void main() {
     await vm.load();
     return (vm, alarm, events);
   }
+
+  test('인증 가능 시간이 지난 회차는 만료로 알린다', () async {
+    final (_, alarm, events) = await setUp(
+        scheduledAt: DateTime.now().subtract(const Duration(hours: 2)));
+    await Future<void>.delayed(Duration.zero);
+    expect(events.single, isA<VerifyWindowClosed>());
+    expect(alarm.verified, isEmpty);
+  });
 
   test('인증 실패 시 실패를 알리고 다시 촬영할 수 있다', () async {
     final (vm, alarm, events) = await setUp();

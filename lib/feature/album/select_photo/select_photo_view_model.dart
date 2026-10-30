@@ -2,11 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_manager/photo_manager.dart';
+import 'package:widyu/core/log/log.dart';
+import 'package:widyu/core/utils/permission_manager.dart';
+import 'package:widyu/core/utils/settings_return_controller.dart';
 import 'package:widyu/core/utils/show_toast.dart';
 
 const _maxVideoDurationSeconds = 60;
 const _pageSize = 100;
 const _maxSelectCount = 8;
+const _photoRequestOption = PermissionRequestOption(
+  androidPermission: AndroidPermission(
+    type: RequestType.common,
+    mediaLocation: true,
+  ),
+);
 
 enum PhotoFilter {
   all(label: '전체', type: RequestType.common),
@@ -19,6 +28,8 @@ enum PhotoFilter {
 }
 
 class SelectPhotoViewModel extends ChangeNotifier {
+  final _settings =
+      SettingsReturnController(launcher: PermissionManager.openSettings);
   PermissionStatus? _cameraPermission;
   PermissionState? _photoPermission;
   PhotoFilter _filter = PhotoFilter.all;
@@ -47,8 +58,9 @@ class SelectPhotoViewModel extends ChangeNotifier {
 
   Future<void> init() async {
     await checkCameraPermission();
-    await checkAlbumPermission();
-    if (hasPhotoPermission) await _loadAssets(_filter);
+    await _setPhotoPermission(
+      PhotoManager.requestPermissionExtend(requestOption: _photoRequestOption),
+    );
   }
 
   Future<void> checkCameraPermission() async {
@@ -59,40 +71,42 @@ class SelectPhotoViewModel extends ChangeNotifier {
   Future<void> requestCameraPermission() async {
     if (_cameraPermission == PermissionStatus.permanentlyDenied ||
         _cameraPermission == PermissionStatus.restricted) {
-      await openAppSettings();
-      await checkCameraPermission();
+      await _openSettingsAndRecheck(checkCameraPermission);
     } else {
       _cameraPermission = await Permission.camera.request();
       notifyListeners();
     }
   }
 
-  Future<void> checkAlbumPermission() async {
-    _photoPermission = await PhotoManager.getPermissionState(
-      requestOption: const PermissionRequestOption(
-        androidPermission: AndroidPermission(
-          type: RequestType.common,
-          mediaLocation: true,
-        ),
-      ),
-    );
-
-    if (_photoPermission == PermissionState.notDetermined) {
-      await requestAlbumPermission();
-    }
-    notifyListeners();
-  }
+  Future<void> checkAlbumPermission() => _setPhotoPermission(
+        PhotoManager.getPermissionState(requestOption: _photoRequestOption),
+      );
 
   Future<void> requestAlbumPermission() async {
-    if (_photoPermission == PermissionState.denied ||
-        _photoPermission == PermissionState.restricted) {
-      await PhotoManager.openSetting();
-      await checkAlbumPermission();
-    } else {
-      _photoPermission = await PhotoManager.requestPermissionExtend();
-      notifyListeners();
-      if (hasPhotoPermission) await _loadAssets(_filter);
+    await _setPhotoPermission(
+      PhotoManager.requestPermissionExtend(requestOption: _photoRequestOption),
+    );
+    if (!hasPhotoPermission) {
+      await _openSettingsAndRecheck(checkAlbumPermission);
     }
+  }
+
+  Future<void> _setPhotoPermission(Future<PermissionState> state) async {
+    _photoPermission = await state;
+    notifyListeners();
+    if (hasPhotoPermission) await _loadAssets(_filter);
+  }
+
+  Future<void> _openSettingsAndRecheck(Future<void> Function() recheck) async {
+    if (await _settings.open() == SettingsReturnResult.returned) {
+      await recheck();
+    }
+  }
+
+  @override
+  void dispose() {
+    _settings.dispose();
+    super.dispose();
   }
 
   Future<void> setFilter(PhotoFilter filter) async {
@@ -164,8 +178,8 @@ class SelectPhotoViewModel extends ChangeNotifier {
               !ids.contains(e.id),
         ),
       ];
-    } catch (e) {
-      debugPrint(e.toString());
+    } catch (e, stack) {
+      WiduLog.ui.w('사진 목록 불러오기 실패', error: e, stackTrace: stack);
     } finally {
       _loading.remove(filter);
       notifyListeners();

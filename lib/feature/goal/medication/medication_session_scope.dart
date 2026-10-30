@@ -9,9 +9,12 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:widyu/app/routes/app_route.dart';
 import 'package:widyu/core/data/repository/goal/medication_repository.dart';
+import 'package:widyu/core/log/log.dart';
 import 'package:widyu/core/model/goal/medication/medication_point_result.dart';
+import 'package:widyu/core/model/permission/permission_recovery_prompt.dart';
 import 'package:widyu/core/notification/medication_push_manager.dart';
 import 'package:widyu/core/ui/widgets/medication_reward_dialog.dart';
+import 'package:widyu/core/ui/widgets/permission_recovery_dialog.dart';
 import 'package:widyu/feature/goal/medication/medication_ringing_screen.dart';
 
 class MedicationSessionScope extends StatefulWidget {
@@ -74,11 +77,23 @@ class _MedicationSessionScopeState extends State<MedicationSessionScope>
   }
 
   Future<void> requestAlarmPermissionIfNeeded() async {
-    if (!Platform.isIOS) return;
     try {
       final caps = await repository.alarmCapabilities();
-      if (caps['mode'] != 'alarmKit' || caps['authorized'] == true) return;
-      await repository.requestAlarmPermission();
+      if (Platform.isIOS) {
+        if (caps['mode'] != 'alarmKit' || caps['authorized'] == true) return;
+        await repository.requestAlarmPermission();
+        return;
+      }
+      if (caps['fullScreen'] != false || !mounted) return;
+      final action = await PermissionRecoveryDialog.show(
+        context,
+        permissionName: '전체 화면 알림',
+        description: '잠긴 화면에서도 약 복용 알람 화면을 띄우려면 전체 화면 알림을 허용해야 해요.',
+        mode: PermissionRecoveryMode.settings,
+      );
+      if (action == PermissionRecoveryAction.openSettings) {
+        await repository.requestAlarmPermission();
+      }
     } catch (_) {}
   }
 
@@ -88,7 +103,8 @@ class _MedicationSessionScopeState extends State<MedicationSessionScope>
 
   void onMessage(RemoteMessage message) {
     if (!isMedicationChange(message)) return;
-    debugPrint('[MedicationSync] 포그라운드 푸시 수신: ${message.data}');
+    WiduLog.data.i('약 복용 일정 변경 푸시 수신');
+    WiduLog.data.t(() => '약 복용 푸시 data: ${message.data}');
     unawaited(repository.syncAlarmSchedule());
   }
 
@@ -99,8 +115,7 @@ class _MedicationSessionScopeState extends State<MedicationSessionScope>
   }
 
   Future<void> refreshActiveAlarm() async {
-    if (Platform.isAndroid ||
-        !mounted ||
+    if (!mounted ||
         !ready ||
         readingAlarm ||
         alarmActionBusy ||

@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
-import 'package:widyu/core/ui/widgets/widyu_asset_image.dart';
 import 'package:widyu/core/ui/widgets/widyu_dialog.dart';
 import 'package:widyu/core/ui/widgets/widyu_text_button.dart';
+import 'package:widyu/gen/assets.gen.dart';
 
 class WidyuPermissionDialog extends StatelessWidget {
   final String description;
@@ -41,8 +41,7 @@ class WidyuPermissionDialog extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const WidyuAssetImage(
-            name: 'img_94_warning.png',
+          Assets.images.img94Warning.image(
             width: 94,
             height: 94,
           ),

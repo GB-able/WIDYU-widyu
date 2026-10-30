@@ -96,8 +96,8 @@ class _SlideButtonState extends State<_SlideButton>
                       color: MyColor.primary50,
                       shape: BoxShape.circle,
                     ),
-                    child: const WidyuIcon(
-                      icon: 'ic_24_chevron_right.svg',
+                    child: WiduIcon(
+                      icon: Assets.icons.ic24ChevronRight,
                       width: 24,
                       height: 24,
                     ),
