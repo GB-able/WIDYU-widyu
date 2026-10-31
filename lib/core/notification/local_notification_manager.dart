@@ -6,6 +6,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:widyu/core/log/log.dart';
+import 'package:widyu/core/model/notification/notification_type.dart';
 
 /// FCM 메시지를 수신했을 때 로컬 푸시를 띄우기 위한 범용 래퍼.
 /// 알림 표시/취소, 알림 탭 처리(콜드 스타트 포함)를 담당한다.
@@ -78,8 +79,6 @@ class LocalNotificationManager {
     }
   }
 
-  static const _silentTypes = {'EMERGENCY_CONFIRM_REQUEST'};
-
   static Future<RemoteMessage?>? _initialRemoteMessage;
 
   static Future<RemoteMessage?> initialRemoteMessage() =>
@@ -93,7 +92,7 @@ class LocalNotificationManager {
     WiduLog.ui.t(() => '포그라운드 수신: ${message.messageId}');
     final notification = message.notification;
     if (notification == null) return;
-    if (_silentTypes.contains(message.data['type'])) return;
+    if (NotificationType.safetySelfCheck.matches(message.data)) return;
     show(
       title: notification.title ?? '',
       body: notification.body ?? '',

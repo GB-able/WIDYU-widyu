@@ -7,7 +7,7 @@ import android.util.Log
 
 class SafetyPushReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
-        if (intent.getStringExtra("type") != SafetyCheckService.PUSH_TYPE) return
+        if (intent.getStringExtra("notificationType") != SafetyCheckService.PUSH_TYPE) return
         val incidentId = intent.getStringExtra("entityId") ?: return
         try {
             context.startForegroundService(

@@ -165,7 +165,7 @@ class SafetyCheckService : Service() {
     }
 
     companion object {
-        const val PUSH_TYPE = "EMERGENCY_CONFIRM_REQUEST"
+        const val PUSH_TYPE = "SAFETY_SELF_CHECK"
         const val EXTRA_INCIDENT_ID = "safetyIncidentId"
         private const val TAG = "SafetyCheckService"
         private const val SAFETY_CHANNEL = "widyu_safety_channel"

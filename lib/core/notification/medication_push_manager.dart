@@ -8,6 +8,7 @@ import 'package:widyu/core/data/repository/goal/medication_repository_impl.dart'
 import 'package:widyu/core/data/source/goal/medication_alarm_local_data_source_impl.dart';
 import 'package:widyu/core/data/source/goal/medication_remote_data_source_impl.dart';
 import 'package:widyu/core/log/log.dart';
+import 'package:widyu/core/model/notification/notification_type.dart';
 import 'package:widyu/core/network/api_client.dart';
 import 'package:widyu/core/network/token_manager.dart';
 import 'package:widyu/firebase_options.dart';
@@ -24,7 +25,7 @@ Future<bool> initializeMedicationPush() async {
 }
 
 bool isMedicationChange(RemoteMessage message) =>
-    message.data['type'] == 'MEDICATION_SCHEDULE_CHANGED';
+    NotificationType.medicationScheduleSync.matches(message.data);
 
 Future<String?> authenticatedMedicationMember() async {
   if (!await TokenManager().hasToken()) return null;

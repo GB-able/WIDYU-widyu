@@ -5,6 +5,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 import 'package:widyu/app/routes/app_route.dart';
+import 'package:widyu/core/model/notification/notification_type.dart';
 import 'package:widyu/core/notification/local_notification_manager.dart';
 import 'package:widyu/core/notification/safety_push_manager.dart';
 
@@ -18,8 +19,6 @@ class SafetyCheckListener extends StatefulWidget {
 }
 
 class _SafetyCheckListenerState extends State<SafetyCheckListener> {
-  static const _type = 'EMERGENCY_CONFIRM_REQUEST';
-
   final _subscriptions = <StreamSubscription<dynamic>>[];
   String? _lastIncidentId;
 
@@ -45,7 +44,7 @@ class _SafetyCheckListenerState extends State<SafetyCheckListener> {
   }
 
   void _onMessage(RemoteMessage message) {
-    if (message.data['type'] != _type) return;
+    if (!NotificationType.safetySelfCheck.matches(message.data)) return;
     final incidentId = message.data['entityId'];
     if (incidentId is String) _open(incidentId);
   }
