@@ -150,14 +150,14 @@ class PostViewModel extends ChangeNotifier {
           (s) => s.copyWith(status: PostStatus.success, feed: _normalize(data)),
         );
         _markViewed();
+        if (!_repository.currentCache.isUnlocked(id)) {
+          _emit(const FeedLocked());
+        }
       case Failure(:final code):
-        switch (code) {
-          case 'ALBUM_4040':
-            _emit(const FeedDeleted());
-          case 'ALBUM_4031':
-            _emit(const FeedLocked());
-          default:
-            _update((s) => s.copyWith(status: PostStatus.error));
+        if (code == 'ALBUM_4040') {
+          _emit(const FeedDeleted());
+        } else {
+          _update((s) => s.copyWith(status: PostStatus.error));
         }
     }
   }

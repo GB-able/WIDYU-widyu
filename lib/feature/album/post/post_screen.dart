@@ -70,8 +70,7 @@ class PostScreen extends StatelessWidget {
         );
       case FeedLocked():
         _requestUnlock(context).then((unlocked) {
-          if (!context.mounted) return;
-          unlocked ? viewModel.retry() : context.pop();
+          if (unlocked) viewModel.retry();
         });
     }
   }
