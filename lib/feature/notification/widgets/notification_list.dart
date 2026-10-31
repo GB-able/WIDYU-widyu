@@ -77,11 +77,7 @@ class _NotificationListState extends State<_NotificationList> {
             categoryName: viewModel.uiState.nameOf(notification.category),
             onTap: () {
               context.read<NotificationViewModel>().read(notification);
-              final uri = Uri.tryParse(notification.path);
-              final canGo = notification.path.isNotEmpty &&
-                  uri != null &&
-                  GoRouter.of(context).configuration.findMatch(uri).isNotEmpty;
-              if (canGo) context.push(notification.path);
+              GoRouter.of(context).openDeepLink(notification.path);
             },
           );
         },

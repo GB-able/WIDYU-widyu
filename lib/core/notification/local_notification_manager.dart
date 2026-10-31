@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:firebase_core/firebase_core.dart';
@@ -55,7 +56,16 @@ class LocalNotificationManager {
         );
 
     if (Firebase.apps.isNotEmpty) {
-      FirebaseMessaging.onMessage.listen(_onForegroundMessage);
+      if (Platform.isIOS) {
+        await FirebaseMessaging.instance
+            .setForegroundNotificationPresentationOptions(
+          alert: true,
+          badge: true,
+          sound: true,
+        );
+      } else {
+        FirebaseMessaging.onMessage.listen(_onForegroundMessage);
+      }
     }
 
     // 앱이 종료된 상태에서 알림 탭으로 실행된 경우에는 콜백이 오지 않으므로 여기서 확인한다.
@@ -70,6 +80,15 @@ class LocalNotificationManager {
 
   static const _silentTypes = {'EMERGENCY_CONFIRM_REQUEST'};
 
+  static Future<RemoteMessage?>? _initialRemoteMessage;
+
+  static Future<RemoteMessage?> initialRemoteMessage() =>
+      _initialRemoteMessage ??=
+          FirebaseMessaging.instance.getInitialMessage().catchError((Object e) {
+        WiduLog.ui.w('초기 메시지 조회 실패', error: e);
+        return null;
+      });
+
   static void _onForegroundMessage(RemoteMessage message) {
     WiduLog.ui.t(() => '포그라운드 수신: ${message.messageId}');
     final notification = message.notification;
@@ -79,7 +98,7 @@ class LocalNotificationManager {
       title: notification.title ?? '',
       body: notification.body ?? '',
       id: message.messageId?.hashCode ?? _defaultNotificationId,
-      payload: message.data['deepLink'] as String?,
+      payload: jsonEncode(message.data),
     );
   }
 

@@ -1,7 +1,13 @@
 import 'dart:async';
+import 'dart:convert';
 
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+import 'package:widyu/app/routes/app_route.dart';
+import 'package:widyu/core/data/repository/notification/notification_repository.dart';
 import 'package:widyu/core/notification/local_notification_manager.dart';
 
 class NotificationTapListener extends StatefulWidget {
@@ -15,28 +21,56 @@ class NotificationTapListener extends StatefulWidget {
 }
 
 class _NotificationTapListenerState extends State<NotificationTapListener> {
-  StreamSubscription<String?>? _subscription;
+  final _subscriptions = <StreamSubscription<dynamic>>[];
 
   @override
   void initState() {
     super.initState();
-    _subscription = LocalNotificationManager.onNotificationTapped.listen(_open);
+    _subscriptions
+        .add(LocalNotificationManager.onNotificationTapped.listen(_openLocal));
     WidgetsBinding.instance.addPostFrameCallback(
-      (_) => _open(LocalNotificationManager.consumeInitialPayload()),
+      (_) => _openLocal(LocalNotificationManager.consumeInitialPayload()),
+    );
+    if (Firebase.apps.isEmpty) return;
+    _subscriptions
+        .add(FirebaseMessaging.onMessageOpenedApp.listen(_openRemote));
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) async => _openRemote(
+        await LocalNotificationManager.initialRemoteMessage(),
+      ),
     );
   }
 
-  void _open(String? path) {
-    if (!mounted || path == null || path.isEmpty) return;
-    final uri = Uri.tryParse(path);
-    final router = GoRouter.of(context);
-    if (uri == null || router.configuration.findMatch(uri).isEmpty) return;
-    router.push(path);
+  void _openLocal(String? payload) {
+    if (payload == null || payload.isEmpty) return;
+    Object? decoded;
+    try {
+      decoded = jsonDecode(payload);
+    } catch (_) {}
+    _open(decoded is Map<String, dynamic> ? decoded : {'deepLink': payload});
+  }
+
+  void _openRemote(RemoteMessage? message) {
+    if (message != null) _open(message.data);
+  }
+
+  void _open(Map<String, dynamic> data) {
+    if (!mounted) return;
+    final notificationId = int.tryParse('${data['notificationId'] ?? ''}');
+    if (notificationId != null) {
+      unawaited(
+        context.read<NotificationRepository>().readNotification(notificationId),
+      );
+    }
+    final path = data['deepLink'];
+    if (path is String) GoRouter.of(context).openDeepLink(path);
   }
 
   @override
   void dispose() {
-    unawaited(_subscription?.cancel());
+    for (final subscription in _subscriptions) {
+      unawaited(subscription.cancel());
+    }
     super.dispose();
   }
 

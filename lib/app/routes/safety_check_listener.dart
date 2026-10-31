@@ -5,6 +5,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 import 'package:widyu/app/routes/app_route.dart';
+import 'package:widyu/core/notification/local_notification_manager.dart';
 import 'package:widyu/core/notification/safety_push_manager.dart';
 
 class SafetyCheckListener extends StatefulWidget {
@@ -33,12 +34,8 @@ class _SafetyCheckListenerState extends State<SafetyCheckListener> {
       ..add(FirebaseMessaging.onMessage.listen(_onMessage))
       ..add(FirebaseMessaging.onMessageOpenedApp.listen(_onMessage));
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      try {
-        final initial = await FirebaseMessaging.instance.getInitialMessage();
-        if (initial != null) _onMessage(initial);
-      } catch (e, stack) {
-        debugPrint('[SafetyCheck] 초기 메시지 조회 실패: $e\n$stack');
-      }
+      final initial = await LocalNotificationManager.initialRemoteMessage();
+      if (initial != null) _onMessage(initial);
     });
   }
 

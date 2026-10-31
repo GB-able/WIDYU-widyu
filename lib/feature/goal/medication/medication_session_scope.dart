@@ -12,6 +12,7 @@ import 'package:widyu/core/data/repository/goal/medication_repository.dart';
 import 'package:widyu/core/log/log.dart';
 import 'package:widyu/core/model/goal/medication/medication_point_result.dart';
 import 'package:widyu/core/model/permission/permission_recovery_prompt.dart';
+import 'package:widyu/core/notification/local_notification_manager.dart';
 import 'package:widyu/core/notification/medication_push_manager.dart';
 import 'package:widyu/core/ui/widgets/medication_reward_dialog.dart';
 import 'package:widyu/core/ui/widgets/permission_recovery_dialog.dart';
@@ -70,7 +71,7 @@ class _MedicationSessionScopeState extends State<MedicationSessionScope>
             .add(FirebaseMessaging.onMessageOpenedApp.listen(onMessage));
         subscriptions.add(FirebaseMessaging.instance.onTokenRefresh
             .listen((_) => repository.syncAlarmSchedule()));
-        final initial = await FirebaseMessaging.instance.getInitialMessage();
+        final initial = await LocalNotificationManager.initialRemoteMessage();
         if (initial != null) onMessage(initial);
       }
     } catch (_) {/* Status card retains retry access. */}
