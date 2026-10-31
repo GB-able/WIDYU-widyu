@@ -12,11 +12,12 @@ import 'package:widyu/core/model/notification/notification_type.dart';
 import 'package:widyu/core/network/api_client.dart';
 import 'package:widyu/core/network/token_manager.dart';
 import 'package:widyu/firebase_options.dart';
+import 'package:widyu/walk_background_service.dart';
 
 Future<bool> initializeMedicationPush() async {
   try {
     if (Firebase.apps.isEmpty) return false;
-    FirebaseMessaging.onBackgroundMessage(medicationBackgroundMessage);
+    FirebaseMessaging.onBackgroundMessage(pushBackgroundMessage);
     return true;
   } catch (e, stack) {
     WiduLog.data.w('약 복용 푸시 초기화 실패', error: e, stackTrace: stack);
@@ -40,7 +41,13 @@ MedicationRepositoryImpl createMedicationRepository() =>
     );
 
 @pragma('vm:entry-point')
-Future<void> medicationBackgroundMessage(RemoteMessage message) async {
+Future<void> pushBackgroundMessage(RemoteMessage message) async {
+  if (NotificationType.walkDataSync.matches(message.data)) {
+    WiduLog.bg.i('걸음수 동기화 푸시 수신');
+    WidgetsFlutterBinding.ensureInitialized();
+    await syncWalkBackground();
+    return;
+  }
   if (!isMedicationChange(message)) return;
   WiduLog.bg.i('약 복용 일정 변경 푸시 수신');
   WiduLog.bg.t(() => '약 복용 푸시 data: ${message.data}');
