@@ -308,7 +308,7 @@ final class MedicationAlarmCoordinator {
         } else {
             let content = UNMutableNotificationContent()
             content.title = title; content.body = "눌러서 복용 사진을 인증해 주세요."
-            content.sound = installedSound(); content.categoryIdentifier = "WIDYU_MEDICATION"
+            content.sound = .default; content.categoryIdentifier = "WIDYU_MEDICATION"
             content.interruptionLevel = .timeSensitive
             content.userInfo = ["widyuMedication": id.uuidString]
             var calendar = Calendar(identifier: .gregorian); calendar.timeZone = .current
@@ -420,18 +420,6 @@ final class MedicationAlarmCoordinator {
         try? save(state)
     }
     private func legacyID(_ id: UUID) -> String { "widyu.medication.\(id.uuidString)" }
-    private static let soundFile = "medication_alarm.caf"
-    private func installedSound() -> UNNotificationSound {
-        guard let source = Bundle(for: MedicationAlarmCoordinator.self).url(forResource: "medication_alarm", withExtension: "caf"),
-              let library = FileManager.default.urls(for: .libraryDirectory, in: .userDomainMask).first else { return .default }
-        let sounds = library.appendingPathComponent("Sounds", isDirectory: true)
-        let target = sounds.appendingPathComponent(Self.soundFile)
-        if !FileManager.default.fileExists(atPath: target.path) {
-            try? FileManager.default.createDirectory(at: sounds, withIntermediateDirectories: true)
-            guard (try? FileManager.default.copyItem(at: source, to: target)) != nil else { return .default }
-        }
-        return UNNotificationSound(named: UNNotificationSoundName(Self.soundFile))
-    }
     private func localTime(_ millis: NSNumber?) -> String? {
         guard let millis else { return nil }
         let components = Calendar.current.dateComponents([.hour, .minute], from: Date(timeIntervalSince1970: millis.doubleValue / 1000))
