@@ -168,7 +168,8 @@ class SafetyCheckService : Service() {
         const val PUSH_TYPE = "EMERGENCY_CONFIRM_REQUEST"
         const val EXTRA_INCIDENT_ID = "safetyIncidentId"
         private const val TAG = "SafetyCheckService"
-        private const val SAFETY_CHANNEL = "widyu_safety"
+        private const val SAFETY_CHANNEL = "widyu_safety_channel"
+        private const val LEGACY_SAFETY_CHANNEL = "widyu_safety"
         private const val ALARM_CHANNEL = "widyu_safety_check_v1"
         private const val SILENT_CHANNEL = "widyu_safety_check_silent_v1"
         private const val FCM_TAG_PREFIX = "FCM-Notification"
@@ -192,6 +193,7 @@ class SafetyCheckService : Service() {
 
         fun createChannels(context: Context) {
             val manager = context.getSystemService(NotificationManager::class.java)
+            manager.deleteNotificationChannel(LEGACY_SAFETY_CHANNEL)
             manager.createNotificationChannel(
                 NotificationChannel(SAFETY_CHANNEL, "안전 알림", NotificationManager.IMPORTANCE_HIGH).apply {
                     description = "평소와 다른 심박 등 본인 확인이 필요한 알림"
