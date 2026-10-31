@@ -17,6 +17,8 @@ class LocalNotificationManager {
 
   static const _channelId = 'widyu_default_channel';
   static const _channelName = '위듀 알림';
+  static const _quietChannelId = 'widyu_quiet_channel';
+  static const _quietChannelName = '조용한 알림';
   static const _importance = Importance.max;
   static const _priority = Priority.high;
   static const _defaultNotificationId = 9999;
@@ -45,16 +47,22 @@ class LocalNotificationManager {
       onDidReceiveNotificationResponse: _onNotificationTapped,
     );
 
-    await _plugin
-        .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
-        ?.createNotificationChannel(
-          const AndroidNotificationChannel(
-            _channelId,
-            _channelName,
-            importance: _importance,
-          ),
-        );
+    final android = _plugin.resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin>();
+    await android?.createNotificationChannel(
+      const AndroidNotificationChannel(
+        _channelId,
+        _channelName,
+        importance: _importance,
+      ),
+    );
+    await android?.createNotificationChannel(
+      const AndroidNotificationChannel(
+        _quietChannelId,
+        _quietChannelName,
+        importance: Importance.low,
+      ),
+    );
 
     if (Firebase.apps.isNotEmpty) {
       if (Platform.isIOS) {
@@ -98,6 +106,7 @@ class LocalNotificationManager {
       body: notification.body ?? '',
       id: message.messageId?.hashCode ?? _defaultNotificationId,
       payload: jsonEncode(message.data),
+      quiet: notification.android?.channelId == _quietChannelId,
     );
   }
 
@@ -162,20 +171,28 @@ class LocalNotificationManager {
     required String body,
     int id = _defaultNotificationId,
     String? payload,
+    bool quiet = false,
   }) async {
     try {
       await _plugin.show(
         id: id,
         title: title,
         body: body,
-        notificationDetails: const NotificationDetails(
-          android: AndroidNotificationDetails(
-            _channelId,
-            _channelName,
-            importance: _importance,
-            priority: _priority,
-          ),
-          iOS: DarwinNotificationDetails(),
+        notificationDetails: NotificationDetails(
+          android: quiet
+              ? const AndroidNotificationDetails(
+                  _quietChannelId,
+                  _quietChannelName,
+                  importance: Importance.low,
+                  priority: Priority.low,
+                )
+              : const AndroidNotificationDetails(
+                  _channelId,
+                  _channelName,
+                  importance: _importance,
+                  priority: _priority,
+                ),
+          iOS: const DarwinNotificationDetails(),
         ),
         payload: payload,
       );
