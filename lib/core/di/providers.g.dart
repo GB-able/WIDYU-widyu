@@ -691,3 +691,48 @@ final class AlbumRepositoryProvider extends $FunctionalProvider<AlbumRepository,
 }
 
 String _$albumRepositoryHash() => r'5f4c1b67c1953f6940c9a09c3018de2591c67e12';
+
+@ProviderFor(permissionRecoveryController)
+final permissionRecoveryControllerProvider =
+    PermissionRecoveryControllerProvider._();
+
+final class PermissionRecoveryControllerProvider extends $FunctionalProvider<
+    PermissionRecoveryController,
+    PermissionRecoveryController,
+    PermissionRecoveryController> with $Provider<PermissionRecoveryController> {
+  PermissionRecoveryControllerProvider._()
+      : super(
+          from: null,
+          argument: null,
+          retry: null,
+          name: r'permissionRecoveryControllerProvider',
+          isAutoDispose: true,
+          dependencies: null,
+          $allTransitiveDependencies: null,
+        );
+
+  @override
+  String debugGetCreateSourceHash() => _$permissionRecoveryControllerHash();
+
+  @$internal
+  @override
+  $ProviderElement<PermissionRecoveryController> $createElement(
+          $ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  PermissionRecoveryController create(Ref ref) {
+    return permissionRecoveryController(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(PermissionRecoveryController value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<PermissionRecoveryController>(value),
+    );
+  }
+}
+
+String _$permissionRecoveryControllerHash() =>
+    r'95b76a7ad7df9a404cfbedda66c2d11fe6b7ec11';
