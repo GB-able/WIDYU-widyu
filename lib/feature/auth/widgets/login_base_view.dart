@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
 import 'package:widyu/core/ui/widgets/widu_icon.dart';
-import 'package:widyu/feature/auth/login_view_model.dart';
 import 'package:widyu/gen/assets.gen.dart';
 
 class LoginBaseView extends StatelessWidget {
@@ -13,6 +11,7 @@ class LoginBaseView extends StatelessWidget {
     required this.description,
     required this.onBack,
     required this.btn,
+    required this.isLoading,
     required this.child,
   });
 
@@ -20,82 +19,79 @@ class LoginBaseView extends StatelessWidget {
   final String description;
   final VoidCallback onBack;
   final Widget btn;
+  final bool isLoading;
   final Widget child;
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<LoginViewModel>(
-      builder: (context, viewModel, _) {
-        return Stack(
-          children: [
-            Scaffold(
-              backgroundColor: MyColor.white,
-              appBar: AppBar(
-                leading: GestureDetector(
-                  onTap: onBack,
-                  child: Padding(
-                    padding: const EdgeInsets.only(left: 16),
-                    child: WiduIcon(
-                      icon: Assets.icons.ic22Back,
-                      width: 22,
-                      color: MyColor.grey600,
-                    ),
-                  ),
-                ),
-                leadingWidth: 38,
-                backgroundColor: MyColor.white,
-                elevation: 0,
-                toolbarHeight: 44,
-              ),
-              body: GestureDetector(
-                onTap: () {
-                  FocusScope.of(context).unfocus();
-                },
-                behavior: HitTestBehavior.opaque,
-                child: SafeArea(
-                  child: Column(
-                    children: [
-                      Expanded(
-                        child: SingleChildScrollView(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          child: Column(
-                            children: [
-                              const SizedBox(height: 28),
-                              Text(
-                                title,
-                                style: MyTypo.title2.copyWith(
-                                  color: MyColor.grey800,
-                                  fontWeight: FontWeight.w800,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                description,
-                                style: MyTypo.body1.copyWith(
-                                  color: MyColor.grey600,
-                                ),
-                              ),
-                              child,
-                            ],
-                          ),
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: btn,
-                      ),
-                    ],
-                  ),
+    return Stack(
+      children: [
+        Scaffold(
+          backgroundColor: MyColor.white,
+          appBar: AppBar(
+            leading: GestureDetector(
+              onTap: onBack,
+              child: Padding(
+                padding: const EdgeInsets.only(left: 16),
+                child: WiduIcon(
+                  icon: Assets.icons.ic22Back,
+                  width: 22,
+                  color: MyColor.grey600,
                 ),
               ),
             ),
-            if (viewModel.state.isLoading)
-              const Center(
-                child: CircularProgressIndicator(),
+            leadingWidth: 38,
+            backgroundColor: MyColor.white,
+            elevation: 0,
+            toolbarHeight: 44,
+          ),
+          body: GestureDetector(
+            onTap: () {
+              FocusScope.of(context).unfocus();
+            },
+            behavior: HitTestBehavior.opaque,
+            child: SafeArea(
+              child: Column(
+                children: [
+                  Expanded(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Column(
+                        children: [
+                          const SizedBox(height: 28),
+                          Text(
+                            title,
+                            style: MyTypo.title2.copyWith(
+                              color: MyColor.grey800,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            description,
+                            style: MyTypo.body1.copyWith(
+                              color: MyColor.grey600,
+                            ),
+                          ),
+                          child,
+                        ],
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: btn,
+                  ),
+                ],
               ),
-          ],
-        );
-      },
+            ),
+          ),
+        ),
+        if (isLoading)
+          const Center(
+            child: CircularProgressIndicator(),
+          ),
+      ],
     );
   }
 }
