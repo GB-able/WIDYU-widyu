@@ -8,5 +8,6 @@ abstract class MedicationCameraUiState with _$MedicationCameraUiState {
     @Default(false) bool isReady,
     @Default(false) bool isBusy,
     @Default(false) bool isPermissionDenied,
+    String? doseLabel,
   }) = _MedicationCameraUiState;
 }
