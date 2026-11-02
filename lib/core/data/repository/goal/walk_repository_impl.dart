@@ -308,7 +308,9 @@ class WalkRepositoryImpl implements WalkRepository {
         final day = Map<String, dynamic>.from(days[date] as Map? ?? {});
         final isServerDate = date == serverDate;
         if (isServerDate && !days.containsKey(date) && serverSteps > total) {
-          day['offset'] = serverSteps - total;
+          day['offset'] = _localDataSource.stepSource == 'recordingApi'
+              ? serverSteps
+              : serverSteps - total;
         }
         final offset = day['offset'] as int? ?? 0;
         day['total'] = [
