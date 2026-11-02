@@ -14,6 +14,7 @@ class _NotificationListState extends ConsumerState<_NotificationList> {
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
+    _loadMoreIfShort();
   }
 
   @override
@@ -30,11 +31,28 @@ class _NotificationListState extends ConsumerState<_NotificationList> {
     }
   }
 
+  void _loadMoreIfShort() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && _scrollController.hasClients) _onScroll();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final uiState = ref.watch(notificationViewModelProvider);
     final viewModel = ref.read(notificationViewModelProvider.notifier);
     final notifications = uiState.list.items;
+    ref
+      ..listen(
+        notificationViewModelProvider.select((state) => state.category),
+        (_, __) {
+          if (_scrollController.hasClients) _scrollController.jumpTo(0);
+        },
+      )
+      ..listen(
+        notificationViewModelProvider.select((state) => state.list.items),
+        (_, __) => _loadMoreIfShort(),
+      );
 
     return RefreshIndicator(
       color: MyColor.primary,
@@ -42,6 +60,7 @@ class _NotificationListState extends ConsumerState<_NotificationList> {
       onRefresh: viewModel.load,
       child: ListView.separated(
         controller: _scrollController,
+        physics: const AlwaysScrollableScrollPhysics(),
         itemCount: notifications.length + 1,
         separatorBuilder: (context, index) =>
             const Divider(height: 1, thickness: 1, color: MyColor.grey100),
