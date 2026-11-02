@@ -20,6 +20,7 @@ mixin _$Feed {
   String get content;
   List<String> get mediaUrls;
   List<String> get thumbnailUrls;
+  List<FeedMediaType> get mediaTypes;
   int get likeCount;
   int get commentCount;
   List<Member> get viewers;
@@ -51,6 +52,8 @@ mixin _$Feed {
             const DeepCollectionEquality().equals(other.mediaUrls, mediaUrls) &&
             const DeepCollectionEquality()
                 .equals(other.thumbnailUrls, thumbnailUrls) &&
+            const DeepCollectionEquality()
+                .equals(other.mediaTypes, mediaTypes) &&
             (identical(other.likeCount, likeCount) ||
                 other.likeCount == likeCount) &&
             (identical(other.commentCount, commentCount) ||
@@ -72,6 +75,7 @@ mixin _$Feed {
       content,
       const DeepCollectionEquality().hash(mediaUrls),
       const DeepCollectionEquality().hash(thumbnailUrls),
+      const DeepCollectionEquality().hash(mediaTypes),
       likeCount,
       commentCount,
       const DeepCollectionEquality().hash(viewers),
@@ -81,7 +85,7 @@ mixin _$Feed {
 
   @override
   String toString() {
-    return 'Feed(albumId: $albumId, authorName: $authorName, authorProfileImage: $authorProfileImage, content: $content, mediaUrls: $mediaUrls, thumbnailUrls: $thumbnailUrls, likeCount: $likeCount, commentCount: $commentCount, viewers: $viewers, createdAt: $createdAt, canEdit: $canEdit, price: $price)';
+    return 'Feed(albumId: $albumId, authorName: $authorName, authorProfileImage: $authorProfileImage, content: $content, mediaUrls: $mediaUrls, thumbnailUrls: $thumbnailUrls, mediaTypes: $mediaTypes, likeCount: $likeCount, commentCount: $commentCount, viewers: $viewers, createdAt: $createdAt, canEdit: $canEdit, price: $price)';
   }
 }
 
@@ -97,6 +101,7 @@ abstract mixin class $FeedCopyWith<$Res> {
       String content,
       List<String> mediaUrls,
       List<String> thumbnailUrls,
+      List<FeedMediaType> mediaTypes,
       int likeCount,
       int commentCount,
       List<Member> viewers,
@@ -123,6 +128,7 @@ class _$FeedCopyWithImpl<$Res> implements $FeedCopyWith<$Res> {
     Object? content = null,
     Object? mediaUrls = null,
     Object? thumbnailUrls = null,
+    Object? mediaTypes = null,
     Object? likeCount = null,
     Object? commentCount = null,
     Object? viewers = null,
@@ -155,6 +161,10 @@ class _$FeedCopyWithImpl<$Res> implements $FeedCopyWith<$Res> {
           ? _self.thumbnailUrls
           : thumbnailUrls // ignore: cast_nullable_to_non_nullable
               as List<String>,
+      mediaTypes: null == mediaTypes
+          ? _self.mediaTypes
+          : mediaTypes // ignore: cast_nullable_to_non_nullable
+              as List<FeedMediaType>,
       likeCount: null == likeCount
           ? _self.likeCount
           : likeCount // ignore: cast_nullable_to_non_nullable
@@ -283,6 +293,7 @@ extension FeedPatterns on Feed {
             String content,
             List<String> mediaUrls,
             List<String> thumbnailUrls,
+            List<FeedMediaType> mediaTypes,
             int likeCount,
             int commentCount,
             List<Member> viewers,
@@ -302,6 +313,7 @@ extension FeedPatterns on Feed {
             _that.content,
             _that.mediaUrls,
             _that.thumbnailUrls,
+            _that.mediaTypes,
             _that.likeCount,
             _that.commentCount,
             _that.viewers,
@@ -335,6 +347,7 @@ extension FeedPatterns on Feed {
             String content,
             List<String> mediaUrls,
             List<String> thumbnailUrls,
+            List<FeedMediaType> mediaTypes,
             int likeCount,
             int commentCount,
             List<Member> viewers,
@@ -353,6 +366,7 @@ extension FeedPatterns on Feed {
             _that.content,
             _that.mediaUrls,
             _that.thumbnailUrls,
+            _that.mediaTypes,
             _that.likeCount,
             _that.commentCount,
             _that.viewers,
@@ -385,6 +399,7 @@ extension FeedPatterns on Feed {
             String content,
             List<String> mediaUrls,
             List<String> thumbnailUrls,
+            List<FeedMediaType> mediaTypes,
             int likeCount,
             int commentCount,
             List<Member> viewers,
@@ -403,6 +418,7 @@ extension FeedPatterns on Feed {
             _that.content,
             _that.mediaUrls,
             _that.thumbnailUrls,
+            _that.mediaTypes,
             _that.likeCount,
             _that.commentCount,
             _that.viewers,
@@ -425,6 +441,7 @@ class _Feed implements Feed {
       required this.content,
       required final List<String> mediaUrls,
       required final List<String> thumbnailUrls,
+      final List<FeedMediaType> mediaTypes = const [],
       required this.likeCount,
       required this.commentCount,
       required final List<Member> viewers,
@@ -433,6 +450,7 @@ class _Feed implements Feed {
       required this.price})
       : _mediaUrls = mediaUrls,
         _thumbnailUrls = thumbnailUrls,
+        _mediaTypes = mediaTypes,
         _viewers = viewers;
   factory _Feed.fromJson(Map<String, dynamic> json) => _$FeedFromJson(json);
 
@@ -458,6 +476,15 @@ class _Feed implements Feed {
     if (_thumbnailUrls is EqualUnmodifiableListView) return _thumbnailUrls;
     // ignore: implicit_dynamic_type
     return EqualUnmodifiableListView(_thumbnailUrls);
+  }
+
+  final List<FeedMediaType> _mediaTypes;
+  @override
+  @JsonKey()
+  List<FeedMediaType> get mediaTypes {
+    if (_mediaTypes is EqualUnmodifiableListView) return _mediaTypes;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_mediaTypes);
   }
 
   @override
@@ -509,6 +536,8 @@ class _Feed implements Feed {
                 .equals(other._mediaUrls, _mediaUrls) &&
             const DeepCollectionEquality()
                 .equals(other._thumbnailUrls, _thumbnailUrls) &&
+            const DeepCollectionEquality()
+                .equals(other._mediaTypes, _mediaTypes) &&
             (identical(other.likeCount, likeCount) ||
                 other.likeCount == likeCount) &&
             (identical(other.commentCount, commentCount) ||
@@ -530,6 +559,7 @@ class _Feed implements Feed {
       content,
       const DeepCollectionEquality().hash(_mediaUrls),
       const DeepCollectionEquality().hash(_thumbnailUrls),
+      const DeepCollectionEquality().hash(_mediaTypes),
       likeCount,
       commentCount,
       const DeepCollectionEquality().hash(_viewers),
@@ -539,7 +569,7 @@ class _Feed implements Feed {
 
   @override
   String toString() {
-    return 'Feed(albumId: $albumId, authorName: $authorName, authorProfileImage: $authorProfileImage, content: $content, mediaUrls: $mediaUrls, thumbnailUrls: $thumbnailUrls, likeCount: $likeCount, commentCount: $commentCount, viewers: $viewers, createdAt: $createdAt, canEdit: $canEdit, price: $price)';
+    return 'Feed(albumId: $albumId, authorName: $authorName, authorProfileImage: $authorProfileImage, content: $content, mediaUrls: $mediaUrls, thumbnailUrls: $thumbnailUrls, mediaTypes: $mediaTypes, likeCount: $likeCount, commentCount: $commentCount, viewers: $viewers, createdAt: $createdAt, canEdit: $canEdit, price: $price)';
   }
 }
 
@@ -556,6 +586,7 @@ abstract mixin class _$FeedCopyWith<$Res> implements $FeedCopyWith<$Res> {
       String content,
       List<String> mediaUrls,
       List<String> thumbnailUrls,
+      List<FeedMediaType> mediaTypes,
       int likeCount,
       int commentCount,
       List<Member> viewers,
@@ -582,6 +613,7 @@ class __$FeedCopyWithImpl<$Res> implements _$FeedCopyWith<$Res> {
     Object? content = null,
     Object? mediaUrls = null,
     Object? thumbnailUrls = null,
+    Object? mediaTypes = null,
     Object? likeCount = null,
     Object? commentCount = null,
     Object? viewers = null,
@@ -614,6 +646,10 @@ class __$FeedCopyWithImpl<$Res> implements _$FeedCopyWith<$Res> {
           ? _self._thumbnailUrls
           : thumbnailUrls // ignore: cast_nullable_to_non_nullable
               as List<String>,
+      mediaTypes: null == mediaTypes
+          ? _self._mediaTypes
+          : mediaTypes // ignore: cast_nullable_to_non_nullable
+              as List<FeedMediaType>,
       likeCount: null == likeCount
           ? _self.likeCount
           : likeCount // ignore: cast_nullable_to_non_nullable

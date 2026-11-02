@@ -14,6 +14,7 @@ abstract class Feed with _$Feed implements FeedBase {
     required String content,
     required List<String> mediaUrls,
     required List<String> thumbnailUrls,
+    @Default([]) List<FeedMediaType> mediaTypes,
     required int likeCount,
     required int commentCount,
     required List<Member> viewers,

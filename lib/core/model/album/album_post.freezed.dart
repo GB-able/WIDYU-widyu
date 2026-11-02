@@ -20,6 +20,7 @@ mixin _$AlbumPost {
   String get content;
   List<String> get mediaUrls;
   List<String> get thumbnailUrls;
+  List<FeedMediaType> get mediaTypes;
   List<Member> get viewers;
   DateTime get createdAt;
   bool get canEdit;
@@ -46,6 +47,8 @@ mixin _$AlbumPost {
             const DeepCollectionEquality().equals(other.mediaUrls, mediaUrls) &&
             const DeepCollectionEquality()
                 .equals(other.thumbnailUrls, thumbnailUrls) &&
+            const DeepCollectionEquality()
+                .equals(other.mediaTypes, mediaTypes) &&
             const DeepCollectionEquality().equals(other.viewers, viewers) &&
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt) &&
@@ -62,6 +65,7 @@ mixin _$AlbumPost {
       content,
       const DeepCollectionEquality().hash(mediaUrls),
       const DeepCollectionEquality().hash(thumbnailUrls),
+      const DeepCollectionEquality().hash(mediaTypes),
       const DeepCollectionEquality().hash(viewers),
       createdAt,
       canEdit,
@@ -69,7 +73,7 @@ mixin _$AlbumPost {
 
   @override
   String toString() {
-    return 'AlbumPost(albumId: $albumId, authorName: $authorName, authorProfileImage: $authorProfileImage, content: $content, mediaUrls: $mediaUrls, thumbnailUrls: $thumbnailUrls, viewers: $viewers, createdAt: $createdAt, canEdit: $canEdit, price: $price)';
+    return 'AlbumPost(albumId: $albumId, authorName: $authorName, authorProfileImage: $authorProfileImage, content: $content, mediaUrls: $mediaUrls, thumbnailUrls: $thumbnailUrls, mediaTypes: $mediaTypes, viewers: $viewers, createdAt: $createdAt, canEdit: $canEdit, price: $price)';
   }
 }
 
@@ -85,6 +89,7 @@ abstract mixin class $AlbumPostCopyWith<$Res> {
       String content,
       List<String> mediaUrls,
       List<String> thumbnailUrls,
+      List<FeedMediaType> mediaTypes,
       List<Member> viewers,
       DateTime createdAt,
       bool canEdit,
@@ -109,6 +114,7 @@ class _$AlbumPostCopyWithImpl<$Res> implements $AlbumPostCopyWith<$Res> {
     Object? content = null,
     Object? mediaUrls = null,
     Object? thumbnailUrls = null,
+    Object? mediaTypes = null,
     Object? viewers = null,
     Object? createdAt = null,
     Object? canEdit = null,
@@ -139,6 +145,10 @@ class _$AlbumPostCopyWithImpl<$Res> implements $AlbumPostCopyWith<$Res> {
           ? _self.thumbnailUrls
           : thumbnailUrls // ignore: cast_nullable_to_non_nullable
               as List<String>,
+      mediaTypes: null == mediaTypes
+          ? _self.mediaTypes
+          : mediaTypes // ignore: cast_nullable_to_non_nullable
+              as List<FeedMediaType>,
       viewers: null == viewers
           ? _self.viewers
           : viewers // ignore: cast_nullable_to_non_nullable
@@ -259,6 +269,7 @@ extension AlbumPostPatterns on AlbumPost {
             String content,
             List<String> mediaUrls,
             List<String> thumbnailUrls,
+            List<FeedMediaType> mediaTypes,
             List<Member> viewers,
             DateTime createdAt,
             bool canEdit,
@@ -276,6 +287,7 @@ extension AlbumPostPatterns on AlbumPost {
             _that.content,
             _that.mediaUrls,
             _that.thumbnailUrls,
+            _that.mediaTypes,
             _that.viewers,
             _that.createdAt,
             _that.canEdit,
@@ -307,6 +319,7 @@ extension AlbumPostPatterns on AlbumPost {
             String content,
             List<String> mediaUrls,
             List<String> thumbnailUrls,
+            List<FeedMediaType> mediaTypes,
             List<Member> viewers,
             DateTime createdAt,
             bool canEdit,
@@ -323,6 +336,7 @@ extension AlbumPostPatterns on AlbumPost {
             _that.content,
             _that.mediaUrls,
             _that.thumbnailUrls,
+            _that.mediaTypes,
             _that.viewers,
             _that.createdAt,
             _that.canEdit,
@@ -353,6 +367,7 @@ extension AlbumPostPatterns on AlbumPost {
             String content,
             List<String> mediaUrls,
             List<String> thumbnailUrls,
+            List<FeedMediaType> mediaTypes,
             List<Member> viewers,
             DateTime createdAt,
             bool canEdit,
@@ -369,6 +384,7 @@ extension AlbumPostPatterns on AlbumPost {
             _that.content,
             _that.mediaUrls,
             _that.thumbnailUrls,
+            _that.mediaTypes,
             _that.viewers,
             _that.createdAt,
             _that.canEdit,
@@ -389,12 +405,14 @@ class _AlbumPost implements AlbumPost {
       required this.content,
       required final List<String> mediaUrls,
       required final List<String> thumbnailUrls,
+      required final List<FeedMediaType> mediaTypes,
       required final List<Member> viewers,
       required this.createdAt,
       required this.canEdit,
       required this.price})
       : _mediaUrls = mediaUrls,
         _thumbnailUrls = thumbnailUrls,
+        _mediaTypes = mediaTypes,
         _viewers = viewers;
 
   @override
@@ -419,6 +437,14 @@ class _AlbumPost implements AlbumPost {
     if (_thumbnailUrls is EqualUnmodifiableListView) return _thumbnailUrls;
     // ignore: implicit_dynamic_type
     return EqualUnmodifiableListView(_thumbnailUrls);
+  }
+
+  final List<FeedMediaType> _mediaTypes;
+  @override
+  List<FeedMediaType> get mediaTypes {
+    if (_mediaTypes is EqualUnmodifiableListView) return _mediaTypes;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_mediaTypes);
   }
 
   final List<Member> _viewers;
@@ -459,6 +485,8 @@ class _AlbumPost implements AlbumPost {
                 .equals(other._mediaUrls, _mediaUrls) &&
             const DeepCollectionEquality()
                 .equals(other._thumbnailUrls, _thumbnailUrls) &&
+            const DeepCollectionEquality()
+                .equals(other._mediaTypes, _mediaTypes) &&
             const DeepCollectionEquality().equals(other._viewers, _viewers) &&
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt) &&
@@ -475,6 +503,7 @@ class _AlbumPost implements AlbumPost {
       content,
       const DeepCollectionEquality().hash(_mediaUrls),
       const DeepCollectionEquality().hash(_thumbnailUrls),
+      const DeepCollectionEquality().hash(_mediaTypes),
       const DeepCollectionEquality().hash(_viewers),
       createdAt,
       canEdit,
@@ -482,7 +511,7 @@ class _AlbumPost implements AlbumPost {
 
   @override
   String toString() {
-    return 'AlbumPost(albumId: $albumId, authorName: $authorName, authorProfileImage: $authorProfileImage, content: $content, mediaUrls: $mediaUrls, thumbnailUrls: $thumbnailUrls, viewers: $viewers, createdAt: $createdAt, canEdit: $canEdit, price: $price)';
+    return 'AlbumPost(albumId: $albumId, authorName: $authorName, authorProfileImage: $authorProfileImage, content: $content, mediaUrls: $mediaUrls, thumbnailUrls: $thumbnailUrls, mediaTypes: $mediaTypes, viewers: $viewers, createdAt: $createdAt, canEdit: $canEdit, price: $price)';
   }
 }
 
@@ -501,6 +530,7 @@ abstract mixin class _$AlbumPostCopyWith<$Res>
       String content,
       List<String> mediaUrls,
       List<String> thumbnailUrls,
+      List<FeedMediaType> mediaTypes,
       List<Member> viewers,
       DateTime createdAt,
       bool canEdit,
@@ -525,6 +555,7 @@ class __$AlbumPostCopyWithImpl<$Res> implements _$AlbumPostCopyWith<$Res> {
     Object? content = null,
     Object? mediaUrls = null,
     Object? thumbnailUrls = null,
+    Object? mediaTypes = null,
     Object? viewers = null,
     Object? createdAt = null,
     Object? canEdit = null,
@@ -555,6 +586,10 @@ class __$AlbumPostCopyWithImpl<$Res> implements _$AlbumPostCopyWith<$Res> {
           ? _self._thumbnailUrls
           : thumbnailUrls // ignore: cast_nullable_to_non_nullable
               as List<String>,
+      mediaTypes: null == mediaTypes
+          ? _self._mediaTypes
+          : mediaTypes // ignore: cast_nullable_to_non_nullable
+              as List<FeedMediaType>,
       viewers: null == viewers
           ? _self._viewers
           : viewers // ignore: cast_nullable_to_non_nullable

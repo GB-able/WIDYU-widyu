@@ -6,6 +6,7 @@ import 'package:widyu/app/routes/app_route.dart';
 import 'package:widyu/app/routes/extra/edit_post_extra.dart';
 import 'package:widyu/core/model/album/album_post.dart';
 import 'package:widyu/core/model/album/album_stat.dart';
+import 'package:widyu/core/model/album/feed_base.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
 import 'package:widyu/core/ui/widgets/custom_dialog.dart';
@@ -59,17 +60,6 @@ class _FeedWidgetState extends State<FeedWidget> {
     setState(() {
       idx = index;
     });
-  }
-
-  String? lockedPreviewUrl(AlbumPost feed) {
-    if (feed.thumbnailUrls.isNotEmpty) {
-      return feed.thumbnailUrls.first;
-    }
-
-    final image = feed.mediaUrls.where((url) => !_isVideoUrl(url));
-    if (image.isNotEmpty) return image.first;
-
-    return feed.mediaUrls.isEmpty ? null : feed.mediaUrls.first;
   }
 
   Future<void> _confirmUnlock() async {
@@ -178,7 +168,7 @@ class _FeedWidgetState extends State<FeedWidget> {
                     child: FeedLockOverlay(
                       price: feed.price,
                       child: CustomNetworkImage(
-                        url: lockedPreviewUrl(feed),
+                        url: feed.thumbnailUrls.firstOrNull,
                         width: thumbnailWidth,
                         height: thumbnailHeight,
                       ),
@@ -196,7 +186,7 @@ class _FeedWidgetState extends State<FeedWidget> {
                       itemBuilder: (context, index, realIndex) {
                         final url = feed.mediaUrls[index];
 
-                        return _isVideoUrl(url)
+                        return _isVideoAt(feed, index)
                             ? FeedVideoWidget(
                                 url: url,
                                 width: thumbnailWidth,
@@ -319,17 +309,5 @@ String _formatDate(DateTime date) {
   return "${date.year}년 ${date.month.toString().padLeft(2, '0')}월 ${date.day.toString().padLeft(2, '0')}일 ${date.weekdayLabel}요일";
 }
 
-bool _isVideoUrl(String url) {
-  const videoExtensions = {
-    '.mp4',
-    '.mov',
-    '.m4v',
-    '.avi',
-    '.mkv',
-    '.webm',
-    '.3gp',
-  };
-
-  final path = Uri.tryParse(url)?.path.toLowerCase() ?? url.toLowerCase();
-  return videoExtensions.any(path.endsWith);
-}
+bool _isVideoAt(AlbumPost feed, int index) =>
+    feed.mediaTypes.elementAtOrNull(index) == FeedMediaType.video;
