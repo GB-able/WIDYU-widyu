@@ -6,14 +6,10 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart'
-    show
-        ConsumerState,
-        ConsumerStatefulWidget,
-        ProviderContainer,
-        UncontrolledProviderScope;
+    show ConsumerState, ConsumerStatefulWidget, ProviderScope;
+import 'package:flutter_riverpod/misc.dart' show ProviderListenable;
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:provider/provider.dart'
-    show MultiProvider, Provider;
+import 'package:provider/provider.dart' show MultiProvider, Provider;
 import 'package:widyu/app/routes/custom_router.dart';
 import 'package:widyu/background_service.dart';
 import 'package:widyu/core/data/repository/auth/auth_repository.dart';
@@ -92,42 +88,40 @@ Future<void> _bootstrap() async {
 
   // 의존성은 Riverpod가 소유한다. 화면들이 아직 Provider로 읽으므로
   // MultiProvider는 같은 인스턴스를 넘겨주는 브리지로 둔다. (create: 처음 읽을 때 생성)
-  final container = ProviderContainer();
   runApp(
-    UncontrolledProviderScope(
-      container: container,
+    ProviderScope(
       child: MultiProvider(
         providers: [
           Provider<AppServiceController>(
-            create: (_) => container.read(appServiceControllerProvider),
+            create: (context) => _read(context, appServiceControllerProvider),
           ),
           Provider<BackgroundLocationNoticeController>(
-            create: (_) =>
-                container.read(backgroundLocationNoticeControllerProvider),
+            create: (context) =>
+                _read(context, backgroundLocationNoticeControllerProvider),
           ),
           Provider<AuthRepository>(
-            create: (_) => container.read(authRepositoryProvider),
+            create: (context) => _read(context, authRepositoryProvider),
           ),
           Provider<GoalRepository>(
-            create: (_) => container.read(goalRepositoryProvider),
+            create: (context) => _read(context, goalRepositoryProvider),
           ),
           Provider<MedicationRepository>(
-            create: (_) => container.read(medicationRepositoryProvider),
+            create: (context) => _read(context, medicationRepositoryProvider),
           ),
           Provider<HeartRateRepository>(
-            create: (_) => container.read(heartRateRepositoryProvider),
+            create: (context) => _read(context, heartRateRepositoryProvider),
           ),
           Provider<HomeRepository>(
-            create: (_) => container.read(homeRepositoryProvider),
+            create: (context) => _read(context, homeRepositoryProvider),
           ),
           Provider<LocationRepository>(
-            create: (_) => container.read(locationRepositoryProvider),
+            create: (context) => _read(context, locationRepositoryProvider),
           ),
           Provider<MyPageRepository>(
-            create: (_) => container.read(myPageRepositoryProvider),
+            create: (context) => _read(context, myPageRepositoryProvider),
           ),
           Provider<NotificationRepository>(
-            create: (_) => container.read(notificationRepositoryProvider),
+            create: (context) => _read(context, notificationRepositoryProvider),
           ),
         ],
         child: const App(),
@@ -135,6 +129,9 @@ Future<void> _bootstrap() async {
     ),
   );
 }
+
+T _read<T>(BuildContext context, ProviderListenable<T> provider) =>
+    ProviderScope.containerOf(context, listen: false).read(provider);
 
 class App extends ConsumerStatefulWidget {
   const App({super.key});
