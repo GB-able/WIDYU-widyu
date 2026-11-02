@@ -58,26 +58,24 @@ class GoalViewModel extends _$GoalViewModel {
     final pointStatus = _pointRepository.status.listen((status) {
       state = state.copyWith(point: status.point);
     });
+    ref.onDispose(pointStatus.cancel);
     final todaySteps = _walkRepository.todaySteps.listen((steps) {
       state = state.copyWith(steps: steps);
     });
+    ref.onDispose(todaySteps.cancel);
     unawaited(ref.read(walkTrackerProvider).start());
     unawaited(refresh());
     final medicationChanges = ref
         .read(medicationRepositoryProvider)
         .medicationChanges
         .listen((_) => unawaited(refresh(showLoading: false)));
+    ref.onDispose(medicationChanges.cancel);
     final dayTimer = Timer.periodic(const Duration(seconds: 30), (_) {
       if (_loadedDay != DateTime.now().walkDate) {
         unawaited(refresh(showLoading: false));
       }
     });
-    ref.onDispose(() {
-      pointStatus.cancel();
-      todaySteps.cancel();
-      medicationChanges.cancel();
-      dayTimer.cancel();
-    });
+    ref.onDispose(dayTimer.cancel);
   }
 
   void _emit(GoalUiEvent event) {

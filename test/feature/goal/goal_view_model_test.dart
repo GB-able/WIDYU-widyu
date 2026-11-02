@@ -10,6 +10,7 @@ import 'package:widyu/core/di/providers.dart';
 import 'package:widyu/core/model/api/api_result.dart';
 import 'package:widyu/core/model/goal/goal_home_response.dart';
 import 'package:widyu/core/model/goal/medication/medication.dart';
+import 'package:widyu/core/model/goal/medication/medication_point_result.dart';
 import 'package:widyu/core/model/goal/walk/walk.dart';
 import 'package:widyu/core/model/goal/weekly_goal_status_response.dart';
 import 'package:widyu/core/utils/extensions/walk_extension.dart';
@@ -198,6 +199,37 @@ void main() {
     expect(state().isLoading, isFalse);
   });
 
+  test('다시 빌드돼도 같은 이벤트 stream을 유지하고 다시 구독한다', () async {
+    goal.weekly = const ApiResult.failure('error');
+    listen();
+    await pumpEventQueue();
+
+    container.invalidate(goalViewModelProvider);
+    container.read(goalViewModelProvider);
+    await pumpEventQueue();
+    expect(goal.calls, 2);
+    expect(events, [
+      isA<FetchWeeklyStatusFailure>(),
+      isA<FetchWeeklyStatusFailure>(),
+    ]);
+
+    point.emit(30);
+    await pumpEventQueue();
+    expect(state().point, 30);
+  });
+
+  test('인증 화면에서 돌아오기 전에 폐기되면 보상 이벤트를 보내지 않는다', () async {
+    listen();
+    final viewModel = container.read(goalViewModelProvider.notifier);
+    container.dispose();
+
+    // 가드가 없으면 닫힌 이벤트 stream에 보내다가 예외가 난다.
+    viewModel.onMedicationVerified(
+      const MedicationPointResult(earnedPoints: 10, currentPoints: 20),
+    );
+    expect(events, isEmpty);
+  });
+
   testWidgets('폐기되면 타이머와 구독을 정리한다', (tester) async {
     // 복용 시간이 없으면 만료로 보지 않아 남은 시간 타이머가 1초마다 돈다.
     goal.home = const ApiResult.success(
@@ -218,6 +250,7 @@ void main() {
     listen();
     await tester.pump();
     expect(goal.calls, 1);
+    expect(state().cards, isA<GoalCardsData>());
 
     container.dispose();
     // 구독이나 남은 시간 타이머가 남아 있으면 폐기된 state를 쓰다가 예외가 난다.
