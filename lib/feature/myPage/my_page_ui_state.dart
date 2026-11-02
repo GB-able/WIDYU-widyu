@@ -10,5 +10,6 @@ abstract class MyPageUiState with _$MyPageUiState {
     @Default(null) String? name,
     int? point,
     @Default(false) bool isPointLoading,
+    @Default('') String appVersion,
   }) = _MyPageUiState;
 }
