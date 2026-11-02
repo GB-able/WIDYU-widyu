@@ -64,6 +64,8 @@ dependencies:
   sqflite: ^2.4.2
   path: ^1.9.1
   logger: ^2.8.0
+  flutter_riverpod: ^3.1.0
+  riverpod_annotation: ^4.0.0
 
 dev_dependencies:
   flutter_test:
@@ -74,6 +76,8 @@ dev_dependencies:
   freezed: ^3.2.3
   json_serializable: ^6.11.2
   flutter_gen_runner: ^5.15.0
+  riverpod_generator: ^4.0.0+1
+  riverpod_lint: ^3.1.0
 
 flutter_gen:
   output: lib/gen/

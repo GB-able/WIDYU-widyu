@@ -3,6 +3,8 @@
 include: package:flutter_lints/flutter.yaml
 
 analyzer:
+  plugins:
+    - riverpod_lint
   # 생성 코드는 검사하지 않는다.
   exclude:
     - "**/*.g.dart"
@@ -15,6 +17,10 @@ analyzer:
   errors:
     # Freezed 생성자 파라미터에 붙인 @JsonKey 경고 (Freezed 공식 권장 설정)
     invalid_annotation_target: ignore
+
+# riverpod_lint는 analysis_server_plugin 방식이라 버전을 여기서 지정한다.
+plugins:
+  riverpod_lint: ^3.1.0
 
 linter:
   rules:
