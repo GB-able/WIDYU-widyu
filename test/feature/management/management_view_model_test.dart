@@ -37,7 +37,10 @@ void main() {
   // setUp과 테스트 본문 사이에도 microtask가 돌므로 테스트 안에서 부른다.
   void listen() {
     container.listen(managementViewModelProvider, (_, __) {});
-    container.read(managementViewModelProvider.notifier).uiEvent.listen(events.add);
+    container
+        .read(managementViewModelProvider.notifier)
+        .uiEvent
+        .listen(events.add);
   }
 
   test('조회 시작 전에 폐기되면 조회하지 않는다', () async {
@@ -58,6 +61,19 @@ void main() {
     repository.pending.complete(const ApiResult.failure('error'));
     // 가드가 없으면 폐기된 Notifier의 state나 닫힌 이벤트 stream에 쓰다가 예외가 나서 실패한다.
     await pumpEventQueue();
+    expect(events, isEmpty);
+  });
+
+  test('가족 코드를 불러온다', () async {
+    listen();
+    await pumpEventQueue();
+
+    repository.pending
+        .complete(const ApiResult.success(FamilyCode(familyCode: 'ABC123')));
+    await pumpEventQueue();
+    final state = container.read(managementViewModelProvider);
+    expect(state.familyCode, 'ABC123');
+    expect(state.isLoading, isFalse);
     expect(events, isEmpty);
   });
 }
