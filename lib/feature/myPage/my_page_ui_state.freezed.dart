@@ -19,6 +19,7 @@ mixin _$MyPageUiState {
   String? get name;
   int? get point;
   bool get isPointLoading;
+  String get appVersion;
 
   /// Create a copy of MyPageUiState
   /// with the given fields replaced by the non-null parameter values.
@@ -40,16 +41,18 @@ mixin _$MyPageUiState {
             (identical(other.name, name) || other.name == name) &&
             (identical(other.point, point) || other.point == point) &&
             (identical(other.isPointLoading, isPointLoading) ||
-                other.isPointLoading == isPointLoading));
+                other.isPointLoading == isPointLoading) &&
+            (identical(other.appVersion, appVersion) ||
+                other.appVersion == appVersion));
   }
 
   @override
-  int get hashCode => Object.hash(
-      runtimeType, isLoading, profileImage, name, point, isPointLoading);
+  int get hashCode => Object.hash(runtimeType, isLoading, profileImage, name,
+      point, isPointLoading, appVersion);
 
   @override
   String toString() {
-    return 'MyPageUiState(isLoading: $isLoading, profileImage: $profileImage, name: $name, point: $point, isPointLoading: $isPointLoading)';
+    return 'MyPageUiState(isLoading: $isLoading, profileImage: $profileImage, name: $name, point: $point, isPointLoading: $isPointLoading, appVersion: $appVersion)';
   }
 }
 
@@ -64,7 +67,8 @@ abstract mixin class $MyPageUiStateCopyWith<$Res> {
       String? profileImage,
       String? name,
       int? point,
-      bool isPointLoading});
+      bool isPointLoading,
+      String appVersion});
 }
 
 /// @nodoc
@@ -85,6 +89,7 @@ class _$MyPageUiStateCopyWithImpl<$Res>
     Object? name = freezed,
     Object? point = freezed,
     Object? isPointLoading = null,
+    Object? appVersion = null,
   }) {
     return _then(_self.copyWith(
       isLoading: null == isLoading
@@ -107,6 +112,10 @@ class _$MyPageUiStateCopyWithImpl<$Res>
           ? _self.isPointLoading
           : isPointLoading // ignore: cast_nullable_to_non_nullable
               as bool,
+      appVersion: null == appVersion
+          ? _self.appVersion
+          : appVersion // ignore: cast_nullable_to_non_nullable
+              as String,
     ));
   }
 }
@@ -205,7 +214,7 @@ extension MyPageUiStatePatterns on MyPageUiState {
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>(
     TResult Function(bool isLoading, String? profileImage, String? name,
-            int? point, bool isPointLoading)?
+            int? point, bool isPointLoading, String appVersion)?
         $default, {
     required TResult orElse(),
   }) {
@@ -213,7 +222,7 @@ extension MyPageUiStatePatterns on MyPageUiState {
     switch (_that) {
       case _MyPageUiState() when $default != null:
         return $default(_that.isLoading, _that.profileImage, _that.name,
-            _that.point, _that.isPointLoading);
+            _that.point, _that.isPointLoading, _that.appVersion);
       case _:
         return orElse();
     }
@@ -235,14 +244,14 @@ extension MyPageUiStatePatterns on MyPageUiState {
   @optionalTypeArgs
   TResult when<TResult extends Object?>(
     TResult Function(bool isLoading, String? profileImage, String? name,
-            int? point, bool isPointLoading)
+            int? point, bool isPointLoading, String appVersion)
         $default,
   ) {
     final _that = this;
     switch (_that) {
       case _MyPageUiState():
         return $default(_that.isLoading, _that.profileImage, _that.name,
-            _that.point, _that.isPointLoading);
+            _that.point, _that.isPointLoading, _that.appVersion);
       case _:
         throw StateError('Unexpected subclass');
     }
@@ -263,14 +272,14 @@ extension MyPageUiStatePatterns on MyPageUiState {
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>(
     TResult? Function(bool isLoading, String? profileImage, String? name,
-            int? point, bool isPointLoading)?
+            int? point, bool isPointLoading, String appVersion)?
         $default,
   ) {
     final _that = this;
     switch (_that) {
       case _MyPageUiState() when $default != null:
         return $default(_that.isLoading, _that.profileImage, _that.name,
-            _that.point, _that.isPointLoading);
+            _that.point, _that.isPointLoading, _that.appVersion);
       case _:
         return null;
     }
@@ -285,7 +294,8 @@ class _MyPageUiState implements MyPageUiState {
       this.profileImage = null,
       this.name = null,
       this.point,
-      this.isPointLoading = false});
+      this.isPointLoading = false,
+      this.appVersion = ''});
 
   @override
   @JsonKey()
@@ -301,6 +311,9 @@ class _MyPageUiState implements MyPageUiState {
   @override
   @JsonKey()
   final bool isPointLoading;
+  @override
+  @JsonKey()
+  final String appVersion;
 
   /// Create a copy of MyPageUiState
   /// with the given fields replaced by the non-null parameter values.
@@ -322,16 +335,18 @@ class _MyPageUiState implements MyPageUiState {
             (identical(other.name, name) || other.name == name) &&
             (identical(other.point, point) || other.point == point) &&
             (identical(other.isPointLoading, isPointLoading) ||
-                other.isPointLoading == isPointLoading));
+                other.isPointLoading == isPointLoading) &&
+            (identical(other.appVersion, appVersion) ||
+                other.appVersion == appVersion));
   }
 
   @override
-  int get hashCode => Object.hash(
-      runtimeType, isLoading, profileImage, name, point, isPointLoading);
+  int get hashCode => Object.hash(runtimeType, isLoading, profileImage, name,
+      point, isPointLoading, appVersion);
 
   @override
   String toString() {
-    return 'MyPageUiState(isLoading: $isLoading, profileImage: $profileImage, name: $name, point: $point, isPointLoading: $isPointLoading)';
+    return 'MyPageUiState(isLoading: $isLoading, profileImage: $profileImage, name: $name, point: $point, isPointLoading: $isPointLoading, appVersion: $appVersion)';
   }
 }
 
@@ -348,7 +363,8 @@ abstract mixin class _$MyPageUiStateCopyWith<$Res>
       String? profileImage,
       String? name,
       int? point,
-      bool isPointLoading});
+      bool isPointLoading,
+      String appVersion});
 }
 
 /// @nodoc
@@ -369,6 +385,7 @@ class __$MyPageUiStateCopyWithImpl<$Res>
     Object? name = freezed,
     Object? point = freezed,
     Object? isPointLoading = null,
+    Object? appVersion = null,
   }) {
     return _then(_MyPageUiState(
       isLoading: null == isLoading
@@ -391,6 +408,10 @@ class __$MyPageUiStateCopyWithImpl<$Res>
           ? _self.isPointLoading
           : isPointLoading // ignore: cast_nullable_to_non_nullable
               as bool,
+      appVersion: null == appVersion
+          ? _self.appVersion
+          : appVersion // ignore: cast_nullable_to_non_nullable
+              as String,
     ));
   }
 }

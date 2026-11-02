@@ -4,11 +4,13 @@ class _ProfileView extends StatelessWidget {
   final bool isLoading;
   final String? profileImage;
   final String? name;
+  final Future<void> Function() onProfileClosed;
 
   const _ProfileView({
     this.isLoading = false,
     this.profileImage,
     this.name,
+    required this.onProfileClosed,
   });
 
   @override
@@ -28,9 +30,7 @@ class _ProfileView extends StatelessWidget {
         IconButton(
           onPressed: () async {
             await context.push(AppRoute.profile.path);
-            if (context.mounted) {
-              await context.read<MyPageViewModel>().fetchUser();
-            }
+            if (context.mounted) await onProfileClosed();
           },
           icon: WiduIcon(
             icon: Assets.icons.ic20ChevronRightLarge,
