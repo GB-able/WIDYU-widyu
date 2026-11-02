@@ -2,16 +2,13 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
-import 'package:widyu/core/data/repository/incident/incident_repository.dart';
 import 'package:widyu/core/notification/safety_push_manager.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
-import 'package:widyu/core/ui/widgets/ui_event_listener.dart';
 import 'package:widyu/core/ui/widgets/widu_icon.dart';
 import 'package:widyu/core/utils/show_toast.dart';
-import 'package:widyu/feature/safety_check/safety_check_ui_event.dart';
 import 'package:widyu/feature/safety_check/safety_check_ui_state.dart';
 import 'package:widyu/feature/safety_check/safety_check_view_model.dart';
 import 'package:widyu/gen/assets.gen.dart';
@@ -47,79 +44,74 @@ class _SafetyCheckScreenState extends State<SafetyCheckScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (context) => SafetyCheckViewModel(
-        repository: context.read<IncidentRepository>(),
-        incidentId: widget.incidentId,
-      )..start(),
-      child: const _SafetyCheckView(),
-    );
+    return _SafetyCheckView(incidentId: widget.incidentId);
   }
 }
 
-class _SafetyCheckView extends StatelessWidget {
-  const _SafetyCheckView();
+class _SafetyCheckView extends ConsumerWidget {
+  const _SafetyCheckView({required this.incidentId});
 
-  void _handleEvent(BuildContext context, SafetyCheckUiEvent event) {
-    switch (event) {
-      case RespondFailure():
-        showToast('응답을 보내지 못했어요. 다시 시도해 주세요.');
-      case CloseScreen():
-        SafetyPushManager.releaseLockScreen();
-        if (context.canPop()) context.pop();
+  final String incidentId;
+
+  Future<bool> _respondOk(SafetyCheckViewModel viewModel) async {
+    final result = await viewModel.respondOk();
+    if (result == SafetyRespondResult.failed) {
+      showToast('응답을 보내지 못했어요. 다시 시도해 주세요.');
     }
+    return result == SafetyRespondResult.sent;
   }
 
   @override
-  Widget build(BuildContext context) {
-    final viewModel = context.read<SafetyCheckViewModel>();
-    final phase = context.select<SafetyCheckViewModel, SafetyCheckPhase>(
-        (vm) => vm.uiState.phase);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final provider = safetyCheckViewModelProvider(incidentId);
+    final phase = ref.watch(provider.select((state) => state.phase));
+    final viewModel = ref.read(provider.notifier);
+    ref.listen(provider.select((state) => state.closed), (_, closed) {
+      if (!closed) return;
+      SafetyPushManager.releaseLockScreen();
+      if (context.canPop()) context.pop();
+    });
 
-    return UiEventListener(
-      stream: viewModel.uiEvent,
-      onEvent: (event) => _handleEvent(context, event),
-      child: AnnotatedRegion<SystemUiOverlayStyle>(
-        value: SystemUiOverlayStyle.light,
-        child: PopScope(
-          canPop: false,
-          child: Scaffold(
-            backgroundColor: MyColor.dim,
-            body: SafeArea(
-              child: Stack(
-                children: [
-                  Align(
-                    alignment: Alignment.topCenter,
-                    child: Padding(
-                      padding: const EdgeInsets.only(top: _logoTop),
-                      child: Image.asset('assets/images/img_64_logo.png',
-                          width: _logoSize, fit: BoxFit.contain),
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle.light,
+      child: PopScope(
+        canPop: false,
+        child: Scaffold(
+          backgroundColor: MyColor.dim,
+          body: SafeArea(
+            child: Stack(
+              children: [
+                Align(
+                  alignment: Alignment.topCenter,
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: _logoTop),
+                    child: Image.asset('assets/images/img_64_logo.png',
+                        width: _logoSize, fit: BoxFit.contain),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                      vertical: _logoTop + _logoSize),
+                  child: Center(
+                    child: SingleChildScrollView(
+                      child: switch (phase) {
+                        SafetyCheckPhase.confirm => _SafetyCheckContent(
+                            onCancel: () => _respondOk(viewModel)),
+                        SafetyCheckPhase.okay =>
+                          const _SafetyCheckResultContent(
+                            title: '괜찮다고 보호자에게\n전해드렸어요.',
+                            description: '괜찮으시면 시간 안에 누르지 않으면\n보호자에게 알려드려요.',
+                          ),
+                        SafetyCheckPhase.notOkay =>
+                          const _SafetyCheckResultContent(
+                            title: '보호자에게 알렸어요.',
+                            description: '연락을 기다리는 동안 안전한 곳에서\n잠시 기다려주세요.',
+                          ),
+                      },
                     ),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                        vertical: _logoTop + _logoSize),
-                    child: Center(
-                      child: SingleChildScrollView(
-                        child: switch (phase) {
-                          SafetyCheckPhase.confirm =>
-                            _SafetyCheckContent(onCancel: viewModel.respondOk),
-                          SafetyCheckPhase.okay =>
-                            const _SafetyCheckResultContent(
-                              title: '괜찮다고 보호자에게\n전해드렸어요.',
-                              description: '괜찮으시면 시간 안에 누르지 않으면\n보호자에게 알려드려요.',
-                            ),
-                          SafetyCheckPhase.notOkay =>
-                            const _SafetyCheckResultContent(
-                              title: '보호자에게 알렸어요.',
-                              description: '연락을 기다리는 동안 안전한 곳에서\n잠시 기다려주세요.',
-                            ),
-                        },
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),

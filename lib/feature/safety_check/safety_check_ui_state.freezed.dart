@@ -16,6 +16,7 @@ T _$identity<T>(T value) => value;
 mixin _$SafetyCheckUiState {
   SafetyCheckPhase get phase;
   bool get isSubmitting;
+  bool get closed;
 
   /// Create a copy of SafetyCheckUiState
   /// with the given fields replaced by the non-null parameter values.
@@ -32,15 +33,16 @@ mixin _$SafetyCheckUiState {
             other is SafetyCheckUiState &&
             (identical(other.phase, phase) || other.phase == phase) &&
             (identical(other.isSubmitting, isSubmitting) ||
-                other.isSubmitting == isSubmitting));
+                other.isSubmitting == isSubmitting) &&
+            (identical(other.closed, closed) || other.closed == closed));
   }
 
   @override
-  int get hashCode => Object.hash(runtimeType, phase, isSubmitting);
+  int get hashCode => Object.hash(runtimeType, phase, isSubmitting, closed);
 
   @override
   String toString() {
-    return 'SafetyCheckUiState(phase: $phase, isSubmitting: $isSubmitting)';
+    return 'SafetyCheckUiState(phase: $phase, isSubmitting: $isSubmitting, closed: $closed)';
   }
 }
 
@@ -50,7 +52,7 @@ abstract mixin class $SafetyCheckUiStateCopyWith<$Res> {
           SafetyCheckUiState value, $Res Function(SafetyCheckUiState) _then) =
       _$SafetyCheckUiStateCopyWithImpl;
   @useResult
-  $Res call({SafetyCheckPhase phase, bool isSubmitting});
+  $Res call({SafetyCheckPhase phase, bool isSubmitting, bool closed});
 }
 
 /// @nodoc
@@ -68,6 +70,7 @@ class _$SafetyCheckUiStateCopyWithImpl<$Res>
   $Res call({
     Object? phase = null,
     Object? isSubmitting = null,
+    Object? closed = null,
   }) {
     return _then(_self.copyWith(
       phase: null == phase
@@ -77,6 +80,10 @@ class _$SafetyCheckUiStateCopyWithImpl<$Res>
       isSubmitting: null == isSubmitting
           ? _self.isSubmitting
           : isSubmitting // ignore: cast_nullable_to_non_nullable
+              as bool,
+      closed: null == closed
+          ? _self.closed
+          : closed // ignore: cast_nullable_to_non_nullable
               as bool,
     ));
   }
@@ -175,13 +182,14 @@ extension SafetyCheckUiStatePatterns on SafetyCheckUiState {
 
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>(
-    TResult Function(SafetyCheckPhase phase, bool isSubmitting)? $default, {
+    TResult Function(SafetyCheckPhase phase, bool isSubmitting, bool closed)?
+        $default, {
     required TResult orElse(),
   }) {
     final _that = this;
     switch (_that) {
       case _SafetyCheckUiState() when $default != null:
-        return $default(_that.phase, _that.isSubmitting);
+        return $default(_that.phase, _that.isSubmitting, _that.closed);
       case _:
         return orElse();
     }
@@ -202,12 +210,13 @@ extension SafetyCheckUiStatePatterns on SafetyCheckUiState {
 
   @optionalTypeArgs
   TResult when<TResult extends Object?>(
-    TResult Function(SafetyCheckPhase phase, bool isSubmitting) $default,
+    TResult Function(SafetyCheckPhase phase, bool isSubmitting, bool closed)
+        $default,
   ) {
     final _that = this;
     switch (_that) {
       case _SafetyCheckUiState():
-        return $default(_that.phase, _that.isSubmitting);
+        return $default(_that.phase, _that.isSubmitting, _that.closed);
       case _:
         throw StateError('Unexpected subclass');
     }
@@ -227,12 +236,13 @@ extension SafetyCheckUiStatePatterns on SafetyCheckUiState {
 
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>(
-    TResult? Function(SafetyCheckPhase phase, bool isSubmitting)? $default,
+    TResult? Function(SafetyCheckPhase phase, bool isSubmitting, bool closed)?
+        $default,
   ) {
     final _that = this;
     switch (_that) {
       case _SafetyCheckUiState() when $default != null:
-        return $default(_that.phase, _that.isSubmitting);
+        return $default(_that.phase, _that.isSubmitting, _that.closed);
       case _:
         return null;
     }
@@ -243,7 +253,9 @@ extension SafetyCheckUiStatePatterns on SafetyCheckUiState {
 
 class _SafetyCheckUiState implements SafetyCheckUiState {
   const _SafetyCheckUiState(
-      {this.phase = SafetyCheckPhase.confirm, this.isSubmitting = false});
+      {this.phase = SafetyCheckPhase.confirm,
+      this.isSubmitting = false,
+      this.closed = false});
 
   @override
   @JsonKey()
@@ -251,6 +263,9 @@ class _SafetyCheckUiState implements SafetyCheckUiState {
   @override
   @JsonKey()
   final bool isSubmitting;
+  @override
+  @JsonKey()
+  final bool closed;
 
   /// Create a copy of SafetyCheckUiState
   /// with the given fields replaced by the non-null parameter values.
@@ -267,15 +282,16 @@ class _SafetyCheckUiState implements SafetyCheckUiState {
             other is _SafetyCheckUiState &&
             (identical(other.phase, phase) || other.phase == phase) &&
             (identical(other.isSubmitting, isSubmitting) ||
-                other.isSubmitting == isSubmitting));
+                other.isSubmitting == isSubmitting) &&
+            (identical(other.closed, closed) || other.closed == closed));
   }
 
   @override
-  int get hashCode => Object.hash(runtimeType, phase, isSubmitting);
+  int get hashCode => Object.hash(runtimeType, phase, isSubmitting, closed);
 
   @override
   String toString() {
-    return 'SafetyCheckUiState(phase: $phase, isSubmitting: $isSubmitting)';
+    return 'SafetyCheckUiState(phase: $phase, isSubmitting: $isSubmitting, closed: $closed)';
   }
 }
 
@@ -287,7 +303,7 @@ abstract mixin class _$SafetyCheckUiStateCopyWith<$Res>
       __$SafetyCheckUiStateCopyWithImpl;
   @override
   @useResult
-  $Res call({SafetyCheckPhase phase, bool isSubmitting});
+  $Res call({SafetyCheckPhase phase, bool isSubmitting, bool closed});
 }
 
 /// @nodoc
@@ -305,6 +321,7 @@ class __$SafetyCheckUiStateCopyWithImpl<$Res>
   $Res call({
     Object? phase = null,
     Object? isSubmitting = null,
+    Object? closed = null,
   }) {
     return _then(_SafetyCheckUiState(
       phase: null == phase
@@ -314,6 +331,10 @@ class __$SafetyCheckUiStateCopyWithImpl<$Res>
       isSubmitting: null == isSubmitting
           ? _self.isSubmitting
           : isSubmitting // ignore: cast_nullable_to_non_nullable
+              as bool,
+      closed: null == closed
+          ? _self.closed
+          : closed // ignore: cast_nullable_to_non_nullable
               as bool,
     ));
   }

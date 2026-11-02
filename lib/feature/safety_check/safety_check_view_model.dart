@@ -1,66 +1,66 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:widyu/core/data/repository/incident/incident_repository.dart';
+import 'package:widyu/core/di/providers.dart';
 import 'package:widyu/core/model/api/api_result.dart';
 import 'package:widyu/core/notification/safety_push_manager.dart';
-import 'package:widyu/feature/safety_check/safety_check_ui_event.dart';
 import 'package:widyu/feature/safety_check/safety_check_ui_state.dart';
 
-class SafetyCheckViewModel extends ChangeNotifier {
-  final IncidentRepository _repository;
-  final String _incidentId;
+part 'safety_check_view_model.g.dart';
+
+@riverpod
+class SafetyCheckViewModel extends _$SafetyCheckViewModel {
+  late IncidentRepository _repository;
+  late String _incidentId;
   Timer? _deadlineTimer;
   Timer? _closeTimer;
-  bool _deadlinePassed = false;
-  bool _disposed = false;
+  late bool _deadlinePassed;
 
   static const _defaultResponseWindow = Duration(seconds: 60);
   static const _resultDisplayDuration = Duration(seconds: 3);
 
-  SafetyCheckUiState _uiState = const SafetyCheckUiState();
-  SafetyCheckUiState get uiState => _uiState;
+  @override
+  SafetyCheckUiState build(String incidentId) {
+    _repository = ref.read(incidentRepositoryProvider);
+    _incidentId = incidentId;
+    _deadlinePassed = false;
+    ref.onDispose(() {
+      _deadlineTimer?.cancel();
+      _closeTimer?.cancel();
+    });
+    unawaited(_start());
+    return const SafetyCheckUiState();
+  }
 
-  final _uiEvent = StreamController<SafetyCheckUiEvent>.broadcast();
-  Stream<SafetyCheckUiEvent> get uiEvent => _uiEvent.stream;
-
-  SafetyCheckViewModel({
-    required IncidentRepository repository,
-    required String incidentId,
-  })  : _repository = repository,
-        _incidentId = incidentId;
-
-  Future<void> start() async {
+  Future<void> _start() async {
     _scheduleDeadline(_defaultResponseWindow);
     final result = await _repository.markPromptDisplayed(_incidentId);
-    if (_disposed || _uiState.phase != SafetyCheckPhase.confirm) return;
+    if (!ref.mounted || state.phase != SafetyCheckPhase.confirm) return;
     if (result case Success(:final data) when data.respondByMs != null) {
       final respondBy = DateTime.fromMillisecondsSinceEpoch(data.respondByMs!);
       _scheduleDeadline(respondBy.difference(DateTime.now()));
     }
   }
 
-  Future<bool> respondOk() async {
-    if (_uiState.phase != SafetyCheckPhase.confirm || _uiState.isSubmitting) {
-      return false;
+  Future<SafetyRespondResult> respondOk() async {
+    if (state.phase != SafetyCheckPhase.confirm || state.isSubmitting) {
+      return SafetyRespondResult.ignored;
     }
-    _update(_uiState.copyWith(isSubmitting: true));
+    state = state.copyWith(isSubmitting: true);
     final result = await _repository.respondOk(_incidentId);
-    if (_disposed) return false;
+    if (!ref.mounted) return SafetyRespondResult.ignored;
     switch (result) {
       case Success(:final data):
         _showResult(data.state == 'OK_CLOSED'
             ? SafetyCheckPhase.okay
             : SafetyCheckPhase.notOkay);
-        return true;
+        return SafetyRespondResult.sent;
       case Failure():
-        _update(_uiState.copyWith(isSubmitting: false));
-        if (_deadlinePassed) {
-          _showResult(SafetyCheckPhase.notOkay);
-        } else {
-          _uiEvent.add(const RespondFailure());
-        }
-        return false;
+        state = state.copyWith(isSubmitting: false);
+        if (!_deadlinePassed) return SafetyRespondResult.failed;
+        _showResult(SafetyCheckPhase.notOkay);
+        return SafetyRespondResult.ignored;
     }
   }
 
@@ -70,34 +70,19 @@ class SafetyCheckViewModel extends ChangeNotifier {
       remaining.isNegative ? Duration.zero : remaining,
       () {
         _deadlinePassed = true;
-        if (_uiState.isSubmitting) return;
+        if (state.isSubmitting) return;
         _showResult(SafetyCheckPhase.notOkay);
       },
     );
   }
 
   void _showResult(SafetyCheckPhase phase) {
-    if (_uiState.phase != SafetyCheckPhase.confirm) return;
+    if (state.phase != SafetyCheckPhase.confirm) return;
     _deadlineTimer?.cancel();
     SafetyPushManager.stopAlarm(_incidentId);
-    _update(_uiState.copyWith(phase: phase, isSubmitting: false));
+    state = state.copyWith(phase: phase, isSubmitting: false);
     _closeTimer = Timer(_resultDisplayDuration, () {
-      if (!_disposed) _uiEvent.add(const CloseScreen());
+      if (ref.mounted) state = state.copyWith(closed: true);
     });
-  }
-
-  void _update(SafetyCheckUiState state) {
-    if (_disposed) return;
-    _uiState = state;
-    notifyListeners();
-  }
-
-  @override
-  void dispose() {
-    _disposed = true;
-    _deadlineTimer?.cancel();
-    _closeTimer?.cancel();
-    _uiEvent.close();
-    super.dispose();
   }
 }

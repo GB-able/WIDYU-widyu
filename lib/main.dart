@@ -17,7 +17,6 @@ import 'package:widyu/core/data/repository/goal/goal_repository.dart';
 import 'package:widyu/core/data/repository/goal/medication_repository.dart';
 import 'package:widyu/core/data/repository/heartRate/heart_rate_repository.dart';
 import 'package:widyu/core/data/repository/home/home_repository.dart';
-import 'package:widyu/core/data/repository/incident/incident_repository.dart';
 import 'package:widyu/core/data/repository/location/location_repository.dart';
 import 'package:widyu/core/data/repository/myPage/my_page_repository.dart';
 import 'package:widyu/core/data/repository/notification/notification_repository.dart';
@@ -125,9 +124,6 @@ Future<void> _bootstrap() async {
           ),
           Provider<NotificationRepository>(
             create: (context) => _read(context, notificationRepositoryProvider),
-          ),
-          Provider<IncidentRepository>(
-            create: (context) => _read(context, incidentRepositoryProvider),
           ),
         ],
         child: const App(),
