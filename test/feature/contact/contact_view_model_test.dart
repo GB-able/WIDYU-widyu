@@ -88,6 +88,13 @@ void main() {
     expect(events.single, isA<UpdateRepresentativeContactFailure>());
   });
 
+  test('조회 시작 전에 폐기되면 조회하지 않는다', () async {
+    listen();
+    container.dispose();
+    await pumpEventQueue();
+    expect(events, isEmpty);
+  });
+
   test('조회 중 폐기되면 상태와 이벤트를 쓰지 않는다', () async {
     repository.pending = Completer();
     listen();

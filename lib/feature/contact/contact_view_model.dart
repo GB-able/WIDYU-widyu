@@ -45,6 +45,7 @@ class ContactViewModel extends _$ContactViewModel {
   }
 
   Future<void> _fetchContact() async {
+    if (!ref.mounted) return;
     state = state.copyWith(isLoading: true);
 
     final result = await _repository.fetchContact();
