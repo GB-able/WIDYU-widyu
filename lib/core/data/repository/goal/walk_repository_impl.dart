@@ -7,6 +7,7 @@ import 'package:rxdart/rxdart.dart';
 import 'package:widyu/core/data/repository/goal/walk_repository.dart';
 import 'package:widyu/core/data/source/goal/walk_local_data_source.dart';
 import 'package:widyu/core/data/source/goal/walk_remote_data_source.dart';
+import 'package:widyu/core/model/goal/walk/walk_detail.dart';
 import 'package:widyu/core/model/goal/walk/walk_sync_result.dart';
 import 'package:widyu/core/network/token_manager.dart';
 import 'package:widyu/core/utils/extensions/walk_extension.dart';
@@ -26,17 +27,18 @@ class WalkRepositoryImpl implements WalkRepository {
 
   final _todaySteps = BehaviorSubject<int>.seeded(0);
   String? _date;
-  int? _steps;
-  bool _hasHealthSteps = false;
+  int _steps = 0;
+  int? _lastCount;
+  String? _lastCountDate;
+  int _lastCountSteps = 0;
+  ({String date, int count, int steps})? _savedLive;
+  int? _goal;
+  String? _offsetDate;
+  int _offset = 0;
   bool _disposed = false;
   final _syncRequests = StreamController<void>.broadcast();
   Future<void>? _reading;
-  int? _goal;
-  int? _anchorSteps;
-  int? _anchorCount;
-  int? _lastCount;
   String? _achievedSyncDate;
-  String? _liveCrossDate;
 
   // 재생되는 마지막 값이 어제 것일 수 있어 받는 시점의 날짜로 다시 계산한다.
   @override
@@ -44,7 +46,7 @@ class WalkRepositoryImpl implements WalkRepository {
       _todaySteps.stream.map((_) => currentTodaySteps);
 
   @override
-  int get currentTodaySteps => _date == now().walkDate ? _steps ?? 0 : 0;
+  int get currentTodaySteps => _date == now().walkDate ? _steps : 0;
 
   void _emit() {
     if (_disposed) return;
@@ -70,87 +72,62 @@ class WalkRepositoryImpl implements WalkRepository {
   @override
   void applyLiveCount(int count) {
     if (_disposed) return;
-    _resetIfDayChanged();
-    _lastCount = count;
-    var anchorSteps = _anchorSteps;
-    if (anchorSteps == null) {
-      _anchorSteps = anchorSteps = _steps ?? 0;
-      _anchorCount = count;
-    }
-    var anchorCount = _anchorCount;
-    if (anchorCount == null || count < anchorCount) {
-      _anchorCount = anchorCount = count;
-    }
-    final steps = anchorSteps + (count - anchorCount);
-    _steps = steps;
-    _emit();
-    final goal = _goal;
     final today = now().walkDate;
-    if (goal != null &&
-        goal > 0 &&
-        steps >= goal &&
-        anchorSteps < goal &&
-        _liveCrossDate != today) {
-      _liveCrossDate = today;
-      unawaited(refreshTodaySteps());
+    final last = _lastCountDate == today ? _lastCount : null;
+    if (_goal != null) {
+      final saved = _savedLive;
+      if (last != null && count > last) {
+        _raise(currentTodaySteps + count - last, live: true);
+      } else if (last == null &&
+          saved != null &&
+          saved.date == today &&
+          count >= saved.count) {
+        _raise(saved.steps + count - saved.count, live: true);
+      }
+      _savedLive = null;
     }
+    _lastCount = count;
+    _lastCountDate = today;
+    _lastCountSteps = currentTodaySteps;
   }
 
   @override
   Future<void> refreshTodaySteps() {
-    if (_disposed) return Future.value();
-    return _reading ??= _refreshTodaySteps().whenComplete(() => _reading = null);
+    if (_disposed || _goal == null) return Future.value();
+    return _reading ??=
+        _refreshTodaySteps().whenComplete(() => _reading = null);
   }
 
   Future<void> _refreshTodaySteps() async {
-    _resetIfDayChanged();
     final instant = now();
+    final today = instant.walkDate;
     int? steps;
     try {
-      steps = await _localDataSource.readSteps(
-        instant.walkDate.walkStartOf,
-        instant,
-      );
+      steps = await _localDataSource.readSteps(today.walkStartOf, instant);
     } catch (_) {
       return;
     }
     if (_disposed || steps == null || steps < 0) return;
-    _anchor(steps);
+    _raise(steps + (_offsetDate == today ? _offset : 0));
   }
 
-  // 건강값이 폰 센서보다 큰 동안(예: 워치 걸음) 실시간으로 올라간 표시가
-  // 재앵커 때 되돌아가지 않도록 현재 표시값을 하한으로 둔다.
-  void _anchor(int steps) {
-    _date = now().walkDate;
-    _anchorSteps = math.max(steps, _steps ?? 0);
-    _anchorCount = _lastCount;
-    _steps = _anchorSteps;
-    _hasHealthSteps = true;
+  void _raise(int steps, {bool live = false}) {
+    if (_disposed) return;
+    final today = now().walkDate;
+    if (_date == today && steps <= _steps) return;
+    _date = today;
+    _steps = steps;
+    if (!live) _lastCount = null;
     _emit();
     _syncIfAchieved();
   }
 
-  void _resetIfDayChanged() {
-    final today = now().walkDate;
-    if (_date == today) return;
-    _date = today;
-    _steps = null;
-    _anchorSteps = null;
-    _anchorCount = null;
-    _hasHealthSteps = false;
-    _emit();
-  }
-
   void _syncIfAchieved() {
     final goal = _goal;
-    final anchorSteps = _anchorSteps;
     final today = now().walkDate;
     if (_disposed ||
         goal == null ||
-        goal <= 0 ||
-        anchorSteps == null ||
-        _date != today ||
-        anchorSteps < goal ||
+        currentTodaySteps < goal ||
         _achievedSyncDate == today) {
       return;
     }
@@ -165,7 +142,6 @@ class WalkRepositoryImpl implements WalkRepository {
     bool Function()? isCancelled,
     bool background = false,
   }) async {
-    _resetIfDayChanged();
     final result = await _sync(
       memberId: memberId,
       full: full,
@@ -173,30 +149,19 @@ class WalkRepositoryImpl implements WalkRepository {
       background: background,
     );
     final steps = result.steps;
-    if (result.date == now().walkDate && steps != null) {
-      _anchor(steps);
-    } else {
-      _emit();
-    }
+    if (result.date == now().walkDate && steps != null) _raise(steps);
     return result;
   }
 
   @override
   void applyServerSteps(int serverSteps, {required String date, int? goal}) {
     if (_disposed) return;
-    final today = now().walkDate;
     if (goal != null) {
-      _goal = goal;
+      _goal = goal > 0 ? goal : null;
       _syncIfAchieved();
     }
-    if (date != today ||
-        serverSteps < 0 ||
-        (_date == today && _hasHealthSteps)) {
-      return;
-    }
-    _date = date;
-    _steps = serverSteps;
-    _emit();
+    if (_goal == null || date != now().walkDate || serverSteps < 0) return;
+    _raise(serverSteps);
   }
 
   Future<WalkSaveResult> _sync({
@@ -220,6 +185,22 @@ class WalkRepositoryImpl implements WalkRepository {
         await _tokenManager.memberId == memberId;
     try {
       if (!await active()) return const WalkSaveResult();
+      final serverDate = now().walkDate;
+      final WalkDetail? detail;
+      try {
+        final response = await _remoteDataSource.fetchToday();
+        final status = response.statusCode ?? 0;
+        if (status == 401) return const WalkSaveResult(unauthorized: true);
+        if (status < 200 || status >= 300) return const WalkSaveResult();
+        detail = response.data;
+      } catch (_) {
+        return const WalkSaveResult();
+      }
+      if (now().walkDate != serverDate) return const WalkSaveResult();
+      _goal = detail != null && detail.goal > 0 ? detail.goal : null;
+      if (detail == null || _goal == null || !await active()) {
+        return const WalkSaveResult();
+      }
       final state = await _localDataSource.readState(memberId);
       Future<void> save() async {
         if (await active()) {
@@ -229,6 +210,8 @@ class WalkRepositoryImpl implements WalkRepository {
 
       if (!await _readAndSaveSteps(
         state: state,
+        serverDate: serverDate,
+        serverSteps: detail.actual,
         full: full,
         readHealth: readHealth,
         active: active,
@@ -241,6 +224,8 @@ class WalkRepositoryImpl implements WalkRepository {
       final days = state['days'] as Map<String, dynamic>;
       final summary = await _uploadAndSaveSteps(
         days: days,
+        serverDate: serverDate,
+        serverSteps: detail.actual,
         active: active,
         save: save,
       );
@@ -264,6 +249,8 @@ class WalkRepositoryImpl implements WalkRepository {
 
   Future<bool> _readAndSaveSteps({
     required Map<String, dynamic> state,
+    required String serverDate,
+    required int serverSteps,
     required bool full,
     required bool readHealth,
     required Future<bool> Function() active,
@@ -290,6 +277,10 @@ class WalkRepositoryImpl implements WalkRepository {
         .toList();
     state['days'] = days;
     state['reads'] = reads;
+    if (days[serverDate]
+        case {'liveCount': final int count, 'liveSteps': final int steps}) {
+      _savedLive = (date: serverDate, count: count, steps: steps);
+    }
 
     for (final date in dates) {
       if (!readHealth) break;
@@ -315,12 +306,31 @@ class WalkRepositoryImpl implements WalkRepository {
       reads[date] = nextRead.millisecondsSinceEpoch;
       if (total != null && total >= 0) {
         final day = Map<String, dynamic>.from(days[date] as Map? ?? {});
-        day['total'] = total;
+        final isServerDate = date == serverDate;
+        if (isServerDate && !days.containsKey(date) && serverSteps > total) {
+          day['offset'] = serverSteps - total;
+        }
+        final offset = day['offset'] as int? ?? 0;
+        day['total'] = [
+          day['total'] as int? ?? 0,
+          total + offset,
+          if (isServerDate) ...[serverSteps, currentTodaySteps],
+        ].reduce(math.max);
         days[date] = day;
+        if (isServerDate) {
+          _offsetDate = date;
+          _offset = offset;
+        }
       }
       await save();
     }
     days.removeWhere((date, _) => !date.isWalkDateAllowed(now()));
+    final lastCount = _lastCount;
+    if (days[serverDate] case final Map<String, dynamic> day
+        when lastCount != null && _lastCountDate == serverDate) {
+      day['liveCount'] = lastCount;
+      day['liveSteps'] = _lastCountSteps;
+    }
     await save();
     return true;
   }
@@ -343,6 +353,8 @@ class WalkRepositoryImpl implements WalkRepository {
   Future<({int uploaded, bool rewardChanged, bool unauthorized})>
       _uploadAndSaveSteps({
     required Map<String, dynamic> days,
+    required String serverDate,
+    required int serverSteps,
     required Future<bool> Function() active,
     required Future<void> Function() save,
   }) async {
@@ -358,7 +370,10 @@ class WalkRepositoryImpl implements WalkRepository {
       }
       final day = days[date] as Map<String, dynamic>;
       final total = day['total'] as int;
-      if (total == day['sent']) continue;
+      if (total == day['sent'] ||
+          (date == serverDate && total <= serverSteps)) {
+        continue;
+      }
       final result = await _syncDay(date: date, steps: total);
       if (result.status == WalkSyncStatus.unauthorized) {
         unauthorized = true;

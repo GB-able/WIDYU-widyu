@@ -10,10 +10,10 @@ abstract class WalkRepository {
   /// 기기 센서의 누적 걸음 수 스트림. 앱이 보이는 동안만 구독한다.
   Stream<int> get liveStepCounts;
 
-  /// 누적 센서값을 받아 마지막 건강값 기준 증가분을 오늘 걸음 수에 반영한다.
+  /// 누적 센서값을 받아 직전 값 이후 증가분을 오늘 걸음 수에 더한다.
   void applyLiveCount(int count);
 
-  /// 건강값을 다시 읽어 오늘 걸음 수의 기준을 갈아끼운다.
+  /// 건강값을 다시 읽어 오늘 걸음 수보다 크면 반영한다.
   Future<void> refreshTodaySteps();
 
   /// 목표 도달 등으로 서버 동기화가 필요할 때 이벤트를 보낸다.

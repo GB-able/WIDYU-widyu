@@ -1,5 +1,6 @@
 import 'package:widyu/core/data/source/goal/walk_remote_data_source.dart';
 import 'package:widyu/core/model/api/api_response.dart';
+import 'package:widyu/core/model/goal/walk/walk_detail.dart';
 import 'package:widyu/core/model/goal/walk/walk_sync_response.dart';
 import 'package:widyu/core/network/api_client.dart';
 import 'package:widyu/core/utils/extensions/api_response_extension.dart';
@@ -27,6 +28,19 @@ class WalkRemoteDataSourceImpl extends WalkRemoteDataSource {
       return response.toApiResponse(WalkSyncResponse.fromJson);
     } catch (e) {
       throw Exception('걸음 수 동기화에 실패했습니다: $e');
+    }
+  }
+
+  @override
+  Future<ApiResponse<WalkDetail>> fetchToday() async {
+    try {
+      final response = await _apiClient.req(
+        path: '$_path/detail',
+        method: HttpMethod.get,
+      );
+      return response.toApiResponse(WalkDetail.fromJson);
+    } catch (e) {
+      throw Exception('오늘 걸음 수 조회에 실패했습니다: $e');
     }
   }
 
