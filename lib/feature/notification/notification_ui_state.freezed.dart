@@ -16,6 +16,7 @@ T _$identity<T>(T value) => value;
 mixin _$NotificationUiState {
   String get category;
   List<NotificationCategory> get categories;
+  InfiniteScrollState<NotificationItemUiModel> get list;
 
   /// Create a copy of NotificationUiState
   /// with the given fields replaced by the non-null parameter values.
@@ -33,16 +34,17 @@ mixin _$NotificationUiState {
             (identical(other.category, category) ||
                 other.category == category) &&
             const DeepCollectionEquality()
-                .equals(other.categories, categories));
+                .equals(other.categories, categories) &&
+            (identical(other.list, list) || other.list == list));
   }
 
   @override
-  int get hashCode => Object.hash(
-      runtimeType, category, const DeepCollectionEquality().hash(categories));
+  int get hashCode => Object.hash(runtimeType, category,
+      const DeepCollectionEquality().hash(categories), list);
 
   @override
   String toString() {
-    return 'NotificationUiState(category: $category, categories: $categories)';
+    return 'NotificationUiState(category: $category, categories: $categories, list: $list)';
   }
 }
 
@@ -52,7 +54,12 @@ abstract mixin class $NotificationUiStateCopyWith<$Res> {
           NotificationUiState value, $Res Function(NotificationUiState) _then) =
       _$NotificationUiStateCopyWithImpl;
   @useResult
-  $Res call({String category, List<NotificationCategory> categories});
+  $Res call(
+      {String category,
+      List<NotificationCategory> categories,
+      InfiniteScrollState<NotificationItemUiModel> list});
+
+  $InfiniteScrollStateCopyWith<NotificationItemUiModel, $Res> get list;
 }
 
 /// @nodoc
@@ -70,6 +77,7 @@ class _$NotificationUiStateCopyWithImpl<$Res>
   $Res call({
     Object? category = null,
     Object? categories = null,
+    Object? list = null,
   }) {
     return _then(_self.copyWith(
       category: null == category
@@ -80,7 +88,22 @@ class _$NotificationUiStateCopyWithImpl<$Res>
           ? _self.categories
           : categories // ignore: cast_nullable_to_non_nullable
               as List<NotificationCategory>,
+      list: null == list
+          ? _self.list
+          : list // ignore: cast_nullable_to_non_nullable
+              as InfiniteScrollState<NotificationItemUiModel>,
     ));
+  }
+
+  /// Create a copy of NotificationUiState
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $InfiniteScrollStateCopyWith<NotificationItemUiModel, $Res> get list {
+    return $InfiniteScrollStateCopyWith<NotificationItemUiModel, $Res>(
+        _self.list, (value) {
+      return _then(_self.copyWith(list: value));
+    });
   }
 }
 
@@ -177,14 +200,15 @@ extension NotificationUiStatePatterns on NotificationUiState {
 
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>(
-    TResult Function(String category, List<NotificationCategory> categories)?
+    TResult Function(String category, List<NotificationCategory> categories,
+            InfiniteScrollState<NotificationItemUiModel> list)?
         $default, {
     required TResult orElse(),
   }) {
     final _that = this;
     switch (_that) {
       case _NotificationUiState() when $default != null:
-        return $default(_that.category, _that.categories);
+        return $default(_that.category, _that.categories, _that.list);
       case _:
         return orElse();
     }
@@ -205,13 +229,14 @@ extension NotificationUiStatePatterns on NotificationUiState {
 
   @optionalTypeArgs
   TResult when<TResult extends Object?>(
-    TResult Function(String category, List<NotificationCategory> categories)
+    TResult Function(String category, List<NotificationCategory> categories,
+            InfiniteScrollState<NotificationItemUiModel> list)
         $default,
   ) {
     final _that = this;
     switch (_that) {
       case _NotificationUiState():
-        return $default(_that.category, _that.categories);
+        return $default(_that.category, _that.categories, _that.list);
       case _:
         throw StateError('Unexpected subclass');
     }
@@ -231,13 +256,14 @@ extension NotificationUiStatePatterns on NotificationUiState {
 
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>(
-    TResult? Function(String category, List<NotificationCategory> categories)?
+    TResult? Function(String category, List<NotificationCategory> categories,
+            InfiniteScrollState<NotificationItemUiModel> list)?
         $default,
   ) {
     final _that = this;
     switch (_that) {
       case _NotificationUiState() when $default != null:
-        return $default(_that.category, _that.categories);
+        return $default(_that.category, _that.categories, _that.list);
       case _:
         return null;
     }
@@ -249,7 +275,8 @@ extension NotificationUiStatePatterns on NotificationUiState {
 class _NotificationUiState extends NotificationUiState {
   const _NotificationUiState(
       {this.category = 'ALL',
-      final List<NotificationCategory> categories = const []})
+      final List<NotificationCategory> categories = const [],
+      this.list = const InfiniteScrollState<NotificationItemUiModel>()})
       : _categories = categories,
         super._();
 
@@ -264,6 +291,10 @@ class _NotificationUiState extends NotificationUiState {
     // ignore: implicit_dynamic_type
     return EqualUnmodifiableListView(_categories);
   }
+
+  @override
+  @JsonKey()
+  final InfiniteScrollState<NotificationItemUiModel> list;
 
   /// Create a copy of NotificationUiState
   /// with the given fields replaced by the non-null parameter values.
@@ -282,16 +313,17 @@ class _NotificationUiState extends NotificationUiState {
             (identical(other.category, category) ||
                 other.category == category) &&
             const DeepCollectionEquality()
-                .equals(other._categories, _categories));
+                .equals(other._categories, _categories) &&
+            (identical(other.list, list) || other.list == list));
   }
 
   @override
-  int get hashCode => Object.hash(
-      runtimeType, category, const DeepCollectionEquality().hash(_categories));
+  int get hashCode => Object.hash(runtimeType, category,
+      const DeepCollectionEquality().hash(_categories), list);
 
   @override
   String toString() {
-    return 'NotificationUiState(category: $category, categories: $categories)';
+    return 'NotificationUiState(category: $category, categories: $categories, list: $list)';
   }
 }
 
@@ -303,7 +335,13 @@ abstract mixin class _$NotificationUiStateCopyWith<$Res>
       __$NotificationUiStateCopyWithImpl;
   @override
   @useResult
-  $Res call({String category, List<NotificationCategory> categories});
+  $Res call(
+      {String category,
+      List<NotificationCategory> categories,
+      InfiniteScrollState<NotificationItemUiModel> list});
+
+  @override
+  $InfiniteScrollStateCopyWith<NotificationItemUiModel, $Res> get list;
 }
 
 /// @nodoc
@@ -321,6 +359,7 @@ class __$NotificationUiStateCopyWithImpl<$Res>
   $Res call({
     Object? category = null,
     Object? categories = null,
+    Object? list = null,
   }) {
     return _then(_NotificationUiState(
       category: null == category
@@ -331,7 +370,22 @@ class __$NotificationUiStateCopyWithImpl<$Res>
           ? _self._categories
           : categories // ignore: cast_nullable_to_non_nullable
               as List<NotificationCategory>,
+      list: null == list
+          ? _self.list
+          : list // ignore: cast_nullable_to_non_nullable
+              as InfiniteScrollState<NotificationItemUiModel>,
     ));
+  }
+
+  /// Create a copy of NotificationUiState
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $InfiniteScrollStateCopyWith<NotificationItemUiModel, $Res> get list {
+    return $InfiniteScrollStateCopyWith<NotificationItemUiModel, $Res>(
+        _self.list, (value) {
+      return _then(_self.copyWith(list: value));
+    });
   }
 }
 

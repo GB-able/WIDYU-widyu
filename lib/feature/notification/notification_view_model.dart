@@ -1,35 +1,49 @@
-import 'package:flutter/material.dart';
+import 'dart:async';
+
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:widyu/core/data/repository/notification/notification_repository.dart';
+import 'package:widyu/core/di/providers.dart';
 import 'package:widyu/core/model/api/api_result.dart';
 import 'package:widyu/core/model/api/infinite_page_result.dart';
 import 'package:widyu/core/model/notification/notification_category.dart';
 import 'package:widyu/core/model/notification/notification_page.dart';
-import 'package:widyu/core/utils/mixins/infinite_scroll_mixin.dart';
+import 'package:widyu/core/utils/infinite_scroll.dart';
 import 'package:widyu/feature/notification/notification_ui_model.dart';
 import 'package:widyu/feature/notification/notification_ui_state.dart';
 
-class NotificationViewModel extends ChangeNotifier
-    with InfiniteScrollMixin<NotificationItemUiModel> {
-  NotificationViewModel({required NotificationRepository repository})
-      : _repository = repository {
-    load();
+part 'notification_view_model.g.dart';
+
+@riverpod
+class NotificationViewModel extends _$NotificationViewModel {
+  late NotificationRepository _repository;
+  late InfiniteScroller<NotificationItemUiModel> _scroller;
+
+  @override
+  NotificationUiState build() {
+    _repository = ref.read(notificationRepositoryProvider);
+    _scroller = InfiniteScroller(
+      fetch: _fetch,
+      read: () => state.list,
+      write: (list) => state = state.copyWith(list: list),
+      mounted: () => ref.mounted,
+    );
+    Future.microtask(load);
+    return const NotificationUiState();
   }
-
-  final NotificationRepository _repository;
-
-  NotificationUiState _uiState = const NotificationUiState();
-  NotificationUiState get uiState => _uiState;
 
   Future<void> load() async {
-    await Future.wait([_fetchCategories(), init()]);
+    await Future.wait([_fetchCategories(), _scroller.init()]);
   }
 
-  Future<void> select(String category) async {
-    if (_uiState.category == category) return;
+  Future<void> loadMore() => _scroller.loadMore();
 
-    _uiState = _uiState.copyWith(category: category);
-    notifyListeners();
-    await init();
+  Future<void> retry() => _scroller.retry();
+
+  Future<void> select(String category) async {
+    if (state.category == category) return;
+
+    state = state.copyWith(category: category);
+    await _scroller.init();
   }
 
   Future<void> read(NotificationItemUiModel notification) async {
@@ -37,24 +51,24 @@ class NotificationViewModel extends ChangeNotifier
 
     final result =
         await _repository.readNotification(notification.notificationId);
-    if (result is! Success) return;
+    if (!ref.mounted || result is! Success) return;
 
     bool isTarget(NotificationItemUiModel item) =>
         item.notificationId == notification.notificationId;
-    if (_uiState.category == 'UNREAD') {
-      removeWhere(isTarget);
-    } else {
-      replaceWhere(isTarget, (item) => item.copyWith(isRead: true));
-    }
+    state = state.copyWith(
+      list: state.category == 'UNREAD'
+          ? state.list.removeWhere(isTarget)
+          : state.list
+              .replaceWhere(isTarget, (item) => item.copyWith(isRead: true)),
+    );
     await _fetchCategories();
   }
 
-  @override
-  Future<InfinitePageResult<NotificationItemUiModel>> fetch(
+  Future<InfinitePageResult<NotificationItemUiModel>> _fetch(
       String? cursor) async {
     final result = await _repository.fetchNotificationPage(
       cursor == null ? null : int.tryParse(cursor),
-      category: _uiState.category,
+      category: state.category,
     );
     if (result case Failure(:final message)) throw Exception(message);
 
@@ -68,11 +82,10 @@ class NotificationViewModel extends ChangeNotifier
 
   Future<void> _fetchCategories() async {
     final result = await _repository.fetchNotificationCategories();
-    if (result is! Success) return;
+    if (!ref.mounted || result is! Success) return;
 
-    _uiState = _uiState.copyWith(
+    state = state.copyWith(
       categories: (result as Success<List<NotificationCategory>>).data,
     );
-    notifyListeners();
   }
 }

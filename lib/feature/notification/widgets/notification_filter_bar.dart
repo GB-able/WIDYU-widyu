@@ -1,11 +1,11 @@
 part of '../notification_screen.dart';
 
-class _NotificationFilterBar extends StatelessWidget {
+class _NotificationFilterBar extends ConsumerWidget {
   const _NotificationFilterBar();
 
   @override
-  Widget build(BuildContext context) {
-    final uiState = context.watch<NotificationViewModel>().uiState;
+  Widget build(BuildContext context, WidgetRef ref) {
+    final uiState = ref.watch(notificationViewModelProvider);
 
     return SizedBox(
       height: 52,
@@ -20,8 +20,9 @@ class _NotificationFilterBar extends StatelessWidget {
           return _NotificationFilterChip(
             category: category,
             isSelected: uiState.category == category.label,
-            onTap: () =>
-                context.read<NotificationViewModel>().select(category.label),
+            onTap: () => ref
+                .read(notificationViewModelProvider.notifier)
+                .select(category.label),
           );
         },
       ),

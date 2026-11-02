@@ -4,23 +4,24 @@ import 'dart:convert';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
 import 'package:widyu/app/routes/app_route.dart';
-import 'package:widyu/core/data/repository/notification/notification_repository.dart';
+import 'package:widyu/core/di/providers.dart';
 import 'package:widyu/core/notification/local_notification_manager.dart';
 
-class NotificationTapListener extends StatefulWidget {
+class NotificationTapListener extends ConsumerStatefulWidget {
   const NotificationTapListener({super.key, required this.child});
 
   final Widget child;
 
   @override
-  State<NotificationTapListener> createState() =>
+  ConsumerState<NotificationTapListener> createState() =>
       _NotificationTapListenerState();
 }
 
-class _NotificationTapListenerState extends State<NotificationTapListener> {
+class _NotificationTapListenerState
+    extends ConsumerState<NotificationTapListener> {
   final _subscriptions = <StreamSubscription<dynamic>>[];
 
   @override
@@ -59,7 +60,9 @@ class _NotificationTapListenerState extends State<NotificationTapListener> {
     final notificationId = int.tryParse('${data['notificationId'] ?? ''}');
     if (notificationId != null) {
       unawaited(
-        context.read<NotificationRepository>().readNotification(notificationId),
+        ref
+            .read(notificationRepositoryProvider)
+            .readNotification(notificationId),
       );
     }
     final path = data['deepLink'];

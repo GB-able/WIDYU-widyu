@@ -1,13 +1,13 @@
 part of '../notification_screen.dart';
 
-class _NotificationList extends StatefulWidget {
+class _NotificationList extends ConsumerStatefulWidget {
   const _NotificationList();
 
   @override
-  State<_NotificationList> createState() => _NotificationListState();
+  ConsumerState<_NotificationList> createState() => _NotificationListState();
 }
 
-class _NotificationListState extends State<_NotificationList> {
+class _NotificationListState extends ConsumerState<_NotificationList> {
   final _scrollController = ScrollController();
 
   @override
@@ -26,20 +26,20 @@ class _NotificationListState extends State<_NotificationList> {
   void _onScroll() {
     if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent - 300) {
-      context.read<NotificationViewModel>().loadMore();
+      ref.read(notificationViewModelProvider.notifier).loadMore();
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final viewModel = context.watch<NotificationViewModel>();
-
-    final notifications = viewModel.items;
+    final uiState = ref.watch(notificationViewModelProvider);
+    final viewModel = ref.read(notificationViewModelProvider.notifier);
+    final notifications = uiState.list.items;
 
     return RefreshIndicator(
       color: MyColor.primary,
       backgroundColor: Colors.white,
-      onRefresh: () => context.read<NotificationViewModel>().load(),
+      onRefresh: viewModel.load,
       child: ListView.separated(
         controller: _scrollController,
         itemCount: notifications.length + 1,
@@ -47,7 +47,7 @@ class _NotificationListState extends State<_NotificationList> {
             const Divider(height: 1, thickness: 1, color: MyColor.grey100),
         itemBuilder: (context, index) {
           if (index == notifications.length) {
-            if (viewModel.isLoadingMore) {
+            if (uiState.list.isLoadingMore) {
               return const Padding(
                 padding: EdgeInsets.symmetric(vertical: 16),
                 child: Center(
@@ -55,11 +55,10 @@ class _NotificationListState extends State<_NotificationList> {
                 ),
               );
             }
-            if (viewModel.hasError) {
+            if (uiState.list.hasError) {
               return Center(
                 child: TextButton(
-                  onPressed: () =>
-                      context.read<NotificationViewModel>().retry(),
+                  onPressed: viewModel.retry,
                   child: const Text(
                     '다시 시도',
                     style: TextStyle(color: MyColor.primary),
@@ -74,9 +73,9 @@ class _NotificationListState extends State<_NotificationList> {
 
           return _NotificationTile(
             notification: notification,
-            categoryName: viewModel.uiState.nameOf(notification.category),
+            categoryName: uiState.nameOf(notification.category),
             onTap: () {
-              context.read<NotificationViewModel>().read(notification);
+              viewModel.read(notification);
               GoRouter.of(context).openDeepLink(notification.path);
             },
           );
