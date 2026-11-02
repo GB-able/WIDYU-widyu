@@ -11,10 +11,13 @@ import 'package:widyu/feature/auth/login_view_model.dart';
 class _Auth extends Fake implements AuthRepository {
   ApiResult<void> result = const ApiResult.failure('error', statusCode: 404);
   Completer<ApiResult<void>>? pending;
+  final calls = <(String, String)>[];
 
   @override
-  Future<ApiResult<void>> login(String inviteCode, String phoneNumber) =>
-      pending?.future ?? Future.value(result);
+  Future<ApiResult<void>> login(String inviteCode, String phoneNumber) {
+    calls.add((inviteCode, phoneNumber));
+    return pending?.future ?? Future.value(result);
+  }
 }
 
 void main() {
@@ -83,11 +86,13 @@ void main() {
   test('로그인에 성공하면 성공 콜백을, 그 밖의 실패면 실패 콜백을 부른다', () async {
     final viewModel = listen();
     await pumpEventQueue();
-    viewModel.setPhoneNumber('01012345678');
+    // 화면 입력 형식 그대로 넣어 숫자만 남기는지도 확인한다.
+    viewModel.setPhoneNumber('010 1234 5678');
 
     auth.result = const ApiResult.success(null);
     await login(viewModel);
     expect(successes, 1);
+    expect(auth.calls.single, ('1234567', '01012345678'));
 
     auth.result = const ApiResult.failure('error', statusCode: 500);
     await login(viewModel);
