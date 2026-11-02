@@ -2,15 +2,10 @@ import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import 'package:provider/provider.dart';
 import 'package:widyu/app/routes/app_route.dart';
-import 'package:widyu/core/data/repository/goal/goal_repository.dart';
-import 'package:widyu/core/data/repository/goal/medication_repository.dart';
-import 'package:widyu/core/data/repository/goal/walk_repository.dart';
-import 'package:widyu/core/data/repository/location/location_repository.dart';
-import 'package:widyu/core/data/repository/point/point_repository.dart';
 import 'package:widyu/core/model/goal/medication/medication_point_result.dart';
 import 'package:widyu/core/model/goal/weekly_goal_status_response.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
@@ -22,7 +17,6 @@ import 'package:widyu/core/ui/widgets/widu_icon.dart';
 import 'package:widyu/core/ui/widgets/widyu_text_button.dart';
 import 'package:widyu/core/utils/extensions/date_extension.dart';
 import 'package:widyu/core/utils/show_toast.dart';
-import 'package:widyu/core/utils/walk_tracker.dart';
 import 'package:widyu/feature/goal/_widget/goal_empty_card.dart';
 import 'package:widyu/feature/goal/_widget/hospital_card.dart';
 import 'package:widyu/feature/goal/_widget/medication_card.dart';
@@ -40,14 +34,14 @@ part 'widgets/weekly_card.dart';
 
 enum GoalType { medicine, walk, hospital }
 
-class GoalScreen extends StatefulWidget {
+class GoalScreen extends ConsumerStatefulWidget {
   const GoalScreen({super.key});
 
   @override
-  State<GoalScreen> createState() => _GoalScreenState();
+  ConsumerState<GoalScreen> createState() => _GoalScreenState();
 }
 
-class _GoalScreenState extends State<GoalScreen> {
+class _GoalScreenState extends ConsumerState<GoalScreen> {
   static const _headerBottomGap = 24.0;
   static const _appBarFadeDistance = 52.0;
 
@@ -92,79 +86,65 @@ class _GoalScreenState extends State<GoalScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (context) => GoalViewModel(
-        repository: context.read<GoalRepository>(),
-        pointRepository: context.read<PointRepository>(),
-        walkTracker: context.read<WalkTracker>(),
-        walkRepository: context.read<WalkRepository>(),
-        locationRepository: context.read<LocationRepository>(),
-        medicationRepository: context.read<MedicationRepository>(),
-      ),
-      builder: (context, child) {
-        final viewModel = context.read<GoalViewModel>();
-        final uiState = context.select<GoalViewModel, GoalUiState>(
-          (vm) => vm.uiState,
-        );
+    final viewModel = ref.watch(goalViewModelProvider.notifier);
+    final uiState = ref.watch(goalViewModelProvider);
 
-        return UiEventListener(
-            stream: viewModel.uiEvent,
-            onEvent: (event) => _handleEvent(context, event),
-            child: Scaffold(
-              backgroundColor: MyColor.orange300,
-              appBar: _GoalAppBar(fade: _appBarFade),
-              body: Stack(
-                children: [
-                  NotificationListener<ScrollNotification>(
-                    onNotification: _onScroll,
-                    child: CustomScrollView(
-                      physics: const ClampingScrollPhysics(),
-                      slivers: [
-                        SliverToBoxAdapter(
-                          child: Padding(
-                            padding: const EdgeInsets.only(
-                              bottom: _headerBottomGap,
-                            ),
-                            child: _GoalHeader(
-                              key: _headerKey,
-                              summary: uiState.weeklyStatuses,
-                              point: uiState.point,
-                            ),
-                          ),
-                        ),
-                        SliverLayoutBuilder(
-                          builder: (context, sliverConstraints) {
-                            final minHeight = math.max(
-                              0.0,
-                              sliverConstraints.viewportMainAxisExtent -
-                                  sliverConstraints.precedingScrollExtent,
-                            );
-                            return SliverToBoxAdapter(
-                              child: ConstrainedBox(
-                                constraints: BoxConstraints(
-                                  minHeight: minHeight,
-                                ),
-                                child: _GoalContent(
-                                  state: uiState.cards,
-                                  steps: uiState.steps,
-                                  onRetry: viewModel.refresh,
-                                  onMedicationVerified:
-                                      viewModel.onMedicationVerified,
-                                  findRoute: viewModel.findRoute,
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                      ],
+    return UiEventListener(
+      stream: viewModel.uiEvent,
+      onEvent: (event) => _handleEvent(context, event),
+      child: Scaffold(
+        backgroundColor: MyColor.orange300,
+        appBar: _GoalAppBar(fade: _appBarFade),
+        body: Stack(
+          children: [
+            NotificationListener<ScrollNotification>(
+              onNotification: _onScroll,
+              child: CustomScrollView(
+                physics: const ClampingScrollPhysics(),
+                slivers: [
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.only(
+                        bottom: _headerBottomGap,
+                      ),
+                      child: _GoalHeader(
+                        key: _headerKey,
+                        summary: uiState.weeklyStatuses,
+                        point: uiState.point,
+                      ),
                     ),
                   ),
-                  if (uiState.isLoading) const CustomLoadingWidget(),
+                  SliverLayoutBuilder(
+                    builder: (context, sliverConstraints) {
+                      final minHeight = math.max(
+                        0.0,
+                        sliverConstraints.viewportMainAxisExtent -
+                            sliverConstraints.precedingScrollExtent,
+                      );
+                      return SliverToBoxAdapter(
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(
+                            minHeight: minHeight,
+                          ),
+                          child: _GoalContent(
+                            state: uiState.cards,
+                            steps: uiState.steps,
+                            onRetry: viewModel.refresh,
+                            onMedicationVerified:
+                                viewModel.onMedicationVerified,
+                            findRoute: viewModel.findRoute,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
                 ],
               ),
             ),
-        );
-      },
+            if (uiState.isLoading) const CustomLoadingWidget(),
+          ],
+        ),
+      ),
     );
   }
 }
