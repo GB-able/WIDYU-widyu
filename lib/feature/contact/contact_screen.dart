@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
-import 'package:widyu/core/data/repository/myPage/my_page_repository.dart';
 import 'package:widyu/core/model/myPage/contact/family_member.dart';
 import 'package:widyu/core/model/myPage/contact/representative.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
@@ -12,7 +11,6 @@ import 'package:widyu/core/ui/widgets/widyu_divider.dart';
 import 'package:widyu/core/utils/extensions/string_extension.dart';
 import 'package:widyu/core/utils/show_toast.dart';
 import 'package:widyu/feature/contact/contact_ui_event.dart';
-import 'package:widyu/feature/contact/contact_ui_state.dart';
 import 'package:widyu/feature/contact/contact_view_model.dart';
 import 'package:widyu/gen/assets.gen.dart';
 
@@ -21,7 +19,7 @@ part 'widget/family_contact_content.dart';
 part 'widget/family_contact_view.dart';
 part 'widget/representative_contact_view.dart';
 
-class ContactScreen extends StatelessWidget {
+class ContactScreen extends ConsumerWidget {
   const ContactScreen({super.key});
 
   void _handleEvent(ContactUiEvent event) {
@@ -35,41 +33,34 @@ class ContactScreen extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (context) =>
-          ContactViewModel(repository: context.read<MyPageRepository>()),
-      builder: (context, child) {
-        final viewModel = context.read<ContactViewModel>();
-        final uiState = context
-            .select<ContactViewModel, ContactUiState>((vm) => vm.uiState);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final viewModel = ref.watch(contactViewModelProvider.notifier);
+    final uiState = ref.watch(contactViewModelProvider);
 
-        return UiEventListener(
-          stream: viewModel.uiEvent,
-          onEvent: _handleEvent,
-          child: Scaffold(
-            appBar: const _ContactAppBar(),
-            body: uiState.isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : Column(
-                    children: [
-                      const SizedBox(height: 16),
-                      _RepresentativeContactView(
-                        representative: uiState.representative,
-                      ),
-                      const SizedBox(height: 40),
-                      const WidyuDivider(),
-                      const SizedBox(height: 40),
-                      _FamilyContactView(
-                        familyMembers: uiState.familyMembers,
-                        onRepresentativeSelected:
-                            viewModel.updateRepresentativeContact,
-                      ),
-                    ],
+    return UiEventListener(
+      stream: viewModel.uiEvent,
+      onEvent: _handleEvent,
+      child: Scaffold(
+        appBar: const _ContactAppBar(),
+        body: uiState.isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : Column(
+                children: [
+                  const SizedBox(height: 16),
+                  _RepresentativeContactView(
+                    representative: uiState.representative,
                   ),
-          ),
-        );
-      },
+                  const SizedBox(height: 40),
+                  const WidyuDivider(),
+                  const SizedBox(height: 40),
+                  _FamilyContactView(
+                    familyMembers: uiState.familyMembers,
+                    onRepresentativeSelected:
+                        viewModel.updateRepresentativeContact,
+                  ),
+                ],
+              ),
+      ),
     );
   }
 }
