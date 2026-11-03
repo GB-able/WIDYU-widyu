@@ -25,6 +25,7 @@ void main() {
   late Completer<void>? photoGate;
   late PermissionState photoPermission;
   late Completer<void>? pageGate;
+  late List<Map<String, dynamic>> pageAssets;
   late ProviderContainer container;
 
   setUp(() {
@@ -33,6 +34,7 @@ void main() {
     photoGate = null;
     photoPermission = PermissionState.denied;
     pageGate = null;
+    pageAssets = [];
     messenger.setMockMethodCallHandler(_permissionChannel, (call) async {
       calls.add(call.method);
       await cameraGate?.future;
@@ -51,7 +53,7 @@ void main() {
           return 1;
         case 'getAssetListPaged':
           await pageGate?.future;
-          return {'data': <Map<String, dynamic>>[]};
+          return {'data': pageAssets};
       }
       await photoGate?.future;
       return photoPermission.index;
@@ -113,6 +115,26 @@ void main() {
     photoGate!.complete();
     // 가드가 없으면 폐기된 state에 쓰다가 예외가 난다.
     await pumpEventQueue();
+  });
+
+  test('사진 권한이 있으면 첫 페이지를 불러와 사진·동영상만 보여 준다', () async {
+    photoPermission = PermissionState.authorized;
+    pageAssets = [
+      {'id': '1', 'type': AssetType.image.index, 'width': 1, 'height': 1},
+      {'id': '2', 'type': AssetType.audio.index, 'width': 1, 'height': 1},
+    ];
+    listen();
+    await pumpEventQueue();
+
+    expect(
+      calls,
+      containsAllInOrder(
+        ['getAssetPathList', 'getAssetCountFromPath', 'getAssetListPaged'],
+      ),
+    );
+    expect(state().currAssets.map((e) => e.id), ['1']);
+    expect(state().totalCount, 1);
+    expect(state().isLoading, isFalse);
   });
 
   test('사진 목록 페이지를 불러오는 중 폐기되면 상태를 쓰지 않는다', () async {
