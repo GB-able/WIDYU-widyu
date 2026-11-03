@@ -73,6 +73,7 @@ void main() {
   test('수정하면 앞뒤 공백을 뺀 내용을 돌려준다', () async {
     final viewModel = listen();
     expect(await viewModel.updateFeed(1, '  수정  '), '수정');
+    expect(dataSource.contents, ['수정']);
     expect(isUploading(), isFalse);
   });
 

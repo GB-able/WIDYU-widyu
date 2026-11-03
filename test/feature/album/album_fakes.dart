@@ -80,6 +80,7 @@ InfinitePageResult<T> page<T>(List<T> items, {String? next}) =>
 
 class FakeAlbumDataSource extends Fake implements AlbumRemoteDataSource {
   final calls = <String>[];
+  final contents = <String>[];
 
   /// 이름이 같은 요청은 complete될 때까지 응답을 붙잡는다.
   final gates = <String, Completer<void>>{};
@@ -164,8 +165,10 @@ class FakeAlbumDataSource extends Fake implements AlbumRemoteDataSource {
   Future<ApiResponse<void>> updateFeed({
     required int albumId,
     required String content,
-  }) =>
-      _call('updateFeed', updated);
+  }) {
+    contents.add(content);
+    return _call('updateFeed', updated);
+  }
 }
 
 class FakePointRepository extends Fake implements PointRepository {

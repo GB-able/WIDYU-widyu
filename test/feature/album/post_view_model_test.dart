@@ -189,6 +189,21 @@ void main() {
     expect(state().editingCommentId, 10);
   });
 
+  test('답글을 등록하면 부모 댓글의 답글 목록에 붙이고 댓글 수를 늘린다', () async {
+    final viewModel = await loaded();
+    viewModel.startReply(10);
+    dataSource.createdComment = okResponse(
+      comment(21).copyWith(author: const Member(id: 1, name: '')),
+    );
+
+    expect(await viewModel.sendComment('답글'), isTrue);
+    final parent = state().feed!.comments.single;
+    expect(parent.replies!.map((r) => r.commentId), [21]);
+    expect(parent.replies!.single.author.name, '나');
+    expect(state().isBusy, isFalse);
+    expect(commentCount(), 2);
+  });
+
   test('답글 등록에 실패하면 알린다', () async {
     final viewModel = await loaded();
     viewModel.startReply(10);
