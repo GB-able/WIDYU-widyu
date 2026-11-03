@@ -12,46 +12,6 @@ import 'package:widyu/feature/album/calendar/calendar_tab_ui_state.dart';
 
 part 'calendar_tab_view_model.g.dart';
 
-class DateFeedState {
-  const DateFeedState({
-    this.albumIds = const [],
-    this.cursor,
-    this.nextCursor,
-    this.hasNext = true,
-    this.isLoading = false,
-    this.isLoadingMore = false,
-    this.hasError = false,
-  });
-
-  final List<int> albumIds;
-  final String? cursor;
-  final String? nextCursor;
-  final bool hasNext;
-  final bool isLoading;
-  final bool isLoadingMore;
-  final bool hasError;
-
-  DateFeedState copyWith({
-    List<int>? albumIds,
-    String? cursor,
-    String? nextCursor,
-    bool? hasNext,
-    bool? isLoading,
-    bool? isLoadingMore,
-    bool? hasError,
-  }) {
-    return DateFeedState(
-      albumIds: albumIds ?? this.albumIds,
-      cursor: cursor ?? this.cursor,
-      nextCursor: nextCursor ?? this.nextCursor,
-      hasNext: hasNext ?? this.hasNext,
-      isLoading: isLoading ?? this.isLoading,
-      isLoadingMore: isLoadingMore ?? this.isLoadingMore,
-      hasError: hasError ?? this.hasError,
-    );
-  }
-}
-
 @riverpod
 class CalendarTabViewModel extends _$CalendarTabViewModel {
   int _calendarRequest = 0;
@@ -195,6 +155,7 @@ class CalendarTabViewModel extends _$CalendarTabViewModel {
   }
 
   Future<void> loadMoreFeeds() async {
+    if (!ref.mounted) return;
     final normalized = state.selectedDay;
     final feedState = state.feedStates[normalized] ?? const DateFeedState();
 
