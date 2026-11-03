@@ -1,13 +1,13 @@
 import 'dart:async';
 
-import 'package:flutter/widgets.dart';
-import 'package:widyu/core/data/repository/goal/medication_repository.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:widyu/core/data/repository/goal/walk_repository.dart';
 import 'package:widyu/core/data/repository/heartRate/heart_rate_repository.dart';
 import 'package:widyu/core/data/repository/home/home_repository.dart';
 import 'package:widyu/core/data/repository/location/location_repository.dart';
 import 'package:widyu/core/data/repository/myPage/my_page_repository.dart';
 import 'package:widyu/core/data/repository/notification/notification_repository.dart';
+import 'package:widyu/core/di/providers.dart';
 import 'package:widyu/core/log/log.dart';
 import 'package:widyu/core/model/api/api_result.dart';
 import 'package:widyu/core/model/goal/medication/medication_point_result.dart';
@@ -29,6 +29,8 @@ import 'package:widyu/feature/home/home_ui_event.dart';
 import 'package:widyu/feature/home/home_ui_state.dart';
 import 'package:widyu/feature/home/notification_ui_model.dart';
 
+part 'home_view_model.g.dart';
+
 enum _CameraPermissionOutcome {
   ready,
   settingsGranted,
@@ -38,36 +40,16 @@ enum _CameraPermissionOutcome {
   settingsLaunchFailed,
 }
 
-class HomeViewModel with ChangeNotifier {
-  final HomeRepository _homeRepository;
-  final MyPageRepository _myPageRepository;
-  final NotificationRepository _notificationRepository;
-  final HeartRateRepository _heartRateRepository;
-  final LocationRepository _locationRepository;
-  final WalkRepository _walkRepository;
-  final PermissionRecoveryController _permissionRecoveryController;
-
-  /// 소유권은 main.dart 의 Provider 에 있으므로 여기서 dispose 하지 않는다.
-  final BackgroundLocationNoticeController _noticeController;
-  final Future<bool> Function({
-    required UserLocation destination,
-    UserLocation? start,
-    String? destinationName,
-    required KakaoMapRouteType routeType,
-  }) _openRoute;
-
-  HomeUiState _uiState = HomeUiState.init();
-  HomeUiState get uiState => _uiState;
+@riverpod
+class HomeViewModel extends _$HomeViewModel {
+  late PermissionRecoveryController _permissionRecoveryController;
 
   final _uiEvent = StreamController<HomeUiEvent>.broadcast();
+
+  // 일회성 이벤트는 state가 아니라 stream으로 내보낸다.
+  // ignore: riverpod_lint/avoid_public_notifier_properties
   Stream<HomeUiEvent> get uiEvent => _uiEvent.stream;
 
-  StreamSubscription<bool>? _watchConnection;
-  late final StreamSubscription<void> _medicationChanges;
-  late final StreamSubscription<int> _todaySteps;
-
-  // 갱신용 타이머
-  Timer? _medicationTicker;
   MedicationSummary? _medicine;
   String? _seniorCardDay;
 
@@ -75,47 +57,60 @@ class HomeViewModel with ChangeNotifier {
   bool _isOpeningRoute = false;
   bool _isTakingMedicationPhoto = false;
 
-  HomeViewModel({
-    required HomeRepository homeRepository,
-    required MyPageRepository myPageRepository,
-    required NotificationRepository notificationRepository,
-    required HeartRateRepository heartRateRepository,
-    required LocationRepository locationRepository,
-    required WalkRepository walkRepository,
-    required MedicationRepository medicationRepository,
-    PermissionRecoveryController? permissionRecoveryController,
-    BackgroundLocationNoticeController? noticeController,
-    Future<bool> Function({
-      required UserLocation destination,
-      UserLocation? start,
-      String? destinationName,
-      required KakaoMapRouteType routeType,
-    })? openRoute,
-  })  : _homeRepository = homeRepository,
-        _heartRateRepository = heartRateRepository,
-        _notificationRepository = notificationRepository,
-        _myPageRepository = myPageRepository,
-        _locationRepository = locationRepository,
-        _walkRepository = walkRepository,
-        _permissionRecoveryController =
-            permissionRecoveryController ?? PermissionRecoveryController(),
-        _noticeController =
-            noticeController ?? BackgroundLocationNoticeController(),
-        _openRoute = openRoute ?? KakaoMapLauncher.openRoute {
-    _uiState = _uiState.copyWith(steps: walkRepository.currentTodaySteps);
-    _todaySteps = walkRepository.todaySteps.listen((steps) {
-      _uiState = _uiState.copyWith(steps: steps);
-      notifyListeners();
+  HomeRepository get _homeRepository => ref.read(homeRepositoryProvider);
+  MyPageRepository get _myPageRepository => ref.read(myPageRepositoryProvider);
+  NotificationRepository get _notificationRepository =>
+      ref.read(notificationRepositoryProvider);
+  HeartRateRepository get _heartRateRepository =>
+      ref.read(heartRateRepositoryProvider);
+  LocationRepository get _locationRepository =>
+      ref.read(locationRepositoryProvider);
+  WalkRepository get _walkRepository => ref.read(walkRepositoryProvider);
+  BackgroundLocationNoticeController get _noticeController =>
+      ref.read(backgroundLocationNoticeControllerProvider);
+  KakaoMapRouteOpener get _openRoute => ref.read(kakaoMapRouteOpenerProvider);
+
+  @override
+  HomeUiState build() {
+    // onDispose는 다시 빌드될 때도 불리므로, 실제로 폐기될 때만 닫는다.
+    ref.onDispose(() {
+      if (!ref.mounted) _uiEvent.close();
     });
+    // 화면과 함께 폐기되어 대기 중인 권한 요청을 취소하도록 watch로 붙잡는다.
+    _permissionRecoveryController =
+        ref.watch(homePermissionRecoveryControllerProvider);
+    _medicine = null;
+    unawaited(Future.microtask(_start));
+    return HomeUiState.init().copyWith(
+      isUserLoading: true,
+      isHeartRateLoading: true,
+      isNotificationLoading: true,
+      isSeniorCardLoading: true,
+      steps: _walkRepository.currentTodaySteps,
+    );
+  }
+
+  void _start() {
+    if (!ref.mounted) return;
+    // 구독하면 최신 값이 다시 전달된다. 전달 시점이 stream 구현에 따라 다르므로
+    // build() 중에 state를 쓰지 않도록 build() 뒤에 구독한다.
+    final todaySteps = _walkRepository.todaySteps.listen((steps) {
+      state = state.copyWith(steps: steps);
+    });
+    ref.onDispose(todaySteps.cancel);
     unawaited(_fetchNotification());
     unawaited(_fetchUser());
-    unawaited(_observeWatchConnection());
+    _observeWatchConnection();
     unawaited(fetchHeartRate());
     unawaited(_fetchSeniorCard());
     unawaited(_evaluateBackgroundLocationNotice());
-    _medicationChanges = medicationRepository.medicationChanges
+    final medicationChanges = ref
+        .read(medicationRepositoryProvider)
+        .medicationChanges
         .listen((_) => unawaited(_fetchSeniorCard()));
-    _medicationTicker = Timer.periodic(
+    ref.onDispose(medicationChanges.cancel);
+    // 갱신용 타이머
+    final medicationTicker = Timer.periodic(
       const Duration(seconds: 30),
       (_) {
         if (_seniorCardDay != DateTime.now().walkDate) {
@@ -125,27 +120,21 @@ class HomeViewModel with ChangeNotifier {
         }
       },
     );
-  }
-
-  bool get _isDisposed => _uiEvent.isClosed;
-
-  @override
-  void notifyListeners() {
-    if (!_uiEvent.isClosed) super.notifyListeners();
+    ref.onDispose(medicationTicker.cancel);
   }
 
   Future<void> takeMedicationPhoto(
       {PermissionRecoveryPrompt? showPrompt}) async {
-    if (_isDisposed || _isTakingMedicationPhoto) return;
+    if (!ref.mounted || _isTakingMedicationPhoto) return;
     _isTakingMedicationPhoto = true;
     try {
       final outcome = await _resolveCameraPermission(
         showPrompt ?? _cancelPermissionPrompt,
       );
-      if (_isDisposed) return;
+      if (!ref.mounted) return;
       switch (outcome) {
         case _CameraPermissionOutcome.ready:
-          final status = _uiState.medicationStatus;
+          final status = state.medicationStatus;
           final available = status is MedicationAvailable ? status : null;
           final scheduleId =
               available?.scheduleId ?? _medicine?.medicineScheduleId;
@@ -209,7 +198,7 @@ class HomeViewModel with ChangeNotifier {
   }
 
   void _emit(HomeUiEvent event) {
-    if (!_uiEvent.isClosed) _uiEvent.add(event);
+    if (ref.mounted) _uiEvent.add(event);
   }
 
   Future<void> _evaluateBackgroundLocationNotice() async {
@@ -225,15 +214,14 @@ class HomeViewModel with ChangeNotifier {
   }
 
   Future<void> markNotificationAsRead(int notificationId) async {
-    final previous = _uiState.notifications;
+    final previous = state.notifications;
     final index = previous.indexWhere(
       (it) => it.notificationId == notificationId,
     );
     if (index == -1) return;
 
     final removed = previous[index];
-    _uiState = _uiState.copyWith(notifications: [...previous]..removeAt(index));
-    notifyListeners();
+    state = state.copyWith(notifications: [...previous]..removeAt(index));
 
     final result =
         await _notificationRepository.readNotification(notificationId);
@@ -241,22 +229,22 @@ class HomeViewModel with ChangeNotifier {
       WiduLog.ui.i('알림 읽음 처리 성공 notificationId=$notificationId');
       return;
     }
+    if (!ref.mounted) return;
 
-    final current = [..._uiState.notifications];
+    final current = [...state.notifications];
     current.insert(index.clamp(0, current.length), removed);
     _emit(const MarkNotificationAsReadFailure());
-    _uiState = _uiState.copyWith(notifications: current);
-    notifyListeners();
+    state = state.copyWith(notifications: current);
   }
 
   /// 건강 일정 장소로 향하는 카카오맵 길찾기를 연다.
   /// 현재 위치를 못 얻어도 목적지만으로 길찾기를 열 수 있으므로 위치 실패는 막지 않는다.
   Future<void> openHealthScheduleRoute(
       {PermissionRecoveryPrompt? showPrompt}) async {
-    if (_isOpeningRoute || _isDisposed) return;
+    if (_isOpeningRoute || !ref.mounted) return;
 
-    final latitude = _uiState.healthScheduleLatitude;
-    final longitude = _uiState.healthScheduleLongitude;
+    final latitude = state.healthScheduleLatitude;
+    final longitude = state.healthScheduleLongitude;
     if (latitude == null || longitude == null) {
       _emit(const HealthSchedulePlaceUnavailable());
       return;
@@ -267,11 +255,11 @@ class HomeViewModel with ChangeNotifier {
       final current = await _resolveRouteStart(
         showPrompt ?? _cancelPermissionPrompt,
       );
-      if (_isDisposed) return;
+      if (!ref.mounted) return;
       final isOpened = await _openRoute(
         destination: UserLocation(latitude: latitude, longitude: longitude),
         start: current,
-        destinationName: _uiState.healthSchedulePlace,
+        destinationName: state.healthSchedulePlace,
         routeType: KakaoMapRouteType.publicTransit,
       );
       if (!isOpened) _emit(const OpenKakaoMapFailure());
@@ -287,7 +275,7 @@ class HomeViewModel with ChangeNotifier {
       PermissionType.location,
       showPrompt: showPrompt,
     );
-    if (_isDisposed) return null;
+    if (!ref.mounted) return null;
 
     switch (permission) {
       case PermissionRequestResult.granted:
@@ -312,13 +300,13 @@ class HomeViewModel with ChangeNotifier {
       PermissionRecoveryAction.cancel;
 
   Future<void> fetchHeartRate() async {
-    _uiState = _uiState.copyWith(isHeartRateLoading: true);
-    notifyListeners();
+    state = state.copyWith(isHeartRateLoading: true);
 
     final result = await _heartRateRepository.fetchHeartRate();
+    if (!ref.mounted) return;
     if (result is Success) {
       final data = (result as Success<HeartRateResponse>).data;
-      _uiState = _uiState.copyWith(
+      state = state.copyWith(
         heartRate: data.heartRate,
         heartRateStatus: _convertToHeartRateStatus(data.heartRateStatus),
         measuredAt: data.measuredAt,
@@ -326,62 +314,61 @@ class HomeViewModel with ChangeNotifier {
     } else {
       _emit(const FetchHeartRateFailure());
     }
-    _uiState = _uiState.copyWith(isHeartRateLoading: false);
-    notifyListeners();
+    state = state.copyWith(isHeartRateLoading: false);
   }
 
   Future<void> _fetchUser() async {
-    _uiState = _uiState.copyWith(isUserLoading: true);
-    notifyListeners();
+    state = state.copyWith(isUserLoading: true);
 
     final result = await _myPageRepository.fetchUser();
+    if (!ref.mounted) return;
     if (result is Success) {
       final data = (result as Success<User>).data;
-      _uiState = _uiState.copyWith(name: data.name);
+      state = state.copyWith(name: data.name);
     } else {
       _emit(const FetchUserFailure());
     }
-    _uiState = _uiState.copyWith(isUserLoading: false);
-    notifyListeners();
+    state = state.copyWith(isUserLoading: false);
   }
 
   Future<void> _fetchNotification() async {
-    _uiState = _uiState.copyWith(isNotificationLoading: true);
-    notifyListeners();
+    state = state.copyWith(isNotificationLoading: true);
 
     final result = await _notificationRepository.fetchNotificationPage(null);
+    if (!ref.mounted) return;
     if (result is Success) {
       final data = (result as Success<NotificationPage>).data;
       final notifications = data.notifications;
-      _uiState = _uiState.copyWith(notifications: notifications.toUiModel());
+      state = state.copyWith(notifications: notifications.toUiModel());
     } else {
       _emit(const FetchNotificationFailure());
     }
-    _uiState = _uiState.copyWith(isNotificationLoading: false);
-    notifyListeners();
+    state = state.copyWith(isNotificationLoading: false);
   }
 
   Future<void> _fetchSeniorCard() async {
     final requestedDay = DateTime.now().walkDate;
     _seniorCardDay = requestedDay;
-    _uiState = _uiState.copyWith(isSeniorCardLoading: true);
-    notifyListeners();
+    final walkRepository = _walkRepository;
+    state = state.copyWith(isSeniorCardLoading: true);
 
     final result = await _homeRepository.fetchSeniorCard();
-    if (result is Success) {
-      final data = (result as Success<SeniorCard>).data;
+    final data = result is Success<SeniorCard> ? result.data : null;
+    // 화면이 먼저 닫혀도 서버 걸음 수는 반영한다(기존 동작).
+    final walk = data?.walk;
+    if (walk?.actual case final actual?) {
+      walkRepository.applyServerSteps(
+        actual,
+        date: requestedDay,
+        goal: walk?.goal,
+      );
+    }
+    if (!ref.mounted) return;
+    if (data != null) {
       final albums = data.albums;
-      final walk = data.walk;
-      if (walk?.actual case final actual?) {
-        _walkRepository.applyServerSteps(
-          actual,
-          date: requestedDay,
-          goal: walk?.goal,
-        );
-      }
       final schedule = data.healthSchedule;
       _medicine = data.medicine;
-      _uiState = _uiState.copyWith(
+      state = state.copyWith(
         thumbnails: albums
             .map((album) => album.thumbnailUrl)
             .whereType<String>()
@@ -396,8 +383,7 @@ class HomeViewModel with ChangeNotifier {
     } else {
       _emit(const FetchSeniorCardFailure());
     }
-    _uiState = _uiState.copyWith(isSeniorCardLoading: false);
-    notifyListeners();
+    state = state.copyWith(isSeniorCardLoading: false);
   }
 
   void _applyMedicationStatus() {
@@ -405,18 +391,16 @@ class HomeViewModel with ChangeNotifier {
       medicine: _medicine,
       now: DateTime.now(),
     );
-    if (next == _uiState.medicationStatus) return;
-    _uiState = _uiState.copyWith(medicationStatus: next);
-    notifyListeners();
+    if (next == state.medicationStatus) return;
+    state = state.copyWith(medicationStatus: next);
   }
 
-  Future<void> _observeWatchConnection() async {
-    _watchConnection = _heartRateRepository.observeConnection().listen((
-      isWearing,
-    ) {
-      _uiState = _uiState.copyWith(isWearing: isWearing);
-      notifyListeners();
+  void _observeWatchConnection() {
+    final watchConnection =
+        _heartRateRepository.observeConnection().listen((isWearing) {
+      state = state.copyWith(isWearing: isWearing);
     });
+    ref.onDispose(watchConnection.cancel);
   }
 
   HeartRateStatus _convertToHeartRateStatus(String status) {
@@ -428,16 +412,5 @@ class HomeViewModel with ChangeNotifier {
       default:
         return HeartRateStatus.unknown;
     }
-  }
-
-  @override
-  void dispose() {
-    _permissionRecoveryController.dispose();
-    _watchConnection?.cancel();
-    _medicationChanges.cancel();
-    _todaySteps.cancel();
-    _medicationTicker?.cancel();
-    _uiEvent.close();
-    super.dispose();
   }
 }
