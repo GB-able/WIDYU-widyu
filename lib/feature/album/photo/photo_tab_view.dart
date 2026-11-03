@@ -2,11 +2,10 @@ import 'dart:async';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
 import 'package:widyu/app/routes/app_route.dart';
-import 'package:widyu/core/data/repository/album/album_repository.dart';
-import 'package:widyu/core/data/repository/point/point_repository.dart';
+import 'package:widyu/core/di/providers.dart';
 import 'package:widyu/core/model/album/media.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
@@ -15,6 +14,7 @@ import 'package:widyu/core/ui/widgets/custom_loading_widget.dart';
 import 'package:widyu/core/ui/widgets/custom_network_image.dart';
 import 'package:widyu/core/ui/widgets/widu_icon.dart';
 import 'package:widyu/core/utils/extensions/int_extension.dart';
+import 'package:widyu/core/utils/infinite_scroll.dart';
 import 'package:widyu/feature/album/_widgets/album_empty_widget.dart';
 import 'package:widyu/feature/album/_widgets/lock_overlay.dart';
 import 'package:widyu/feature/album/_widgets/retry_widget.dart';
@@ -52,24 +52,17 @@ class PhotoTabView extends StatelessWidget {
   const PhotoTabView({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (context) => PhotoTabViewModel(
-        repository: context.read<AlbumRepository>(),
-      )..init(),
-      child: const _PhotoGrid(),
-    );
-  }
+  Widget build(BuildContext context) => const _PhotoGrid();
 }
 
-class _PhotoGrid extends StatefulWidget {
+class _PhotoGrid extends ConsumerStatefulWidget {
   const _PhotoGrid();
 
   @override
-  State<_PhotoGrid> createState() => _PhotoGridState();
+  ConsumerState<_PhotoGrid> createState() => _PhotoGridState();
 }
 
-class _PhotoGridState extends State<_PhotoGrid> {
+class _PhotoGridState extends ConsumerState<_PhotoGrid> {
   final _scrollController = ScrollController();
 
   @override
@@ -88,17 +81,17 @@ class _PhotoGridState extends State<_PhotoGrid> {
   void _onScroll() {
     if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent - 300) {
-      context.read<PhotoTabViewModel>().loadMore();
+      ref.read(photoTabViewModelProvider.notifier).loadMore();
     }
   }
 
   // 사진 탭은 게시물 캐시가 없을 수 있어 미디어의 가격을 쓴다.
   Future<bool> _requestUnlock(Media media) async {
-    final repository = context.read<AlbumRepository>();
+    final repository = ref.read(albumRepositoryProvider);
     final success = await showUnlockDialog(
       context,
       price: media.price,
-      point: context.read<PointRepository>().currentStatus.point,
+      point: ref.read(pointRepositoryProvider).currentStatus.point,
       isUnlocking: repository.currentCache.isUnlocking(media.postId),
       onPurchase: () => repository.unlock(media.postId),
       onGoToGoal: () => context.go(AppRoute.goal.path),
@@ -108,12 +101,11 @@ class _PhotoGridState extends State<_PhotoGrid> {
 
   @override
   Widget build(BuildContext context) {
-    // 목록 단위 상태만 구독하고, 썸네일은 아래 Selector로 잠금 여부만 구독한다.
-    final (isLoading, hasError, isLoadingMore) = context.select(
-      (PhotoTabViewModel vm) => (vm.isLoading, vm.hasError, vm.isLoadingMore),
-    );
-    // 리스트는 최상위 값이어야 DeepCollectionEquality로 비교된다.
-    final items = context.select((PhotoTabViewModel vm) => vm.items);
+    // 목록 단위 상태만 구독하고, 썸네일은 아래 Consumer로 잠금 여부만 구독한다.
+    final viewModel = ref.watch(photoTabViewModelProvider.notifier);
+    final list = ref.watch(photoTabViewModelProvider.select((s) => s.list));
+    final InfiniteScrollState(:items, :isLoading, :hasError, :isLoadingMore) =
+        list;
 
     if (isLoading) {
       return const CustomLoadingWidget();
@@ -123,7 +115,7 @@ class _PhotoGridState extends State<_PhotoGrid> {
       if (hasError) {
         return CustomErrorWidget(
           errorMsg: '앨범을 불러오지 못했어요',
-          onRetry: () => context.read<PhotoTabViewModel>().retry(),
+          onRetry: viewModel.retry,
         );
       }
       return const AlbumEmptyWidget();
@@ -134,7 +126,7 @@ class _PhotoGridState extends State<_PhotoGrid> {
     return RefreshIndicator(
       color: MyColor.primary,
       backgroundColor: MyColor.white,
-      onRefresh: () => context.read<PhotoTabViewModel>().init(),
+      onRefresh: viewModel.refresh,
       child: CustomScrollView(
         controller: _scrollController,
         slivers: [
@@ -155,12 +147,14 @@ class _PhotoGridState extends State<_PhotoGrid> {
                     delegate: SliverChildBuilderDelegate(
                       (context, index) {
                         final media = section.media[index];
-                        return Selector<PhotoTabViewModel, bool>(
-                          selector: (_, vm) =>
-                              !vm.cache.isUnlocked(media.postId),
-                          builder: (context, isLocked, _) => _MediaThumbnail(
+                        return Consumer(
+                          builder: (context, ref, _) => _MediaThumbnail(
                             media: media,
-                            isLocked: isLocked,
+                            isLocked: ref.watch(
+                              photoTabViewModelProvider.select(
+                                (s) => !s.cache.isUnlocked(media.postId),
+                              ),
+                            ),
                             onRequestUnlock: () => _requestUnlock(media),
                           ),
                         );
@@ -181,9 +175,7 @@ class _PhotoGridState extends State<_PhotoGrid> {
                   )
                 else if (hasError)
                   SliverToBoxAdapter(
-                    child: RetryWidget(
-                      onRetry: () => context.read<PhotoTabViewModel>().retry(),
-                    ),
+                    child: RetryWidget(onRetry: viewModel.retry),
                   ),
               ],
             ),

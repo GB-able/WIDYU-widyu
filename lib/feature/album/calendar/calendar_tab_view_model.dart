@@ -1,257 +1,210 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:widyu/core/data/repository/album/album_repository.dart';
+import 'package:widyu/core/di/providers.dart';
 import 'package:widyu/core/model/album/album_cache.dart';
 import 'package:widyu/core/model/album/feed.dart';
 import 'package:widyu/core/model/api/api_result.dart';
 import 'package:widyu/core/model/api/infinite_page_result.dart';
 import 'package:widyu/core/utils/extensions/date_extension.dart';
+import 'package:widyu/feature/album/calendar/calendar_tab_ui_state.dart';
 
-class DateFeedState {
-  const DateFeedState({
-    this.albumIds = const [],
-    this.cursor,
-    this.nextCursor,
-    this.hasNext = true,
-    this.isLoading = false,
-    this.isLoadingMore = false,
-    this.hasError = false,
-  });
+part 'calendar_tab_view_model.g.dart';
 
-  final List<int> albumIds;
-  final String? cursor;
-  final String? nextCursor;
-  final bool hasNext;
-  final bool isLoading;
-  final bool isLoadingMore;
-  final bool hasError;
-
-  DateFeedState copyWith({
-    List<int>? albumIds,
-    String? cursor,
-    String? nextCursor,
-    bool? hasNext,
-    bool? isLoading,
-    bool? isLoadingMore,
-    bool? hasError,
-  }) {
-    return DateFeedState(
-      albumIds: albumIds ?? this.albumIds,
-      cursor: cursor ?? this.cursor,
-      nextCursor: nextCursor ?? this.nextCursor,
-      hasNext: hasNext ?? this.hasNext,
-      isLoading: isLoading ?? this.isLoading,
-      isLoadingMore: isLoadingMore ?? this.isLoadingMore,
-      hasError: hasError ?? this.hasError,
-    );
-  }
-}
-
-class CalendarTabViewModel extends ChangeNotifier {
-  CalendarTabViewModel({required AlbumRepository repository})
-      : _repository = repository,
-        _cache = repository.currentCache {
-    _cacheChanges = repository.cache.listen(_onCache);
-  }
-
-  final AlbumRepository _repository;
-  AlbumCache _cache;
-  late final StreamSubscription<AlbumCache> _cacheChanges;
-  bool _disposed = false;
+@riverpod
+class CalendarTabViewModel extends _$CalendarTabViewModel {
   int _calendarRequest = 0;
   final Map<DateTime, int> _feedRequests = {};
 
-  AlbumCache get cache => _cache;
+  AlbumRepository get _repository => ref.read(albumRepositoryProvider);
 
-  void _onCache(AlbumCache cache) {
-    if (identical(cache, _cache)) return;
-    final deleted = !identical(cache.deletedIds, _cache.deletedIds);
-    _cache = cache;
-    if (deleted) {
-      _onAlbumsDeleted();
-    } else {
-      notifyListeners();
-    }
+  @override
+  CalendarTabUiState build() {
+    final today = DateTime.now().onlyDateTime;
+    unawaited(Future.microtask(_start));
+    return CalendarTabUiState(
+      selectedDay: today,
+      focusedMonth: today,
+      isCalendarLoading: true,
+      feedStates: {today: const DateFeedState(isLoading: true)},
+      cache: _repository.currentCache,
+    );
   }
 
-  void _onAlbumsDeleted() {
-    _expandedFeedIds.removeWhere((id) => _cache.postOf(id) == null);
-    unawaited(loadCalendar(_focusedMonth));
+  Future<void> _start() async {
+    if (!ref.mounted) return;
+    final cacheChanges = _repository.cache.listen(_onCache);
+    ref.onDispose(cacheChanges.cancel);
+    await Future.wait([
+      loadCalendar(state.focusedMonth),
+      loadFeeds(state.selectedDay),
+    ]);
+  }
+
+  void _onCache(AlbumCache cache) {
+    if (identical(cache, state.cache)) return;
+    if (identical(cache.deletedIds, state.cache.deletedIds)) {
+      state = state.copyWith(cache: cache);
+      return;
+    }
+    bool exists(int id) => cache.postOf(id) != null;
+    state = state.copyWith(
+      cache: cache,
+      feedStates: {
+        for (final MapEntry(:key, :value) in state.feedStates.entries)
+          key: value.copyWith(albumIds: value.albumIds.where(exists).toList()),
+      },
+      expandedFeedIds: state.expandedFeedIds.where(exists).toSet(),
+    );
+    unawaited(loadCalendar(state.focusedMonth));
   }
 
   Future<void> toggleLike(int albumId) => _repository.toggleLike(albumId);
 
   Future<bool> deleteFeed(int albumId) => _repository.deleteFeed(albumId);
 
-  @override
-  void dispose() {
-    _disposed = true;
-    _cacheChanges.cancel();
-    super.dispose();
-  }
-
-  DateTime _selectedDay = DateTime.now().onlyDateTime;
-  DateTime _focusedMonth = DateTime.now().onlyDateTime;
-  bool _isCalendarLoading = false;
-  Set<int> _daysWithEvents = {};
-  final Map<DateTime, DateFeedState> _feedStates = {};
-  final Set<int> _expandedFeedIds = {};
-
-  DateTime get selectedDay => _selectedDay;
-  DateTime get focusedMonth => _focusedMonth;
-  bool get isCalendarLoading => _isCalendarLoading;
-
-  DateFeedState get _selectedDayState =>
-      _feedStates[_selectedDay] ?? const DateFeedState();
-
-  List<int> get selectedDayAlbumIds => _selectedDayState.albumIds
-      .where((id) => _cache.postOf(id) != null)
-      .toList();
-  bool get isLoadingSelectedDay => _selectedDayState.isLoading;
-  bool get isLoadingMoreSelectedDay => _selectedDayState.isLoadingMore;
-  bool get hasErrorSelectedDay => _selectedDayState.hasError;
-  bool get hasNextSelectedDay => _selectedDayState.hasNext;
-
-  bool hasEvent(DateTime day) {
-    return day.isSameMonth(_focusedMonth) && _daysWithEvents.contains(day.day);
-  }
-
-  bool isContentExpanded(int albumId) => _expandedFeedIds.contains(albumId);
-
   void setContentExpanded(int albumId, bool expanded) {
-    if (expanded) {
-      _expandedFeedIds.add(albumId);
-    } else {
-      _expandedFeedIds.remove(albumId);
-    }
-    notifyListeners();
-  }
-
-  Future<void> init() async {
-    await Future.wait([loadCalendar(_focusedMonth), loadFeeds(_selectedDay)]);
+    state = state.copyWith(
+      expandedFeedIds: expanded
+          ? {...state.expandedFeedIds, albumId}
+          : ({...state.expandedFeedIds}..remove(albumId)),
+    );
   }
 
   Future<void> loadCalendar(DateTime month) async {
-    if (_disposed) return;
+    if (!ref.mounted) return;
     final request = ++_calendarRequest;
-    _focusedMonth = month.onlyDateTime;
-    _isCalendarLoading = true;
-    notifyListeners();
+    state = state.copyWith(
+      focusedMonth: month.onlyDateTime,
+      isCalendarLoading: true,
+    );
 
     final result = await _repository.fetchCalendarDays(
       year: month.year,
       month: month.month,
     );
-    if (_disposed || request != _calendarRequest) return;
-    switch (result) {
-      case Success<List<int>>(:final data):
-        _daysWithEvents = data.toSet();
-      case Failure():
-        _daysWithEvents = {};
-    }
-
-    _isCalendarLoading = false;
-    notifyListeners();
+    if (!ref.mounted || request != _calendarRequest) return;
+    state = state.copyWith(
+      daysWithEvents: switch (result) {
+        Success<List<int>>(:final data) => data.toSet(),
+        Failure() => <int>{},
+      },
+      isCalendarLoading: false,
+    );
   }
 
   Future<void> onPageChanged(DateTime focusedDay) async {
-    if (focusedDay.isSameMonth(_focusedMonth)) return;
+    if (focusedDay.isSameMonth(state.focusedMonth)) return;
     await loadCalendar(focusedDay);
   }
 
   Future<void> selectDay(DateTime day) async {
     final normalized = day.onlyDateTime;
-    if (normalized.isSameDay(_selectedDay)) return;
+    if (normalized.isSameDay(state.selectedDay)) return;
 
-    _selectedDay = normalized;
-    notifyListeners();
+    state = state.copyWith(selectedDay: normalized);
 
-    if (!_feedStates.containsKey(normalized)) {
+    if (!state.feedStates.containsKey(normalized)) {
       await loadFeeds(normalized);
     }
   }
 
+  void _setFeedState(DateTime day, DateFeedState feedState) {
+    state = state.copyWith(feedStates: {...state.feedStates, day: feedState});
+  }
+
+  // 조회 결과를 캐시에 반영하고, 캐시에 남은 게시물 id만 돌려준다.
+  List<int> _hydrate(AlbumRepository repository, List<Feed> feeds) {
+    repository.hydrate(feeds);
+    final cache = repository.currentCache;
+    _onCache(cache);
+    return [
+      for (final feed in feeds)
+        if (cache.postOf(feed.albumId) != null) feed.albumId,
+    ];
+  }
+
   Future<void> loadFeeds(DateTime day) async {
     final normalized = day.onlyDateTime;
-    if (_disposed) return;
+    if (!ref.mounted) return;
+    final repository = _repository;
     final request = (_feedRequests[normalized] ?? 0) + 1;
     _feedRequests[normalized] = request;
-    _feedStates[normalized] = const DateFeedState(isLoading: true);
-    notifyListeners();
+    _setFeedState(normalized, const DateFeedState(isLoading: true));
 
-    final result = await _repository.fetchFeeds(date: normalized);
-    if (_disposed ||
-        _repository.isDisposed ||
+    final result = await repository.fetchFeeds(date: normalized);
+    if (!ref.mounted ||
+        repository.isDisposed ||
         request != _feedRequests[normalized]) {
       return;
     }
     switch (result) {
       case Success<InfinitePageResult<Feed>>(:final data):
-        _repository.hydrate(data.items);
-        _onCache(_repository.currentCache);
-        _feedStates[normalized] = DateFeedState(
-          albumIds: data.items.map((feed) => feed.albumId).toList(),
-          nextCursor: data.nextCursor,
-          hasNext: data.hasNext,
+        _setFeedState(
+          normalized,
+          DateFeedState(
+            albumIds: _hydrate(repository, data.items),
+            nextCursor: data.nextCursor,
+            hasNext: data.hasNext,
+          ),
         );
       case Failure():
-        _feedStates[normalized] = const DateFeedState(hasError: true);
+        _setFeedState(normalized, const DateFeedState(hasError: true));
     }
-    notifyListeners();
   }
 
   Future<void> loadMoreFeeds() async {
-    final normalized = _selectedDay;
-    final state = _feedStates[normalized] ?? const DateFeedState();
+    if (!ref.mounted) return;
+    final normalized = state.selectedDay;
+    final feedState = state.feedStates[normalized] ?? const DateFeedState();
 
-    if (_disposed || state.isLoading || state.isLoadingMore || !state.hasNext) {
+    if (feedState.isLoading || feedState.isLoadingMore || !feedState.hasNext) {
       return;
     }
+    final repository = _repository;
     final request = _feedRequests[normalized];
 
-    _feedStates[normalized] = state.copyWith(
-      isLoadingMore: true,
-      hasError: false,
+    _setFeedState(
+      normalized,
+      feedState.copyWith(isLoadingMore: true, hasError: false),
     );
-    notifyListeners();
 
-    final result = await _repository.fetchFeeds(
-      cursor: state.nextCursor,
+    final result = await repository.fetchFeeds(
+      cursor: feedState.nextCursor,
       date: normalized,
     );
-    if (_disposed ||
-        _repository.isDisposed ||
+    if (!ref.mounted ||
+        repository.isDisposed ||
         request != _feedRequests[normalized]) {
       return;
     }
-    final current = _feedStates[normalized]!;
     switch (result) {
       case Success<InfinitePageResult<Feed>>(:final data):
-        _repository.hydrate(data.items);
-        _onCache(_repository.currentCache);
-        _feedStates[normalized] = current.copyWith(
-          albumIds: {
-            ...current.albumIds,
-            ...data.items.map((feed) => feed.albumId),
-          }.toList(),
-          cursor: state.nextCursor,
-          nextCursor: data.nextCursor,
-          hasNext: data.hasNext,
-          isLoadingMore: false,
+        final albumIds = _hydrate(repository, data.items);
+        final current = state.feedStates[normalized]!;
+        _setFeedState(
+          normalized,
+          current.copyWith(
+            albumIds: {...current.albumIds, ...albumIds}.toList(),
+            cursor: feedState.nextCursor,
+            nextCursor: data.nextCursor,
+            hasNext: data.hasNext,
+            isLoadingMore: false,
+          ),
         );
       case Failure():
-        _feedStates[normalized] = current.copyWith(
-          isLoadingMore: false,
-          hasError: true,
+        final current = state.feedStates[normalized]!;
+        _setFeedState(
+          normalized,
+          current.copyWith(isLoadingMore: false, hasError: true),
         );
     }
-    notifyListeners();
   }
 
   Future<void> retry() async {
-    if (selectedDayAlbumIds.isEmpty) {
-      await loadFeeds(_selectedDay);
+    if (state.selectedDayState.albumIds.isEmpty) {
+      await loadFeeds(state.selectedDay);
     } else {
       await loadMoreFeeds();
     }

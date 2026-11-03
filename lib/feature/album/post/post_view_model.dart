@@ -1,8 +1,9 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:widyu/core/data/repository/album/album_repository.dart';
 import 'package:widyu/core/data/repository/myPage/my_page_repository.dart';
+import 'package:widyu/core/di/providers.dart';
 import 'package:widyu/core/log/log.dart';
 import 'package:widyu/core/model/album/album_cache.dart';
 import 'package:widyu/core/model/album/album_comment_create_request.dart';
@@ -15,106 +16,81 @@ import 'package:widyu/core/model/myPage/user/user.dart';
 import 'package:widyu/feature/album/post/post_ui_event.dart';
 import 'package:widyu/feature/album/post/post_ui_state.dart';
 
-class PostViewModel extends ChangeNotifier {
-  PostViewModel({
-    required this.id,
-    required AlbumRepository repository,
-    required MyPageRepository myPageRepository,
-  })  : _repository = repository,
-        _myPageRepository = myPageRepository,
-        _cache = repository.currentCache {
-    _cacheChanges = repository.cache.listen(_onCache);
-    editFocusNode.addListener(_cancelEditOnBlur);
-  }
+part 'post_view_model.g.dart';
 
-  bool _disposed = false;
-  @override
-  void notifyListeners() {
-    if (!_disposed) super.notifyListeners();
-  }
-
-  final AlbumRepository _repository;
-  final MyPageRepository _myPageRepository;
-  final int id;
-  AlbumCache _cache;
-  late final StreamSubscription<AlbumCache> _cacheChanges;
-
-  AlbumCache get cache => _cache;
-
-  void _onCache(AlbumCache cache) {
-    if (identical(cache, _cache)) return;
-    _cache = cache;
-    notifyListeners();
-  }
-
-  final commentController = TextEditingController();
-  final commentFocusNode = FocusNode();
-  final editController = TextEditingController();
-  final editFocusNode = FocusNode();
-
+@riverpod
+class PostViewModel extends _$PostViewModel {
   final _uiEvent = StreamController<PostUiEvent>.broadcast();
+
+  // 일회성 이벤트는 state가 아니라 stream으로 내보낸다.
+  // ignore: riverpod_lint/avoid_public_notifier_properties
   Stream<PostUiEvent> get uiEvent => _uiEvent.stream;
 
+  AlbumRepository get _repository => ref.read(albumRepositoryProvider);
+  MyPageRepository get _myPageRepository => ref.read(myPageRepositoryProvider);
+
+  @override
+  PostUiState build(int id) {
+    // onDispose는 다시 빌드될 때도 불리므로, 실제로 폐기될 때만 닫는다.
+    ref.onDispose(() {
+      if (!ref.mounted) _uiEvent.close();
+    });
+    unawaited(Future.microtask(_start));
+    return PostUiState(cache: _repository.currentCache);
+  }
+
+  Future<void> _start() async {
+    if (!ref.mounted) return;
+    final cacheChanges = _repository.cache.listen(_onCache);
+    ref.onDispose(cacheChanges.cancel);
+    await init();
+  }
+
+  void _onCache(AlbumCache cache) {
+    state = state.copyWith(cache: cache);
+  }
+
   void _emit(PostUiEvent event) {
-    if (!_uiEvent.isClosed) _uiEvent.add(event);
+    if (ref.mounted) _uiEvent.add(event);
   }
 
-  PostUiState _uiState = const PostUiState();
-  PostUiState get uiState => _uiState;
-
-  void _update(PostUiState Function(PostUiState) change) {
-    _uiState = change(_uiState);
-    notifyListeners();
-  }
-
-  List<Comment> get visibleComments {
-    final comments = _uiState.feed?.comments ?? const <Comment>[];
-    final parentId = _uiState.replyParentId;
-    if (parentId == null) return comments;
-    return comments.where((e) => e.commentId == parentId).toList();
-  }
-
+  // 입력창 비우기·포커스는 화면이 먼저 처리한다.
   void startReply(int parentCommentId) {
-    commentController.clear();
-    commentFocusNode.requestFocus();
-    _update((s) => s.copyWith(replyParentId: parentCommentId));
+    state = state.copyWith(replyParentId: parentCommentId);
   }
 
   void cancelReply() {
-    commentController.clear();
-    commentFocusNode.unfocus();
-    _update((s) => s.copyWith(replyParentId: null));
+    state = state.copyWith(replyParentId: null);
   }
 
-  void startEdit(Comment target) {
-    editController.text = target.content;
-    _update((s) => s.copyWith(editingCommentId: target.commentId));
+  void startEdit(int commentId) {
+    state = state.copyWith(editingCommentId: commentId);
   }
 
-  void _cancelEditOnBlur() {
-    if (editFocusNode.hasFocus || _uiState.editingCommentId == null) return;
-    _update((s) => s.copyWith(editingCommentId: null));
+  void cancelEdit() {
+    state = state.copyWith(editingCommentId: null);
   }
 
-  Future<void> submitEdit() async {
-    final commentId = _uiState.editingCommentId;
-    final content = editController.text.trim();
-    if (commentId == null || content.isEmpty) return;
+  Future<void> submitEdit(String content) async {
+    final commentId = state.editingCommentId;
+    final trimmed = content.trim();
+    if (commentId == null || trimmed.isEmpty) return;
 
-    if (!await editComment(commentId, content)) {
+    if (!await editComment(commentId, trimmed)) {
       _emit(const EditCommentFailure());
       return;
     }
-    _update((s) => s.copyWith(editingCommentId: null));
+    if (!ref.mounted) return;
+    state = state.copyWith(editingCommentId: null);
   }
 
   Comment _mine(Comment data) => data.copyWith(
         canEdit: true,
         author: data.author.copyWith(
           name: data.author.name.isEmpty
-              ? (_uiState.me?.name ?? '')
+              ? (state.me?.name ?? '')
               : data.author.name,
-          profileImage: data.author.profileImage ?? _uiState.me?.profileImage,
+          profileImage: data.author.profileImage ?? state.me?.profileImage,
         ),
       );
 
@@ -131,50 +107,54 @@ class PostViewModel extends ChangeNotifier {
       );
 
   Future<void> init() async {
-    if (_disposed) return;
-    _update((s) => s.copyWith(status: PostStatus.loading));
+    if (!ref.mounted) return;
+    final repository = _repository;
+    final albumId = id;
+    state = state.copyWith(status: PostStatus.loading);
 
     unawaited(_fetchMe());
-    final unlockedLoaded = _repository.ensureUnlockedLoaded();
+    final unlockedLoaded = repository.ensureUnlockedLoaded();
 
-    final result = await _repository.fetchFeed(id);
+    final result = await repository.fetchFeed(albumId);
     await unlockedLoaded;
-    if (_disposed || _repository.isDisposed) {
+    if (!ref.mounted || repository.isDisposed) {
       return;
     }
     switch (result) {
       case Success<FeedDetail>(:final data):
-        _repository.hydrate([data]);
-        _onCache(_repository.currentCache);
-        _update(
-          (s) => s.copyWith(status: PostStatus.success, feed: _normalize(data)),
+        repository.hydrate([data]);
+        _onCache(repository.currentCache);
+        state = state.copyWith(
+          status: PostStatus.success,
+          feed: _normalize(data),
         );
         _markViewed();
-        if (!_repository.currentCache.isUnlocked(id)) {
+        if (!repository.currentCache.isUnlocked(albumId)) {
           _emit(const FeedLocked());
         }
       case Failure(:final code):
         if (code == 'ALBUM_4040') {
           _emit(const FeedDeleted());
         } else {
-          _update((s) => s.copyWith(status: PostStatus.error));
+          state = state.copyWith(status: PostStatus.error);
         }
     }
   }
 
   Future<void> _fetchMe() async {
+    final repository = _repository;
     final result = await _myPageRepository.fetchUser();
-    if (_disposed || _repository.isDisposed || result is! Success<User>) {
+    if (!ref.mounted || repository.isDisposed || result is! Success<User>) {
       return;
     }
 
-    _update((s) => s.copyWith(me: result.data));
+    state = state.copyWith(me: result.data);
     _markViewed();
   }
 
   void _markViewed() {
-    final feed = _uiState.feed;
-    final me = _uiState.me;
+    final feed = state.feed;
+    final me = state.me;
     if (feed == null ||
         me == null ||
         feed.author.id == me.memberId ||
@@ -193,53 +173,58 @@ class PostViewModel extends ChangeNotifier {
 
   Future<bool> deleteFeed() => _repository.deleteFeed(id);
 
-  Future<void> sendComment() async {
-    if (_disposed) return;
-    final content = commentController.text.trim();
-    final feed = _uiState.feed;
-    if (content.isEmpty || _uiState.isBusy || feed == null) return;
+  /// 등록에 성공하면 true를 돌려준다. 화면은 이때 입력창을 비운다.
+  Future<bool> sendComment(String text) async {
+    if (!ref.mounted) return false;
+    final content = text.trim();
+    final feed = state.feed;
+    if (content.isEmpty || state.isBusy || feed == null) return false;
 
-    final parentId = _uiState.replyParentId;
+    final parentId = state.replyParentId;
     if (parentId != null) {
-      if (!await sendReply(parentId, content)) {
-        _emit(const SendReplyFailure());
-      } else if (!_disposed) {
-        commentController.clear();
-      }
-      return;
+      final sent = await sendReply(parentId, content);
+      if (!sent) _emit(const SendReplyFailure());
+      return sent;
     }
 
-    _update((s) => s.copyWith(isBusy: true));
+    final repository = _repository;
+    final albumId = id;
+    state = state.copyWith(isBusy: true);
 
-    final result = await _repository.createComment(
-      albumId: id,
+    final result = await repository.createComment(
+      albumId: albumId,
       request: AlbumCommentCreateRequest(content: content),
     );
-    if (_repository.isDisposed) return;
+    if (repository.isDisposed) return false;
     if (result case Success<Comment>(:final data)) {
-      WiduLog.ui.i('댓글 작성 성공 albumId=$id commentId=${data.commentId}');
-      final newComment = _mine(data);
-      _uiState = _uiState.copyWith(
-          feed: feed.copyWith(comments: [...feed.comments, newComment]));
-      _repository.onCommentAdded(id);
-      if (!_disposed) commentController.clear();
-    } else {
-      _emit(const SendCommentFailure());
+      WiduLog.ui.i('댓글 작성 성공 albumId=$albumId commentId=${data.commentId}');
+      // 댓글 수는 공유 캐시라 화면이 닫혀도 반영한다.
+      repository.onCommentAdded(albumId);
+      if (!ref.mounted) return true;
+      state = state.copyWith(
+        feed: feed.copyWith(comments: [...feed.comments, _mine(data)]),
+        isBusy: false,
+      );
+      return true;
     }
 
-    _update((s) => s.copyWith(isBusy: false));
+    _emit(const SendCommentFailure());
+    if (ref.mounted) state = state.copyWith(isBusy: false);
+    return false;
   }
 
   Future<bool> deleteComment(int commentId) async {
-    if (_disposed) return false;
-    final feed = _uiState.feed;
-    if (feed == null || _uiState.isBusy) return false;
+    if (!ref.mounted) return false;
+    final feed = state.feed;
+    if (feed == null || state.isBusy) return false;
 
-    _update((s) => s.copyWith(isBusy: true));
+    final repository = _repository;
+    final albumId = id;
+    state = state.copyWith(isBusy: true);
 
     try {
-      final result = await _repository.deleteComment(commentId);
-      if (_repository.isDisposed) return false;
+      final result = await repository.deleteComment(commentId);
+      if (repository.isDisposed) return false;
       if (result is Failure) {
         return false;
       }
@@ -269,122 +254,122 @@ class PostViewModel extends ChangeNotifier {
 
       if (removed == 0) return false;
       WiduLog.ui
-          .i('댓글 삭제 성공 albumId=$id commentId=$commentId removed=$removed');
+          .i('댓글 삭제 성공 albumId=$albumId commentId=$commentId removed=$removed');
 
-      _uiState = _uiState.copyWith(
-        feed: feed.copyWith(comments: comments),
-        replyParentId:
-            comments.any((e) => e.commentId == _uiState.replyParentId)
-                ? _uiState.replyParentId
-                : null,
-      );
-      _repository.onCommentDeleted(id, count: removed);
+      // 댓글 수는 공유 캐시라 화면이 닫혀도 반영한다.
+      repository.onCommentDeleted(albumId, count: removed);
+      if (ref.mounted) {
+        state = state.copyWith(
+          feed: feed.copyWith(comments: comments),
+          replyParentId: comments.any((e) => e.commentId == state.replyParentId)
+              ? state.replyParentId
+              : null,
+        );
+      }
       return true;
     } finally {
-      if (!_repository.isDisposed) {
-        _update((s) => s.copyWith(isBusy: false));
+      if (ref.mounted && !repository.isDisposed) {
+        state = state.copyWith(isBusy: false);
       }
     }
   }
 
   Future<bool> sendReply(int parentCommentId, String content) async {
-    if (_disposed) return false;
+    if (!ref.mounted) return false;
     final trimmed = content.trim();
-    final feed = _uiState.feed;
-    if (trimmed.isEmpty || _uiState.isBusy || feed == null) return false;
+    final feed = state.feed;
+    if (trimmed.isEmpty || state.isBusy || feed == null) return false;
 
-    _update((s) => s.copyWith(isBusy: true));
+    final repository = _repository;
+    final albumId = id;
+    state = state.copyWith(isBusy: true);
 
     try {
-      final result = await _repository.createComment(
-        albumId: id,
+      final result = await repository.createComment(
+        albumId: albumId,
         request: AlbumCommentCreateRequest(
           content: trimmed,
           parentCommentId: parentCommentId,
         ),
       );
-      if (_repository.isDisposed || result is! Success<Comment>) {
+      if (repository.isDisposed || result is! Success<Comment>) {
         return false;
       }
 
-      WiduLog.ui.i('답글 작성 성공 albumId=$id '
+      WiduLog.ui.i('답글 작성 성공 albumId=$albumId '
           'parentCommentId=$parentCommentId commentId=${result.data.commentId}');
-      final newReply = _mine(result.data);
-      _uiState = _uiState.copyWith(
+      // 댓글 수는 공유 캐시라 화면이 닫혀도 반영한다.
+      repository.onCommentAdded(albumId);
+      if (ref.mounted) {
+        final newReply = _mine(result.data);
+        state = state.copyWith(
           feed: feed.copyWith(
-        comments: [
-          for (final comment in feed.comments)
-            if (comment.commentId == parentCommentId)
-              comment.copyWith(replies: [...?comment.replies, newReply])
-            else
-              comment,
-        ],
-      ));
-      _repository.onCommentAdded(id);
+            comments: [
+              for (final comment in feed.comments)
+                if (comment.commentId == parentCommentId)
+                  comment.copyWith(replies: [...?comment.replies, newReply])
+                else
+                  comment,
+            ],
+          ),
+        );
+      }
       return true;
     } finally {
-      if (!_repository.isDisposed) {
-        _update((s) => s.copyWith(isBusy: false));
+      if (ref.mounted && !repository.isDisposed) {
+        state = state.copyWith(isBusy: false);
       }
     }
   }
 
   Future<bool> editComment(int commentId, String content) async {
-    if (_disposed) return false;
+    if (!ref.mounted) return false;
     final trimmed = content.trim();
-    final feed = _uiState.feed;
-    if (trimmed.isEmpty || _uiState.isBusy || feed == null) return false;
+    final feed = state.feed;
+    if (trimmed.isEmpty || state.isBusy || feed == null) return false;
 
-    _update((s) => s.copyWith(isBusy: true));
+    final repository = _repository;
+    final albumId = id;
+    state = state.copyWith(isBusy: true);
 
     try {
-      final result = await _repository.updateComment(
+      final result = await repository.updateComment(
         commentId: commentId,
         request: AlbumCommentUpdateRequest(content: trimmed),
       );
-      if (_repository.isDisposed || result is! Success<Comment>) {
+      if (repository.isDisposed || result is! Success<Comment>) {
         return false;
       }
 
-      WiduLog.ui.i('댓글 수정 성공 albumId=$id commentId=$commentId');
+      WiduLog.ui.i('댓글 수정 성공 albumId=$albumId commentId=$commentId');
+      if (!ref.mounted) return true;
       final updated = result.data.content;
-      _uiState = _uiState.copyWith(
-          feed: feed.copyWith(
-        comments: [
-          for (final comment in feed.comments)
-            if (comment.commentId == commentId)
-              comment.copyWith(content: updated)
-            else
-              comment.copyWith(
-                replies: comment.replies == null
-                    ? null
-                    : [
-                        for (final reply in comment.replies!)
-                          if (reply.commentId == commentId)
-                            reply.copyWith(content: updated)
-                          else
-                            reply,
-                      ],
-              ),
-        ],
-      ));
+      state = state.copyWith(
+        feed: feed.copyWith(
+          comments: [
+            for (final comment in feed.comments)
+              if (comment.commentId == commentId)
+                comment.copyWith(content: updated)
+              else
+                comment.copyWith(
+                  replies: comment.replies == null
+                      ? null
+                      : [
+                          for (final reply in comment.replies!)
+                            if (reply.commentId == commentId)
+                              reply.copyWith(content: updated)
+                            else
+                              reply,
+                        ],
+                ),
+          ],
+        ),
+      );
       return true;
     } finally {
-      if (!_repository.isDisposed) {
-        _update((s) => s.copyWith(isBusy: false));
+      if (ref.mounted && !repository.isDisposed) {
+        state = state.copyWith(isBusy: false);
       }
     }
-  }
-
-  @override
-  void dispose() {
-    _disposed = true;
-    _cacheChanges.cancel();
-    commentController.dispose();
-    commentFocusNode.dispose();
-    editController.dispose();
-    editFocusNode.dispose();
-    _uiEvent.close();
-    super.dispose();
   }
 }
