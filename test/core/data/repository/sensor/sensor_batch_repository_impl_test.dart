@@ -242,7 +242,8 @@ void main() {
       for (final batch in batches) {
         await Future<void>.delayed(const Duration(milliseconds: 50));
         remote.resultController.add(
-          SensorResult(batchId: batch.batchId, seq: batch.seq, result: 'STORED'),
+          SensorResult(
+              batchId: batch.batchId, seq: batch.seq, result: 'STORED'),
         );
       }
       await Future<void>.delayed(const Duration(milliseconds: 100));

@@ -3,6 +3,7 @@ import CoreMotion
 import Flutter
 import HealthKit
 import UIKit
+import firebase_messaging
 import flutter_background_service_ios
 
 @main
@@ -12,6 +13,7 @@ import flutter_background_service_ios
 
   private let pedometer = CMPedometer()
   private let stepBackground = StepBackgroundCoordinator()
+  private var messagingChannel: FlutterMethodChannel?
 
   override func application(
     _ application: UIApplication,
@@ -27,6 +29,10 @@ import flutter_background_service_ios
 
     if let controller = window?.rootViewController as? FlutterViewController {
       stepBackground.attach(to: controller.binaryMessenger)
+      messagingChannel = FlutterMethodChannel(
+        name: "plugins.flutter.io/firebase_messaging",
+        binaryMessenger: controller.binaryMessenger
+      )
       let channel = FlutterMethodChannel(
         name: AppDelegate.stepChannelName,
         binaryMessenger: controller.binaryMessenger
@@ -37,6 +43,40 @@ import flutter_background_service_ios
     }
 
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
+  }
+
+  override func userNotificationCenter(
+    _ center: UNUserNotificationCenter,
+    willPresent notification: UNNotification,
+    withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
+  ) {
+    restoreMessagingChannel()
+    var options: UNNotificationPresentationOptions = []
+    super.userNotificationCenter(center, willPresent: notification) { options.formUnion($0) }
+    completionHandler(options)
+  }
+
+  override func userNotificationCenter(
+    _ center: UNUserNotificationCenter,
+    didReceive response: UNNotificationResponse,
+    withCompletionHandler completionHandler: @escaping () -> Void
+  ) {
+    restoreMessagingChannel()
+    super.userNotificationCenter(center, didReceive: response, withCompletionHandler: completionHandler)
+  }
+
+  override func application(
+    _ application: UIApplication,
+    didReceiveRemoteNotification userInfo: [AnyHashable: Any],
+    fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void
+  ) {
+    restoreMessagingChannel()
+    super.application(application, didReceiveRemoteNotification: userInfo, fetchCompletionHandler: completionHandler)
+  }
+
+  private func restoreMessagingChannel() {
+    guard let messagingChannel = messagingChannel else { return }
+    FLTFirebaseMessagingPlugin.sharedInstance().setValue(messagingChannel, forKey: "channel")
   }
 
   private func handleStepChannel(call: FlutterMethodCall, result: @escaping FlutterResult) {

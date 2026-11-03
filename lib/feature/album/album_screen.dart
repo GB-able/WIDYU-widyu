@@ -51,7 +51,7 @@ class _AlbumScreenState extends State<AlbumScreen>
         actions: [
           GestureDetector(
             behavior: HitTestBehavior.translucent,
-            onTap: () => {}, // [TODO] 알림 페이지 생성 후 연결
+            onTap: () => context.push(AppRoute.notification.path),
             child: WiduIcon(
               icon: Assets.icons.ic22Notification,
               width: 22,
@@ -84,6 +84,7 @@ class _AlbumScreenState extends State<AlbumScreen>
                   Tab(text: '앨범'),
                   Tab(text: '캘린더'),
                 ],
+                overlayColor: WidgetStateProperty.all(MyColor.grey100),
                 dividerColor: Colors.transparent,
                 dividerHeight: 0,
               ),

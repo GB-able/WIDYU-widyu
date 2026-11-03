@@ -1,8 +1,12 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:widyu/core/log/log.dart';
+import 'package:widyu/core/model/notification/notification_type.dart';
 
 /// FCM 메시지를 수신했을 때 로컬 푸시를 띄우기 위한 범용 래퍼.
 /// 알림 표시/취소, 알림 탭 처리(콜드 스타트 포함)를 담당한다.
@@ -13,6 +17,8 @@ class LocalNotificationManager {
 
   static const _channelId = 'widyu_default_channel';
   static const _channelName = '위듀 알림';
+  static const _quietChannelId = 'widyu_quiet_channel';
+  static const _quietChannelName = '조용한 알림';
   static const _importance = Importance.max;
   static const _priority = Priority.high;
   static const _defaultNotificationId = 9999;
@@ -41,16 +47,35 @@ class LocalNotificationManager {
       onDidReceiveNotificationResponse: _onNotificationTapped,
     );
 
-    await _plugin
-        .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
-        ?.createNotificationChannel(
-          const AndroidNotificationChannel(
-            _channelId,
-            _channelName,
-            importance: _importance,
-          ),
+    final android = _plugin.resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin>();
+    await android?.createNotificationChannel(
+      const AndroidNotificationChannel(
+        _channelId,
+        _channelName,
+        importance: _importance,
+      ),
+    );
+    await android?.createNotificationChannel(
+      const AndroidNotificationChannel(
+        _quietChannelId,
+        _quietChannelName,
+        importance: Importance.low,
+      ),
+    );
+
+    if (Firebase.apps.isNotEmpty) {
+      if (Platform.isIOS) {
+        await FirebaseMessaging.instance
+            .setForegroundNotificationPresentationOptions(
+          alert: true,
+          badge: true,
+          sound: true,
         );
+      } else {
+        FirebaseMessaging.onMessage.listen(_onForegroundMessage);
+      }
+    }
 
     // 앱이 종료된 상태에서 알림 탭으로 실행된 경우에는 콜백이 오지 않으므로 여기서 확인한다.
     final launchDetails = await _plugin.getNotificationAppLaunchDetails();
@@ -60,6 +85,29 @@ class LocalNotificationManager {
       // 서버가 내려준 payload 원문은 디버그 빌드에서만 남긴다(법적 요건 L1).
       WiduLog.ui.t(() => '알림으로 앱 실행: $_initialPayload');
     }
+  }
+
+  static Future<RemoteMessage?>? _initialRemoteMessage;
+
+  static Future<RemoteMessage?> initialRemoteMessage() =>
+      _initialRemoteMessage ??=
+          FirebaseMessaging.instance.getInitialMessage().catchError((Object e) {
+        WiduLog.ui.w('초기 메시지 조회 실패', error: e);
+        return null;
+      });
+
+  static void _onForegroundMessage(RemoteMessage message) {
+    WiduLog.ui.t(() => '포그라운드 수신: ${message.messageId}');
+    final notification = message.notification;
+    if (notification == null) return;
+    if (NotificationType.safetySelfCheck.matches(message.data)) return;
+    show(
+      title: notification.title ?? '',
+      body: notification.body ?? '',
+      id: message.messageId?.hashCode ?? _defaultNotificationId,
+      payload: jsonEncode(message.data),
+      quiet: notification.android?.channelId == _quietChannelId,
+    );
   }
 
   static void _onNotificationTapped(NotificationResponse response) {
@@ -123,20 +171,28 @@ class LocalNotificationManager {
     required String body,
     int id = _defaultNotificationId,
     String? payload,
+    bool quiet = false,
   }) async {
     try {
       await _plugin.show(
         id: id,
         title: title,
         body: body,
-        notificationDetails: const NotificationDetails(
-          android: AndroidNotificationDetails(
-            _channelId,
-            _channelName,
-            importance: _importance,
-            priority: _priority,
-          ),
-          iOS: DarwinNotificationDetails(),
+        notificationDetails: NotificationDetails(
+          android: quiet
+              ? const AndroidNotificationDetails(
+                  _quietChannelId,
+                  _quietChannelName,
+                  importance: Importance.low,
+                  priority: Priority.low,
+                )
+              : const AndroidNotificationDetails(
+                  _channelId,
+                  _channelName,
+                  importance: _importance,
+                  priority: _priority,
+                ),
+          iOS: const DarwinNotificationDetails(),
         ),
         payload: payload,
       );

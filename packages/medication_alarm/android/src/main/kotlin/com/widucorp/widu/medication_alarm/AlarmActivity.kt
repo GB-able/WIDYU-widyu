@@ -63,7 +63,7 @@ class AlarmActivity : Activity() {
             view.setPadding(bars.left, bars.top, bars.right, bars.bottom)
             WindowInsetsCompat.CONSUMED
         }
-        findViewById<ImageView>(R.id.medication_alarm_logo).setImageDrawable(asset("images/img_64_logo_medicine.png"))
+        findViewById<ImageView>(R.id.medication_alarm_logo).setImageDrawable(asset("images/img_64_logo.png"))
         findViewById<ImageView>(R.id.medication_alarm_mascot).setImageDrawable(asset("images/img_93_mascot_medicine.png"))
         val bold = font("Pretendard-Bold.otf")
         val semibold = font("Pretendard-SemiBold.otf")

@@ -54,7 +54,8 @@ void main() {
     expect(remote.sent.map((request) => request.tsMs), [1000, 2000, 3000]);
     expect(remote.sent.first.deviceId, 'ph-test');
     expect(remote.sent.first.memberId, 1023);
-    expect(remote.sent.map((request) => request.sessionId).toSet(), hasLength(1));
+    expect(
+        remote.sent.map((request) => request.sessionId).toSet(), hasLength(1));
   });
 
   test('정확도가 낮은 위치도 걸러내지 않고 보낸다', () async {

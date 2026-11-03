@@ -18,7 +18,7 @@ class _HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
       ),
       actions: [
         GestureDetector(
-          onTap: () => {},
+          onTap: () => context.push(AppRoute.notification.path),
           child: WiduIcon(
             icon: Assets.icons.ic22Notification,
             width: 22,

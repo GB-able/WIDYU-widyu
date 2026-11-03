@@ -39,6 +39,18 @@ extension DateTimeExtension on DateTime {
     return year == other.year && month == other.month;
   }
 
+  String get shortTimeAgo {
+    final now = DateTime.now();
+    final diff = now.difference(this);
+
+    if (diff.inMinutes < 1) return '방금전';
+    if (diff.inHours < 1) return '${diff.inMinutes}분전';
+    if (diff.inDays < 1) return '${diff.inHours}시간전';
+    if (diff.inDays < 7) return '${diff.inDays}일전';
+    if (year == now.year) return '$month월 $day일';
+    return '$year년 $month월 $day일';
+  }
+
   String get timeAgo {
     final diff = DateTime.now().difference(this);
 

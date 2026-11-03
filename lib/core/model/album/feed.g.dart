@@ -16,6 +16,10 @@ _Feed _$FeedFromJson(Map<String, dynamic> json) => _Feed(
       thumbnailUrls: (json['thumbnailUrls'] as List<dynamic>)
           .map((e) => e as String)
           .toList(),
+      mediaTypes: (json['mediaTypes'] as List<dynamic>?)
+              ?.map((e) => $enumDecode(_$FeedMediaTypeEnumMap, e))
+              .toList() ??
+          const [],
       likeCount: (json['likeCount'] as num).toInt(),
       commentCount: (json['commentCount'] as num).toInt(),
       viewers: (json['viewers'] as List<dynamic>)
@@ -33,6 +37,8 @@ Map<String, dynamic> _$FeedToJson(_Feed instance) => <String, dynamic>{
       'content': instance.content,
       'mediaUrls': instance.mediaUrls,
       'thumbnailUrls': instance.thumbnailUrls,
+      'mediaTypes':
+          instance.mediaTypes.map((e) => _$FeedMediaTypeEnumMap[e]!).toList(),
       'likeCount': instance.likeCount,
       'commentCount': instance.commentCount,
       'viewers': instance.viewers,
@@ -40,3 +46,8 @@ Map<String, dynamic> _$FeedToJson(_Feed instance) => <String, dynamic>{
       'canEdit': instance.canEdit,
       'price': instance.price,
     };
+
+const _$FeedMediaTypeEnumMap = {
+  FeedMediaType.photo: 'PHOTO',
+  FeedMediaType.video: 'VIDEO',
+};

@@ -10,5 +10,6 @@ abstract class MedicationRemoteDataSource {
     required List<File> proofImages,
   });
 
-  Future<ApiResponse<MedicationSchedule>> fetchMedicationSchedule(String memberId);
+  Future<ApiResponse<MedicationSchedule>> fetchMedicationSchedule(
+      String memberId);
 }

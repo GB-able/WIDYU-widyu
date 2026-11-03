@@ -14,6 +14,7 @@ import 'package:widyu/core/model/heartRate/heart_rate_response.dart';
 import 'package:widyu/core/model/home/senior_card.dart';
 import 'package:widyu/core/model/location/user_location.dart';
 import 'package:widyu/core/model/myPage/user/user.dart';
+import 'package:widyu/core/model/notification/notification_category.dart';
 import 'package:widyu/core/model/notification/notification_page.dart';
 import 'package:widyu/core/model/permission/permission_recovery_prompt.dart';
 import 'package:widyu/core/utils/background_location_notice_controller.dart';
@@ -63,8 +64,14 @@ class _MyPage extends Fake implements MyPageRepository {
 class _Notification extends Fake implements NotificationRepository {
   @override
   Future<ApiResult<NotificationPage>> fetchNotificationPage(
-          int? cursor) async =>
+    int? cursor, {
+    String? category,
+  }) async =>
       const ApiResult.failure('unused');
+
+  @override
+  Future<ApiResult<List<NotificationCategory>>>
+      fetchNotificationCategories() async => const ApiResult.failure('unused');
 }
 
 class _HeartRate extends Fake implements HeartRateRepository {

@@ -11,6 +11,5 @@ abstract class Member with _$Member {
     String? profileImage,
   }) = _Member;
 
-  factory Member.fromJson(Map<String, dynamic> json) =>
-      _$MemberFromJson(json);
+  factory Member.fromJson(Map<String, dynamic> json) => _$MemberFromJson(json);
 }

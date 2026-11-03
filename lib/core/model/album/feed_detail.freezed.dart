@@ -18,6 +18,8 @@ mixin _$FeedDetail {
   int get albumId;
   String get content;
   List<String> get mediaUrls;
+  List<String> get thumbnailUrls;
+  List<FeedMediaType> get mediaTypes;
   int get likeCount;
   int get commentCount;
   int get price;
@@ -45,6 +47,10 @@ mixin _$FeedDetail {
             (identical(other.albumId, albumId) || other.albumId == albumId) &&
             (identical(other.content, content) || other.content == content) &&
             const DeepCollectionEquality().equals(other.mediaUrls, mediaUrls) &&
+            const DeepCollectionEquality()
+                .equals(other.thumbnailUrls, thumbnailUrls) &&
+            const DeepCollectionEquality()
+                .equals(other.mediaTypes, mediaTypes) &&
             (identical(other.likeCount, likeCount) ||
                 other.likeCount == likeCount) &&
             (identical(other.commentCount, commentCount) ||
@@ -65,6 +71,8 @@ mixin _$FeedDetail {
       albumId,
       content,
       const DeepCollectionEquality().hash(mediaUrls),
+      const DeepCollectionEquality().hash(thumbnailUrls),
+      const DeepCollectionEquality().hash(mediaTypes),
       likeCount,
       commentCount,
       price,
@@ -76,7 +84,7 @@ mixin _$FeedDetail {
 
   @override
   String toString() {
-    return 'FeedDetail(albumId: $albumId, content: $content, mediaUrls: $mediaUrls, likeCount: $likeCount, commentCount: $commentCount, price: $price, author: $author, viewers: $viewers, comments: $comments, createdAt: $createdAt, canEdit: $canEdit)';
+    return 'FeedDetail(albumId: $albumId, content: $content, mediaUrls: $mediaUrls, thumbnailUrls: $thumbnailUrls, mediaTypes: $mediaTypes, likeCount: $likeCount, commentCount: $commentCount, price: $price, author: $author, viewers: $viewers, comments: $comments, createdAt: $createdAt, canEdit: $canEdit)';
   }
 }
 
@@ -90,6 +98,8 @@ abstract mixin class $FeedDetailCopyWith<$Res> {
       {@JsonKey(name: 'postId') int albumId,
       String content,
       List<String> mediaUrls,
+      List<String> thumbnailUrls,
+      List<FeedMediaType> mediaTypes,
       int likeCount,
       int commentCount,
       int price,
@@ -117,6 +127,8 @@ class _$FeedDetailCopyWithImpl<$Res> implements $FeedDetailCopyWith<$Res> {
     Object? albumId = null,
     Object? content = null,
     Object? mediaUrls = null,
+    Object? thumbnailUrls = null,
+    Object? mediaTypes = null,
     Object? likeCount = null,
     Object? commentCount = null,
     Object? price = null,
@@ -139,6 +151,14 @@ class _$FeedDetailCopyWithImpl<$Res> implements $FeedDetailCopyWith<$Res> {
           ? _self.mediaUrls
           : mediaUrls // ignore: cast_nullable_to_non_nullable
               as List<String>,
+      thumbnailUrls: null == thumbnailUrls
+          ? _self.thumbnailUrls
+          : thumbnailUrls // ignore: cast_nullable_to_non_nullable
+              as List<String>,
+      mediaTypes: null == mediaTypes
+          ? _self.mediaTypes
+          : mediaTypes // ignore: cast_nullable_to_non_nullable
+              as List<FeedMediaType>,
       likeCount: null == likeCount
           ? _self.likeCount
           : likeCount // ignore: cast_nullable_to_non_nullable
@@ -282,6 +302,8 @@ extension FeedDetailPatterns on FeedDetail {
             @JsonKey(name: 'postId') int albumId,
             String content,
             List<String> mediaUrls,
+            List<String> thumbnailUrls,
+            List<FeedMediaType> mediaTypes,
             int likeCount,
             int commentCount,
             int price,
@@ -300,6 +322,8 @@ extension FeedDetailPatterns on FeedDetail {
             _that.albumId,
             _that.content,
             _that.mediaUrls,
+            _that.thumbnailUrls,
+            _that.mediaTypes,
             _that.likeCount,
             _that.commentCount,
             _that.price,
@@ -332,6 +356,8 @@ extension FeedDetailPatterns on FeedDetail {
             @JsonKey(name: 'postId') int albumId,
             String content,
             List<String> mediaUrls,
+            List<String> thumbnailUrls,
+            List<FeedMediaType> mediaTypes,
             int likeCount,
             int commentCount,
             int price,
@@ -349,6 +375,8 @@ extension FeedDetailPatterns on FeedDetail {
             _that.albumId,
             _that.content,
             _that.mediaUrls,
+            _that.thumbnailUrls,
+            _that.mediaTypes,
             _that.likeCount,
             _that.commentCount,
             _that.price,
@@ -380,6 +408,8 @@ extension FeedDetailPatterns on FeedDetail {
             @JsonKey(name: 'postId') int albumId,
             String content,
             List<String> mediaUrls,
+            List<String> thumbnailUrls,
+            List<FeedMediaType> mediaTypes,
             int likeCount,
             int commentCount,
             int price,
@@ -397,6 +427,8 @@ extension FeedDetailPatterns on FeedDetail {
             _that.albumId,
             _that.content,
             _that.mediaUrls,
+            _that.thumbnailUrls,
+            _that.mediaTypes,
             _that.likeCount,
             _that.commentCount,
             _that.price,
@@ -418,6 +450,8 @@ class _FeedDetail extends FeedDetail {
       {@JsonKey(name: 'postId') required this.albumId,
       required this.content,
       required final List<String> mediaUrls,
+      final List<String> thumbnailUrls = const [],
+      final List<FeedMediaType> mediaTypes = const [],
       required this.likeCount,
       required this.commentCount,
       required this.price,
@@ -427,6 +461,8 @@ class _FeedDetail extends FeedDetail {
       required this.createdAt,
       required this.canEdit})
       : _mediaUrls = mediaUrls,
+        _thumbnailUrls = thumbnailUrls,
+        _mediaTypes = mediaTypes,
         _viewers = viewers,
         _comments = comments,
         super._();
@@ -444,6 +480,24 @@ class _FeedDetail extends FeedDetail {
     if (_mediaUrls is EqualUnmodifiableListView) return _mediaUrls;
     // ignore: implicit_dynamic_type
     return EqualUnmodifiableListView(_mediaUrls);
+  }
+
+  final List<String> _thumbnailUrls;
+  @override
+  @JsonKey()
+  List<String> get thumbnailUrls {
+    if (_thumbnailUrls is EqualUnmodifiableListView) return _thumbnailUrls;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_thumbnailUrls);
+  }
+
+  final List<FeedMediaType> _mediaTypes;
+  @override
+  @JsonKey()
+  List<FeedMediaType> get mediaTypes {
+    if (_mediaTypes is EqualUnmodifiableListView) return _mediaTypes;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_mediaTypes);
   }
 
   @override
@@ -501,6 +555,10 @@ class _FeedDetail extends FeedDetail {
             (identical(other.content, content) || other.content == content) &&
             const DeepCollectionEquality()
                 .equals(other._mediaUrls, _mediaUrls) &&
+            const DeepCollectionEquality()
+                .equals(other._thumbnailUrls, _thumbnailUrls) &&
+            const DeepCollectionEquality()
+                .equals(other._mediaTypes, _mediaTypes) &&
             (identical(other.likeCount, likeCount) ||
                 other.likeCount == likeCount) &&
             (identical(other.commentCount, commentCount) ||
@@ -521,6 +579,8 @@ class _FeedDetail extends FeedDetail {
       albumId,
       content,
       const DeepCollectionEquality().hash(_mediaUrls),
+      const DeepCollectionEquality().hash(_thumbnailUrls),
+      const DeepCollectionEquality().hash(_mediaTypes),
       likeCount,
       commentCount,
       price,
@@ -532,7 +592,7 @@ class _FeedDetail extends FeedDetail {
 
   @override
   String toString() {
-    return 'FeedDetail(albumId: $albumId, content: $content, mediaUrls: $mediaUrls, likeCount: $likeCount, commentCount: $commentCount, price: $price, author: $author, viewers: $viewers, comments: $comments, createdAt: $createdAt, canEdit: $canEdit)';
+    return 'FeedDetail(albumId: $albumId, content: $content, mediaUrls: $mediaUrls, thumbnailUrls: $thumbnailUrls, mediaTypes: $mediaTypes, likeCount: $likeCount, commentCount: $commentCount, price: $price, author: $author, viewers: $viewers, comments: $comments, createdAt: $createdAt, canEdit: $canEdit)';
   }
 }
 
@@ -548,6 +608,8 @@ abstract mixin class _$FeedDetailCopyWith<$Res>
       {@JsonKey(name: 'postId') int albumId,
       String content,
       List<String> mediaUrls,
+      List<String> thumbnailUrls,
+      List<FeedMediaType> mediaTypes,
       int likeCount,
       int commentCount,
       int price,
@@ -576,6 +638,8 @@ class __$FeedDetailCopyWithImpl<$Res> implements _$FeedDetailCopyWith<$Res> {
     Object? albumId = null,
     Object? content = null,
     Object? mediaUrls = null,
+    Object? thumbnailUrls = null,
+    Object? mediaTypes = null,
     Object? likeCount = null,
     Object? commentCount = null,
     Object? price = null,
@@ -598,6 +662,14 @@ class __$FeedDetailCopyWithImpl<$Res> implements _$FeedDetailCopyWith<$Res> {
           ? _self._mediaUrls
           : mediaUrls // ignore: cast_nullable_to_non_nullable
               as List<String>,
+      thumbnailUrls: null == thumbnailUrls
+          ? _self._thumbnailUrls
+          : thumbnailUrls // ignore: cast_nullable_to_non_nullable
+              as List<String>,
+      mediaTypes: null == mediaTypes
+          ? _self._mediaTypes
+          : mediaTypes // ignore: cast_nullable_to_non_nullable
+              as List<FeedMediaType>,
       likeCount: null == likeCount
           ? _self.likeCount
           : likeCount // ignore: cast_nullable_to_non_nullable

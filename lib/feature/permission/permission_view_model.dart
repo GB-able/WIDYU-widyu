@@ -23,10 +23,13 @@ class PermissionViewModel extends _$PermissionViewModel {
   bool _isFinished = false;
 
   static List<PermissionType> get requiredPermissions =>
-      PermissionType.values.where((type) => type.isRequired).toList();
+      _visiblePermissions.where((type) => type.isRequired).toList();
 
   static List<PermissionType> get optionalPermissions =>
-      PermissionType.values.where((type) => !type.isRequired).toList();
+      _visiblePermissions.where((type) => !type.isRequired).toList();
+
+  static Iterable<PermissionType> get _visiblePermissions =>
+      PermissionType.values.where((type) => Platform.isAndroid || type != PermissionType.overlay);
 
   final _uiEvent = StreamController<PermissionUiEvent>.broadcast();
 
@@ -50,6 +53,7 @@ class PermissionViewModel extends _$PermissionViewModel {
   static final _initialRequestPermissions = [
     PermissionType.notification,
     PermissionType.alarm,
+    PermissionType.overlay,
     PermissionType.location,
     if (Platform.isAndroid) PermissionType.fitness,
   ];
@@ -63,7 +67,7 @@ class PermissionViewModel extends _$PermissionViewModel {
       final denied = <PermissionType>[];
       final settingsLaunchFailed = <PermissionType>[];
 
-      // 1. 알림 → 알람 → 위치 → 신체 활동(Android) 순서로 최초 실행에 필요한 권한만 요청한다.
+      // 1. 알림 → 알람 → 다른 앱 위에 표시 → 위치 → 신체 활동(Android) 순서로 최초 실행에 필요한 권한만 요청한다.
       await _requestSequentially(
         _initialRequestPermissions,
         denied,
@@ -79,7 +83,8 @@ class PermissionViewModel extends _$PermissionViewModel {
       }
       if (settingsLaunchFailed.isNotEmpty) {
         _uiEvent.add(
-          PermissionSettingsLaunchFailure(List.unmodifiable(settingsLaunchFailed)),
+          PermissionSettingsLaunchFailure(
+              List.unmodifiable(settingsLaunchFailed)),
         );
       }
     } catch (e, stack) {

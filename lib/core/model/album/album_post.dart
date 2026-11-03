@@ -1,5 +1,4 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:widyu/core/model/album/feed.dart';
 import 'package:widyu/core/model/album/feed_base.dart';
 import 'package:widyu/core/model/album/member.dart';
 
@@ -14,23 +13,21 @@ abstract class AlbumPost with _$AlbumPost {
     required String content,
     required List<String> mediaUrls,
     required List<String> thumbnailUrls,
+    required List<FeedMediaType> mediaTypes,
     required List<Member> viewers,
     required DateTime createdAt,
     required bool canEdit,
     required int price,
   }) = _AlbumPost;
 
-  factory AlbumPost.fromFeed(
-    FeedBase feed, {
-    List<String> thumbnailUrls = const [],
-  }) =>
-      AlbumPost(
+  factory AlbumPost.fromFeed(FeedBase feed) => AlbumPost(
         albumId: feed.albumId,
         authorName: feed.authorName,
         authorProfileImage: feed.authorProfileImage,
         content: feed.content,
         mediaUrls: feed.mediaUrls,
-        thumbnailUrls: feed is Feed ? feed.thumbnailUrls : thumbnailUrls,
+        thumbnailUrls: feed.thumbnailUrls,
+        mediaTypes: feed.mediaTypes,
         viewers: feed.viewers,
         createdAt: feed.createdAt,
         canEdit: feed.canEdit,

@@ -6,7 +6,8 @@ class WalkRecording {
   Future<bool> isAvailable() async =>
       await _channel.invokeMethod<bool>('isAvailable') ?? false;
 
-  Future<void> startRecording() => _channel.invokeMethod<void>('startRecording');
+  Future<void> startRecording() =>
+      _channel.invokeMethod<void>('startRecording');
 
   Future<void> stopRecording() => _channel.invokeMethod<void>('stopRecording');
 

@@ -2,7 +2,7 @@ part of '../home_screen.dart';
 
 class _NotificationView extends StatelessWidget {
   final int id;
-  final AssetGenImage? icon;
+  final String icon;
   final String description;
   final ValueChanged<int> onTap;
 
@@ -26,8 +26,14 @@ class _NotificationView extends StatelessWidget {
         ),
         child: Row(
           children: [
-            icon?.image(width: 24, height: 24) ??
-                const SizedBox(width: 24, height: 24),
+            ClipOval(
+              child: CustomNetworkImage(
+                url: icon,
+                width: 24,
+                height: 24,
+                errorIconSize: 16,
+              ),
+            ),
             const SizedBox(width: 12),
             Expanded(
               child: Text(

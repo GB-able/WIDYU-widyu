@@ -23,7 +23,7 @@
             android:directBootAware="true" android:foregroundServiceType="mediaPlayback" />
         <activity android:name=".AlarmActivity" android:exported="false"
             android:directBootAware="true" android:excludeFromRecents="true"
-            android:launchMode="singleTop" android:showWhenLocked="true"
+            android:launchMode="singleTop" android:screenOrientation="portrait" android:showWhenLocked="true"
             android:turnScreenOn="true" android:theme="@style/MedicationAlarmTheme" />
     </application>
 </manifest>

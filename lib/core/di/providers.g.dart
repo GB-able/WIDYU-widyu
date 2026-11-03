@@ -311,6 +311,50 @@ final class HomeRepositoryProvider
 
 String _$homeRepositoryHash() => r'1a9beb4f05379e10f2e02f411eaf65a05f5e98a4';
 
+@ProviderFor(incidentRepository)
+final incidentRepositoryProvider = IncidentRepositoryProvider._();
+
+final class IncidentRepositoryProvider extends $FunctionalProvider<
+    IncidentRepository,
+    IncidentRepository,
+    IncidentRepository> with $Provider<IncidentRepository> {
+  IncidentRepositoryProvider._()
+      : super(
+          from: null,
+          argument: null,
+          retry: null,
+          name: r'incidentRepositoryProvider',
+          isAutoDispose: false,
+          dependencies: null,
+          $allTransitiveDependencies: null,
+        );
+
+  @override
+  String debugGetCreateSourceHash() => _$incidentRepositoryHash();
+
+  @$internal
+  @override
+  $ProviderElement<IncidentRepository> $createElement(
+          $ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  IncidentRepository create(Ref ref) {
+    return incidentRepository(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(IncidentRepository value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<IncidentRepository>(value),
+    );
+  }
+}
+
+String _$incidentRepositoryHash() =>
+    r'dbe6c129d7a9cae5d0800a958efb1fa9667500e2';
+
 @ProviderFor(locationRepository)
 final locationRepositoryProvider = LocationRepositoryProvider._();
 

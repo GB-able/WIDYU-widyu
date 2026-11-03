@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -23,13 +24,15 @@ void main() {
     required PermissionStatusReader statusReader,
     required PermissionRequester requester,
     PermissionRationaleReader? rationaleReader,
-  }) => PermissionRecoveryController(
-    settingsController: SettingsReturnController(launcher: () async => false),
-    statusReader: statusReader,
-    requester: requester,
-    rationaleReader: rationaleReader ?? (_) async => false,
-    settingsRechecker: (_, __) async => PermissionSettingsResult.canceled,
-  );
+  }) =>
+      PermissionRecoveryController(
+        settingsController:
+            SettingsReturnController(launcher: () async => false),
+        statusReader: statusReader,
+        requester: requester,
+        rationaleReader: rationaleReader ?? (_) async => false,
+        settingsRechecker: (_, __) async => PermissionSettingsResult.canceled,
+      );
 
   // 실제 provider처럼 컨테이너가 폐기될 때 컨트롤러도 폐기한다.
   (ProviderContainer, PermissionViewModel, List<PermissionUiEvent>) start(
@@ -51,9 +54,10 @@ void main() {
   Future<PermissionRecoveryAction> cancelPrompt(
     PermissionType _,
     PermissionRecoveryMode __,
-  ) async => PermissionRecoveryAction.cancel;
+  ) async =>
+      PermissionRecoveryAction.cancel;
 
-  test('전체 권한 목록은 유지하고 최초 요청은 알림, 알람, 위치 순서로 한정한다', () async {
+  test('전체 권한 목록은 유지하고 최초 요청은 알림, 알람, 다른 앱 위에 표시, 위치 순서로 한정한다', () async {
     final requested = <PermissionType>[];
     final statuses = <PermissionType>[];
     final (_, viewModel, events) = start(
@@ -77,11 +81,12 @@ void main() {
         ...PermissionViewModel.requiredPermissions,
         ...PermissionViewModel.optionalPermissions,
       },
-      PermissionType.values.toSet(),
+      PermissionType.values.where((type) => Platform.isAndroid || type != PermissionType.overlay).toSet(),
     );
     const initial = [
       PermissionType.notification,
       PermissionType.alarm,
+      PermissionType.overlay,
       PermissionType.location,
     ];
     expect(requested, initial);

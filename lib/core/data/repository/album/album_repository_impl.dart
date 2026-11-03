@@ -97,11 +97,7 @@ class AlbumRepositoryImpl extends AlbumRepository {
 
     for (final feed in feeds) {
       if (!_canApplyRead(feed.albumId)) continue;
-      final previous = posts[feed.albumId];
-      posts[feed.albumId] = AlbumPost.fromFeed(
-        feed,
-        thumbnailUrls: previous?.thumbnailUrls ?? const [],
-      );
+      posts[feed.albumId] = AlbumPost.fromFeed(feed);
       stats[feed.albumId] = AlbumStat(
         isLiked: stats[feed.albumId]?.isLiked ?? false,
         likeCount: feed.likeCount,

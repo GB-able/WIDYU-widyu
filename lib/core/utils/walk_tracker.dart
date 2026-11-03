@@ -1,8 +1,11 @@
 import 'dart:async';
 
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/widgets.dart';
 import 'package:widyu/core/data/repository/goal/walk_repository.dart';
 import 'package:widyu/core/log/log.dart';
+import 'package:widyu/core/model/notification/notification_type.dart';
 import 'package:widyu/core/network/token_manager.dart';
 import 'package:widyu/walk_background_service.dart';
 
@@ -17,6 +20,7 @@ class WalkTracker with WidgetsBindingObserver {
   Timer? _timer;
   StreamSubscription<int>? _live;
   StreamSubscription<void>? _syncRequests;
+  StreamSubscription<void>? _syncPushes;
   Future<void>? _starting;
   Future<void>? _syncing;
   bool _syncQueued = false;
@@ -41,6 +45,11 @@ class WalkTracker with WidgetsBindingObserver {
       }
       _syncRequests ??=
           _repository.syncRequests.listen((_) => unawaited(sync()));
+      if (Firebase.apps.isNotEmpty) {
+        _syncPushes ??= FirebaseMessaging.onMessage
+            .where((m) => NotificationType.walkDataSync.matches(m.data))
+            .listen((_) => unawaited(sync()));
+      }
       final permitted = await _repository.ensurePermission();
       if (_disposed) return;
       _tracking = permitted;
@@ -149,6 +158,8 @@ class WalkTracker with WidgetsBindingObserver {
     _pause();
     unawaited(_syncRequests?.cancel());
     _syncRequests = null;
+    unawaited(_syncPushes?.cancel());
+    _syncPushes = null;
     if (_observing) WidgetsBinding.instance.removeObserver(this);
   }
 }

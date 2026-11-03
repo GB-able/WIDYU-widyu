@@ -45,7 +45,7 @@ final class PermissionViewModelProvider
 }
 
 String _$permissionViewModelHash() =>
-    r'71e50d7c2f1c0e198b20f43e971ce143526f9007';
+    r'8cd2c438c310ce094d97cdc057de6a6cd41208d5';
 
 /// 상태는 권한 요청 진행 여부(isRequesting)다.
 

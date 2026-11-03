@@ -13,6 +13,8 @@ import 'package:widyu/core/data/repository/heartRate/heart_rate_repository.dart'
 import 'package:widyu/core/data/repository/heartRate/heart_rate_repository_impl.dart';
 import 'package:widyu/core/data/repository/home/home_repository.dart';
 import 'package:widyu/core/data/repository/home/home_repository_impl.dart';
+import 'package:widyu/core/data/repository/incident/incident_repository.dart';
+import 'package:widyu/core/data/repository/incident/incident_repository_impl.dart';
 import 'package:widyu/core/data/repository/location/location_repository.dart';
 import 'package:widyu/core/data/repository/location/location_repository_impl.dart';
 import 'package:widyu/core/data/repository/myPage/my_page_repository.dart';
@@ -34,6 +36,7 @@ import 'package:widyu/core/data/source/goal/walk_remote_data_source_impl.dart';
 import 'package:widyu/core/data/source/heartRate/heart_rate_local_data_source_impl.dart';
 import 'package:widyu/core/data/source/heartRate/heart_rate_remote_data_source_impl.dart';
 import 'package:widyu/core/data/source/home/home_remote_data_source_impl.dart';
+import 'package:widyu/core/data/source/incident/incident_remote_data_source_impl.dart';
 import 'package:widyu/core/data/source/location/location_local_data_source_impl.dart';
 import 'package:widyu/core/data/source/location/location_remote_data_source_impl.dart';
 import 'package:widyu/core/data/source/myPage/my_page_remote_data_source_impl.dart';
@@ -96,6 +99,11 @@ HeartRateRepository heartRateRepository(Ref ref) => HeartRateRepositoryImpl(
 @Riverpod(keepAlive: true)
 HomeRepository homeRepository(Ref ref) => HomeRepositoryImpl(
       remoteDataSource: HomeRemoteDataSourceImpl(apiClient: ApiClient()),
+    );
+
+@Riverpod(keepAlive: true)
+IncidentRepository incidentRepository(Ref ref) => IncidentRepositoryImpl(
+      remoteDataSource: IncidentRemoteDataSourceImpl(apiClient: ApiClient()),
     );
 
 @Riverpod(keepAlive: true)

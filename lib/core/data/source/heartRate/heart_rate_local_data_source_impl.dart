@@ -45,11 +45,11 @@ class HeartRateLocalDataSourceImpl implements HeartRateLocalDataSource {
   Stream<bool> observeConnection() {
     if (!_supported) return Stream.value(false);
     return _heartRateStream
-      .map((_) => true)
-      .timeout(
-        const Duration(seconds: 30),
-        onTimeout: (sink) => sink.add(false),
-      )
-      .distinct();
+        .map((_) => true)
+        .timeout(
+          const Duration(seconds: 30),
+          onTimeout: (sink) => sink.add(false),
+        )
+        .distinct();
   }
 }

@@ -8,6 +8,7 @@ extension PermissionTypeDisplay on PermissionType {
   String get title => switch (this) {
         PermissionType.notification => '알림',
         PermissionType.alarm => '알람 및 리마인더',
+        PermissionType.overlay => '다른 앱 위에 표시',
         PermissionType.id => 'ID',
         PermissionType.phone => '전화',
         PermissionType.location => '위치',
@@ -18,6 +19,7 @@ extension PermissionTypeDisplay on PermissionType {
   String get description => switch (this) {
         PermissionType.notification => '앱 알림, 공지 및 알람',
         PermissionType.alarm => '설정한 날짜 및 시간에 알람 생성',
+        PermissionType.overlay => '평소와 다른 심박 감지 등 안전 알림 화면 표시',
         PermissionType.id => '기기 식별 및 광고 트래킹',
         PermissionType.phone => '전화번호 인증',
         PermissionType.location => '가족에게 위치 공유, 예약지 방문 시 알림, 활동 정보 및 주소 찾기',
@@ -28,6 +30,7 @@ extension PermissionTypeDisplay on PermissionType {
   SvgGenImage get icon => switch (this) {
         PermissionType.notification => Assets.icons.ic18Notification,
         PermissionType.alarm => Assets.icons.ic18Alarm,
+        PermissionType.overlay => Assets.icons.ic18Alarm,
         PermissionType.id => Assets.icons.ic18Profile,
         PermissionType.phone => Assets.icons.ic18Phone,
         PermissionType.location => Assets.icons.ic18Location,
@@ -39,6 +42,7 @@ extension PermissionTypeDisplay on PermissionType {
   bool get isRequired => switch (this) {
         PermissionType.notification => true,
         PermissionType.alarm => true,
+        PermissionType.overlay => true,
         PermissionType.id => true,
         PermissionType.phone => false,
         PermissionType.location => false,

@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$NotificationUiModel {
   int get notificationId;
-  AssetGenImage? get icon;
+  String get icon;
   String get description;
 
   /// Create a copy of NotificationUiModel
@@ -54,7 +54,7 @@ abstract mixin class $NotificationUiModelCopyWith<$Res> {
           NotificationUiModel value, $Res Function(NotificationUiModel) _then) =
       _$NotificationUiModelCopyWithImpl;
   @useResult
-  $Res call({int notificationId, AssetGenImage? icon, String description});
+  $Res call({int notificationId, String icon, String description});
 }
 
 /// @nodoc
@@ -71,7 +71,7 @@ class _$NotificationUiModelCopyWithImpl<$Res>
   @override
   $Res call({
     Object? notificationId = null,
-    Object? icon = freezed,
+    Object? icon = null,
     Object? description = null,
   }) {
     return _then(_self.copyWith(
@@ -79,10 +79,10 @@ class _$NotificationUiModelCopyWithImpl<$Res>
           ? _self.notificationId
           : notificationId // ignore: cast_nullable_to_non_nullable
               as int,
-      icon: freezed == icon
+      icon: null == icon
           ? _self.icon
           : icon // ignore: cast_nullable_to_non_nullable
-              as AssetGenImage?,
+              as String,
       description: null == description
           ? _self.description
           : description // ignore: cast_nullable_to_non_nullable
@@ -184,8 +184,7 @@ extension NotificationUiModelPatterns on NotificationUiModel {
 
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>(
-    TResult Function(
-            int notificationId, AssetGenImage? icon, String description)?
+    TResult Function(int notificationId, String icon, String description)?
         $default, {
     required TResult orElse(),
   }) {
@@ -213,8 +212,7 @@ extension NotificationUiModelPatterns on NotificationUiModel {
 
   @optionalTypeArgs
   TResult when<TResult extends Object?>(
-    TResult Function(
-            int notificationId, AssetGenImage? icon, String description)
+    TResult Function(int notificationId, String icon, String description)
         $default,
   ) {
     final _that = this;
@@ -240,8 +238,7 @@ extension NotificationUiModelPatterns on NotificationUiModel {
 
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>(
-    TResult? Function(
-            int notificationId, AssetGenImage? icon, String description)?
+    TResult? Function(int notificationId, String icon, String description)?
         $default,
   ) {
     final _that = this;
@@ -265,7 +262,7 @@ class _NotificationUiModel implements NotificationUiModel {
   @override
   final int notificationId;
   @override
-  final AssetGenImage? icon;
+  final String icon;
   @override
   final String description;
 
@@ -308,7 +305,7 @@ abstract mixin class _$NotificationUiModelCopyWith<$Res>
       __$NotificationUiModelCopyWithImpl;
   @override
   @useResult
-  $Res call({int notificationId, AssetGenImage? icon, String description});
+  $Res call({int notificationId, String icon, String description});
 }
 
 /// @nodoc
@@ -325,7 +322,7 @@ class __$NotificationUiModelCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   $Res call({
     Object? notificationId = null,
-    Object? icon = freezed,
+    Object? icon = null,
     Object? description = null,
   }) {
     return _then(_NotificationUiModel(
@@ -333,10 +330,10 @@ class __$NotificationUiModelCopyWithImpl<$Res>
           ? _self.notificationId
           : notificationId // ignore: cast_nullable_to_non_nullable
               as int,
-      icon: freezed == icon
+      icon: null == icon
           ? _self.icon
           : icon // ignore: cast_nullable_to_non_nullable
-              as AssetGenImage?,
+              as String,
       description: null == description
           ? _self.description
           : description // ignore: cast_nullable_to_non_nullable

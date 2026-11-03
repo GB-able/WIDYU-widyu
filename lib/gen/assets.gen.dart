@@ -226,6 +226,10 @@ class $AssetsIconsGen {
   SvgGenImage get ic24CheckboxOn =>
       const SvgGenImage('assets/icons/ic_24_checkbox_on.svg');
 
+  /// File path: assets/icons/ic_24_chevron_right.svg
+  SvgGenImage get ic24ChevronRight =>
+      const SvgGenImage('assets/icons/ic_24_chevron_right.svg');
+
   /// File path: assets/icons/ic_24_close.svg
   SvgGenImage get ic24Close =>
       const SvgGenImage('assets/icons/ic_24_close.svg');
@@ -330,6 +334,10 @@ class $AssetsIconsGen {
   SvgGenImage get ic64Camera =>
       const SvgGenImage('assets/icons/ic_64_camera.svg');
 
+  /// File path: assets/icons/ic_66_warning.svg
+  SvgGenImage get ic66Warning =>
+      const SvgGenImage('assets/icons/ic_66_warning.svg');
+
   /// File path: assets/icons/ic_70_kakaotalk.svg
   SvgGenImage get ic70Kakaotalk =>
       const SvgGenImage('assets/icons/ic_70_kakaotalk.svg');
@@ -391,6 +399,7 @@ class $AssetsIconsGen {
         ic24Card,
         ic24CheckboxOff,
         ic24CheckboxOn,
+        ic24ChevronRight,
         ic24Close,
         ic24CloseFill,
         ic24Comment,
@@ -419,6 +428,7 @@ class $AssetsIconsGen {
         ic50Wearing,
         ic60Lock,
         ic64Camera,
+        ic66Warning,
         ic70Kakaotalk,
         ic70Message,
         ic76Profile
@@ -500,6 +510,10 @@ class $AssetsImagesGen {
   AssetGenImage get img24Walk =>
       const AssetGenImage('assets/images/img_24_walk.png');
 
+  /// File path: assets/images/img_24_warning.png
+  AssetGenImage get img24Warning =>
+      const AssetGenImage('assets/images/img_24_warning.png');
+
   /// File path: assets/images/img_288_logo_splash.png
   AssetGenImage get img288LogoSplash =>
       const AssetGenImage('assets/images/img_288_logo_splash.png');
@@ -556,9 +570,9 @@ class $AssetsImagesGen {
   AssetGenImage get img50Walk =>
       const AssetGenImage('assets/images/img_50_walk.png');
 
-  /// File path: assets/images/img_64_logo_medicine.png
-  AssetGenImage get img64LogoMedicine =>
-      const AssetGenImage('assets/images/img_64_logo_medicine.png');
+  /// File path: assets/images/img_64_logo.png
+  AssetGenImage get img64Logo =>
+      const AssetGenImage('assets/images/img_64_logo.png');
 
   /// File path: assets/images/img_80_mascot.png
   AssetGenImage get img80Mascot =>
@@ -596,6 +610,7 @@ class $AssetsImagesGen {
         img24Location,
         img24Medicine,
         img24Walk,
+        img24Warning,
         img288LogoSplash,
         img28Point,
         img300Onboarding1,
@@ -610,7 +625,7 @@ class $AssetsImagesGen {
         img50Hospital,
         img50Medicine,
         img50Walk,
-        img64LogoMedicine,
+        img64Logo,
         img80Mascot,
         img93MascotMedicine,
         img94Warning,
