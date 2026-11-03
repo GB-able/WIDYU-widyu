@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:photo_manager/photo_manager.dart';
-import 'package:provider/provider.dart';
 import 'package:widyu/app/routes/app_route.dart';
 import 'package:widyu/app/routes/custom_page.dart';
 import 'package:widyu/app/routes/extra/edit_post_extra.dart';
@@ -16,7 +15,6 @@ import 'package:widyu/feature/album/manage_post/manage_post_screen.dart';
 import 'package:widyu/feature/album/post/post_screen.dart';
 import 'package:widyu/feature/album/preview/photo_preview_screen.dart';
 import 'package:widyu/feature/album/select_photo/select_photo_screen.dart';
-import 'package:widyu/feature/album/select_photo/select_photo_view_model.dart';
 import 'package:widyu/feature/auth/login_screen.dart';
 import 'package:widyu/feature/auth/onboarding_screen.dart';
 import 'package:widyu/feature/contact/contact_screen.dart';
@@ -192,11 +190,9 @@ class CustomRouter {
                   : const Scaffold(body: Center(child: Text('게시물을 찾을 수 없어요.')));
             },
           ),
+          // 두 화면이 같은 SelectPhotoViewModel을 watch해 상태를 공유하고, 둘 다 닫히면 함께 폐기된다.
           CustomGoRoute.closeShellRoute(
-            builder: (_, __, child) => ChangeNotifierProvider(
-              create: (_) => SelectPhotoViewModel()..init(),
-              child: child,
-            ),
+            builder: (_, __, child) => child,
             routes: [
               CustomGoRoute.staticRoute(
                 route: AppRoute.selectPhoto,
