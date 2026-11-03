@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 import 'package:widyu/background_service.dart';
+import 'package:widyu/core/log/log.dart';
 import 'package:widyu/core/model/location/location_service_state.dart';
 import 'package:widyu/core/network/token_manager.dart';
 import 'package:widyu/core/utils/location_service_manager.dart';
@@ -15,7 +15,7 @@ typedef BackgroundServiceAction = Future<void> Function();
 /// 로그인 토큰 보유 여부를 배경 서비스에 반영한다.
 /// 심박수는 위치와 무관하게 전송되어야 하므로 서비스 실행 조건은 토큰뿐이고,
 /// 위치 상태는 UI 표시와 배경 isolate의 위치 업로드 on/off 용으로만 추적한다.
-class AppServiceController extends ChangeNotifier {
+class AppServiceController {
   AppServiceController({
     HasToken? hasToken,
     LocationStateReader? refreshLocationState,
@@ -133,10 +133,7 @@ class AppServiceController extends ChangeNotifier {
     required int generation,
   }) async {
     if (!_isCurrent(generation)) return;
-    if (_state != next) {
-      _state = next;
-      notifyListeners();
-    }
+    _state = next;
     final canRun = tokenAvailable;
     var failed = false;
     try {
@@ -145,7 +142,7 @@ class AppServiceController extends ChangeNotifier {
         _autoStartEnabled = canRun;
       }
     } catch (error, stack) {
-      debugPrint('[AppServiceController] 서비스 상태 반영 실패: $error\n$stack');
+      WiduLog.bg.w('서비스 상태 반영 실패', error: error, stackTrace: stack);
       failed = true;
     }
     if (!_isCurrent(generation)) return;
@@ -156,7 +153,7 @@ class AppServiceController extends ChangeNotifier {
         await _stopBackground();
       }
     } catch (error, stack) {
-      debugPrint('[AppServiceController] 서비스 상태 반영 실패: $error\n$stack');
+      WiduLog.bg.w('서비스 상태 반영 실패', error: error, stackTrace: stack);
       failed = true;
     }
     _setServiceError(failed);
@@ -165,7 +162,6 @@ class AppServiceController extends ChangeNotifier {
   void _setServiceError(bool value) {
     if (_hasServiceError == value) return;
     _hasServiceError = value;
-    if (!_disposed) notifyListeners();
   }
 
   bool _isActive(int generation) =>
@@ -175,12 +171,11 @@ class AppServiceController extends ChangeNotifier {
   Future<void> _enqueue(Future<void> Function() operation) {
     final next = _queue.then((_) => operation(), onError: (_) => operation());
     _queue = next.catchError((Object error, StackTrace stack) {
-      debugPrint('[AppServiceController] 작업 실패: $error\n$stack');
+      WiduLog.bg.w('서비스 제어 작업 실패', error: error, stackTrace: stack);
     });
     return _queue;
   }
 
-  @override
   void dispose() {
     _disposed = true;
     _started = false;
@@ -193,14 +188,13 @@ class AppServiceController extends ChangeNotifier {
         if (_autoStartEnabled != false) await _setAutoStart(false);
         _autoStartEnabled = false;
       } catch (error, stack) {
-        debugPrint('[AppServiceController] 자동 시작 해제 실패: $error\n$stack');
+        WiduLog.bg.w('자동 시작 해제 실패', error: error, stackTrace: stack);
       }
       try {
         await _stopBackground();
       } catch (error, stack) {
-        debugPrint('[AppServiceController] 서비스 종료 실패: $error\n$stack');
+        WiduLog.bg.w('서비스 종료 실패', error: error, stackTrace: stack);
       }
     }));
-    super.dispose();
   }
 }

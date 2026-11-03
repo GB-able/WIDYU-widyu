@@ -92,8 +92,8 @@ class _VideoPreviewState extends State<_VideoPreview> {
                       color: MyColor.black.withValues(alpha: 0.4),
                       shape: BoxShape.circle,
                     ),
-                    child: const IconWidget(
-                      icon: 'play',
+                    child: WiduIcon(
+                      icon: Assets.icons.ic18Play,
                       width: 18,
                       color: MyColor.white,
                     ),

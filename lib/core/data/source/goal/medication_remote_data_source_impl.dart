@@ -50,7 +50,7 @@ class MedicationRemoteDataSourceImpl extends MedicationRemoteDataSource {
       path: '$_path/alarm-sync',
       method: HttpMethod.get,
     );
-    return response.toApiResponse((json) =>
-        MedicationSchedule.fromJson({'memberId': memberId, ...json}));
+    return response.toApiResponse(
+        (json) => MedicationSchedule.fromJson({'memberId': memberId, ...json}));
   }
 }

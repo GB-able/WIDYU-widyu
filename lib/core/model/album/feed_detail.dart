@@ -14,6 +14,8 @@ abstract class FeedDetail with _$FeedDetail implements FeedBase {
     @JsonKey(name: 'postId') required int albumId,
     required String content,
     required List<String> mediaUrls,
+    @Default([]) List<String> thumbnailUrls,
+    @Default([]) List<FeedMediaType> mediaTypes,
     required int likeCount,
     required int commentCount,
     required int price,

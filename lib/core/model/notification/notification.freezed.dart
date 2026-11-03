@@ -15,8 +15,8 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$Notification {
   int get notificationId;
-  String? get image;
-  NotificationCategory get category;
+  String get image;
+  String get category;
   String get title;
   String get content;
   String get createdAt;
@@ -71,8 +71,8 @@ abstract mixin class $NotificationCopyWith<$Res> {
   @useResult
   $Res call(
       {int notificationId,
-      String? image,
-      NotificationCategory category,
+      String image,
+      String category,
       String title,
       String content,
       String createdAt,
@@ -93,7 +93,7 @@ class _$NotificationCopyWithImpl<$Res> implements $NotificationCopyWith<$Res> {
   @override
   $Res call({
     Object? notificationId = null,
-    Object? image = freezed,
+    Object? image = null,
     Object? category = null,
     Object? title = null,
     Object? content = null,
@@ -106,14 +106,14 @@ class _$NotificationCopyWithImpl<$Res> implements $NotificationCopyWith<$Res> {
           ? _self.notificationId
           : notificationId // ignore: cast_nullable_to_non_nullable
               as int,
-      image: freezed == image
+      image: null == image
           ? _self.image
           : image // ignore: cast_nullable_to_non_nullable
-              as String?,
+              as String,
       category: null == category
           ? _self.category
           : category // ignore: cast_nullable_to_non_nullable
-              as NotificationCategory,
+              as String,
       title: null == title
           ? _self.title
           : title // ignore: cast_nullable_to_non_nullable
@@ -233,8 +233,8 @@ extension NotificationPatterns on Notification {
   TResult maybeWhen<TResult extends Object?>(
     TResult Function(
             int notificationId,
-            String? image,
-            NotificationCategory category,
+            String image,
+            String category,
             String title,
             String content,
             String createdAt,
@@ -277,8 +277,8 @@ extension NotificationPatterns on Notification {
   TResult when<TResult extends Object?>(
     TResult Function(
             int notificationId,
-            String? image,
-            NotificationCategory category,
+            String image,
+            String category,
             String title,
             String content,
             String createdAt,
@@ -319,8 +319,8 @@ extension NotificationPatterns on Notification {
   TResult? whenOrNull<TResult extends Object?>(
     TResult? Function(
             int notificationId,
-            String? image,
-            NotificationCategory category,
+            String image,
+            String category,
             String title,
             String content,
             String createdAt,
@@ -351,31 +351,35 @@ extension NotificationPatterns on Notification {
 class _Notification implements Notification {
   const _Notification(
       {required this.notificationId,
-      required this.image,
+      this.image = '',
       required this.category,
       required this.title,
-      required this.content,
+      this.content = '',
       required this.createdAt,
-      required this.isRead,
-      required this.path});
+      this.isRead = false,
+      this.path = ''});
   factory _Notification.fromJson(Map<String, dynamic> json) =>
       _$NotificationFromJson(json);
 
   @override
   final int notificationId;
   @override
-  final String? image;
+  @JsonKey()
+  final String image;
   @override
-  final NotificationCategory category;
+  final String category;
   @override
   final String title;
   @override
+  @JsonKey()
   final String content;
   @override
   final String createdAt;
   @override
+  @JsonKey()
   final bool isRead;
   @override
+  @JsonKey()
   final String path;
 
   /// Create a copy of Notification
@@ -432,8 +436,8 @@ abstract mixin class _$NotificationCopyWith<$Res>
   @useResult
   $Res call(
       {int notificationId,
-      String? image,
-      NotificationCategory category,
+      String image,
+      String category,
       String title,
       String content,
       String createdAt,
@@ -455,7 +459,7 @@ class __$NotificationCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   $Res call({
     Object? notificationId = null,
-    Object? image = freezed,
+    Object? image = null,
     Object? category = null,
     Object? title = null,
     Object? content = null,
@@ -468,14 +472,14 @@ class __$NotificationCopyWithImpl<$Res>
           ? _self.notificationId
           : notificationId // ignore: cast_nullable_to_non_nullable
               as int,
-      image: freezed == image
+      image: null == image
           ? _self.image
           : image // ignore: cast_nullable_to_non_nullable
-              as String?,
+              as String,
       category: null == category
           ? _self.category
           : category // ignore: cast_nullable_to_non_nullable
-              as NotificationCategory,
+              as String,
       title: null == title
           ? _self.title
           : title // ignore: cast_nullable_to_non_nullable

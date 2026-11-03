@@ -3,9 +3,9 @@ import 'package:go_router/go_router.dart';
 import 'package:widyu/app/routes/app_route.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
-import 'package:widyu/core/ui/widgets/widyu_asset_image.dart';
-import 'package:widyu/core/ui/widgets/widyu_icon.dart';
+import 'package:widyu/core/ui/widgets/widu_icon.dart';
 import 'package:widyu/core/ui/widgets/widyu_text_button.dart';
+import 'package:widyu/gen/assets.gen.dart';
 
 class MedicationRewardDialog extends StatelessWidget {
   const MedicationRewardDialog(
@@ -32,8 +32,7 @@ class MedicationRewardDialog extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 const SizedBox(height: 24),
-                const WidyuAssetImage(
-                  name: 'img_125_check.png',
+                Assets.images.img125Check.image(
                   width: 125,
                   height: 125,
                 ),
@@ -112,10 +111,10 @@ class _RewardCloseButton extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         customBorder: const CircleBorder(),
-        child: const Padding(
-          padding: EdgeInsets.all(8),
-          child: WidyuIcon(
-            icon: 'ic_16_close.svg',
+        child: Padding(
+          padding: const EdgeInsets.all(8),
+          child: WiduIcon(
+            icon: Assets.icons.ic16Close,
             width: 16,
             height: 16,
           ),

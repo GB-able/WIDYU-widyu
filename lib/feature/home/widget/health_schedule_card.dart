@@ -84,8 +84,7 @@ class _HealthScheduleCard extends StatelessWidget {
                 translation: const Offset(0.12, 0),
                 child: Transform.scale(
                   scale: 1.1,
-                  child: const WidyuAssetImage(
-                    name: 'img_238_calendar.png',
+                  child: Assets.images.img238Calendar.image(
                     fit: BoxFit.contain,
                   ),
                 ),

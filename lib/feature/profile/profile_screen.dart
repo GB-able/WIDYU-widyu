@@ -1,19 +1,18 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:provider/provider.dart';
-import 'package:widyu/core/data/repository/myPage/my_page_repository.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
 import 'package:widyu/core/ui/widgets/ui_event_listener.dart';
-import 'package:widyu/core/ui/widgets/widyu_icon.dart';
+import 'package:widyu/core/ui/widgets/widu_icon.dart';
 import 'package:widyu/core/utils/extensions/string_extension.dart';
 import 'package:widyu/core/utils/show_toast.dart';
 import 'package:widyu/feature/profile/profile_ui_event.dart';
-import 'package:widyu/feature/profile/profile_ui_state.dart';
 import 'package:widyu/feature/profile/profile_view_model.dart';
+import 'package:widyu/gen/assets.gen.dart';
 
 part 'widget/profile_app_bar.dart';
 part 'widget/profile_edit_view.dart';
@@ -21,7 +20,7 @@ part 'widget/profile_image_view.dart';
 part 'widget/profile_information_view.dart';
 part 'widget/profile_name_view.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
 
   void _handleEvent(ProfileUiEvent event) {
@@ -36,55 +35,47 @@ class ProfileScreen extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (context) => ProfileViewModel(
-        repository: context.read<MyPageRepository>(),
-      ),
-      builder: (context, child) {
-        final viewModel = context.read<ProfileViewModel>();
-        final uiState = context
-            .select<ProfileViewModel, ProfileUiState>((vm) => vm.uiState);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final viewModel = ref.watch(profileViewModelProvider.notifier);
+    final uiState = ref.watch(profileViewModelProvider);
 
-        return UiEventListener(
-          stream: viewModel.uiEvent,
-          onEvent: _handleEvent,
-          child: Scaffold(
-            appBar: const _ProfileAppBar(),
-            body: uiState.isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : SingleChildScrollView(
-                    child: Padding(
-                      padding: const EdgeInsets.only(top: 24),
-                      child: Column(
-                        children: [
-                          _ProfileEditView(
-                            name: uiState.name,
-                            profileImage: uiState.profileImage,
-                            onNameChanged: viewModel.updateName,
-                            onImagePicked: viewModel.updateProfileImage,
-                          ),
-                          const SizedBox(
-                            width: double.infinity,
-                            height: 10,
-                            child: DecoratedBox(
-                              decoration: BoxDecoration(color: MyColor.grey50),
-                            ),
-                          ),
-                          _ProfileInformationView(
-                            name: uiState.name,
-                            birthDate: uiState.birthDate,
-                            phoneNumber: uiState.phoneNumber,
-                            address: uiState.address,
-                            inviteCode: uiState.inviteCode,
-                          ),
-                        ],
+    return UiEventListener(
+      stream: viewModel.uiEvent,
+      onEvent: _handleEvent,
+      child: Scaffold(
+        appBar: const _ProfileAppBar(),
+        body: uiState.isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 24),
+                  child: Column(
+                    children: [
+                      _ProfileEditView(
+                        name: uiState.name,
+                        profileImage: uiState.profileImage,
+                        onNameChanged: viewModel.updateName,
+                        onImagePicked: viewModel.updateProfileImage,
                       ),
-                    ),
+                      const SizedBox(
+                        width: double.infinity,
+                        height: 10,
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(color: MyColor.grey50),
+                        ),
+                      ),
+                      _ProfileInformationView(
+                        name: uiState.name,
+                        birthDate: uiState.birthDate,
+                        phoneNumber: uiState.phoneNumber,
+                        address: uiState.address,
+                        inviteCode: uiState.inviteCode,
+                      ),
+                    ],
                   ),
-          ),
-        );
-      },
+                ),
+              ),
+      ),
     );
   }
 }

@@ -1,25 +1,29 @@
 part of '../calendar_tab_view.dart';
 
 class _CalendarFeedList extends StatelessWidget {
-  const _CalendarFeedList({required this.viewModel, required this.controller});
+  const _CalendarFeedList({
+    required this.viewModel,
+    required this.controller,
+    required this.onRequestUnlock,
+  });
 
   final CalendarTabViewModel viewModel;
   final ScrollController controller;
+  final Future<bool> Function(int albumId) onRequestUnlock;
 
   @override
   Widget build(BuildContext context) {
     if (viewModel.isLoadingSelectedDay) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
+      return const CustomLoadingWidget();
     }
 
     final feeds = viewModel.selectedDayAlbumIds;
+    final cache = viewModel.cache;
 
     if (feeds.isEmpty) {
       if (viewModel.hasErrorSelectedDay) {
-        return RetryWidget(
-          message: '피드를 불러오지 못했어요',
+        return CustomErrorWidget(
+          errorMsg: '피드를 불러오지 못했어요',
           onRetry: () => viewModel.retry(),
         );
       }
@@ -45,7 +49,12 @@ class _CalendarFeedList extends StatelessWidget {
         final albumId = feeds[index];
         return FeedWidget(
           key: ValueKey(albumId),
-          albumId: albumId,
+          feed: cache.postOf(albumId)!,
+          stat: cache.statOf(albumId),
+          isLocked: !cache.isUnlocked(albumId),
+          onToggleLike: () => viewModel.toggleLike(albumId),
+          onDelete: () => viewModel.deleteFeed(albumId),
+          onRequestUnlock: () => onRequestUnlock(albumId),
           isContentExpanded: viewModel.isContentExpanded(albumId),
           onContentExpandChanged: (expanded) =>
               viewModel.setContentExpanded(albumId, expanded),

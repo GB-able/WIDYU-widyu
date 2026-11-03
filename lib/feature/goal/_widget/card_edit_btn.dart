@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
-import 'package:widyu/core/ui/widgets/widyu_icon.dart';
+import 'package:widyu/core/ui/widgets/widu_icon.dart';
+import 'package:widyu/gen/assets.gen.dart';
 
 class CardEditBtn extends StatelessWidget {
   final String label;
@@ -23,8 +24,8 @@ class CardEditBtn extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const WidyuIcon(
-                icon: 'ic_18_edit.svg',
+              WiduIcon(
+                icon: Assets.icons.ic18Edit,
                 width: 18,
                 height: 18,
                 color: MyColor.grey700,

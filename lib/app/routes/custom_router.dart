@@ -5,7 +5,10 @@ import 'package:provider/provider.dart';
 import 'package:widyu/app/routes/app_route.dart';
 import 'package:widyu/app/routes/custom_page.dart';
 import 'package:widyu/app/routes/extra/edit_post_extra.dart';
+import 'package:widyu/app/routes/notification_tap_listener.dart';
+import 'package:widyu/app/routes/safety_check_listener.dart';
 import 'package:widyu/app/routes/user_session_scope.dart';
+import 'package:widyu/core/log/log.dart';
 import 'package:widyu/core/network/token_manager.dart';
 import 'package:widyu/core/ui/widgets/bot_nav.dart';
 import 'package:widyu/feature/album/album_screen.dart';
@@ -23,10 +26,12 @@ import 'package:widyu/feature/home/home_screen.dart';
 import 'package:widyu/feature/management/management_screen.dart';
 import 'package:widyu/feature/medication_camera/medication_camera_screen.dart';
 import 'package:widyu/feature/myPage/my_page_screen.dart';
+import 'package:widyu/feature/notification/notification_screen.dart';
 import 'package:widyu/feature/notification_setting/notification_setting_screen.dart';
 import 'package:widyu/feature/permission/permission_screen.dart';
 import 'package:widyu/feature/point/point_screen.dart';
 import 'package:widyu/feature/profile/profile_screen.dart';
+import 'package:widyu/feature/safety_check/safety_check_screen.dart';
 import 'package:widyu/feature/splash_screen.dart';
 
 class CustomRouter {
@@ -63,7 +68,8 @@ class CustomRouter {
       return null;
     },
     onException: (context, state, router) {
-      debugPrint('[Router] 매칭되는 경로 없음: ${state.uri}');
+      // 경로에 사용자 값이 섞일 수 있어 URI는 남기지 않는다.
+      WiduLog.ui.w('unmatched_route');
       router.go(AppRoute.splash.path);
     },
     routes: [
@@ -88,7 +94,11 @@ class CustomRouter {
       ),
       ShellRoute(
         builder: (context, state, child) => UserSessionScope(
-          child: MedicationSessionScope(child: child),
+          child: SafetyCheckListener(
+            child: NotificationTapListener(
+              child: MedicationSessionScope(child: child),
+            ),
+          ),
         ),
         routes: [
           CustomGoRoute.closeRoute(
@@ -98,6 +108,12 @@ class CustomRouter {
                     group: Map<String, dynamic>.from(state.extra as Map))
                 : const Scaffold(
                     body: Center(child: Text('복용 정보를 확인할 수 없어요.'))),
+          ),
+          CustomGoRoute.fadeRoute(
+            route: AppRoute.safetyCheck,
+            builder: (_, state) => state.extra is String
+                ? SafetyCheckScreen(incidentId: state.extra as String)
+                : const Scaffold(body: Center(child: Text('확인 요청을 찾을 수 없어요.'))),
           ),
           StatefulShellRoute.indexedStack(
             branches: [
@@ -159,12 +175,22 @@ class CustomRouter {
             builder: (_, __) => const ManagementScreen(),
           ),
           CustomGoRoute.slideRoute(
-            route: AppRoute.notification,
+            route: AppRoute.notificationSetting,
             builder: (_, __) => const NotificationSettingScreen(),
           ),
           CustomGoRoute.slideRoute(
+            route: AppRoute.notification,
+            builder: (_, __) => const NotificationScreen(),
+          ),
+          CustomGoRoute.slideRoute(
             route: AppRoute.post,
-            builder: (_, state) => PostScreen(albumId: state.extra as int),
+            builder: (_, state) {
+              final postId =
+                  int.tryParse(state.uri.queryParameters['postId'] ?? '');
+              return postId != null
+                  ? PostScreen(postId: postId)
+                  : const Scaffold(body: Center(child: Text('게시물을 찾을 수 없어요.')));
+            },
           ),
           CustomGoRoute.closeShellRoute(
             builder: (_, __, child) => ChangeNotifierProvider(

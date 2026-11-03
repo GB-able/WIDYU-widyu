@@ -76,8 +76,7 @@ class _WeeklyCard extends StatelessWidget {
                   ],
                 ),
               ),
-              Image.asset(
-                'assets/images/img_80_mascot.png',
+              Assets.images.img80Mascot.image(
                 width: 80,
                 height: 75,
                 fit: BoxFit.contain,
@@ -115,16 +114,18 @@ class _WeekdayStamp extends StatelessWidget {
         ),
         const SizedBox(height: 6),
         switch (day.status) {
-          GoalRateStatus.completed => const IconWidget(
-              icon: 'circle_checked',
+          GoalRateStatus.completed => WiduIcon(
+              icon: Assets.icons.ic28CircleChecked,
               width: _size,
             ),
-          GoalRateStatus.inProgress => const _WaveCircle(
+          GoalRateStatus.inProgress ||
+          GoalRateStatus.failed =>
+            const _WaveCircle(
               size: _size,
               background: MyColor.orange50,
               waveColor: MyColor.primary,
             ),
-          GoalRateStatus.notStarted || GoalRateStatus.failed => Container(
+          GoalRateStatus.notStarted => Container(
               width: _size,
               height: _size,
               decoration: const BoxDecoration(

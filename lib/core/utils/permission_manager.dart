@@ -1,9 +1,11 @@
+import 'dart:async';
 import 'dart:io';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:medication_alarm/medication_alarm.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:walk/walk.dart';
+import 'package:widyu/core/log/log.dart';
 import 'package:widyu/core/model/permission/permission_type.dart';
 import 'package:widyu/core/utils/settings_return_controller.dart';
 
@@ -54,6 +56,10 @@ class PermissionManager {
           if (!Platform.isAndroid) return PermissionRequestResult.unsupported;
           return mapStatus(await Permission.scheduleExactAlarm.status);
 
+        case PermissionType.overlay:
+          if (!Platform.isAndroid) return PermissionRequestResult.unsupported;
+          return mapStatus(await Permission.systemAlertWindow.status);
+
         case PermissionType.id:
           // 런타임 권한이 아니다. (아래 request 주석 참고)
           return PermissionRequestResult.unsupported;
@@ -68,7 +74,7 @@ class PermissionManager {
           return mapStatus(await Permission.location.status);
 
         case PermissionType.fitness:
-          return mapStatus(await _fitnessPermission.status);
+          return _fitnessResult(await _fitnessPermission.status);
 
         case PermissionType.camera:
           // 사진 선택은 image_picker 가 Photo Picker 를 경유하므로 별도 권한이 필요 없다.
@@ -76,7 +82,7 @@ class PermissionManager {
           return mapStatus(await Permission.camera.status);
       }
     } catch (e, stack) {
-      debugPrint('[PermissionManager] $type 권한 확인 실패: $e\n$stack');
+      WiduLog.data.w('$type 권한 확인 실패', error: e, stackTrace: stack);
       return PermissionRequestResult.denied;
     }
   }
@@ -88,7 +94,7 @@ class PermissionManager {
     try {
       return await permission.shouldShowRequestRationale;
     } catch (e, stack) {
-      debugPrint('[PermissionManager] $type 권한 안내 확인 실패: $e\n$stack');
+      WiduLog.data.w('$type 권한 안내 확인 실패', error: e, stackTrace: stack);
       return false;
     }
   }
@@ -123,6 +129,10 @@ class PermissionManager {
           if (!Platform.isAndroid) return PermissionRequestResult.unsupported;
           return mapStatus(await Permission.scheduleExactAlarm.request());
 
+        case PermissionType.overlay:
+          if (!Platform.isAndroid) return PermissionRequestResult.unsupported;
+          return mapStatus(await Permission.systemAlertWindow.request());
+
         case PermissionType.id:
           // 런타임 권한이 아니므로 요청을 시도하지 않는다.
           return PermissionRequestResult.unsupported;
@@ -139,7 +149,7 @@ class PermissionManager {
 
         case PermissionType.fitness:
           // Android 는 ACTIVITY_RECOGNITION, iOS 는 CoreMotion(sensors)
-          return mapStatus(await _fitnessPermission.request());
+          return _fitnessResult(await _fitnessPermission.request());
 
         case PermissionType.camera:
           // 카메라만 요청한다. 갤러리 접근은 image_picker 의 Photo Picker 가
@@ -147,7 +157,7 @@ class PermissionManager {
           return mapStatus(await Permission.camera.request());
       }
     } catch (e, stack) {
-      debugPrint('[PermissionManager] $type 권한 요청 실패: $e\n$stack');
+      WiduLog.data.w('$type 권한 요청 실패', error: e, stackTrace: stack);
       return PermissionRequestResult.denied;
     }
   }
@@ -157,7 +167,7 @@ class PermissionManager {
     try {
       return await Permission.locationAlways.isGranted;
     } catch (e, stack) {
-      debugPrint('[PermissionManager] 위치 항상 허용 확인 실패: $e\n$stack');
+      WiduLog.data.w('위치 항상 허용 확인 실패', error: e, stackTrace: stack);
       return false;
     }
   }
@@ -168,7 +178,7 @@ class PermissionManager {
     try {
       return mapStatus(await Permission.locationAlways.request());
     } catch (e, stack) {
-      debugPrint('[PermissionManager] 위치 항상 허용 요청 실패: $e\n$stack');
+      WiduLog.data.w('위치 항상 허용 요청 실패', error: e, stackTrace: stack);
       return PermissionRequestResult.denied;
     }
   }
@@ -178,7 +188,7 @@ class PermissionManager {
     try {
       return await Permission.location.serviceStatus.isEnabled;
     } catch (e, stack) {
-      debugPrint('[PermissionManager] 위치 서비스 상태 확인 실패: $e\n$stack');
+      WiduLog.data.w('위치 서비스 상태 확인 실패', error: e, stackTrace: stack);
       return false;
     }
   }
@@ -188,7 +198,7 @@ class PermissionManager {
     try {
       return await openAppSettings();
     } catch (e, stack) {
-      debugPrint('[PermissionManager] 설정 화면 이동 실패: $e\n$stack');
+      WiduLog.data.w('설정 화면 이동 실패', error: e, stackTrace: stack);
       return false;
     }
   }
@@ -247,6 +257,18 @@ class PermissionManager {
         : denied;
   }
 
+  static PermissionRequestResult _fitnessResult(PermissionStatus status) {
+    final result = mapStatus(status);
+    if (Platform.isAndroid && result == PermissionRequestResult.granted) {
+      unawaited(
+        WalkRecording().startRecording().catchError(
+              (Object e) => WiduLog.data.w('걸음 기록 구독 실패', error: e),
+            ),
+      );
+    }
+    return result;
+  }
+
   /// 동작 및 피트니스에 해당하는 플랫폼별 권한.
   static Permission get _fitnessPermission =>
       Platform.isIOS ? Permission.sensors : Permission.activityRecognition;
@@ -264,6 +286,7 @@ class PermissionManager {
       case PermissionType.camera:
         return Permission.camera;
       case PermissionType.alarm:
+      case PermissionType.overlay:
       case PermissionType.id:
         return null;
     }

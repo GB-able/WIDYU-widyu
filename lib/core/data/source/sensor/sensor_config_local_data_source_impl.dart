@@ -1,7 +1,6 @@
-import 'dart:developer';
-
 import 'package:flutter/services.dart';
 import 'package:widyu/core/data/source/sensor/sensor_config_local_data_source.dart';
+import 'package:widyu/core/log/log.dart';
 import 'package:widyu/core/model/sensor/sensor_config.dart';
 
 class SensorConfigLocalDataSourceImpl implements SensorConfigLocalDataSource {
@@ -21,9 +20,9 @@ class SensorConfigLocalDataSourceImpl implements SensorConfigLocalDataSource {
         'backfill_post_sec': config.backfillAfterSec,
       });
     } on PlatformException catch (error) {
-      log('Sensor config send to watch failed: ${error.code}');
+      WiduLog.data.w('워치로 센서 설정 전송 실패 code=${error.code}');
     } on MissingPluginException {
-      log('Sensor config channel is unavailable.');
+      WiduLog.data.w('센서 설정 채널 없음');
     }
   }
 }

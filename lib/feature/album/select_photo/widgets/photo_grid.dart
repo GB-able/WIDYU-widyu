@@ -42,9 +42,7 @@ class _PhotoGridState extends State<_PhotoGrid> {
       builder: (context, state, _) {
         final (assets, isLoading) = state;
         if (isLoading) {
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
+          return const CustomLoadingWidget();
         }
         _scheduleScrollCheck();
         return GridView.builder(
@@ -93,7 +91,7 @@ class _CameraTile extends StatelessWidget {
           alignment: Alignment.center,
           child: viewModel.isCapturing
               ? const CircularProgressIndicator()
-              : const IconWidget(icon: 'camera', width: 64),
+              : WiduIcon(icon: Assets.icons.ic64Camera, width: 64),
         ),
       ),
     );

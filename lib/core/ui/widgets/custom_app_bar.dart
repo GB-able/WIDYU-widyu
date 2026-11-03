@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
-import 'package:widyu/core/ui/widgets/icon_widget.dart';
+import 'package:widyu/core/ui/widgets/widu_icon.dart';
+import 'package:widyu/gen/assets.gen.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   const CustomAppBar({
@@ -33,8 +34,8 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                   onBack?.call();
                   context.pop();
                 },
-                child: const IconWidget(
-                  icon: 'back',
+                child: WiduIcon(
+                  icon: Assets.icons.ic24Back,
                   width: 24,
                   color: MyColor.grey600,
                 ),

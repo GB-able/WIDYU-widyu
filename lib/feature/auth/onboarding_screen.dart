@@ -4,8 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:widyu/app/routes/app_route.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
-import 'package:widyu/core/ui/widgets/widyu_asset_image.dart';
 import 'package:widyu/core/ui/widgets/widyu_text_button.dart';
+import 'package:widyu/gen/assets.gen.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -46,11 +46,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   return Column(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      const Expanded(
+                      Expanded(
                         child: Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 20),
-                          child: WidyuAssetImage(
-                            name: 'img_300_onboarding_1.png',
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: Assets.images.img300Onboarding1.image(
                             height: double.infinity,
                             fit: BoxFit.scaleDown,
                           ),

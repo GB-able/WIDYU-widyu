@@ -1,77 +1,30 @@
 import 'dart:async';
 
 import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart'
+    show ConsumerState, ConsumerStatefulWidget, ProviderScope;
+import 'package:flutter_riverpod/misc.dart' show ProviderListenable;
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:provider/provider.dart';
+import 'package:provider/provider.dart' show MultiProvider, Provider;
 import 'package:widyu/app/routes/custom_router.dart';
 import 'package:widyu/background_service.dart';
-import 'package:widyu/core/data/repository/album/album_repository.dart';
-import 'package:widyu/core/data/repository/album/album_repository_impl.dart';
 import 'package:widyu/core/data/repository/auth/auth_repository.dart';
-import 'package:widyu/core/data/repository/auth/auth_repository_impl.dart';
 import 'package:widyu/core/data/repository/goal/goal_repository.dart';
-import 'package:widyu/core/data/repository/goal/goal_repository_impl.dart';
 import 'package:widyu/core/data/repository/goal/medication_repository.dart';
-import 'package:widyu/core/data/repository/goal/medication_repository_impl.dart';
-import 'package:widyu/core/data/repository/goal/walk_repository.dart';
-import 'package:widyu/core/data/repository/goal/walk_repository_impl.dart';
 import 'package:widyu/core/data/repository/heartRate/heart_rate_repository.dart';
-import 'package:widyu/core/data/repository/heartRate/heart_rate_repository_impl.dart';
 import 'package:widyu/core/data/repository/home/home_repository.dart';
-import 'package:widyu/core/data/repository/home/home_repository_impl.dart';
 import 'package:widyu/core/data/repository/location/location_repository.dart';
-import 'package:widyu/core/data/repository/location/location_repository_impl.dart';
 import 'package:widyu/core/data/repository/myPage/my_page_repository.dart';
-import 'package:widyu/core/data/repository/myPage/my_page_repository_impl.dart';
 import 'package:widyu/core/data/repository/notification/notification_repository.dart';
-import 'package:widyu/core/data/repository/notification/notification_repository_impl.dart';
-import 'package:widyu/core/data/repository/point/point_repository.dart';
-import 'package:widyu/core/data/repository/point/point_repository_impl.dart';
-import 'package:widyu/core/data/source/album/album_remote_data_source.dart';
-import 'package:widyu/core/data/source/album/album_remote_data_source_impl.dart';
-import 'package:widyu/core/data/source/auth/auth_local_data_source.dart';
-import 'package:widyu/core/data/source/auth/auth_local_data_source_impl.dart';
-import 'package:widyu/core/data/source/auth/auth_remote_data_source.dart';
-import 'package:widyu/core/data/source/auth/auth_remote_data_source_impl.dart';
-import 'package:widyu/core/data/source/device/device_local_data_source.dart';
-import 'package:widyu/core/data/source/device/device_local_data_source_impl.dart';
-import 'package:widyu/core/data/source/goal/goal_remote_data_source.dart';
-import 'package:widyu/core/data/source/goal/goal_remote_data_source_impl.dart';
-import 'package:widyu/core/data/source/goal/medication_alarm_local_data_source.dart';
-import 'package:widyu/core/data/source/goal/medication_alarm_local_data_source_impl.dart';
-import 'package:widyu/core/data/source/goal/medication_remote_data_source.dart';
-import 'package:widyu/core/data/source/goal/medication_remote_data_source_impl.dart';
-import 'package:widyu/core/data/source/goal/walk_local_data_source.dart';
-import 'package:widyu/core/data/source/goal/walk_local_data_source_impl.dart';
-import 'package:widyu/core/data/source/goal/walk_remote_data_source.dart';
-import 'package:widyu/core/data/source/goal/walk_remote_data_source_impl.dart';
-import 'package:widyu/core/data/source/heartRate/heart_rate_local_data_source.dart';
-import 'package:widyu/core/data/source/heartRate/heart_rate_local_data_source_impl.dart';
-import 'package:widyu/core/data/source/heartRate/heart_rate_remote_data_source.dart';
-import 'package:widyu/core/data/source/heartRate/heart_rate_remote_data_source_impl.dart';
-import 'package:widyu/core/data/source/home/home_remote_data_source.dart';
-import 'package:widyu/core/data/source/home/home_remote_data_source_impl.dart';
-import 'package:widyu/core/data/source/location/location_local_data_source.dart';
-import 'package:widyu/core/data/source/location/location_local_data_source_impl.dart';
-import 'package:widyu/core/data/source/location/location_remote_data_source.dart';
-import 'package:widyu/core/data/source/location/location_remote_data_source_impl.dart';
-import 'package:widyu/core/data/source/myPage/my_page_remote_data_source.dart';
-import 'package:widyu/core/data/source/myPage/my_page_remote_data_source_impl.dart';
-import 'package:widyu/core/data/source/notification/notification_remote_data_source.dart';
-import 'package:widyu/core/data/source/notification/notification_remote_data_source_impl.dart';
-import 'package:widyu/core/data/source/point/point_remote_data_source.dart';
-import 'package:widyu/core/data/source/point/point_remote_data_source_impl.dart';
+import 'package:widyu/core/di/providers.dart';
 import 'package:widyu/core/log/log.dart';
-import 'package:widyu/core/network/api_client.dart';
-import 'package:widyu/core/network/socket_client.dart';
-import 'package:widyu/core/network/token_manager.dart';
 import 'package:widyu/core/notification/local_notification_manager.dart';
 import 'package:widyu/core/notification/medication_push_manager.dart';
+import 'package:widyu/core/notification/safety_push_manager.dart';
 import 'package:widyu/core/ui/theme/theme.dart';
 import 'package:widyu/core/utils/app_service_controller.dart';
 import 'package:widyu/core/utils/background_location_notice_controller.dart';
@@ -82,8 +35,8 @@ void main() {
   runZonedGuarded(
     _bootstrap,
     (error, stack) {
-      // onError는 바깥 zone에서 실행되어 print 차단이 적용되지 않으므로 직접 막는다.
-      if (!kReleaseMode) debugPrint('[main] 처리되지 않은 예외: $error\n$stack');
+      // onError는 바깥 zone에서 실행되어 print 차단이 적용되지 않지만, 로거는 release에서 꺼져 있다.
+      WiduLog.global.e('zone', error: error, stackTrace: stack);
     },
     zoneSpecification: quietPrintInRelease,
   );
@@ -94,16 +47,11 @@ Future<void> _bootstrap() async {
       WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
 
-  FlutterError.onError = (details) {
-    FlutterError.presentError(details);
-    debugPrint('[main] FlutterError: ${details.exception}\n${details.stack}');
-  };
-
   // 초기화 단계 중 하나가 실패하더라도 나머지 단계와 runApp 은 반드시 수행한다.
   try {
     await dotenv.load();
   } catch (e, stack) {
-    debugPrint('[main] dotenv.load 실패: $e\n$stack');
+    WiduLog.data.w('dotenv.load 실패', error: e, stackTrace: stack);
   }
 
   try {
@@ -111,187 +59,97 @@ Future<void> _bootstrap() async {
       options: DefaultFirebaseOptions.currentPlatform,
     );
   } catch (e, stack) {
-    debugPrint('[main] Firebase.initializeApp 실패: $e\n$stack');
+    WiduLog.data.w('Firebase 초기화 실패', error: e, stackTrace: stack);
   }
 
   try {
     await initializeService();
   } catch (e, stack) {
-    debugPrint('[main] initializeService 실패: $e\n$stack');
+    WiduLog.bg.w('백그라운드 서비스 초기화 실패', error: e, stackTrace: stack);
   }
 
   try {
     await initializeWalkService();
-  } catch (e) {
-    debugPrint('[main] 걸음수 백그라운드 초기화 실패: ${e.runtimeType}');
+  } catch (e, stack) {
+    WiduLog.bg.w('걸음수 백그라운드 초기화 실패', error: e, stackTrace: stack);
   }
 
   try {
     await initializeDateFormatting('ko_KR');
   } catch (e, stack) {
-    debugPrint('[main] initializeDateFormatting 실패: $e\n$stack');
+    WiduLog.ui.w('날짜 포맷 초기화 실패', error: e, stackTrace: stack);
   }
 
   try {
     await initializeMedicationPush();
     await LocalNotificationManager.initialize();
+    SafetyPushManager.initialize();
   } catch (e, stack) {
-    debugPrint('[main] 알림 초기화 실패: $e\n$stack');
+    WiduLog.data.w('알림 초기화 실패', error: e, stackTrace: stack);
   }
 
+  // 의존성은 Riverpod가 소유한다. 화면들이 아직 Provider로 읽으므로
+  // MultiProvider는 같은 인스턴스를 넘겨주는 브리지로 둔다. (create: 처음 읽을 때 생성)
   runApp(
-    MultiProvider(
-      providers: [
-        Provider<TokenManager>(create: (_) => TokenManager()),
-        ChangeNotifierProvider<AppServiceController>(
-          create: (_) => AppServiceController(),
-        ),
-        Provider<BackgroundLocationNoticeController>(
-          create: (_) => BackgroundLocationNoticeController(),
-          dispose: (_, controller) => controller.dispose(),
-        ),
-        Provider<ApiClient>(create: (_) => ApiClient()),
-        Provider<SocketClient>(create: (_) => SocketClient()),
-        ProxyProvider<ApiClient, MedicationRemoteDataSource>(
-          update: (_, apiClient, __) =>
-              MedicationRemoteDataSourceImpl(apiClient: apiClient),
-        ),
-        ProxyProvider<ApiClient, WalkRemoteDataSource>(
-          update: (_, apiClient, __) =>
-              WalkRemoteDataSourceImpl(apiClient: apiClient),
-        ),
-        ProxyProvider<ApiClient, GoalRemoteDataSource>(
-          update: (_, apiClient, __) =>
-              GoalRemoteDataSourceImpl(apiClient: apiClient),
-        ),
-        Provider<WalkLocalDataSource>(create: (_) => WalkLocalDataSourceImpl()),
-        ProxyProvider2<WalkLocalDataSource, WalkRemoteDataSource,
-            WalkRepository>(
-          update: (_, local, remote, __) => WalkRepositoryImpl(
-            localDataSource: local,
-            remoteDataSource: remote,
+    ProviderScope(
+      child: MultiProvider(
+        providers: [
+          Provider<AppServiceController>(
+            create: (context) => _read(context, appServiceControllerProvider),
           ),
-        ),
-        ProxyProvider<GoalRemoteDataSource, GoalRepository>(
-          update: (_, goal, __) =>
-              GoalRepositoryImpl(goalRemoteDataSource: goal),
-        ),
-        Provider<MedicationAlarmLocalDataSource>(
-            create: (_) => MedicationAlarmLocalDataSourceImpl()),
-        Provider<MedicationRepository>(
-          create: (context) => MedicationRepositoryImpl(
-            localDataSource: context.read<MedicationAlarmLocalDataSource>(),
-            remoteDataSource: context.read<MedicationRemoteDataSource>(),
-            currentMember: authenticatedMedicationMember,
+          Provider<BackgroundLocationNoticeController>(
+            create: (context) =>
+                _read(context, backgroundLocationNoticeControllerProvider),
           ),
-        ),
-        ProxyProvider<ApiClient, AuthRemoteDataSource>(
-          update: (_, apiClient, __) =>
-              AuthRemoteDataSourceImpl(apiClient: apiClient),
-        ),
-        Provider<AuthLocalDataSource>(create: (_) => AuthLocalDataSourceImpl()),
-        ProxyProvider<ApiClient, HomeRemoteDataSource>(
-          update: (_, apiClient, __) =>
-              HomeRemoteDataSourceImpl(apiClient: apiClient),
-        ),
-        ProxyProvider<ApiClient, MyPageRemoteDataSource>(
-          update: (_, apiClient, __) =>
-              MyPageRemoteDataSourceImpl(apiClient: apiClient),
-        ),
-        ProxyProvider<ApiClient, NotificationRemoteDataSource>(
-          update: (_, apiClient, __) =>
-              NotificationRemoteDataSourceImpl(apiClient: apiClient),
-        ),
-        Provider<HeartRateLocalDataSource>(
-          create: (_) => HeartRateLocalDataSourceImpl(),
-        ),
-        Provider<DeviceLocalDataSource>(
-          create: (_) => DeviceLocalDataSourceImpl(),
-        ),
-        Provider<LocationLocalDataSource>(
-          create: (_) => LocationLocalDataSourceImpl(),
-        ),
-        ProxyProvider<SocketClient, LocationRemoteDataSource>(
-          update: (_, socketClient, __) =>
-              LocationRemoteDataSourceImpl(socketClient: socketClient),
-        ),
-        ProxyProvider<ApiClient, HeartRateRemoteDataSource>(
-          update: (_, apiClient, __) =>
-              HeartRateRemoteDataSourceImpl(apiClient: apiClient),
-        ),
-        ProxyProvider<ApiClient, AlbumRemoteDataSource>(
-          update: (_, apiClient, __) =>
-              AlbumRemoteDataSourceImpl(apiClient: apiClient),
-        ),
-        ProxyProvider<ApiClient, PointRemoteDataSource>(
-          update: (_, apiClient, __) =>
-              PointRemoteDataSourceImpl(apiClient: apiClient),
-        ),
-        ProxyProvider2<AuthRemoteDataSource, AuthLocalDataSource,
-            AuthRepository>(
-          update: (_, remote, local, __) => AuthRepositoryImpl(
-            remoteDatasource: remote,
-            localDataSource: local,
+          Provider<AuthRepository>(
+            create: (context) => _read(context, authRepositoryProvider),
           ),
-        ),
-        ProxyProvider<HomeRemoteDataSource, HomeRepository>(
-          update: (_, remote, __) =>
-              HomeRepositoryImpl(remoteDataSource: remote),
-        ),
-        ProxyProvider<MyPageRemoteDataSource, MyPageRepository>(
-          update: (_, remote, __) =>
-              MyPageRepositoryImpl(remoteDataSource: remote),
-        ),
-        ProxyProvider<NotificationRemoteDataSource, NotificationRepository>(
-          update: (_, remote, __) =>
-              NotificationRepositoryImpl(remoteDataSource: remote),
-        ),
-        ProxyProvider2<HeartRateLocalDataSource, HeartRateRemoteDataSource,
-            HeartRateRepository>(
-          update: (_, local, remote, __) => HeartRateRepositoryImpl(
-            localDataSource: local,
-            remoteDataSource: remote,
+          Provider<GoalRepository>(
+            create: (context) => _read(context, goalRepositoryProvider),
           ),
-        ),
-        ProxyProvider4<LocationLocalDataSource, LocationRemoteDataSource,
-            AuthLocalDataSource, DeviceLocalDataSource, LocationRepository>(
-          update: (_, local, remote, authLocal, deviceLocal, __) =>
-              LocationRepositoryImpl(
-            localDataSource: local,
-            remoteDataSource: remote,
-            authLocalDataSource: authLocal,
-            deviceLocalDataSource: deviceLocal,
+          Provider<MedicationRepository>(
+            create: (context) => _read(context, medicationRepositoryProvider),
           ),
-        ),
-        ProxyProvider<PointRemoteDataSource, PointRepository>(
-          update: (_, remote, __) =>
-              PointRepositoryImpl(remoteDataSource: remote),
-        ),
-        ProxyProvider<AlbumRemoteDataSource, AlbumRepository>(
-          update: (_, remote, __) =>
-              AlbumRepositoryImpl(remoteDataSource: remote),
-        ),
-      ],
-      child: const App(),
+          Provider<HeartRateRepository>(
+            create: (context) => _read(context, heartRateRepositoryProvider),
+          ),
+          Provider<HomeRepository>(
+            create: (context) => _read(context, homeRepositoryProvider),
+          ),
+          Provider<LocationRepository>(
+            create: (context) => _read(context, locationRepositoryProvider),
+          ),
+          Provider<MyPageRepository>(
+            create: (context) => _read(context, myPageRepositoryProvider),
+          ),
+          Provider<NotificationRepository>(
+            create: (context) => _read(context, notificationRepositoryProvider),
+          ),
+        ],
+        child: const App(),
+      ),
     ),
   );
 }
 
-class App extends StatefulWidget {
+T _read<T>(BuildContext context, ProviderListenable<T> provider) =>
+    ProviderScope.containerOf(context, listen: false).read(provider);
+
+class App extends ConsumerStatefulWidget {
   const App({super.key});
 
   @override
-  State<App> createState() => _AppState();
+  ConsumerState<App> createState() => _AppState();
 }
 
-class _AppState extends State<App> with WidgetsBindingObserver {
+class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
   late final AppServiceController _serviceController;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _serviceController = context.read<AppServiceController>();
+    _serviceController = ref.read(appServiceControllerProvider);
     unawaited(_serviceController.start());
   }
 

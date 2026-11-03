@@ -16,6 +16,7 @@
 		97C146FE1CF9000F007C117D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FD1CF9000F007C117D /* Assets.xcassets */; };
 		97C147011CF9000F007C117D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FF1CF9000F007C117D /* LaunchScreen.storyboard */; };
 		CF812387F2078343264E2F58 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 1A037D7508D0D870527335F5 /* GoogleService-Info.plist */; };
+		D74521465A96A3F167C9CC58 /* safety_alert.caf in Resources */ = {isa = PBXBuildFile; fileRef = 2E2FC982C6425F365F349084 /* safety_alert.caf */; };
 		DF5ED89469DCB053AD34111B /* Pods_RunnerTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A5C778FD91535BF1E74727BA /* Pods_RunnerTests.framework */; };
 /* End PBXBuildFile section */
 
@@ -48,6 +49,7 @@
 		1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GeneratedPluginRegistrant.m; sourceTree = "<group>"; };
 		1A037D7508D0D870527335F5 /* GoogleService-Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; name = "GoogleService-Info.plist"; path = "Runner/GoogleService-Info.plist"; sourceTree = "<group>"; };
 		2738AD19869C889AE244445B /* Pods_Runner.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Runner.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		2E2FC982C6425F365F349084 /* safety_alert.caf */ = {isa = PBXFileReference; includeInIndex = 1; path = safety_alert.caf; sourceTree = "<group>"; };
 		331C807B294A618700263BE5 /* RunnerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunnerTests.swift; sourceTree = "<group>"; };
 		331C8081294A63A400263BE5 /* RunnerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RunnerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		3A9F12657FE40BDA1DAC68FE /* Pods-Runner.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.release.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.release.xcconfig"; sourceTree = "<group>"; };
@@ -103,6 +105,7 @@
 			children = (
 				2738AD19869C889AE244445B /* Pods_Runner.framework */,
 				A5C778FD91535BF1E74727BA /* Pods_RunnerTests.framework */,
+				1A037D7508D0D870527335F5 /* GoogleService-Info.plist */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -127,7 +130,6 @@
 				331C8082294A63A400263BE5 /* RunnerTests */,
 				D11B4AC261C8EF065C8E0936 /* Pods */,
 				83BB3E0B84BF1F00CBB1019E /* Frameworks */,
-				1A037D7508D0D870527335F5 /* GoogleService-Info.plist */,
 			);
 			sourceTree = "<group>";
 		};
@@ -152,6 +154,7 @@
 				1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */,
 				74858FAE1ED2DC5600515810 /* AppDelegate.swift */,
 				74858FAD1ED2DC5600515810 /* Runner-Bridging-Header.h */,
+				2E2FC982C6425F365F349084 /* safety_alert.caf */,
 			);
 			path = Runner;
 			sourceTree = "<group>";
@@ -166,7 +169,6 @@
 				8FBD5648B1FEE36F5C1DAC82 /* Pods-RunnerTests.release.xcconfig */,
 				865111579D3511E4B5DE4ADA /* Pods-RunnerTests.profile.xcconfig */,
 			);
-			name = Pods;
 			path = Pods;
 			sourceTree = "<group>";
 		};
@@ -271,6 +273,7 @@
 				97C146FE1CF9000F007C117D /* Assets.xcassets in Resources */,
 				97C146FC1CF9000F007C117D /* Main.storyboard in Resources */,
 				CF812387F2078343264E2F58 /* GoogleService-Info.plist in Resources */,
+				D74521465A96A3F167C9CC58 /* safety_alert.caf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -496,7 +499,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
-				DEVELOPMENT_TEAM = YSS86HBJ52;
+				DEVELOPMENT_TEAM = 6M3GV5C7U7;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = Runner/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -680,7 +683,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
-				DEVELOPMENT_TEAM = YSS86HBJ52;
+				DEVELOPMENT_TEAM = 6M3GV5C7U7;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = Runner/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -704,7 +707,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
-				DEVELOPMENT_TEAM = YSS86HBJ52;
+				DEVELOPMENT_TEAM = 6M3GV5C7U7;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = Runner/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (

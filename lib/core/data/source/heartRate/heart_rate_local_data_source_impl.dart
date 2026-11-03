@@ -1,8 +1,7 @@
-import 'dart:developer';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:widyu/core/data/source/heartRate/heart_rate_local_data_source.dart';
+import 'package:widyu/core/log/log.dart';
 import 'package:widyu/core/model/heartRate/heart_rate.dart';
 
 class HeartRateLocalDataSourceImpl implements HeartRateLocalDataSource {
@@ -35,7 +34,7 @@ class HeartRateLocalDataSourceImpl implements HeartRateLocalDataSource {
       await _methodChannel.invokeMethod(
           'fetchHeartRateStatus', {'heartRateStatus': heartRateStatus});
     } on PlatformException catch (e) {
-      log('Error in sendHeartRateStatus: ${e.message}');
+      WiduLog.data.w('워치로 심박 상태 전송 실패 code=${e.code}');
     }
   }
 
@@ -46,11 +45,11 @@ class HeartRateLocalDataSourceImpl implements HeartRateLocalDataSource {
   Stream<bool> observeConnection() {
     if (!_supported) return Stream.value(false);
     return _heartRateStream
-      .map((_) => true)
-      .timeout(
-        const Duration(seconds: 30),
-        onTimeout: (sink) => sink.add(false),
-      )
-      .distinct();
+        .map((_) => true)
+        .timeout(
+          const Duration(seconds: 30),
+          onTimeout: (sink) => sink.add(false),
+        )
+        .distinct();
   }
 }

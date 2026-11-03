@@ -1,12 +1,12 @@
 part of '../point_screen.dart';
 
 class _TotalPointView extends StatelessWidget {
-  const _TotalPointView();
+  const _TotalPointView({required this.point});
+
+  final int? point;
 
   @override
   Widget build(BuildContext context) {
-    final point = context.select<PointProvider, int?>((store) => store.point);
-
     return Container(
       decoration: const BoxDecoration(
         color: MyColor.primaryLight,
@@ -18,8 +18,7 @@ class _TotalPointView extends StatelessWidget {
       ),
       child: Row(
         children: [
-          const WidyuAssetImage(
-            name: 'img_28_point.png',
+          Assets.images.img28Point.image(
             width: 28,
             height: 28,
           ),

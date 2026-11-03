@@ -66,8 +66,9 @@ void main() {
     var failing = true;
     final sut = controller(
       permissionReader: () async => false,
-      foregroundPermissionReader: () =>
-          failing ? Future<bool>.error(StateError('failed')) : Future.value(true),
+      foregroundPermissionReader: () => failing
+          ? Future<bool>.error(StateError('failed'))
+          : Future.value(true),
     );
 
     expect(await sut.claimNoticeIfNeeded(), isFalse);

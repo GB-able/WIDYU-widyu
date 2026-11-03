@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
+import 'package:widyu/gen/fonts.gen.dart';
 
 class MyTheme {
   static final myTheme = ThemeData(
-    fontFamily: 'Pretendard',
+    fontFamily: FontFamily.pretendard,
     primaryColor: MyColor.primary,
     scaffoldBackgroundColor: MyColor.white,
     appBarTheme: const AppBarTheme(

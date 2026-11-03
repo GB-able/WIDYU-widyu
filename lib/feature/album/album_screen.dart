@@ -2,15 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:widyu/app/routes/app_route.dart';
-import 'package:widyu/core/data/provider/album_provider.dart';
+import 'package:widyu/core/data/repository/album/album_repository.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
 import 'package:widyu/core/ui/widgets/bot_nav.dart';
 import 'package:widyu/core/ui/widgets/custom_app_bar.dart';
-import 'package:widyu/core/ui/widgets/icon_widget.dart';
+import 'package:widyu/core/ui/widgets/widu_icon.dart';
 import 'package:widyu/feature/album/calendar/calendar_tab_view.dart';
 import 'package:widyu/feature/album/feed/feed_tab_view.dart';
 import 'package:widyu/feature/album/photo/photo_tab_view.dart';
+import 'package:widyu/gen/assets.gen.dart';
 
 class AlbumScreen extends StatefulWidget {
   const AlbumScreen({super.key});
@@ -29,9 +30,9 @@ class _AlbumScreenState extends State<AlbumScreen>
     _tabController = TabController(length: 3, vsync: this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      final albumProvider = context.read<AlbumProvider>();
-      albumProvider.loadLikedAlbumIds();
-      albumProvider.loadUnlockedAlbumIds();
+      final repository = context.read<AlbumRepository>();
+      repository.loadLikedAlbumIds();
+      repository.loadUnlockedAlbumIds();
     });
   }
 
@@ -50,9 +51,9 @@ class _AlbumScreenState extends State<AlbumScreen>
         actions: [
           GestureDetector(
             behavior: HitTestBehavior.translucent,
-            onTap: () => {}, // [TODO] 알림 페이지 생성 후 연결
-            child: const IconWidget(
-              icon: 'notification',
+            onTap: () => context.push(AppRoute.notification.path),
+            child: WiduIcon(
+              icon: Assets.icons.ic22Notification,
               width: 22,
               color: MyColor.grey600,
             ),
@@ -83,6 +84,7 @@ class _AlbumScreenState extends State<AlbumScreen>
                   Tab(text: '앨범'),
                   Tab(text: '캘린더'),
                 ],
+                overlayColor: WidgetStateProperty.all(MyColor.grey100),
                 dividerColor: Colors.transparent,
                 dividerHeight: 0,
               ),
@@ -121,7 +123,7 @@ class _AlbumScreenState extends State<AlbumScreen>
                 mainAxisSize: MainAxisSize.min,
                 spacing: 4,
                 children: [
-                  const IconWidget(icon: 'plus', width: 13),
+                  WiduIcon(icon: Assets.icons.ic13Plus, width: 13),
                   Text(
                     '올리기',
                     style: MyTypo.button.copyWith(color: MyColor.white),

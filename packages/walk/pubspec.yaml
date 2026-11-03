@@ -15,5 +15,5 @@ flutter:
   plugin:
     platforms:
       android:
-        package: com.example.widyu.walk
+        package: com.widucorp.widu.walk
         pluginClass: WalkPlugin

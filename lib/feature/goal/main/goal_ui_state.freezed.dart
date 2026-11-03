@@ -457,6 +457,8 @@ mixin _$GoalUiState {
   GoalCardsState get cards;
   bool get isWeeklyLoading;
   List<GoalRateStatus> get weeklyStatuses;
+  int? get point;
+  int get steps;
 
   /// Create a copy of GoalUiState
   /// with the given fields replaced by the non-null parameter values.
@@ -474,16 +476,18 @@ mixin _$GoalUiState {
             (identical(other.isWeeklyLoading, isWeeklyLoading) ||
                 other.isWeeklyLoading == isWeeklyLoading) &&
             const DeepCollectionEquality()
-                .equals(other.weeklyStatuses, weeklyStatuses));
+                .equals(other.weeklyStatuses, weeklyStatuses) &&
+            (identical(other.point, point) || other.point == point) &&
+            (identical(other.steps, steps) || other.steps == steps));
   }
 
   @override
   int get hashCode => Object.hash(runtimeType, cards, isWeeklyLoading,
-      const DeepCollectionEquality().hash(weeklyStatuses));
+      const DeepCollectionEquality().hash(weeklyStatuses), point, steps);
 
   @override
   String toString() {
-    return 'GoalUiState(cards: $cards, isWeeklyLoading: $isWeeklyLoading, weeklyStatuses: $weeklyStatuses)';
+    return 'GoalUiState(cards: $cards, isWeeklyLoading: $isWeeklyLoading, weeklyStatuses: $weeklyStatuses, point: $point, steps: $steps)';
   }
 }
 
@@ -496,7 +500,9 @@ abstract mixin class $GoalUiStateCopyWith<$Res> {
   $Res call(
       {GoalCardsState cards,
       bool isWeeklyLoading,
-      List<GoalRateStatus> weeklyStatuses});
+      List<GoalRateStatus> weeklyStatuses,
+      int? point,
+      int steps});
 
   $GoalCardsStateCopyWith<$Res> get cards;
 }
@@ -516,6 +522,8 @@ class _$GoalUiStateCopyWithImpl<$Res> implements $GoalUiStateCopyWith<$Res> {
     Object? cards = null,
     Object? isWeeklyLoading = null,
     Object? weeklyStatuses = null,
+    Object? point = freezed,
+    Object? steps = null,
   }) {
     return _then(_self.copyWith(
       cards: null == cards
@@ -530,6 +538,14 @@ class _$GoalUiStateCopyWithImpl<$Res> implements $GoalUiStateCopyWith<$Res> {
           ? _self.weeklyStatuses
           : weeklyStatuses // ignore: cast_nullable_to_non_nullable
               as List<GoalRateStatus>,
+      point: freezed == point
+          ? _self.point
+          : point // ignore: cast_nullable_to_non_nullable
+              as int?,
+      steps: null == steps
+          ? _self.steps
+          : steps // ignore: cast_nullable_to_non_nullable
+              as int,
     ));
   }
 
@@ -638,15 +654,15 @@ extension GoalUiStatePatterns on GoalUiState {
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>(
     TResult Function(GoalCardsState cards, bool isWeeklyLoading,
-            List<GoalRateStatus> weeklyStatuses)?
+            List<GoalRateStatus> weeklyStatuses, int? point, int steps)?
         $default, {
     required TResult orElse(),
   }) {
     final _that = this;
     switch (_that) {
       case _GoalUiState() when $default != null:
-        return $default(
-            _that.cards, _that.isWeeklyLoading, _that.weeklyStatuses);
+        return $default(_that.cards, _that.isWeeklyLoading,
+            _that.weeklyStatuses, _that.point, _that.steps);
       case _:
         return orElse();
     }
@@ -668,14 +684,14 @@ extension GoalUiStatePatterns on GoalUiState {
   @optionalTypeArgs
   TResult when<TResult extends Object?>(
     TResult Function(GoalCardsState cards, bool isWeeklyLoading,
-            List<GoalRateStatus> weeklyStatuses)
+            List<GoalRateStatus> weeklyStatuses, int? point, int steps)
         $default,
   ) {
     final _that = this;
     switch (_that) {
       case _GoalUiState():
-        return $default(
-            _that.cards, _that.isWeeklyLoading, _that.weeklyStatuses);
+        return $default(_that.cards, _that.isWeeklyLoading,
+            _that.weeklyStatuses, _that.point, _that.steps);
       case _:
         throw StateError('Unexpected subclass');
     }
@@ -696,14 +712,14 @@ extension GoalUiStatePatterns on GoalUiState {
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>(
     TResult? Function(GoalCardsState cards, bool isWeeklyLoading,
-            List<GoalRateStatus> weeklyStatuses)?
+            List<GoalRateStatus> weeklyStatuses, int? point, int steps)?
         $default,
   ) {
     final _that = this;
     switch (_that) {
       case _GoalUiState() when $default != null:
-        return $default(
-            _that.cards, _that.isWeeklyLoading, _that.weeklyStatuses);
+        return $default(_that.cards, _that.isWeeklyLoading,
+            _that.weeklyStatuses, _that.point, _that.steps);
       case _:
         return null;
     }
@@ -716,7 +732,9 @@ class _GoalUiState extends GoalUiState {
   const _GoalUiState(
       {this.cards = const GoalCardsState.loading(),
       this.isWeeklyLoading = true,
-      final List<GoalRateStatus> weeklyStatuses = const []})
+      final List<GoalRateStatus> weeklyStatuses = const [],
+      this.point,
+      this.steps = 0})
       : _weeklyStatuses = weeklyStatuses,
         super._();
 
@@ -735,6 +753,12 @@ class _GoalUiState extends GoalUiState {
     return EqualUnmodifiableListView(_weeklyStatuses);
   }
 
+  @override
+  final int? point;
+  @override
+  @JsonKey()
+  final int steps;
+
   /// Create a copy of GoalUiState
   /// with the given fields replaced by the non-null parameter values.
   @override
@@ -752,16 +776,18 @@ class _GoalUiState extends GoalUiState {
             (identical(other.isWeeklyLoading, isWeeklyLoading) ||
                 other.isWeeklyLoading == isWeeklyLoading) &&
             const DeepCollectionEquality()
-                .equals(other._weeklyStatuses, _weeklyStatuses));
+                .equals(other._weeklyStatuses, _weeklyStatuses) &&
+            (identical(other.point, point) || other.point == point) &&
+            (identical(other.steps, steps) || other.steps == steps));
   }
 
   @override
   int get hashCode => Object.hash(runtimeType, cards, isWeeklyLoading,
-      const DeepCollectionEquality().hash(_weeklyStatuses));
+      const DeepCollectionEquality().hash(_weeklyStatuses), point, steps);
 
   @override
   String toString() {
-    return 'GoalUiState(cards: $cards, isWeeklyLoading: $isWeeklyLoading, weeklyStatuses: $weeklyStatuses)';
+    return 'GoalUiState(cards: $cards, isWeeklyLoading: $isWeeklyLoading, weeklyStatuses: $weeklyStatuses, point: $point, steps: $steps)';
   }
 }
 
@@ -776,7 +802,9 @@ abstract mixin class _$GoalUiStateCopyWith<$Res>
   $Res call(
       {GoalCardsState cards,
       bool isWeeklyLoading,
-      List<GoalRateStatus> weeklyStatuses});
+      List<GoalRateStatus> weeklyStatuses,
+      int? point,
+      int steps});
 
   @override
   $GoalCardsStateCopyWith<$Res> get cards;
@@ -797,6 +825,8 @@ class __$GoalUiStateCopyWithImpl<$Res> implements _$GoalUiStateCopyWith<$Res> {
     Object? cards = null,
     Object? isWeeklyLoading = null,
     Object? weeklyStatuses = null,
+    Object? point = freezed,
+    Object? steps = null,
   }) {
     return _then(_GoalUiState(
       cards: null == cards
@@ -811,6 +841,14 @@ class __$GoalUiStateCopyWithImpl<$Res> implements _$GoalUiStateCopyWith<$Res> {
           ? _self._weeklyStatuses
           : weeklyStatuses // ignore: cast_nullable_to_non_nullable
               as List<GoalRateStatus>,
+      point: freezed == point
+          ? _self.point
+          : point // ignore: cast_nullable_to_non_nullable
+              as int?,
+      steps: null == steps
+          ? _self.steps
+          : steps // ignore: cast_nullable_to_non_nullable
+              as int,
     ));
   }
 

@@ -75,4 +75,5 @@ class MyColor {
   static const primaryLight = orange50;
   static const secondary = purple600;
   static const red = red600;
+  static const dim = Color(0xE6151515);
 }

@@ -15,7 +15,7 @@ flutter:
   plugin:
     platforms:
       android:
-        package: com.widyu.medication_alarm
+        package: com.widucorp.widu.medication_alarm
         pluginClass: MedicationAlarmPlugin
       ios:
         pluginClass: MedicationAlarmPlugin

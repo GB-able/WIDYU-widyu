@@ -43,7 +43,7 @@ class _CalendarHeaderView extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               _MonthArrow(
-                icon: 'chevron_left',
+                icon: Assets.icons.ic22ChevronLeft,
                 onTap: () => viewModel.onPageChanged(
                   DateTime(focusedMonth.year, focusedMonth.month - 1),
                 ),
@@ -53,7 +53,7 @@ class _CalendarHeaderView extends StatelessWidget {
                 style: MyTypo.title3.copyWith(color: MyColor.grey800),
               ),
               _MonthArrow(
-                icon: 'chevron_right',
+                icon: Assets.icons.ic22ChevronRight,
                 onTap: () => viewModel.onPageChanged(
                   DateTime(focusedMonth.year, focusedMonth.month + 1),
                 ),
@@ -151,7 +151,7 @@ class _CalendarHandle extends StatelessWidget {
 class _MonthArrow extends StatelessWidget {
   const _MonthArrow({required this.icon, required this.onTap});
 
-  final String icon;
+  final SvgGenImage icon;
   final VoidCallback onTap;
 
   @override
@@ -161,7 +161,7 @@ class _MonthArrow extends StatelessWidget {
       behavior: HitTestBehavior.opaque,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        child: IconWidget(icon: icon, width: 22, color: MyColor.grey600),
+        child: WiduIcon(icon: icon, width: 22, color: MyColor.grey600),
       ),
     );
   }

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
-import 'package:widyu/core/ui/widgets/icon_widget.dart';
+import 'package:widyu/core/ui/widgets/widu_icon.dart';
+import 'package:widyu/gen/assets.gen.dart';
 
 class FeedVideoWidget extends StatefulWidget {
   const FeedVideoWidget({
@@ -137,8 +138,8 @@ class _FeedVideoWidgetState extends State<FeedVideoWidget> {
                         color: MyColor.black.withValues(alpha: 0.4),
                         shape: BoxShape.circle,
                       ),
-                      child: const IconWidget(
-                        icon: 'play',
+                      child: WiduIcon(
+                        icon: Assets.icons.ic18Play,
                         width: 18,
                         color: MyColor.white,
                       ),

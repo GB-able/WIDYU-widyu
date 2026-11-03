@@ -12,8 +12,8 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:widyu/app/routes/app_route.dart';
-import 'package:widyu/core/data/provider/walk_provider.dart';
 import 'package:widyu/core/data/repository/goal/medication_repository.dart';
+import 'package:widyu/core/data/repository/goal/walk_repository.dart';
 import 'package:widyu/core/data/repository/heartRate/heart_rate_repository.dart';
 import 'package:widyu/core/data/repository/home/home_repository.dart';
 import 'package:widyu/core/data/repository/location/location_repository.dart';
@@ -24,11 +24,10 @@ import 'package:widyu/core/model/home/medication_status.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
 import 'package:widyu/core/ui/widgets/bot_nav.dart';
-import 'package:widyu/core/ui/widgets/icon_widget.dart';
+import 'package:widyu/core/ui/widgets/custom_network_image.dart';
 import 'package:widyu/core/ui/widgets/medication_reward_dialog.dart';
 import 'package:widyu/core/ui/widgets/ui_event_listener.dart';
-import 'package:widyu/core/ui/widgets/widyu_asset_image.dart';
-import 'package:widyu/core/ui/widgets/widyu_icon.dart';
+import 'package:widyu/core/ui/widgets/widu_icon.dart';
 import 'package:widyu/core/ui/widgets/widyu_permission_dialog.dart';
 import 'package:widyu/core/ui/widgets/widyu_text_button.dart';
 import 'package:widyu/core/utils/background_location_notice_controller.dart';
@@ -38,6 +37,7 @@ import 'package:widyu/feature/home/home_ui_event.dart';
 import 'package:widyu/feature/home/home_ui_state.dart';
 import 'package:widyu/feature/home/home_view_model.dart';
 import 'package:widyu/feature/permission/permission_ui_model.dart';
+import 'package:widyu/gen/assets.gen.dart';
 
 part 'widget/album_card.dart';
 part 'widget/carousel_card_shell.dart';
@@ -141,7 +141,7 @@ class HomeScreen extends StatelessWidget {
           notificationRepository: context.read<NotificationRepository>(),
           heartRateRepository: context.read<HeartRateRepository>(),
           locationRepository: context.read<LocationRepository>(),
-          stepProvider: context.read<WalkProvider>(),
+          walkRepository: context.read<WalkRepository>(),
           medicationRepository: context.read<MedicationRepository>(),
           noticeController: context.read<BackgroundLocationNoticeController>(),
         );
@@ -175,8 +175,7 @@ class HomeScreen extends StatelessWidget {
                       child: ConstrainedBox(
                         constraints:
                             BoxConstraints(minHeight: backgroundMinHeight),
-                        child: const WidyuAssetImage(
-                          name: 'img_375_home_background.png',
+                        child: Assets.images.img375HomeBackground.image(
                           fit: BoxFit.cover,
                           alignment: Alignment.topCenter,
                         ),
@@ -230,10 +229,7 @@ class HomeScreen extends StatelessWidget {
                                 thumbanils: uiState.thumbnails,
                                 medicationStatus: uiState.medicationStatus,
                                 hasStepGoal: uiState.hasStepGoal,
-                                stepProgress: uiState.stepProgressOf(
-                                  context.select<WalkProvider, int>(
-                                      (p) => p.steps),
-                                ),
+                                stepProgress: uiState.stepProgress,
                                 hasHealthSchedule: uiState.hasHealthSchedule,
                                 onCameraTap: () =>
                                     viewModel.takeMedicationPhoto(

@@ -3,18 +3,17 @@ part of '../goal_screen.dart';
 class _GoalContent extends StatelessWidget {
   const _GoalContent({
     required this.state,
+    required this.steps,
     required this.onRetry,
     required this.onMedicationVerified,
     required this.findRoute,
   });
 
   final GoalCardsState state;
+  final int steps;
   final VoidCallback onRetry;
   final ValueChanged<MedicationPointResult> onMedicationVerified;
   final VoidCallback findRoute;
-
-  int _stepsOf(BuildContext context) =>
-      context.select<WalkProvider, int>((provider) => provider.steps);
 
   @override
   Widget build(BuildContext context) {
@@ -58,7 +57,7 @@ class _GoalContent extends StatelessWidget {
                     )
                   : const GoalEmptyCard(type: GoalType.medicine),
               walk != null
-                  ? WalkCard(walk: walk.copyWith(actual: _stepsOf(context)))
+                  ? WalkCard(walk: walk.copyWith(actual: steps))
                   : const GoalEmptyCard(type: GoalType.walk),
               hospital != null
                   ? HospitalCard(

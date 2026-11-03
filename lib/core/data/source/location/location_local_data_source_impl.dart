@@ -1,8 +1,8 @@
-import 'dart:developer';
 import 'dart:io';
 
 import 'package:geolocator/geolocator.dart';
 import 'package:widyu/core/data/source/location/location_local_data_source.dart';
+import 'package:widyu/core/log/log.dart';
 import 'package:widyu/core/model/location/user_location.dart';
 
 class LocationLocalDataSourceImpl extends LocationLocalDataSource {
@@ -55,8 +55,8 @@ class LocationLocalDataSourceImpl extends LocationLocalDataSource {
       );
 
       return _toUserLocation(position);
-    } catch (e) {
-      log('현재 위치 조회 실패: $e');
+    } catch (e, stack) {
+      WiduLog.data.w('현재 위치 조회 실패', error: e, stackTrace: stack);
       return null;
     }
   }

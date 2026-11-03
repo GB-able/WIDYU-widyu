@@ -13,6 +13,8 @@ sealed class MedicationStatus with _$MedicationStatus {
     required DateTime closesAt,
     required int takenCount,
     required int totalCount,
+    int? doseCount,
+    int? scheduleId,
   }) = MedicationAvailable;
 
   /// 인증 예정
@@ -71,11 +73,16 @@ MedicationStatus resolveMedicationStatus({
   // 가능한 복용 시간 중 가장 빠른 시간
   for (final doseAt in candidates) {
     if (doseAt.isWithinVerifyWindow(now)) {
+      final dose = medicine.scheduleStatuses
+          .where((s) => !s.taken && s.doseTime?.toAlarmAt(now) == doseAt)
+          .firstOrNull;
       return MedicationStatus.available(
         doseAt: doseAt,
         closesAt: doseAt.windowClosesAt,
         takenCount: taken,
         totalCount: total,
+        doseCount: dose?.doseCount ?? medicine.nextDoseCount,
+        scheduleId: dose?.scheduleId,
       );
     }
   }

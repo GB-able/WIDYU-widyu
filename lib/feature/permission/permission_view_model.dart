@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:flutter/material.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:widyu/core/di/providers.dart';
+import 'package:widyu/core/log/log.dart';
 import 'package:widyu/core/model/permission/permission_recovery_prompt.dart';
 import 'package:widyu/core/model/permission/permission_type.dart';
 import 'package:widyu/core/storage/app_preference.dart';
@@ -11,54 +13,69 @@ import 'package:widyu/core/utils/permission_recovery_controller.dart';
 import 'package:widyu/feature/permission/permission_ui_event.dart';
 import 'package:widyu/feature/permission/permission_ui_model.dart';
 
-class PermissionViewModel with ChangeNotifier {
+part 'permission_view_model.g.dart';
+
+/// 상태는 권한 요청 진행 여부(isRequesting)다.
+@riverpod
+class PermissionViewModel extends _$PermissionViewModel {
   final _appPreference = AppPreference();
-  final PermissionRecoveryController _recoveryController;
+  late PermissionRecoveryController _recoveryController;
   bool _isFinished = false;
-  bool _isDisposed = false;
 
-  PermissionViewModel({PermissionRecoveryController? recoveryController})
-      : _recoveryController = recoveryController ?? PermissionRecoveryController();
+  static List<PermissionType> get requiredPermissions =>
+      _visiblePermissions.where((type) => type.isRequired).toList();
 
-  bool _isRequesting = false;
-  bool get isRequesting => _isRequesting;
+  static List<PermissionType> get optionalPermissions =>
+      _visiblePermissions.where((type) => !type.isRequired).toList();
 
-  List<PermissionType> get requiredPermissions =>
-      PermissionType.values.where((type) => type.isRequired).toList();
-
-  List<PermissionType> get optionalPermissions =>
-      PermissionType.values.where((type) => !type.isRequired).toList();
+  static Iterable<PermissionType> get _visiblePermissions =>
+      PermissionType.values.where((type) => Platform.isAndroid || type != PermissionType.overlay);
 
   final _uiEvent = StreamController<PermissionUiEvent>.broadcast();
+
+  // 일회성 이벤트는 state가 아니라 stream으로 내보낸다.
+  // ignore: riverpod_lint/avoid_public_notifier_properties
   Stream<PermissionUiEvent> get uiEvent => _uiEvent.stream;
+
+  @override
+  bool build() {
+    // autoDispose 자원이라 watch로 붙잡는다. 의존성이 없어 재빌드를 일으키지 않는다.
+    _recoveryController = ref.watch(permissionRecoveryControllerProvider);
+    // onDispose는 다시 빌드될 때도 불리므로, 실제로 폐기될 때만 닫는다.
+    ref.onDispose(() {
+      if (!ref.mounted) _uiEvent.close();
+    });
+    return false;
+  }
 
   /// 전체 권한 안내와 별개로 최초 실행 시 실제 요청할 권한과 순서.
   /// 나머지 권한은 해당 기능을 사용할 때 요청한다.
   static final _initialRequestPermissions = [
     PermissionType.notification,
     PermissionType.alarm,
+    PermissionType.overlay,
     PermissionType.location,
     if (Platform.isAndroid) PermissionType.fitness,
   ];
 
   Future<void> requestPermissions({required PermissionRecoveryPrompt showPrompt}) async {
-    if (_isDisposed || _isFinished || _isRequesting) return;
+    if (!ref.mounted || _isFinished || state) return;
 
-    _isRequesting = true;
-    notifyListeners();
+    state = true;
 
     try {
       final denied = <PermissionType>[];
       final settingsLaunchFailed = <PermissionType>[];
 
-      // 1. 알림 → 알람 → 위치 → 신체 활동(Android) 순서로 최초 실행에 필요한 권한만 요청한다.
+      // 1. 알림 → 알람 → 다른 앱 위에 표시 → 위치 → 신체 활동(Android) 순서로 최초 실행에 필요한 권한만 요청한다.
       await _requestSequentially(
         _initialRequestPermissions,
         denied,
         settingsLaunchFailed,
         showPrompt,
       );
-      if (_isDisposed) return;
+      if (!ref.mounted) return;
+      WiduLog.ui.i('권한 요청 완료 denied=${denied.map((e) => e.name).toList()}');
 
       // 2. 거절된 권한 안내는 요청이 모두 끝난 뒤 한 번만 발행한다.
       if (denied.isNotEmpty) {
@@ -66,19 +83,17 @@ class PermissionViewModel with ChangeNotifier {
       }
       if (settingsLaunchFailed.isNotEmpty) {
         _uiEvent.add(
-          PermissionSettingsLaunchFailure(List.unmodifiable(settingsLaunchFailed)),
+          PermissionSettingsLaunchFailure(
+              List.unmodifiable(settingsLaunchFailed)),
         );
       }
     } catch (e, stack) {
-      debugPrint('[Permission] 권한 요청 실패: $e\n$stack');
+      WiduLog.ui.w('권한 요청 실패', error: e, stackTrace: stack);
     } finally {
-      if (!_isDisposed) {
-        _isRequesting = false;
-        notifyListeners();
-      }
+      if (ref.mounted) state = false;
     }
 
-    if (_isDisposed) return;
+    if (!ref.mounted) return;
     await _finish();
   }
 
@@ -94,7 +109,7 @@ class PermissionViewModel with ChangeNotifier {
         type,
         showPrompt: showPrompt,
       );
-      if (_isDisposed) return;
+      if (!ref.mounted) return;
       switch (result) {
         case PermissionRequestResult.granted:
         case PermissionRequestResult.unsupported:
@@ -114,10 +129,10 @@ class PermissionViewModel with ChangeNotifier {
   /// 권한 플로우를 마무리하고 다음 화면으로 이동시킨다.
   /// 권한을 모두 요청했든 건너뛰었든 안내는 본 것으로 처리한다.
   Future<void> _finish() async {
-    if (_isDisposed || _isFinished) return;
+    if (!ref.mounted || _isFinished) return;
     _isFinished = true;
     await _markGuideShown();
-    if (_uiEvent.isClosed) return;
+    if (!ref.mounted) return;
     _uiEvent.add(const NavigateToNext());
   }
 
@@ -127,12 +142,4 @@ class PermissionViewModel with ChangeNotifier {
   /// 저장 실패는 [AppPreference] 가 내부에서 삼키므로 화면 전환을 막지 않는다.
   Future<void> _markGuideShown() =>
       _appPreference.setBool(PreferenceKey.permissionGuideShown, true);
-
-  @override
-  void dispose() {
-    _isDisposed = true;
-    _recoveryController.dispose();
-    _uiEvent.close();
-    super.dispose();
-  }
 }

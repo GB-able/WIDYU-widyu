@@ -1,22 +1,25 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
-import 'package:widyu/core/data/provider/album_provider.dart';
 import 'package:widyu/core/data/repository/album/album_repository.dart';
+import 'package:widyu/core/model/album/album_cache.dart';
 import 'package:widyu/core/model/album/feed.dart';
 import 'package:widyu/core/model/api/api_result.dart';
 import 'package:widyu/core/model/api/infinite_page_result.dart';
 import 'package:widyu/core/utils/mixins/infinite_scroll_mixin.dart';
 
 class FeedTabViewModel extends ChangeNotifier with InfiniteScrollMixin<int> {
-  FeedTabViewModel({
-    required AlbumRepository repository,
-    required AlbumProvider albumProvider,
-  })  : _repository = repository,
-        _albumProvider = albumProvider {
-    _albumProvider.deletedAlbumIds.addListener(_onAlbumsDeleted);
+  FeedTabViewModel({required AlbumRepository repository})
+      : _repository = repository,
+        _cache = repository.currentCache {
+    _cacheChanges = repository.cache.listen(_onCache);
   }
 
   final AlbumRepository _repository;
-  final AlbumProvider _albumProvider;
+  AlbumCache _cache;
+  late final StreamSubscription<AlbumCache> _cacheChanges;
+
+  AlbumCache get cache => _cache;
 
   final Set<int> _expandedFeedIds = {};
 
@@ -33,19 +36,28 @@ class FeedTabViewModel extends ChangeNotifier with InfiniteScrollMixin<int> {
 
   @override
   List<int> get items =>
-      super.items.where((id) => _albumProvider.postOf(id) != null).toList();
+      super.items.where((id) => _cache.postOf(id) != null).toList();
 
   @override
   bool get isEmpty => items.isEmpty;
 
-  void _onAlbumsDeleted() {
-    _expandedFeedIds.removeWhere((id) => _albumProvider.postOf(id) == null);
+  void _onCache(AlbumCache cache) {
+    if (identical(cache, _cache)) return;
+    final deleted = !identical(cache.deletedIds, _cache.deletedIds);
+    _cache = cache;
+    if (deleted) {
+      _expandedFeedIds.removeWhere((id) => _cache.postOf(id) == null);
+    }
     notifyListeners();
   }
 
+  Future<void> toggleLike(int albumId) => _repository.toggleLike(albumId);
+
+  Future<bool> deleteFeed(int albumId) => _repository.deleteFeed(albumId);
+
   @override
   void dispose() {
-    _albumProvider.deletedAlbumIds.removeListener(_onAlbumsDeleted);
+    _cacheChanges.cancel();
     super.dispose();
   }
 
@@ -59,7 +71,8 @@ class FeedTabViewModel extends ChangeNotifier with InfiniteScrollMixin<int> {
     if (result case Failure(:final message)) throw Exception(message);
 
     final page = (result as Success<InfinitePageResult<Feed>>).data;
-    _albumProvider.hydrate(page.items);
+    _repository.hydrate(page.items);
+    _onCache(_repository.currentCache);
     return InfinitePageResult(
       items: page.items.map((feed) => feed.albumId).toList(),
       nextCursor: page.nextCursor,

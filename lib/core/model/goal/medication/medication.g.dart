@@ -13,6 +13,11 @@ _Medication _$MedicationFromJson(Map<String, dynamic> json) => _Medication(
       nextDoseCount: (json['nextDoseCount'] as num).toInt(),
       nextAlarmTime: json['nextAlarmTime'] as String,
       proofImage: json['proofImageUrl'] as String?,
+      scheduleStatuses: (json['scheduleStatuses'] as List<dynamic>?)
+              ?.map((e) =>
+                  MedicationDoseStatus.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          [],
       isReward: json['isReward'] as bool?,
     );
 
@@ -24,5 +29,6 @@ Map<String, dynamic> _$MedicationToJson(_Medication instance) =>
       'nextDoseCount': instance.nextDoseCount,
       'nextAlarmTime': instance.nextAlarmTime,
       'proofImageUrl': instance.proofImage,
+      'scheduleStatuses': instance.scheduleStatuses,
       'isReward': instance.isReward,
     };

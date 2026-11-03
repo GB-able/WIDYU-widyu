@@ -4,11 +4,13 @@ class _ProfileView extends StatelessWidget {
   final bool isLoading;
   final String? profileImage;
   final String? name;
+  final Future<void> Function() onProfileClosed;
 
   const _ProfileView({
     this.isLoading = false,
     this.profileImage,
     this.name,
+    required this.onProfileClosed,
   });
 
   @override
@@ -28,12 +30,10 @@ class _ProfileView extends StatelessWidget {
         IconButton(
           onPressed: () async {
             await context.push(AppRoute.profile.path);
-            if (context.mounted) {
-              await context.read<MyPageViewModel>().fetchUser();
-            }
+            if (context.mounted) await onProfileClosed();
           },
-          icon: const WidyuIcon(
-            icon: 'ic_20_chevron_right_large.svg',
+          icon: WiduIcon(
+            icon: Assets.icons.ic20ChevronRightLarge,
             width: 20,
             height: 20,
             color: MyColor.white,
@@ -53,8 +53,8 @@ Widget _profileImageView(String? profileImage, bool isLoading) {
     child: isLoading
         ? const Center(child: CircularProgressIndicator(strokeWidth: 2))
         : (profileImage == null || profileImage.isEmpty)
-            ? const WidyuIcon(
-                icon: 'ic_76_profile.svg',
+            ? WiduIcon(
+                icon: Assets.icons.ic76Profile,
                 width: 76,
                 height: 76,
               )
@@ -69,8 +69,8 @@ Widget _profileImageView(String? profileImage, bool isLoading) {
                     child: CircularProgressIndicator(strokeWidth: 2),
                   );
                 },
-                errorBuilder: (_, __, ___) => const WidyuIcon(
-                  icon: 'ic_76_profile.svg',
+                errorBuilder: (_, __, ___) => WiduIcon(
+                  icon: Assets.icons.ic76Profile,
                   width: 76,
                   height: 76,
                 ),

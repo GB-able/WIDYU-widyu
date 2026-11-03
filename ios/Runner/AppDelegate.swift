@@ -3,15 +3,17 @@ import CoreMotion
 import Flutter
 import HealthKit
 import UIKit
+import firebase_messaging
 import flutter_background_service_ios
 
 @main
 @objc class AppDelegate: FlutterAppDelegate {
   // [NOTICE] 자정부터 현재까지의 걸음 수를 조회하는 채널.
-  private static let stepChannelName = "com.example.widyu/step_counter"
+  private static let stepChannelName = "com.widucorp.widu/step_counter"
 
   private let pedometer = CMPedometer()
   private let stepBackground = StepBackgroundCoordinator()
+  private var messagingChannel: FlutterMethodChannel?
 
   override func application(
     _ application: UIApplication,
@@ -27,6 +29,10 @@ import flutter_background_service_ios
 
     if let controller = window?.rootViewController as? FlutterViewController {
       stepBackground.attach(to: controller.binaryMessenger)
+      messagingChannel = FlutterMethodChannel(
+        name: "plugins.flutter.io/firebase_messaging",
+        binaryMessenger: controller.binaryMessenger
+      )
       let channel = FlutterMethodChannel(
         name: AppDelegate.stepChannelName,
         binaryMessenger: controller.binaryMessenger
@@ -37,6 +43,40 @@ import flutter_background_service_ios
     }
 
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
+  }
+
+  override func userNotificationCenter(
+    _ center: UNUserNotificationCenter,
+    willPresent notification: UNNotification,
+    withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
+  ) {
+    restoreMessagingChannel()
+    var options: UNNotificationPresentationOptions = []
+    super.userNotificationCenter(center, willPresent: notification) { options.formUnion($0) }
+    completionHandler(options)
+  }
+
+  override func userNotificationCenter(
+    _ center: UNUserNotificationCenter,
+    didReceive response: UNNotificationResponse,
+    withCompletionHandler completionHandler: @escaping () -> Void
+  ) {
+    restoreMessagingChannel()
+    super.userNotificationCenter(center, didReceive: response, withCompletionHandler: completionHandler)
+  }
+
+  override func application(
+    _ application: UIApplication,
+    didReceiveRemoteNotification userInfo: [AnyHashable: Any],
+    fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void
+  ) {
+    restoreMessagingChannel()
+    super.application(application, didReceiveRemoteNotification: userInfo, fetchCompletionHandler: completionHandler)
+  }
+
+  private func restoreMessagingChannel() {
+    guard let messagingChannel = messagingChannel else { return }
+    FLTFirebaseMessagingPlugin.sharedInstance().setValue(messagingChannel, forKey: "channel")
   }
 
   private func handleStepChannel(call: FlutterMethodCall, result: @escaping FlutterResult) {
@@ -81,7 +121,7 @@ import flutter_background_service_ios
 }
 
 private final class StepBackgroundCoordinator {
-  private static let taskIdentifier = "com.example.widyu.steps.refresh"
+  private static let taskIdentifier = "com.widucorp.widu.steps.refresh"
   private static let enabledKey = "widyu.steps.background.enabled"
   private static let callbackKey = "widyu.steps.background.callback"
   private static let pendingKey = "widyu.steps.background.pending"
@@ -134,7 +174,7 @@ private final class StepBackgroundCoordinator {
 
   func attach(to messenger: FlutterBinaryMessenger) {
     let channel = FlutterMethodChannel(
-      name: "com.example.widyu/step_background",
+      name: "com.widucorp.widu/step_background",
       binaryMessenger: messenger
     )
     foregroundChannel = channel
@@ -282,7 +322,7 @@ private final class StepBackgroundCoordinator {
     }
     GeneratedPluginRegistrant.register(with: backgroundEngine)
     let controlChannel = FlutterMethodChannel(
-      name: "com.example.widyu/step_background",
+      name: "com.widucorp.widu/step_background",
       binaryMessenger: backgroundEngine.binaryMessenger
     )
     workerControlChannel = controlChannel
@@ -299,7 +339,7 @@ private final class StepBackgroundCoordinator {
       result(nil)
     }
     let channel = FlutterMethodChannel(
-      name: "com.example.widyu/step_background_worker",
+      name: "com.widucorp.widu/step_background_worker",
       binaryMessenger: backgroundEngine.binaryMessenger
     )
     workerChannel = channel

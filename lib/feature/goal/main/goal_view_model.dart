@@ -2,30 +2,34 @@ import 'dart:async';
 
 import 'package:flutter/widgets.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:widyu/core/data/provider/point_provider.dart';
-import 'package:widyu/core/data/provider/walk_provider.dart';
 import 'package:widyu/core/data/repository/goal/goal_repository.dart';
 import 'package:widyu/core/data/repository/goal/medication_repository.dart';
+import 'package:widyu/core/data/repository/goal/walk_repository.dart';
 import 'package:widyu/core/data/repository/location/location_repository.dart';
+import 'package:widyu/core/data/repository/point/point_repository.dart';
 import 'package:widyu/core/model/api/api_result.dart';
 import 'package:widyu/core/model/goal/goal_home_response.dart';
 import 'package:widyu/core/model/goal/medication/medication_point_result.dart';
 import 'package:widyu/core/model/goal/weekly_goal_status_response.dart';
 import 'package:widyu/core/model/location/user_location.dart';
+import 'package:widyu/core/utils/extensions/walk_extension.dart';
 import 'package:widyu/core/utils/kakao_map_launcher.dart';
 import 'package:widyu/core/utils/show_toast.dart';
+import 'package:widyu/core/utils/walk_tracker.dart';
 import 'package:widyu/feature/goal/main/goal_ui_event.dart';
 import 'package:widyu/feature/goal/main/goal_ui_state.dart';
 
 class GoalViewModel with ChangeNotifier {
   final GoalRepository _repository;
-  final PointProvider _pointProvider;
-  final WalkProvider _stepProvider;
+  final PointRepository _pointRepository;
+  final WalkRepository _walkRepository;
   final LocationRepository _locationRepository;
   Timer? _countdownTimer;
   Timer? _dayTimer;
   String? _loadedDay;
   late final StreamSubscription<void> _medicationChanges;
+  late final StreamSubscription<PointStatus> _pointStatus;
+  late final StreamSubscription<int> _todaySteps;
 
   GoalUiState _uiState = const GoalUiState();
   GoalUiState get uiState => _uiState;
@@ -35,20 +39,31 @@ class GoalViewModel with ChangeNotifier {
 
   GoalViewModel({
     required GoalRepository repository,
-    required PointProvider pointProvider,
-    required WalkProvider stepProvider,
+    required PointRepository pointRepository,
+    required WalkTracker walkTracker,
+    required WalkRepository walkRepository,
     required LocationRepository locationRepository,
     required MedicationRepository medicationRepository,
   })  : _repository = repository,
-        _pointProvider = pointProvider,
-        _stepProvider = stepProvider,
+        _pointRepository = pointRepository,
+        _walkRepository = walkRepository,
         _locationRepository = locationRepository {
-    unawaited(_stepProvider.start());
+    _uiState = _uiState.copyWith(point: pointRepository.currentStatus.point);
+    _pointStatus = pointRepository.status.listen((status) {
+      _uiState = _uiState.copyWith(point: status.point);
+      notifyListeners();
+    });
+    _uiState = _uiState.copyWith(steps: walkRepository.currentTodaySteps);
+    _todaySteps = walkRepository.todaySteps.listen((steps) {
+      _uiState = _uiState.copyWith(steps: steps);
+      notifyListeners();
+    });
+    unawaited(walkTracker.start());
     unawaited(refresh());
     _medicationChanges = medicationRepository.medicationChanges
         .listen((_) => unawaited(refresh(showLoading: false)));
     _dayTimer = Timer.periodic(const Duration(seconds: 30), (_) {
-      if (_loadedDay != _stepProvider.today) {
+      if (_loadedDay != DateTime.now().walkDate) {
         unawaited(refresh(showLoading: false));
       }
     });
@@ -64,7 +79,7 @@ class GoalViewModel with ChangeNotifier {
   }
 
   Future<void> refresh({bool showLoading = true}) async {
-    final requestedDay = _stepProvider.today;
+    final requestedDay = DateTime.now().walkDate;
     _loadedDay = requestedDay;
     if (showLoading) {
       _countdownTimer?.cancel();
@@ -80,7 +95,7 @@ class GoalViewModel with ChangeNotifier {
       _repository.fetchWeeklyStatus(),
     ]);
     if (_uiEvent.isClosed) return;
-    unawaited(_pointProvider.refresh());
+    unawaited(_pointRepository.refresh());
     final home = results[0] as ApiResult<GoalHomeResponse>;
     final weekly = results[1] as ApiResult<List<GoalRateStatus>>;
 
@@ -92,7 +107,11 @@ class GoalViewModel with ChangeNotifier {
 
         final walk = home.data.walk;
         if (walk != null) {
-          _stepProvider.applyServerSteps(walk.actual, date: requestedDay);
+          _walkRepository.applyServerSteps(
+            walk.actual,
+            date: requestedDay,
+            goal: walk.goal,
+          );
         }
 
         _uiState = _uiState.copyWith(
@@ -101,7 +120,7 @@ class GoalViewModel with ChangeNotifier {
             walk: home.data.walk,
             hospital: home.data.hospital,
             verifyRemaining: remaining,
-            verifyStatus: medicine?.proofImage != null
+            verifyStatus: medicine?.isDoneAt(DateTime.now()) == true
                 ? MedicationVerifyStatus.verified
                 : remaining > Duration.zero
                     ? MedicationVerifyStatus.pending
@@ -224,6 +243,8 @@ class GoalViewModel with ChangeNotifier {
     _countdownTimer?.cancel();
     _dayTimer?.cancel();
     _medicationChanges.cancel();
+    _pointStatus.cancel();
+    _todaySteps.cancel();
     _uiEvent.close();
     super.dispose();
   }

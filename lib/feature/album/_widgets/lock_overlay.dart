@@ -3,7 +3,8 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
-import 'package:widyu/core/ui/widgets/icon_widget.dart';
+import 'package:widyu/core/ui/widgets/widu_icon.dart';
+import 'package:widyu/gen/assets.gen.dart';
 
 class FeedLockOverlay extends StatelessWidget {
   const FeedLockOverlay({super.key, required this.price, required this.child});
@@ -33,7 +34,7 @@ class FeedLockOverlay extends StatelessWidget {
             spacing: 12,
             mainAxisSize: MainAxisSize.min,
             children: [
-              const IconWidget(icon: 'lock', width: 60),
+              WiduIcon(icon: Assets.icons.ic60Lock, width: 60),
               Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 12,
@@ -84,7 +85,7 @@ class MediaLockOverlay extends StatelessWidget {
         Container(
           alignment: Alignment.center,
           color: MyColor.black.withValues(alpha: 0.4),
-          child: const IconWidget(icon: 'lock', width: 40),
+          child: WiduIcon(icon: Assets.icons.ic40Lock, width: 40),
         ),
       ],
     );

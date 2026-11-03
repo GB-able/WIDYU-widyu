@@ -171,8 +171,8 @@ extension MedicationStatusPatterns on MedicationStatus {
 
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(
-            DateTime doseAt, DateTime closesAt, int takenCount, int totalCount)?
+    TResult Function(DateTime doseAt, DateTime closesAt, int takenCount,
+            int totalCount, int? doseCount, int? scheduleId)?
         available,
     TResult Function(
             DateTime doseAt, DateTime opensAt, int takenCount, int totalCount)?
@@ -186,8 +186,8 @@ extension MedicationStatusPatterns on MedicationStatus {
     final _that = this;
     switch (_that) {
       case MedicationAvailable() when available != null:
-        return available(
-            _that.doseAt, _that.closesAt, _that.takenCount, _that.totalCount);
+        return available(_that.doseAt, _that.closesAt, _that.takenCount,
+            _that.totalCount, _that.doseCount, _that.scheduleId);
       case MedicationUpcoming() when upcoming != null:
         return upcoming(
             _that.doseAt, _that.opensAt, _that.takenCount, _that.totalCount);
@@ -219,8 +219,8 @@ extension MedicationStatusPatterns on MedicationStatus {
 
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
-    required TResult Function(
-            DateTime doseAt, DateTime closesAt, int takenCount, int totalCount)
+    required TResult Function(DateTime doseAt, DateTime closesAt,
+            int takenCount, int totalCount, int? doseCount, int? scheduleId)
         available,
     required TResult Function(
             DateTime doseAt, DateTime opensAt, int takenCount, int totalCount)
@@ -233,8 +233,8 @@ extension MedicationStatusPatterns on MedicationStatus {
     final _that = this;
     switch (_that) {
       case MedicationAvailable():
-        return available(
-            _that.doseAt, _that.closesAt, _that.takenCount, _that.totalCount);
+        return available(_that.doseAt, _that.closesAt, _that.takenCount,
+            _that.totalCount, _that.doseCount, _that.scheduleId);
       case MedicationUpcoming():
         return upcoming(
             _that.doseAt, _that.opensAt, _that.takenCount, _that.totalCount);
@@ -263,8 +263,8 @@ extension MedicationStatusPatterns on MedicationStatus {
 
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(
-            DateTime doseAt, DateTime closesAt, int takenCount, int totalCount)?
+    TResult? Function(DateTime doseAt, DateTime closesAt, int takenCount,
+            int totalCount, int? doseCount, int? scheduleId)?
         available,
     TResult? Function(
             DateTime doseAt, DateTime opensAt, int takenCount, int totalCount)?
@@ -277,8 +277,8 @@ extension MedicationStatusPatterns on MedicationStatus {
     final _that = this;
     switch (_that) {
       case MedicationAvailable() when available != null:
-        return available(
-            _that.doseAt, _that.closesAt, _that.takenCount, _that.totalCount);
+        return available(_that.doseAt, _that.closesAt, _that.takenCount,
+            _that.totalCount, _that.doseCount, _that.scheduleId);
       case MedicationUpcoming() when upcoming != null:
         return upcoming(
             _that.doseAt, _that.opensAt, _that.takenCount, _that.totalCount);
@@ -303,12 +303,16 @@ class MedicationAvailable implements MedicationStatus {
       {required this.doseAt,
       required this.closesAt,
       required this.takenCount,
-      required this.totalCount});
+      required this.totalCount,
+      this.doseCount,
+      this.scheduleId});
 
   final DateTime doseAt;
   final DateTime closesAt;
   final int takenCount;
   final int totalCount;
+  final int? doseCount;
+  final int? scheduleId;
 
   /// Create a copy of MedicationStatus
   /// with the given fields replaced by the non-null parameter values.
@@ -328,16 +332,20 @@ class MedicationAvailable implements MedicationStatus {
             (identical(other.takenCount, takenCount) ||
                 other.takenCount == takenCount) &&
             (identical(other.totalCount, totalCount) ||
-                other.totalCount == totalCount));
+                other.totalCount == totalCount) &&
+            (identical(other.doseCount, doseCount) ||
+                other.doseCount == doseCount) &&
+            (identical(other.scheduleId, scheduleId) ||
+                other.scheduleId == scheduleId));
   }
 
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, doseAt, closesAt, takenCount, totalCount);
+  int get hashCode => Object.hash(runtimeType, doseAt, closesAt, takenCount,
+      totalCount, doseCount, scheduleId);
 
   @override
   String toString() {
-    return 'MedicationStatus.available(doseAt: $doseAt, closesAt: $closesAt, takenCount: $takenCount, totalCount: $totalCount)';
+    return 'MedicationStatus.available(doseAt: $doseAt, closesAt: $closesAt, takenCount: $takenCount, totalCount: $totalCount, doseCount: $doseCount, scheduleId: $scheduleId)';
   }
 }
 
@@ -349,7 +357,12 @@ abstract mixin class $MedicationAvailableCopyWith<$Res>
       _$MedicationAvailableCopyWithImpl;
   @useResult
   $Res call(
-      {DateTime doseAt, DateTime closesAt, int takenCount, int totalCount});
+      {DateTime doseAt,
+      DateTime closesAt,
+      int takenCount,
+      int totalCount,
+      int? doseCount,
+      int? scheduleId});
 }
 
 /// @nodoc
@@ -368,6 +381,8 @@ class _$MedicationAvailableCopyWithImpl<$Res>
     Object? closesAt = null,
     Object? takenCount = null,
     Object? totalCount = null,
+    Object? doseCount = freezed,
+    Object? scheduleId = freezed,
   }) {
     return _then(MedicationAvailable(
       doseAt: null == doseAt
@@ -386,6 +401,14 @@ class _$MedicationAvailableCopyWithImpl<$Res>
           ? _self.totalCount
           : totalCount // ignore: cast_nullable_to_non_nullable
               as int,
+      doseCount: freezed == doseCount
+          ? _self.doseCount
+          : doseCount // ignore: cast_nullable_to_non_nullable
+              as int?,
+      scheduleId: freezed == scheduleId
+          ? _self.scheduleId
+          : scheduleId // ignore: cast_nullable_to_non_nullable
+              as int?,
     ));
   }
 }

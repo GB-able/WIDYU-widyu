@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
 import 'package:widyu/core/model/permission/permission_type.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
 import 'package:widyu/core/ui/widgets/ui_event_listener.dart';
-import 'package:widyu/core/ui/widgets/widyu_icon.dart';
+import 'package:widyu/core/ui/widgets/widu_icon.dart';
 import 'package:widyu/core/ui/widgets/widyu_text_button.dart';
 import 'package:widyu/core/utils/show_toast.dart';
 import 'package:widyu/feature/permission/permission_ui_event.dart';
@@ -17,7 +17,7 @@ part 'widget/permission_list.dart';
 part 'widget/permission_section.dart';
 part 'widget/permission_item.dart';
 
-class PermissionScreen extends StatelessWidget {
+class PermissionScreen extends ConsumerWidget {
   final String nextPath;
 
   const PermissionScreen({super.key, required this.nextPath});
@@ -35,50 +35,44 @@ class PermissionScreen extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (context) => PermissionViewModel(),
-      builder: (context, _) {
-        final isRequesting =
-            context.select<PermissionViewModel, bool>((vm) => vm.isRequesting);
-        final viewModel = context.read<PermissionViewModel>();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final viewModel = ref.watch(permissionViewModelProvider.notifier);
+    final isRequesting = ref.watch(permissionViewModelProvider);
 
-        return UiEventListener(
-          stream: viewModel.uiEvent,
-          onEvent: (event) => _handleEvent(context, event),
-          child: Scaffold(
-            backgroundColor: MyColor.white,
-            body: SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const _PermissionHeader(),
-                    const SizedBox(height: 16),
-                    Expanded(
-                      child: SingleChildScrollView(
-                        child: _PermissionList(
-                          requiredPermissions: viewModel.requiredPermissions,
-                          optionalPermissions: viewModel.optionalPermissions,
-                        ),
-                      ),
+    return UiEventListener(
+      stream: viewModel.uiEvent,
+      onEvent: (event) => _handleEvent(context, event),
+      child: Scaffold(
+        backgroundColor: MyColor.white,
+        body: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const _PermissionHeader(),
+                const SizedBox(height: 16),
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: _PermissionList(
+                      requiredPermissions: PermissionViewModel.requiredPermissions,
+                      optionalPermissions: PermissionViewModel.optionalPermissions,
                     ),
-                    WidyuTextButton(
-                      onTap: () => viewModel.requestPermissions(
-                        showPrompt: (type, mode) =>
-                            showPermissionRecoveryPrompt(context, type, mode),
-                      ),
-                      text: '확인',
-                      enable: !isRequesting,
-                    ),
-                  ],
+                  ),
                 ),
-              ),
+                WidyuTextButton(
+                  onTap: () => viewModel.requestPermissions(
+                    showPrompt: (type, mode) =>
+                        showPermissionRecoveryPrompt(context, type, mode),
+                  ),
+                  text: '확인',
+                  enable: !isRequesting,
+                ),
+              ],
             ),
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 }

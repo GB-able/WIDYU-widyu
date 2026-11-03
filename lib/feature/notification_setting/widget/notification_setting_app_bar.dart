@@ -18,8 +18,8 @@ class _NotificationSettingAppBar extends StatelessWidget
       centerTitle: true,
       leading: IconButton(
         onPressed: () => context.pop(),
-        icon: const WidyuIcon(
-          icon: 'ic_24_arrow_left_bold.svg',
+        icon: WiduIcon(
+          icon: Assets.icons.ic24ArrowLeftBold,
           width: 24,
           height: 24,
         ),

@@ -1,81 +1,33 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:get_phone_number/get_phone_number.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:widyu/core/data/repository/auth/auth_repository.dart';
+import 'package:widyu/core/di/providers.dart';
+import 'package:widyu/core/log/log.dart';
 import 'package:widyu/core/model/api/api_result.dart';
 import 'package:widyu/core/model/permission/permission_type.dart';
 import 'package:widyu/core/utils/permission_manager.dart';
 import 'package:widyu/feature/auth/login_ui_state.dart';
 
-class LoginViewModel with ChangeNotifier {
-  final AuthRepository _authRepository;
+part 'login_view_model.g.dart';
+
+@riverpod
+class LoginViewModel extends _$LoginViewModel {
   static const int inviteCodeLength = 7;
 
   bool _canGetPhoneNumber = false;
-  bool _isDisposed = false;
   bool _isGettingPhoneNumber = false;
-  final List<TextEditingController> codeControllers =
-      List.generate(inviteCodeLength, (_) => TextEditingController());
-  final List<FocusNode> codeFocusNodes =
-      List.generate(inviteCodeLength, (_) => FocusNode());
-  final TextEditingController phoneController = TextEditingController();
-
-  bool get canGetPhoneNumber => _canGetPhoneNumber;
-  LoginUiState _state = const LoginPhoneState(isLoading: true);
   String? _phoneNumber;
-  final List<String> _prevCodes = List.generate(7, (_) => '');
   int _loginFailedCount = 0;
 
-  LoginUiState get state => _state;
-
-  String? get phoneNumber => _phoneNumber;
-
-  LoginViewModel({
-    required AuthRepository authRepository,
-  }) : _authRepository = authRepository {
-    for (int i = 0; i < codeControllers.length; i++) {
-      final index = i;
-      codeControllers[index].addListener(() {
-        final currentValue = codeControllers[index].text;
-        final previousValue = _prevCodes[index];
-
-        if (currentValue.isEmpty && previousValue.isNotEmpty && index > 0) {
-          codeFocusNodes[index - 1].requestFocus();
-          codeControllers[index - 1].selection = TextSelection.fromPosition(
-            TextPosition(offset: codeControllers[index - 1].text.length),
-          );
-        } else if (currentValue.isNotEmpty &&
-            previousValue.isEmpty &&
-            index < inviteCodeLength - 1) {
-          codeFocusNodes[index + 1].requestFocus();
-        }
-
-        _prevCodes[index] = currentValue;
-
-        changeState(const LoginCodeState());
-        notifyListeners();
-      });
-    }
-
-    phoneController.addListener(() {
-      notifyListeners();
-    });
-
-    unawaited(getPhoneNumber());
-  }
+  AuthRepository get _authRepository => ref.read(authRepositoryProvider);
 
   @override
-  void dispose() {
-    _isDisposed = true;
-    for (var controller in codeControllers) {
-      controller.dispose();
-    }
-    for (var focusNode in codeFocusNodes) {
-      focusNode.dispose();
-    }
-    phoneController.dispose();
-    super.dispose();
+  LoginUiState build() {
+    unawaited(Future.microtask(_getPhoneNumber));
+    return const LoginPhoneState(isLoading: true);
   }
 
   String _formatPhoneNumber(String phoneNumber) {
@@ -87,83 +39,82 @@ class LoginViewModel with ChangeNotifier {
   /// 아직 묻지 않은 상태(denied)면 한 번만 요청하고, 영구 거절·미지원·제한
   /// 상태는 요청 없이 수동 입력을 유지한다. 영구 거절 시 다시 묻지 않는 것은
   /// request()를 호출하지 않는 것으로 충족되므로 별도 플래그가 필요 없다.
-  Future<void> getPhoneNumber() async {
-    if (_isDisposed || _isGettingPhoneNumber) return;
+  Future<void> _getPhoneNumber() async {
+    if (!ref.mounted || _isGettingPhoneNumber) return;
     _isGettingPhoneNumber = true;
     try {
       var result = await PermissionManager.status(PermissionType.phone);
-      if (_isDisposed) return;
+      if (!ref.mounted) return;
       if (result == PermissionRequestResult.denied) {
         result = await PermissionManager.request(PermissionType.phone);
-        if (_isDisposed) return;
+        if (!ref.mounted) return;
       }
       if (result != PermissionRequestResult.granted) {
-        _state = const LoginPhoneState();
+        state = const LoginPhoneState();
         _canGetPhoneNumber = false;
-        notifyListeners();
         return;
       }
 
       final phoneNumber = await GetPhoneNumber().getPhoneNumber();
-      if (_isDisposed) return;
+      if (!ref.mounted) return;
       final formattedPhone = _formatPhoneNumber(phoneNumber);
       if (formattedPhone.isNotEmpty) {
         setPhoneNumber(formattedPhone);
-        _state = const LoginCodeState();
         _canGetPhoneNumber = true;
       } else {
         throw Exception('전화번호를 가져오지 못했습니다');
       }
     } catch (_) {
-      if (_isDisposed) return;
-      _state = const LoginPhoneState();
+      if (!ref.mounted) return;
+      state = const LoginPhoneState();
       _canGetPhoneNumber = false;
     } finally {
       _isGettingPhoneNumber = false;
     }
-    if (!_isDisposed) notifyListeners();
   }
 
   void setPhoneNumber(String phoneNumber) {
     _phoneNumber = _formatPhoneNumber(phoneNumber);
     changeState(const LoginCodeState());
-    notifyListeners();
   }
 
   void resetPhone() {
     _phoneNumber = null;
-    phoneController.clear();
-    notifyListeners();
-  }
-
-  void resetCode() {
-    for (var controller in codeControllers) {
-      controller.clear();
-    }
-    for (int i = 0; i < _prevCodes.length; i++) {
-      final index = i;
-      _prevCodes[index] = '';
-    }
-    notifyListeners();
   }
 
   void changeState(LoginUiState state) {
-    _state = state;
-    notifyListeners();
+    this.state = state;
   }
 
-  Future<void> login({
+  /// 초대숫자 화면에서 뒤로 간다. 전화번호를 자동으로 가져왔다면 로그인 화면을 닫고,
+  /// 아니면 입력한 초대숫자를 지우고 전화번호 입력으로 돌아간다.
+  /// 초대숫자를 지우면 입력 변경으로 초대숫자 상태가 되므로, 지운 뒤에 상태를 바꾼다.
+  void backFromCode({
+    required VoidCallback close,
+    required VoidCallback clearCode,
+  }) {
+    if (_canGetPhoneNumber) {
+      changeState(const LoginPhoneState());
+      close();
+    } else {
+      clearCode();
+      changeState(const LoginPhoneState());
+    }
+  }
+
+  Future<void> login(
+    String inviteCode, {
     required void Function() onSuccess,
     required void Function(String error) onFailure,
   }) async {
     assert(_phoneNumber != null && _phoneNumber!.isNotEmpty);
-
-    final inviteCode = codeControllers.map((c) => c.text).join();
     assert(inviteCode.length == inviteCodeLength);
 
     final result = await _authRepository.login(inviteCode, _phoneNumber!);
+    if (!ref.mounted) return;
     switch (result) {
       case Success():
+        WiduLog.ui.i('로그인 성공');
         onSuccess();
       case Failure(statusCode: 404):
         changeState(LoginCodeState(
@@ -173,6 +124,5 @@ class LoginViewModel with ChangeNotifier {
       case Failure():
         onFailure('로그인 실패. 잠시 후 다시 시도하세요');
     }
-    notifyListeners();
   }
 }

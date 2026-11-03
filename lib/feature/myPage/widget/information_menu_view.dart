@@ -1,13 +1,16 @@
 part of '../my_page_screen.dart';
 
 class _InformationMenuView extends StatelessWidget {
-  const _InformationMenuView();
+  final String appVersion;
+  final VoidCallback onLogout;
+
+  const _InformationMenuView({
+    required this.appVersion,
+    required this.onLogout,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final appVersion =
-        context.select<MyPageViewModel, String>((vm) => vm.appVersion);
-
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 16),
       child: Column(
@@ -31,7 +34,7 @@ class _InformationMenuView extends StatelessWidget {
           Material(
             color: Colors.transparent,
             child: InkWell(
-              onTap: () => context.read<MyPageViewModel>().logout(),
+              onTap: onLogout,
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
                 child: SizedBox(

@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
+import 'package:widyu/gen/assets.gen.dart';
 
-class MedicationRingingScreen extends StatelessWidget {
+class MedicationRingingScreen extends StatefulWidget {
   const MedicationRingingScreen({
     super.key,
     required this.group,
@@ -18,8 +19,26 @@ class MedicationRingingScreen extends StatelessWidget {
   final VoidCallback onStop;
 
   @override
+  State<MedicationRingingScreen> createState() =>
+      _MedicationRingingScreenState();
+}
+
+class _MedicationRingingScreenState extends State<MedicationRingingScreen> {
+  @override
+  void initState() {
+    super.initState();
+    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+  }
+
+  @override
+  void dispose() {
+    SystemChrome.setPreferredOrientations([]);
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final occurrences = group['occurrences'];
+    final occurrences = widget.group['occurrences'];
     final dose = occurrences is List
         ? occurrences.fold<double>(0, (sum, item) {
             if (item is! Map || item['doseCount'] is! num) return sum;
@@ -35,19 +54,19 @@ class MedicationRingingScreen extends StatelessWidget {
       child: PopScope(
         canPop: false,
         child: Scaffold(
-          backgroundColor: const Color(0xE6151515),
+          backgroundColor: MyColor.dim,
           body: SafeArea(
             child: Column(children: [
               const SizedBox(height: 24),
-              Image.asset('assets/images/img_64_logo_medicine.png',
-                  width: 64, fit: BoxFit.contain),
+              Assets.images.img64Logo
+                  .image(width: 64, fit: BoxFit.contain),
               const Spacer(flex: 5),
               Center(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Image.asset('assets/images/img_93_mascot_medicine.png',
-                        width: 93, fit: BoxFit.contain),
+                    Assets.images.img93MascotMedicine
+                        .image(width: 93, fit: BoxFit.contain),
                     const SizedBox(height: 12),
                     Text('$doseLabel정',
                         style: MyTypo.title1.copyWith(color: MyColor.primary)),
@@ -59,7 +78,7 @@ class MedicationRingingScreen extends StatelessWidget {
                       width: 234,
                       height: 56,
                       child: FilledButton(
-                        onPressed: busy ? null : onVerify,
+                        onPressed: widget.busy ? null : widget.onVerify,
                         style: FilledButton.styleFrom(
                           backgroundColor: MyColor.primary,
                           foregroundColor: MyColor.white,
@@ -79,7 +98,7 @@ class MedicationRingingScreen extends StatelessWidget {
                 width: 95,
                 height: 41,
                 child: FilledButton(
-                  onPressed: busy ? null : onStop,
+                  onPressed: widget.busy ? null : widget.onStop,
                   style: FilledButton.styleFrom(
                     backgroundColor: MyColor.grey800,
                     foregroundColor: MyColor.white,

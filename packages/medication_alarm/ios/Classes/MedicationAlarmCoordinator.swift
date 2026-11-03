@@ -22,7 +22,7 @@ final class MedicationAlarmCoordinator {
     private let center = UNUserNotificationCenter.current()
     private var updates: Task<Void, Never>?
     private var backgroundRegistered = false
-    private static let refreshID = "com.widyu.medication.refresh"
+    private static let refreshID = "com.widucorp.widu.medication.refresh"
     private static let watchdogID = "widyu.medication.watchdog"
 
     func registerBackground() {
@@ -308,7 +308,7 @@ final class MedicationAlarmCoordinator {
         } else {
             let content = UNMutableNotificationContent()
             content.title = title; content.body = "눌러서 복용 사진을 인증해 주세요."
-            content.sound = installedSound(); content.categoryIdentifier = "WIDYU_MEDICATION"
+            content.sound = .default; content.categoryIdentifier = "WIDYU_MEDICATION"
             content.interruptionLevel = .timeSensitive
             content.userInfo = ["widyuMedication": id.uuidString]
             var calendar = Calendar(identifier: .gregorian); calendar.timeZone = .current
@@ -351,10 +351,9 @@ final class MedicationAlarmCoordinator {
         var state = try load()
         // groups are retained after firing; callbacks must not depend on a live Dart listener.
         guard let group = group(for: id, in: state), group["memberId"] as? String == state["memberId"] as? String else { return }
-        var launches = state["launches"] as? [[String: Any]] ?? []
-        if !launches.contains(where: { ($0["group"] as? [String: Any])?["groupId"] as? String == group["groupId"] as? String }) {
-            launches.append(["eventId": UUID().uuidString, "memberId": state["memberId"]!, "group": group])
-            state["launches"] = Array(launches.suffix(8)); try save(state)
+        let launches = state["launches"] as? [[String: Any]] ?? []
+        if (launches.first?["group"] as? [String: Any])?["groupId"] as? String != group["groupId"] as? String {
+            state["launches"] = [["eventId": UUID().uuidString, "memberId": state["memberId"]!, "group": group]]; try save(state)
         }
     }
     private func title(_ group: [String: Any]) -> String {
@@ -421,18 +420,6 @@ final class MedicationAlarmCoordinator {
         try? save(state)
     }
     private func legacyID(_ id: UUID) -> String { "widyu.medication.\(id.uuidString)" }
-    private static let soundFile = "medication_alarm.caf"
-    private func installedSound() -> UNNotificationSound {
-        guard let source = Bundle(for: MedicationAlarmCoordinator.self).url(forResource: "medication_alarm", withExtension: "caf"),
-              let library = FileManager.default.urls(for: .libraryDirectory, in: .userDomainMask).first else { return .default }
-        let sounds = library.appendingPathComponent("Sounds", isDirectory: true)
-        let target = sounds.appendingPathComponent(Self.soundFile)
-        if !FileManager.default.fileExists(atPath: target.path) {
-            try? FileManager.default.createDirectory(at: sounds, withIntermediateDirectories: true)
-            guard (try? FileManager.default.copyItem(at: source, to: target)) != nil else { return .default }
-        }
-        return UNNotificationSound(named: UNNotificationSoundName(Self.soundFile))
-    }
     private func localTime(_ millis: NSNumber?) -> String? {
         guard let millis else { return nil }
         let components = Calendar.current.dateComponents([.hour, .minute], from: Date(timeIntervalSince1970: millis.doubleValue / 1000))

@@ -1,34 +1,43 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:widyu/core/data/repository/notification/notification_repository.dart';
+import 'package:widyu/core/di/providers.dart';
+import 'package:widyu/core/log/log.dart';
 import 'package:widyu/core/model/api/api_result.dart';
 import 'package:widyu/core/model/notification/notification_setting.dart';
 import 'package:widyu/feature/notification_setting/notification_setting_ui_event.dart';
 import 'package:widyu/feature/notification_setting/notification_setting_ui_model.dart';
 import 'package:widyu/feature/notification_setting/notification_setting_ui_state.dart';
 
-class NotificationSettingViewModel with ChangeNotifier {
-  final NotificationRepository _repository;
+part 'notification_setting_view_model.g.dart';
 
-  NotificationSettingUiState _uiState = const NotificationSettingUiState();
-  NotificationSettingUiState get uiState => _uiState;
-
+@riverpod
+class NotificationSettingViewModel extends _$NotificationSettingViewModel {
   final _uiEvent = StreamController<NotificationSettingUiEvent>.broadcast();
+
+  // 일회성 이벤트는 state가 아니라 stream으로 내보낸다.
+  // ignore: riverpod_lint/avoid_public_notifier_properties
   Stream<NotificationSettingUiEvent> get uiEvent => _uiEvent.stream;
 
-  bool _disposed = false;
+  NotificationRepository get _repository =>
+      ref.read(notificationRepositoryProvider);
 
-  NotificationSettingViewModel({required NotificationRepository repository})
-      : _repository = repository {
-    _fetchNotificationSettings();
+  @override
+  NotificationSettingUiState build() {
+    // onDispose는 다시 빌드될 때도 불리므로, 실제로 폐기될 때만 닫는다.
+    ref.onDispose(() {
+      if (!ref.mounted) _uiEvent.close();
+    });
+    unawaited(Future.microtask(_fetchNotificationSettings));
+    return const NotificationSettingUiState(isLoading: true);
   }
 
   Future<void> updateNotificationSetting(
       NotificationSettingUiModel notification) async {
-    if (_uiState.isUpdating) return;
+    if (state.isUpdating) return;
 
-    final oldNotifications = _uiState.notifications;
+    final oldNotifications = state.notifications;
     final targetIndex =
         oldNotifications.indexWhere((item) => item.group == notification.group);
     if (targetIndex == -1) return;
@@ -36,60 +45,51 @@ class NotificationSettingViewModel with ChangeNotifier {
     final optimistic = notification.copyWith(isUpdating: true);
     final newNotifications = [...oldNotifications];
     newNotifications[targetIndex] = optimistic;
-    _uiState = _uiState.copyWith(notifications: newNotifications);
-    notifyListeners();
+    state = state.copyWith(notifications: newNotifications);
 
     try {
       final result = await _repository.updateNotificationSettings(
-          optimistic.toDomain(_uiState.policyRevision));
-      if (_disposed) return;
+          optimistic.toDomain(state.policyRevision));
+      if (!ref.mounted) return;
       if (result is! Success<NotificationSetting>) {
         _rollback(oldNotifications);
         return;
       }
+      WiduLog.ui.i('알림 설정 변경 성공 '
+          'group=${notification.group.name} enabled=${result.data.enabled}');
       newNotifications[targetIndex] = optimistic.copyWith(
         enabled: result.data.enabled,
         isUpdating: false,
       );
-      _uiState = _uiState.copyWith(
+      state = state.copyWith(
         notifications: [...newNotifications],
         policyRevision: result.data.policyRevision,
       );
-      notifyListeners();
     } catch (_) {
-      if (!_disposed) _rollback(oldNotifications);
+      if (ref.mounted) _rollback(oldNotifications);
     }
   }
 
   void _rollback(List<NotificationSettingUiModel> notifications) {
-    _uiState = _uiState.copyWith(notifications: notifications);
+    state = state.copyWith(notifications: notifications);
     _uiEvent.add(const UpdateNotificationSettingFailure());
-    notifyListeners();
   }
 
   Future<void> _fetchNotificationSettings() async {
-    _uiState = _uiState.copyWith(isLoading: true);
-    notifyListeners();
+    if (!ref.mounted) return;
+    state = state.copyWith(isLoading: true);
 
     final result = await _repository.fetchNotificationSettings();
-    if (_disposed) return;
+    if (!ref.mounted) return;
     if (result is Success) {
       final data = (result as Success<List<NotificationSetting>>).data;
-      _uiState = _uiState.copyWith(
+      state = state.copyWith(
         notifications: data.toUiModel(),
         policyRevision: data.firstOrNull?.policyRevision ?? 0,
       );
     } else {
       _uiEvent.add(const FetchNotificationSettingFailure());
     }
-    _uiState = _uiState.copyWith(isLoading: false);
-    notifyListeners();
-  }
-
-  @override
-  void dispose() {
-    _disposed = true;
-    _uiEvent.close();
-    super.dispose();
+    state = state.copyWith(isLoading: false);
   }
 }

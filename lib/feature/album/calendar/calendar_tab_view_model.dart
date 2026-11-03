@@ -1,8 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:widyu/core/data/provider/album_provider.dart';
 import 'package:widyu/core/data/repository/album/album_repository.dart';
+import 'package:widyu/core/model/album/album_cache.dart';
 import 'package:widyu/core/model/album/feed.dart';
 import 'package:widyu/core/model/api/api_result.dart';
 import 'package:widyu/core/model/api/infinite_page_result.dart';
@@ -49,29 +49,45 @@ class DateFeedState {
 }
 
 class CalendarTabViewModel extends ChangeNotifier {
-  CalendarTabViewModel({
-    required AlbumRepository repository,
-    required AlbumProvider albumProvider,
-  })  : _repository = repository,
-        _albumProvider = albumProvider {
-    _albumProvider.deletedAlbumIds.addListener(_onAlbumsDeleted);
+  CalendarTabViewModel({required AlbumRepository repository})
+      : _repository = repository,
+        _cache = repository.currentCache {
+    _cacheChanges = repository.cache.listen(_onCache);
   }
 
   final AlbumRepository _repository;
-  final AlbumProvider _albumProvider;
+  AlbumCache _cache;
+  late final StreamSubscription<AlbumCache> _cacheChanges;
   bool _disposed = false;
   int _calendarRequest = 0;
   final Map<DateTime, int> _feedRequests = {};
 
+  AlbumCache get cache => _cache;
+
+  void _onCache(AlbumCache cache) {
+    if (identical(cache, _cache)) return;
+    final deleted = !identical(cache.deletedIds, _cache.deletedIds);
+    _cache = cache;
+    if (deleted) {
+      _onAlbumsDeleted();
+    } else {
+      notifyListeners();
+    }
+  }
+
   void _onAlbumsDeleted() {
-    _expandedFeedIds.removeWhere((id) => _albumProvider.postOf(id) == null);
+    _expandedFeedIds.removeWhere((id) => _cache.postOf(id) == null);
     unawaited(loadCalendar(_focusedMonth));
   }
+
+  Future<void> toggleLike(int albumId) => _repository.toggleLike(albumId);
+
+  Future<bool> deleteFeed(int albumId) => _repository.deleteFeed(albumId);
 
   @override
   void dispose() {
     _disposed = true;
-    _albumProvider.deletedAlbumIds.removeListener(_onAlbumsDeleted);
+    _cacheChanges.cancel();
     super.dispose();
   }
 
@@ -90,7 +106,7 @@ class CalendarTabViewModel extends ChangeNotifier {
       _feedStates[_selectedDay] ?? const DateFeedState();
 
   List<int> get selectedDayAlbumIds => _selectedDayState.albumIds
-      .where((id) => _albumProvider.postOf(id) != null)
+      .where((id) => _cache.postOf(id) != null)
       .toList();
   bool get isLoadingSelectedDay => _selectedDayState.isLoading;
   bool get isLoadingMoreSelectedDay => _selectedDayState.isLoadingMore;
@@ -131,8 +147,7 @@ class CalendarTabViewModel extends ChangeNotifier {
     switch (result) {
       case Success<List<int>>(:final data):
         _daysWithEvents = data.toSet();
-      case Failure(:final message):
-        debugPrint('loadCalendar failed: $message');
+      case Failure():
         _daysWithEvents = {};
     }
 
@@ -167,20 +182,20 @@ class CalendarTabViewModel extends ChangeNotifier {
 
     final result = await _repository.fetchFeeds(date: normalized);
     if (_disposed ||
-        _albumProvider.isDisposed ||
+        _repository.isDisposed ||
         request != _feedRequests[normalized]) {
       return;
     }
     switch (result) {
       case Success<InfinitePageResult<Feed>>(:final data):
-        _albumProvider.hydrate(data.items);
+        _repository.hydrate(data.items);
+        _onCache(_repository.currentCache);
         _feedStates[normalized] = DateFeedState(
           albumIds: data.items.map((feed) => feed.albumId).toList(),
           nextCursor: data.nextCursor,
           hasNext: data.hasNext,
         );
-      case Failure(:final message):
-        debugPrint('loadFeeds failed: $message');
+      case Failure():
         _feedStates[normalized] = const DateFeedState(hasError: true);
     }
     notifyListeners();
@@ -206,14 +221,15 @@ class CalendarTabViewModel extends ChangeNotifier {
       date: normalized,
     );
     if (_disposed ||
-        _albumProvider.isDisposed ||
+        _repository.isDisposed ||
         request != _feedRequests[normalized]) {
       return;
     }
     final current = _feedStates[normalized]!;
     switch (result) {
       case Success<InfinitePageResult<Feed>>(:final data):
-        _albumProvider.hydrate(data.items);
+        _repository.hydrate(data.items);
+        _onCache(_repository.currentCache);
         _feedStates[normalized] = current.copyWith(
           albumIds: {
             ...current.albumIds,
@@ -224,8 +240,7 @@ class CalendarTabViewModel extends ChangeNotifier {
           hasNext: data.hasNext,
           isLoadingMore: false,
         );
-      case Failure(:final message):
-        debugPrint('loadMoreFeeds failed: $message');
+      case Failure():
         _feedStates[normalized] = current.copyWith(
           isLoadingMore: false,
           hasError: true,

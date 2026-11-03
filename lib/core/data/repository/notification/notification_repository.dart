@@ -1,4 +1,5 @@
 import 'package:widyu/core/model/api/api_result.dart';
+import 'package:widyu/core/model/notification/notification_category.dart';
 import 'package:widyu/core/model/notification/notification_page.dart';
 import 'package:widyu/core/model/notification/notification_setting.dart';
 
@@ -8,7 +9,9 @@ abstract class NotificationRepository {
   Future<ApiResult<NotificationSetting>> updateNotificationSettings(
       NotificationSetting setting);
 
-  Future<ApiResult<NotificationPage>> fetchNotificationPage(int? cursor);
+  Future<ApiResult<NotificationPage>> fetchNotificationPage(int? cursor,
+      {String? category});
+  Future<ApiResult<List<NotificationCategory>>> fetchNotificationCategories();
 
   Future<ApiResult<void>> readNotification(int notificationId);
 

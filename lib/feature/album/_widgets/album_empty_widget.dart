@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
+import 'package:widyu/gen/assets.gen.dart';
 
 class AlbumEmptyWidget extends StatelessWidget {
   const AlbumEmptyWidget({super.key});
@@ -10,7 +11,7 @@ class AlbumEmptyWidget extends StatelessWidget {
     return Column(
       children: [
         const Spacer(flex: 2),
-        Image.asset('assets/images/img_102_album.png', width: 100, height: 84),
+        Assets.images.img102Album.image(width: 100, height: 84),
         const SizedBox(height: 16),
         Text(
           '게시물을 만들어보세요',

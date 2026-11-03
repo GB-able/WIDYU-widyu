@@ -1,40 +1,48 @@
 import 'dart:async';
-
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
 import 'package:widyu/app/routes/app_route.dart';
 import 'package:widyu/app/routes/extra/edit_post_extra.dart';
-import 'package:widyu/core/data/provider/album_provider.dart';
-import 'package:widyu/core/data/provider/point_provider.dart';
 import 'package:widyu/core/model/album/album_post.dart';
+import 'package:widyu/core/model/album/album_stat.dart';
+import 'package:widyu/core/model/album/feed_base.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
 import 'package:widyu/core/ui/widgets/custom_dialog.dart';
 import 'package:widyu/core/ui/widgets/custom_network_image.dart';
 import 'package:widyu/core/ui/widgets/expandable_text.dart';
-import 'package:widyu/core/ui/widgets/icon_widget.dart';
 import 'package:widyu/core/ui/widgets/profile_widget.dart';
+import 'package:widyu/core/ui/widgets/widu_icon.dart';
 import 'package:widyu/core/utils/extensions/date_extension.dart';
 import 'package:widyu/core/utils/show_toast.dart';
 import 'package:widyu/feature/album/_widgets/feed_menu_sheet.dart';
 import 'package:widyu/feature/album/_widgets/feed_video_widget.dart';
 import 'package:widyu/feature/album/_widgets/lock_overlay.dart';
-import 'package:widyu/feature/album/_widgets/unlock_dialog.dart';
 import 'package:widyu/feature/album/_widgets/viewers_row.dart';
+import 'package:widyu/gen/assets.gen.dart';
 
 class FeedWidget extends StatefulWidget {
   const FeedWidget({
     super.key,
-    required this.albumId,
+    required this.feed,
+    required this.stat,
+    required this.isLocked,
+    required this.onToggleLike,
+    required this.onDelete,
+    required this.onRequestUnlock,
     this.isDetail = false,
     this.isContentExpanded = true,
     this.onContentExpandChanged,
     this.onDeleted,
   });
 
-  final int albumId;
+  final AlbumPost feed;
+  final AlbumStat stat;
+  final bool isLocked;
+  final VoidCallback onToggleLike;
+  final Future<bool> Function() onDelete;
+  final Future<bool> Function() onRequestUnlock;
   final bool isDetail;
   final bool isContentExpanded;
   final ValueChanged<bool>? onContentExpandChanged;
@@ -54,46 +62,9 @@ class _FeedWidgetState extends State<FeedWidget> {
     });
   }
 
-  String? lockedPreviewUrl(AlbumPost feed) {
-    if (feed.thumbnailUrls.isNotEmpty) {
-      return feed.thumbnailUrls.first;
-    }
-
-    final image = feed.mediaUrls.where((url) => !_isVideoUrl(url));
-    if (image.isNotEmpty) return image.first;
-
-    return feed.mediaUrls.isEmpty ? null : feed.mediaUrls.first;
-  }
-
   Future<void> _confirmUnlock() async {
-    final albumProvider = context.read<AlbumProvider>();
-    if (albumProvider.isUnlocking(widget.albumId)) return;
-    final price = albumProvider.postOf(widget.albumId)?.price;
-    if (price == null) return;
-    final point = context.read<PointProvider>().point;
-
-    if (point != null && point < price) {
-      unawaited(showDialog<void>(
-        context: context,
-        builder: (_) => UnlockDialog.notEnough(
-          price: price,
-          point: point,
-          onTap: () => context.go(AppRoute.goal.path),
-        ),
-      ));
-      return;
-    }
-
-    final success = await showDialog<bool>(
-      context: context,
-      builder: (_) => UnlockDialog.purchase(
-        price: price,
-        point: point,
-        onPurchase: () => albumProvider.unlock(widget.albumId),
-      ),
-    );
-    if (success == true && mounted && !albumProvider.isDisposed) {
-      unawaited(context.push(AppRoute.post.path, extra: widget.albumId));
+    if (await widget.onRequestUnlock() && mounted) {
+      unawaited(context.push(AppRoute.postOf(widget.feed.albumId)));
     }
   }
 
@@ -107,8 +78,7 @@ class _FeedWidgetState extends State<FeedWidget> {
   }
 
   Future<void> editFeed() async {
-    final feed = context.read<AlbumProvider>().postOf(widget.albumId);
-    if (feed == null) return;
+    final feed = widget.feed;
     await context.push(
       AppRoute.managePost.path,
       extra: EditPostExtra(
@@ -133,8 +103,7 @@ class _FeedWidgetState extends State<FeedWidget> {
   }
 
   Future<void> deleteFeed() async {
-    final albumProvider = context.read<AlbumProvider>();
-    final success = await albumProvider.deleteFeed(widget.albumId);
+    final success = await widget.onDelete();
 
     if (!mounted) return;
 
@@ -148,16 +117,11 @@ class _FeedWidgetState extends State<FeedWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final feed = context.select((AlbumProvider p) => p.postOf(widget.albumId));
-    if (feed == null) return const SizedBox.shrink();
+    final feed = widget.feed;
+    final stat = widget.stat;
+    final isLocked = widget.isLocked;
     final thumbnailWidth = MediaQuery.of(context).size.width - 32;
     final thumbnailHeight = thumbnailWidth * 5 / 4;
-
-    final stat = context.select((AlbumProvider p) => p.statOf(widget.albumId));
-
-    final isLocked = context.select(
-      (AlbumProvider p) => !p.isUnlocked(widget.albumId),
-    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -185,9 +149,9 @@ class _FeedWidgetState extends State<FeedWidget> {
                 GestureDetector(
                   onTap: showMenu,
                   behavior: HitTestBehavior.opaque,
-                  child: const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 4),
-                    child: IconWidget(icon: 'more', width: 24),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    child: WiduIcon(icon: Assets.icons.ic24More, width: 24),
                   ),
                 ),
             ],
@@ -204,7 +168,7 @@ class _FeedWidgetState extends State<FeedWidget> {
                     child: FeedLockOverlay(
                       price: feed.price,
                       child: CustomNetworkImage(
-                        url: lockedPreviewUrl(feed),
+                        url: feed.thumbnailUrls.firstOrNull,
                         width: thumbnailWidth,
                         height: thumbnailHeight,
                       ),
@@ -222,7 +186,7 @@ class _FeedWidgetState extends State<FeedWidget> {
                       itemBuilder: (context, index, realIndex) {
                         final url = feed.mediaUrls[index];
 
-                        return _isVideoUrl(url)
+                        return _isVideoAt(feed, index)
                             ? FeedVideoWidget(
                                 url: url,
                                 width: thumbnailWidth,
@@ -277,13 +241,11 @@ class _FeedWidgetState extends State<FeedWidget> {
               spacing: 4,
               children: [
                 GestureDetector(
-                  onTap: isLocked
-                      ? _confirmUnlock
-                      : () => context.read<AlbumProvider>().toggleLike(
-                            widget.albumId,
-                          ),
-                  child: IconWidget(
-                    icon: stat.isLiked ? 'like_on' : 'like_off',
+                  onTap: isLocked ? _confirmUnlock : widget.onToggleLike,
+                  child: WiduIcon(
+                    icon: stat.isLiked
+                        ? Assets.icons.ic24LikeOn
+                        : Assets.icons.ic24LikeOff,
                     width: 24,
                   ),
                 ),
@@ -305,9 +267,9 @@ class _FeedWidgetState extends State<FeedWidget> {
                       return;
                     }
 
-                    context.push(AppRoute.post.path, extra: widget.albumId);
+                    context.push(AppRoute.postOf(feed.albumId));
                   },
-                  child: const IconWidget(icon: 'comment', width: 24),
+                  child: WiduIcon(icon: Assets.icons.ic24Comment, width: 24),
                 ),
                 Text(
                   stat.commentCount.toString(),
@@ -322,6 +284,8 @@ class _FeedWidgetState extends State<FeedWidget> {
         const SizedBox(height: 8),
         Text(_formatDate(feed.createdAt), style: MyTypo.subTitle3),
         const SizedBox(height: 4),
+        if (isLocked && feed.content.trim().isNotEmpty)
+          Text(_lockedPreview(feed.content), style: MyTypo.body2),
         if (!isLocked)
           ExpandableText(
             text: feed.content,
@@ -336,21 +300,14 @@ class _FeedWidgetState extends State<FeedWidget> {
   }
 }
 
+String _lockedPreview(String content) {
+  final chars = content.trim().characters;
+  return '${chars.take(chars.length < 5 ? 1 : 5)}...';
+}
+
 String _formatDate(DateTime date) {
   return "${date.year}년 ${date.month.toString().padLeft(2, '0')}월 ${date.day.toString().padLeft(2, '0')}일 ${date.weekdayLabel}요일";
 }
 
-bool _isVideoUrl(String url) {
-  const videoExtensions = {
-    '.mp4',
-    '.mov',
-    '.m4v',
-    '.avi',
-    '.mkv',
-    '.webm',
-    '.3gp',
-  };
-
-  final path = Uri.tryParse(url)?.path.toLowerCase() ?? url.toLowerCase();
-  return videoExtensions.any(path.endsWith);
-}
+bool _isVideoAt(AlbumPost feed, int index) =>
+    feed.mediaTypes.elementAtOrNull(index) == FeedMediaType.video;

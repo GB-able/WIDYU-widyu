@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:developer';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:stomp_dart_client/stomp_dart_client.dart';
+import 'package:widyu/core/log/log.dart';
 
 class SocketClient {
   static final SocketClient _instance = SocketClient._internal();
@@ -68,7 +68,7 @@ class SocketClient {
       final token = await provider();
       if (!_wantConnection) return;
       if (token == null) {
-        _log('Socket token issue failed.');
+        WiduLog.socket.w('소켓 토큰 발급 실패');
         _scheduleReconnect();
         return;
       }
@@ -81,7 +81,7 @@ class SocketClient {
           reconnectDelay: Duration.zero,
           onConnect: (StompFrame frame) {
             if (!isCurrent()) return;
-            _log('Socket connected.');
+            WiduLog.socket.i('연결됨');
             _reconnectDelay = _initialReconnectDelay;
             _subscribeSensorResult();
             _subscribeErrors();
@@ -89,14 +89,15 @@ class SocketClient {
           },
           onWebSocketError: (dynamic error) {
             if (!isCurrent()) return;
-            _onLost('websocket error: $error');
+            // 에러 문자열에 토큰이 담긴 소켓 URL이 섞일 수 있어 타입만 남긴다.
+            _onLost('websocket error: ${error.runtimeType}');
           },
           onStompError: (StompFrame frame) {
             if (!isCurrent()) return;
-            // 서버가 ERROR 프레임을 보내면 연결을 끊는다. 본문에 요청 값이 섞일 수 있어 디버그에서만 싣는다.
-            _onLost(kDebugMode
-                ? 'stomp error: ${frame.headers['message']} ${frame.body}'
-                : 'stomp error');
+            // 서버가 ERROR 프레임을 보내면 연결을 끊는다. 본문에 요청 값이 섞일 수 있어 trace로만 싣는다.
+            WiduLog.socket.t(() =>
+                'ERROR 프레임: ${frame.headers['message']} ${frame.body}');
+            _onLost('stomp error');
           },
           onDisconnect: (StompFrame frame) {
             if (isCurrent()) _onLost('disconnected');
@@ -117,7 +118,7 @@ class SocketClient {
   void _scheduleReconnect() {
     if (!_wantConnection || _reconnectTimer != null) return;
     final delay = _reconnectDelay;
-    _log('Socket reconnect in ${delay.inSeconds}s.');
+    WiduLog.socket.i('${delay.inSeconds}초 후 재연결');
     _reconnectTimer = Timer(delay, () {
       _reconnectTimer = null;
       // 현재 클라이언트에서 먼저 떼어 낸 뒤 정리해야 그 정리에서 나온 콜백이 무시된다.
@@ -138,7 +139,7 @@ class SocketClient {
 
   bool sendSensorBatch(Map<String, dynamic> json) {
     if (!_isSensorSubscribed) {
-      _log('Sensor result not subscribed yet, cannot send sensor batch.');
+      WiduLog.socket.d('센서 결과 구독 전이라 센서 배치 전송 생략');
       return false;
     }
     return _send(
@@ -156,8 +157,8 @@ class SocketClient {
       callback: (StompFrame frame) {
         final body = frame.body;
         if (body == null) return;
-        log('Sensor result received.');
-        if (kDebugMode) log('Sensor result body: $body');
+        WiduLog.socket.d('센서 결과 수신');
+        WiduLog.socket.t(() => '센서 결과 본문: $body');
         _sensorResultController.add(body);
       },
     );
@@ -170,15 +171,15 @@ class SocketClient {
     _errorUnsubscribe = client.subscribe(
       destination: _errorDestination,
       callback: (StompFrame frame) {
-        _log('Socket error message received');
-        if (kDebugMode) _log('Socket error body: ${frame.body}');
+        WiduLog.socket.w('서버 거부 메시지 수신');
+        WiduLog.socket.t(() => '서버 거부 본문: ${frame.body}');
       },
     );
   }
 
   /// 연결이 끊기면 서버 쪽 구독도 함께 사라지므로 재연결 시 다시 구독한다.
   void _onLost([String? reason]) {
-    if (reason != null) _log('Socket lost: $reason');
+    if (reason != null) WiduLog.socket.i('연결 끊김: $reason');
     _sensorResultUnsubscribe = null;
     _errorUnsubscribe = null;
     _connectionStateController.add(false);
@@ -191,7 +192,7 @@ class SocketClient {
     String label,
   ) {
     if (!_isConnected) {
-      _log('Socket Client is not connected, cannot send $label.');
+      WiduLog.socket.d('미연결 상태라 $label 전송 생략');
       return false;
     }
 
@@ -203,8 +204,8 @@ class SocketClient {
         body: body,
       );
       return true;
-    } catch (e) {
-      _log('Failed to send $label: $e');
+    } catch (e, stack) {
+      WiduLog.socket.w('$label 전송 실패', error: e, stackTrace: stack);
       return false;
     }
   }
@@ -222,14 +223,12 @@ class SocketClient {
     _onLost();
   }
 
-  /// `dart:developer` 의 log 는 logcat 에 남지 않아 끊김 원인을 볼 수 없다. 값이 없는 연결 상태만 싣는다.
-  static void _log(String message) => debugPrint('[Socket] $message');
-
   /// 끊김 원인 추적용(디버그 전용). 매초 나가는 배치 SEND 프레임은 너무 많아 머리만 남긴다.
   static void _logStompFrame(String frame) {
     final line = frame.replaceAll('\n', ' ');
     final isSend = line.startsWith('>>> SEND');
-    debugPrint(
-        '[STOMP] ${line.length > 200 || isSend ? '${line.substring(0, line.length < 120 ? line.length : 120)}…' : line}');
+    WiduLog.socket.t(line.length > 200 || isSend
+        ? '${line.substring(0, line.length < 120 ? line.length : 120)}…'
+        : line);
   }
 }

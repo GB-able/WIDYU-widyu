@@ -3,6 +3,7 @@ import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:go_router/go_router.dart';
 import 'package:widyu/app/routes/app_route.dart';
 import 'package:widyu/app/routes/custom_router.dart';
+import 'package:widyu/core/log/log.dart';
 import 'package:widyu/core/storage/app_preference.dart';
 import 'package:widyu/core/storage/preference_key.dart';
 import 'package:widyu/core/storage/secure_storage.dart';
@@ -35,7 +36,7 @@ class _SplashScreenState extends State<SplashScreen> {
             .read(key: StorageKey.widyuAccessToken.name)
             .timeout(const Duration(seconds: 3), onTimeout: () => null);
       } catch (e, stack) {
-        debugPrint('[Splash] 토큰 읽기 실패, 온보딩으로 폴백: $e\n$stack');
+        WiduLog.ui.w('토큰 읽기 실패, 온보딩으로 폴백', error: e, stackTrace: stack);
         accessToken = null;
       }
 
@@ -52,12 +53,15 @@ class _SplashScreenState extends State<SplashScreen> {
       final permissionGuideShown = await _appPreference
           .getBool(PreferenceKey.permissionGuideShown)
           .timeout(const Duration(seconds: 3), onTimeout: () {
-        debugPrint('[Splash] 권한 안내 노출 여부 읽기 지연, 권한 화면 생략');
+        WiduLog.ui.w('권한 안내 노출 여부 읽기 지연, 권한 화면 생략');
         return true;
       });
 
       await Future<void>.delayed(const Duration(milliseconds: 1500));
       if (!mounted) return;
+
+      WiduLog.ui.i('스플래시 진입 경로 next=$nextPath '
+          'permissionGuide=${!permissionGuideShown}');
 
       context.pushReplacement(
         permissionGuideShown
@@ -65,7 +69,7 @@ class _SplashScreenState extends State<SplashScreen> {
             : '${AppRoute.permission.path}?next=${Uri.encodeQueryComponent(nextPath)}',
       );
     } catch (e, stack) {
-      debugPrint('[Splash] init 실패: $e\n$stack');
+      WiduLog.ui.w('스플래시 초기화 실패', error: e, stackTrace: stack);
     } finally {
       FlutterNativeSplash.remove();
     }

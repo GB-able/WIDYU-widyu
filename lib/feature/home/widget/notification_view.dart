@@ -26,10 +26,13 @@ class _NotificationView extends StatelessWidget {
         ),
         child: Row(
           children: [
-            WidyuAssetImage(
-              name: icon,
-              width: 24,
-              height: 24,
+            ClipOval(
+              child: CustomNetworkImage(
+                url: icon,
+                width: 24,
+                height: 24,
+                errorIconSize: 16,
+              ),
             ),
             const SizedBox(width: 12),
             Expanded(

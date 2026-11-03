@@ -54,7 +54,9 @@ class TokenManager {
 
   Future<void> removeToken() async {
     // Invalidate native sessions before an in-flight background sync can finish.
-    try { await MedicationAlarmLocalDataSourceImpl().clearSession(); } catch (_) { }
+    try {
+      await MedicationAlarmLocalDataSourceImpl().clearSession();
+    } catch (_) {}
     await Future.wait([
       _secureStorage.storage.delete(key: StorageKey.widyuAccessToken.name),
       _secureStorage.storage.delete(key: StorageKey.widyuRefreshToken.name),
