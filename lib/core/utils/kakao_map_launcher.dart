@@ -12,6 +12,14 @@ enum KakaoMapRouteType {
   const KakaoMapRouteType(this.value);
 }
 
+/// [KakaoMapLauncher.openRoute]의 형태. 화면에서 길찾기 실행을 바꿔 끼울 때 쓴다.
+typedef KakaoMapRouteOpener = Future<bool> Function({
+  required UserLocation destination,
+  UserLocation? start,
+  String? destinationName,
+  required KakaoMapRouteType routeType,
+});
+
 /// 카카오맵 길찾기를 실행한다.
 /// 카카오맵 앱이 없으면 카카오맵 웹 길찾기 링크로 대체한다.
 class KakaoMapLauncher {

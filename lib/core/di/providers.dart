@@ -48,6 +48,7 @@ import 'package:widyu/core/notification/fcm_token_service.dart';
 import 'package:widyu/core/notification/medication_push_manager.dart';
 import 'package:widyu/core/utils/app_service_controller.dart';
 import 'package:widyu/core/utils/background_location_notice_controller.dart';
+import 'package:widyu/core/utils/kakao_map_launcher.dart';
 import 'package:widyu/core/utils/permission_recovery_controller.dart';
 import 'package:widyu/core/utils/walk_tracker.dart';
 
@@ -71,6 +72,9 @@ BackgroundLocationNoticeController backgroundLocationNoticeController(
   ref.onDispose(controller.dispose);
   return controller;
 }
+
+@Riverpod(keepAlive: true)
+KakaoMapRouteOpener kakaoMapRouteOpener(Ref ref) => KakaoMapLauncher.openRoute;
 
 @Riverpod(keepAlive: true)
 AuthRepository authRepository(Ref ref) => AuthRepositoryImpl(
@@ -123,7 +127,8 @@ MyPageRepository myPageRepository(Ref ref) => MyPageRepositoryImpl(
 @Riverpod(keepAlive: true)
 NotificationRepository notificationRepository(Ref ref) =>
     NotificationRepositoryImpl(
-      remoteDataSource: NotificationRemoteDataSourceImpl(apiClient: ApiClient()),
+      remoteDataSource:
+          NotificationRemoteDataSourceImpl(apiClient: ApiClient()),
     );
 
 /// 걸음 데이터베이스·Health 설정을 세션이 바뀌어도 다시 하지 않도록 앱 수명으로 둔다.
@@ -184,6 +189,13 @@ AlbumRepository albumRepository(Ref ref) {
 
 @riverpod
 PermissionRecoveryController permissionRecoveryController(Ref ref) {
+  final controller = PermissionRecoveryController();
+  ref.onDispose(controller.dispose);
+  return controller;
+}
+
+@riverpod
+PermissionRecoveryController homePermissionRecoveryController(Ref ref) {
   final controller = PermissionRecoveryController();
   ref.onDispose(controller.dispose);
   return controller;
