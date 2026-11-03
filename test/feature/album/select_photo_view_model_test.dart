@@ -23,12 +23,16 @@ void main() {
   late List<String> calls;
   late Completer<void>? cameraGate;
   late Completer<void>? photoGate;
+  late PermissionState photoPermission;
+  late Completer<void>? pageGate;
   late ProviderContainer container;
 
   setUp(() {
     calls = [];
     cameraGate = null;
     photoGate = null;
+    photoPermission = PermissionState.denied;
+    pageGate = null;
     messenger.setMockMethodCallHandler(_permissionChannel, (call) async {
       calls.add(call.method);
       await cameraGate?.future;
@@ -36,8 +40,21 @@ void main() {
     });
     messenger.setMockMethodCallHandler(_photoChannel, (call) async {
       calls.add(call.method);
+      switch (call.method) {
+        case 'getAssetPathList':
+          return {
+            'data': [
+              {'id': 'all', 'name': '최근 항목', 'isAll': true, 'assetCount': 1},
+            ],
+          };
+        case 'getAssetCountFromPath':
+          return 1;
+        case 'getAssetListPaged':
+          await pageGate?.future;
+          return {'data': <Map<String, dynamic>>[]};
+      }
       await photoGate?.future;
-      return PermissionState.denied.index;
+      return photoPermission.index;
     });
     container = ProviderContainer.test();
   });
@@ -95,6 +112,21 @@ void main() {
     container.dispose();
     photoGate!.complete();
     // 가드가 없으면 폐기된 state에 쓰다가 예외가 난다.
+    await pumpEventQueue();
+  });
+
+  test('사진 목록 페이지를 불러오는 중 폐기되면 상태를 쓰지 않는다', () async {
+    photoPermission = PermissionState.authorized;
+    pageGate = Completer();
+    listen();
+    await pumpEventQueue();
+    expect(calls.last, 'getAssetListPaged');
+    expect(state().loadingFilters, {PhotoFilter.all});
+
+    container.dispose();
+    pageGate!.complete();
+    // finally의 가드가 없으면 폐기된 state에 쓰다가 예외가 난다.
+    // try 안의 가드는 빠져도 catch가 예외를 잡아 기록만 하므로 이 테스트로 드러나지 않는다.
     await pumpEventQueue();
   });
 

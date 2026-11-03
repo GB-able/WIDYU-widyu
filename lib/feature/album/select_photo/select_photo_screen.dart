@@ -55,41 +55,42 @@ class SelectPhotoScreen extends ConsumerWidget {
             ),
             Container(
               padding: const EdgeInsets.all(16),
-              child:
-                  uiState.photoPermission == null || uiState.hasPhotoPermission
-                      ? WidyuTextButton(
-                          onTap: () => context.push(
-                            AppRoute.managePost.path,
-                            extra: uiState.selected,
-                          ),
-                          text: '게시글 작성하기',
-                          enable: uiState.selected.isNotEmpty,
-                        )
-                      : Column(
-                          spacing: 8,
-                          children: [
-                            GestureDetector(
-                              onTap: () => context.pop(),
-                              child: Container(
-                                width: double.infinity,
-                                height: 40,
-                                color: Colors.transparent,
-                                alignment: Alignment.center,
-                                child: Text(
-                                  '나중에 하기',
-                                  style: MyTypo.button.copyWith(
-                                    color: MyColor.grey600,
-                                  ),
-                                  textAlign: TextAlign.center,
-                                ),
+              child: uiState.photoPermission == null ||
+                      uiState.hasPhotoPermission
+                  ? WidyuTextButton(
+                      // 누르는 순간의 선택 목록을 넘긴다.
+                      onTap: () => context.push(
+                        AppRoute.managePost.path,
+                        extra: ref.read(selectPhotoViewModelProvider).selected,
+                      ),
+                      text: '게시글 작성하기',
+                      enable: uiState.selected.isNotEmpty,
+                    )
+                  : Column(
+                      spacing: 8,
+                      children: [
+                        GestureDetector(
+                          onTap: () => context.pop(),
+                          child: Container(
+                            width: double.infinity,
+                            height: 40,
+                            color: Colors.transparent,
+                            alignment: Alignment.center,
+                            child: Text(
+                              '나중에 하기',
+                              style: MyTypo.button.copyWith(
+                                color: MyColor.grey600,
                               ),
+                              textAlign: TextAlign.center,
                             ),
-                            WidyuTextButton(
-                              onTap: () => viewModel.requestAlbumPermission(),
-                              text: '설정에서 권한 허용하기',
-                            ),
-                          ],
+                          ),
                         ),
+                        WidyuTextButton(
+                          onTap: () => viewModel.requestAlbumPermission(),
+                          text: '설정에서 권한 허용하기',
+                        ),
+                      ],
+                    ),
             ),
           ],
         ),
