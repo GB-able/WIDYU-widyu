@@ -207,6 +207,7 @@ class HomeViewModel extends _$HomeViewModel {
   }
 
   Future<void> openBackgroundLocationSettings() async {
+    if (!ref.mounted) return;
     final result = await _noticeController.openSettingsAndRecheck();
     if (result == PermissionSettingsResult.launchFailed) {
       _emit(const BackgroundLocationSettingsLaunchFailure());
