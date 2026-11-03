@@ -7,19 +7,9 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart'
     show ConsumerState, ConsumerStatefulWidget, ProviderScope;
-import 'package:flutter_riverpod/misc.dart' show ProviderListenable;
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:provider/provider.dart' show MultiProvider, Provider;
 import 'package:widyu/app/routes/custom_router.dart';
 import 'package:widyu/background_service.dart';
-import 'package:widyu/core/data/repository/auth/auth_repository.dart';
-import 'package:widyu/core/data/repository/goal/goal_repository.dart';
-import 'package:widyu/core/data/repository/goal/medication_repository.dart';
-import 'package:widyu/core/data/repository/heartRate/heart_rate_repository.dart';
-import 'package:widyu/core/data/repository/home/home_repository.dart';
-import 'package:widyu/core/data/repository/location/location_repository.dart';
-import 'package:widyu/core/data/repository/myPage/my_page_repository.dart';
-import 'package:widyu/core/data/repository/notification/notification_repository.dart';
 import 'package:widyu/core/di/providers.dart';
 import 'package:widyu/core/log/log.dart';
 import 'package:widyu/core/notification/local_notification_manager.dart';
@@ -27,7 +17,6 @@ import 'package:widyu/core/notification/medication_push_manager.dart';
 import 'package:widyu/core/notification/safety_push_manager.dart';
 import 'package:widyu/core/ui/theme/theme.dart';
 import 'package:widyu/core/utils/app_service_controller.dart';
-import 'package:widyu/core/utils/background_location_notice_controller.dart';
 import 'package:widyu/firebase_options.dart';
 import 'package:widyu/walk_background_service.dart';
 
@@ -88,52 +77,8 @@ Future<void> _bootstrap() async {
     WiduLog.data.w('알림 초기화 실패', error: e, stackTrace: stack);
   }
 
-  // 의존성은 Riverpod가 소유한다. 화면들이 아직 Provider로 읽으므로
-  // MultiProvider는 같은 인스턴스를 넘겨주는 브리지로 둔다. (create: 처음 읽을 때 생성)
-  runApp(
-    ProviderScope(
-      child: MultiProvider(
-        providers: [
-          Provider<AppServiceController>(
-            create: (context) => _read(context, appServiceControllerProvider),
-          ),
-          Provider<BackgroundLocationNoticeController>(
-            create: (context) =>
-                _read(context, backgroundLocationNoticeControllerProvider),
-          ),
-          Provider<AuthRepository>(
-            create: (context) => _read(context, authRepositoryProvider),
-          ),
-          Provider<GoalRepository>(
-            create: (context) => _read(context, goalRepositoryProvider),
-          ),
-          Provider<MedicationRepository>(
-            create: (context) => _read(context, medicationRepositoryProvider),
-          ),
-          Provider<HeartRateRepository>(
-            create: (context) => _read(context, heartRateRepositoryProvider),
-          ),
-          Provider<HomeRepository>(
-            create: (context) => _read(context, homeRepositoryProvider),
-          ),
-          Provider<LocationRepository>(
-            create: (context) => _read(context, locationRepositoryProvider),
-          ),
-          Provider<MyPageRepository>(
-            create: (context) => _read(context, myPageRepositoryProvider),
-          ),
-          Provider<NotificationRepository>(
-            create: (context) => _read(context, notificationRepositoryProvider),
-          ),
-        ],
-        child: const App(),
-      ),
-    ),
-  );
+  runApp(const ProviderScope(child: App()));
 }
-
-T _read<T>(BuildContext context, ProviderListenable<T> provider) =>
-    ProviderScope.containerOf(context, listen: false).read(provider);
 
 class App extends ConsumerStatefulWidget {
   const App({super.key});
