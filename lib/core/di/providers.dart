@@ -48,6 +48,7 @@ import 'package:widyu/core/notification/fcm_token_service.dart';
 import 'package:widyu/core/notification/medication_push_manager.dart';
 import 'package:widyu/core/utils/app_service_controller.dart';
 import 'package:widyu/core/utils/background_location_notice_controller.dart';
+import 'package:widyu/core/utils/permission_recovery_controller.dart';
 import 'package:widyu/core/utils/walk_tracker.dart';
 
 part 'providers.g.dart';
@@ -176,4 +177,14 @@ AlbumRepository albumRepository(Ref ref) {
   );
   ref.onDispose(repository.dispose);
   return repository;
+}
+
+// 화면 수명: 이 자원을 쓰는 ViewModel이 build()에서 watch로 붙잡고, 함께 폐기된다.
+// 여러 화면이 동시에 watch하면 인스턴스를 공유하므로, 다른 화면에서 쓸 때는 provider를 따로 둔다.
+
+@riverpod
+PermissionRecoveryController permissionRecoveryController(Ref ref) {
+  final controller = PermissionRecoveryController();
+  ref.onDispose(controller.dispose);
+  return controller;
 }

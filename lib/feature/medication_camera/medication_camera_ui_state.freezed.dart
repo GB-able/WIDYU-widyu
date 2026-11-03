@@ -17,6 +17,7 @@ mixin _$MedicationCameraUiState {
   bool get isReady;
   bool get isBusy;
   bool get isPermissionDenied;
+  String? get doseLabel;
 
   /// Create a copy of MedicationCameraUiState
   /// with the given fields replaced by the non-null parameter values.
@@ -34,16 +35,18 @@ mixin _$MedicationCameraUiState {
             (identical(other.isReady, isReady) || other.isReady == isReady) &&
             (identical(other.isBusy, isBusy) || other.isBusy == isBusy) &&
             (identical(other.isPermissionDenied, isPermissionDenied) ||
-                other.isPermissionDenied == isPermissionDenied));
+                other.isPermissionDenied == isPermissionDenied) &&
+            (identical(other.doseLabel, doseLabel) ||
+                other.doseLabel == doseLabel));
   }
 
   @override
   int get hashCode =>
-      Object.hash(runtimeType, isReady, isBusy, isPermissionDenied);
+      Object.hash(runtimeType, isReady, isBusy, isPermissionDenied, doseLabel);
 
   @override
   String toString() {
-    return 'MedicationCameraUiState(isReady: $isReady, isBusy: $isBusy, isPermissionDenied: $isPermissionDenied)';
+    return 'MedicationCameraUiState(isReady: $isReady, isBusy: $isBusy, isPermissionDenied: $isPermissionDenied, doseLabel: $doseLabel)';
   }
 }
 
@@ -53,7 +56,8 @@ abstract mixin class $MedicationCameraUiStateCopyWith<$Res> {
           $Res Function(MedicationCameraUiState) _then) =
       _$MedicationCameraUiStateCopyWithImpl;
   @useResult
-  $Res call({bool isReady, bool isBusy, bool isPermissionDenied});
+  $Res call(
+      {bool isReady, bool isBusy, bool isPermissionDenied, String? doseLabel});
 }
 
 /// @nodoc
@@ -72,6 +76,7 @@ class _$MedicationCameraUiStateCopyWithImpl<$Res>
     Object? isReady = null,
     Object? isBusy = null,
     Object? isPermissionDenied = null,
+    Object? doseLabel = freezed,
   }) {
     return _then(_self.copyWith(
       isReady: null == isReady
@@ -86,6 +91,10 @@ class _$MedicationCameraUiStateCopyWithImpl<$Res>
           ? _self.isPermissionDenied
           : isPermissionDenied // ignore: cast_nullable_to_non_nullable
               as bool,
+      doseLabel: freezed == doseLabel
+          ? _self.doseLabel
+          : doseLabel // ignore: cast_nullable_to_non_nullable
+              as String?,
     ));
   }
 }
@@ -183,14 +192,16 @@ extension MedicationCameraUiStatePatterns on MedicationCameraUiState {
 
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>(
-    TResult Function(bool isReady, bool isBusy, bool isPermissionDenied)?
+    TResult Function(bool isReady, bool isBusy, bool isPermissionDenied,
+            String? doseLabel)?
         $default, {
     required TResult orElse(),
   }) {
     final _that = this;
     switch (_that) {
       case _MedicationCameraUiState() when $default != null:
-        return $default(_that.isReady, _that.isBusy, _that.isPermissionDenied);
+        return $default(_that.isReady, _that.isBusy, _that.isPermissionDenied,
+            _that.doseLabel);
       case _:
         return orElse();
     }
@@ -211,13 +222,15 @@ extension MedicationCameraUiStatePatterns on MedicationCameraUiState {
 
   @optionalTypeArgs
   TResult when<TResult extends Object?>(
-    TResult Function(bool isReady, bool isBusy, bool isPermissionDenied)
+    TResult Function(bool isReady, bool isBusy, bool isPermissionDenied,
+            String? doseLabel)
         $default,
   ) {
     final _that = this;
     switch (_that) {
       case _MedicationCameraUiState():
-        return $default(_that.isReady, _that.isBusy, _that.isPermissionDenied);
+        return $default(_that.isReady, _that.isBusy, _that.isPermissionDenied,
+            _that.doseLabel);
       case _:
         throw StateError('Unexpected subclass');
     }
@@ -237,13 +250,15 @@ extension MedicationCameraUiStatePatterns on MedicationCameraUiState {
 
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>(
-    TResult? Function(bool isReady, bool isBusy, bool isPermissionDenied)?
+    TResult? Function(bool isReady, bool isBusy, bool isPermissionDenied,
+            String? doseLabel)?
         $default,
   ) {
     final _that = this;
     switch (_that) {
       case _MedicationCameraUiState() when $default != null:
-        return $default(_that.isReady, _that.isBusy, _that.isPermissionDenied);
+        return $default(_that.isReady, _that.isBusy, _that.isPermissionDenied,
+            _that.doseLabel);
       case _:
         return null;
     }
@@ -256,7 +271,8 @@ class _MedicationCameraUiState implements MedicationCameraUiState {
   const _MedicationCameraUiState(
       {this.isReady = false,
       this.isBusy = false,
-      this.isPermissionDenied = false});
+      this.isPermissionDenied = false,
+      this.doseLabel});
 
   @override
   @JsonKey()
@@ -267,6 +283,8 @@ class _MedicationCameraUiState implements MedicationCameraUiState {
   @override
   @JsonKey()
   final bool isPermissionDenied;
+  @override
+  final String? doseLabel;
 
   /// Create a copy of MedicationCameraUiState
   /// with the given fields replaced by the non-null parameter values.
@@ -285,16 +303,18 @@ class _MedicationCameraUiState implements MedicationCameraUiState {
             (identical(other.isReady, isReady) || other.isReady == isReady) &&
             (identical(other.isBusy, isBusy) || other.isBusy == isBusy) &&
             (identical(other.isPermissionDenied, isPermissionDenied) ||
-                other.isPermissionDenied == isPermissionDenied));
+                other.isPermissionDenied == isPermissionDenied) &&
+            (identical(other.doseLabel, doseLabel) ||
+                other.doseLabel == doseLabel));
   }
 
   @override
   int get hashCode =>
-      Object.hash(runtimeType, isReady, isBusy, isPermissionDenied);
+      Object.hash(runtimeType, isReady, isBusy, isPermissionDenied, doseLabel);
 
   @override
   String toString() {
-    return 'MedicationCameraUiState(isReady: $isReady, isBusy: $isBusy, isPermissionDenied: $isPermissionDenied)';
+    return 'MedicationCameraUiState(isReady: $isReady, isBusy: $isBusy, isPermissionDenied: $isPermissionDenied, doseLabel: $doseLabel)';
   }
 }
 
@@ -306,7 +326,8 @@ abstract mixin class _$MedicationCameraUiStateCopyWith<$Res>
       __$MedicationCameraUiStateCopyWithImpl;
   @override
   @useResult
-  $Res call({bool isReady, bool isBusy, bool isPermissionDenied});
+  $Res call(
+      {bool isReady, bool isBusy, bool isPermissionDenied, String? doseLabel});
 }
 
 /// @nodoc
@@ -325,6 +346,7 @@ class __$MedicationCameraUiStateCopyWithImpl<$Res>
     Object? isReady = null,
     Object? isBusy = null,
     Object? isPermissionDenied = null,
+    Object? doseLabel = freezed,
   }) {
     return _then(_MedicationCameraUiState(
       isReady: null == isReady
@@ -339,6 +361,10 @@ class __$MedicationCameraUiStateCopyWithImpl<$Res>
           ? _self.isPermissionDenied
           : isPermissionDenied // ignore: cast_nullable_to_non_nullable
               as bool,
+      doseLabel: freezed == doseLabel
+          ? _self.doseLabel
+          : doseLabel // ignore: cast_nullable_to_non_nullable
+              as String?,
     ));
   }
 }
