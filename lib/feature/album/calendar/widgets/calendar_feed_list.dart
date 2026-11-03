@@ -2,29 +2,34 @@ part of '../calendar_tab_view.dart';
 
 class _CalendarFeedList extends StatelessWidget {
   const _CalendarFeedList({
-    required this.viewModel,
+    required this.albumIds,
+    required this.isLoading,
+    required this.isLoadingMore,
+    required this.hasError,
     required this.controller,
-    required this.onRequestUnlock,
+    required this.onRetry,
+    required this.itemBuilder,
   });
 
-  final CalendarTabViewModel viewModel;
+  final List<int> albumIds;
+  final bool isLoading;
+  final bool isLoadingMore;
+  final bool hasError;
   final ScrollController controller;
-  final Future<bool> Function(int albumId) onRequestUnlock;
+  final VoidCallback onRetry;
+  final Widget Function(int albumId) itemBuilder;
 
   @override
   Widget build(BuildContext context) {
-    if (viewModel.isLoadingSelectedDay) {
+    if (isLoading) {
       return const CustomLoadingWidget();
     }
 
-    final feeds = viewModel.selectedDayAlbumIds;
-    final cache = viewModel.cache;
-
-    if (feeds.isEmpty) {
-      if (viewModel.hasErrorSelectedDay) {
+    if (albumIds.isEmpty) {
+      if (hasError) {
         return CustomErrorWidget(
           errorMsg: '피드를 불러오지 못했어요',
-          onRetry: () => viewModel.retry(),
+          onRetry: onRetry,
         );
       }
       return Center(
@@ -41,37 +46,25 @@ class _CalendarFeedList extends StatelessWidget {
         parent: ClampingScrollPhysics(),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-      itemCount: feeds.length + 1,
+      itemCount: albumIds.length + 1,
       separatorBuilder: (context, index) => const SizedBox(height: 12),
       itemBuilder: (context, index) {
-        if (index == feeds.length) return _buildFooter();
+        if (index == albumIds.length) return _buildFooter();
 
-        final albumId = feeds[index];
-        return FeedWidget(
-          key: ValueKey(albumId),
-          feed: cache.postOf(albumId)!,
-          stat: cache.statOf(albumId),
-          isLocked: !cache.isUnlocked(albumId),
-          onToggleLike: () => viewModel.toggleLike(albumId),
-          onDelete: () => viewModel.deleteFeed(albumId),
-          onRequestUnlock: () => onRequestUnlock(albumId),
-          isContentExpanded: viewModel.isContentExpanded(albumId),
-          onContentExpandChanged: (expanded) =>
-              viewModel.setContentExpanded(albumId, expanded),
-        );
+        return itemBuilder(albumIds[index]);
       },
     );
   }
 
   Widget _buildFooter() {
-    if (viewModel.isLoadingMoreSelectedDay) {
+    if (isLoadingMore) {
       return const Padding(
         padding: EdgeInsets.symmetric(vertical: 16),
         child: Center(child: CircularProgressIndicator()),
       );
     }
-    if (viewModel.hasErrorSelectedDay) {
-      return RetryWidget(onRetry: () => viewModel.retry());
+    if (hasError) {
+      return RetryWidget(onRetry: onRetry);
     }
     return const SizedBox.shrink();
   }

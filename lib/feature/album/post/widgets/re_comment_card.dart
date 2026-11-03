@@ -17,6 +17,7 @@ class ReCommentCard extends StatelessWidget {
     this.focusNode,
     this.onSubmitted,
     this.onEdit,
+    this.onDelete,
   });
 
   final ReCommentMode mode;
@@ -25,6 +26,7 @@ class ReCommentCard extends StatelessWidget {
   final FocusNode? focusNode;
   final VoidCallback? onSubmitted;
   final VoidCallback? onEdit;
+  final Future<bool> Function()? onDelete;
 
   @override
   Widget build(BuildContext context) {
@@ -45,8 +47,8 @@ class ReCommentCard extends StatelessWidget {
           ),
           if (comment != null && comment.canEdit)
             CommentMoreButton(
-              commentId: comment.commentId,
               onEdit: onEdit ?? () {},
+              onDelete: onDelete ?? () async => false,
               padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
             ),
         ],

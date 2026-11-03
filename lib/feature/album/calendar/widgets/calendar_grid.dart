@@ -2,16 +2,20 @@ part of '../calendar_tab_view.dart';
 
 class _CalendarGrid extends StatelessWidget {
   const _CalendarGrid({
-    required this.viewModel,
     required this.format,
     required this.focusedDay,
     required this.selectedDay,
+    required this.hasEvent,
+    required this.onPageChanged,
+    required this.onSelectDay,
   });
 
-  final CalendarTabViewModel viewModel;
   final CalendarFormat format;
   final DateTime focusedDay;
   final DateTime selectedDay;
+  final bool Function(DateTime day) hasEvent;
+  final ValueChanged<DateTime> onPageChanged;
+  final ValueChanged<DateTime> onSelectDay;
 
   @override
   Widget build(BuildContext context) {
@@ -34,13 +38,13 @@ class _CalendarGrid extends StatelessWidget {
         outsideDaysVisible: false,
         markersMaxCount: 0,
       ),
-      onPageChanged: viewModel.onPageChanged,
+      onPageChanged: onPageChanged,
       calendarBuilders: CalendarBuilders<dynamic>(
         prioritizedBuilder: (context, date, _) => _CalendarDayCell(
           date: date,
           isSelected: date.isSameDay(selectedDay),
-          hasEvents: viewModel.hasEvent(date),
-          onTap: () => viewModel.selectDay(date),
+          hasEvents: hasEvent(date),
+          onTap: () => onSelectDay(date),
         ),
       ),
     );

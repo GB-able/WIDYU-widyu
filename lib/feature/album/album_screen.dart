@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
 import 'package:widyu/app/routes/app_route.dart';
-import 'package:widyu/core/data/repository/album/album_repository.dart';
+import 'package:widyu/core/di/providers.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
 import 'package:widyu/core/ui/widgets/bot_nav.dart';
@@ -13,14 +13,14 @@ import 'package:widyu/feature/album/feed/feed_tab_view.dart';
 import 'package:widyu/feature/album/photo/photo_tab_view.dart';
 import 'package:widyu/gen/assets.gen.dart';
 
-class AlbumScreen extends StatefulWidget {
+class AlbumScreen extends ConsumerStatefulWidget {
   const AlbumScreen({super.key});
 
   @override
-  State<AlbumScreen> createState() => _AlbumScreenState();
+  ConsumerState<AlbumScreen> createState() => _AlbumScreenState();
 }
 
-class _AlbumScreenState extends State<AlbumScreen>
+class _AlbumScreenState extends ConsumerState<AlbumScreen>
     with TickerProviderStateMixin {
   late TabController _tabController;
 
@@ -30,7 +30,7 @@ class _AlbumScreenState extends State<AlbumScreen>
     _tabController = TabController(length: 3, vsync: this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      final repository = context.read<AlbumRepository>();
+      final repository = ref.read(albumRepositoryProvider);
       repository.loadLikedAlbumIds();
       repository.loadUnlockedAlbumIds();
     });

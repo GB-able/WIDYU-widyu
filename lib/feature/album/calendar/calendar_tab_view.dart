@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:widyu/app/routes/app_route.dart';
-import 'package:widyu/core/data/repository/album/album_repository.dart';
-import 'package:widyu/core/data/repository/point/point_repository.dart';
+import 'package:widyu/core/di/providers.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
 import 'package:widyu/core/ui/widgets/custom_error_widget.dart';
@@ -51,24 +50,18 @@ class CalendarTabView extends StatelessWidget {
   const CalendarTabView({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (context) => CalendarTabViewModel(
-        repository: context.read<AlbumRepository>(),
-      )..init(),
-      child: const _CalendarTabContent(),
-    );
-  }
+  Widget build(BuildContext context) => const _CalendarTabContent();
 }
 
-class _CalendarTabContent extends StatefulWidget {
+class _CalendarTabContent extends ConsumerStatefulWidget {
   const _CalendarTabContent();
 
   @override
-  State<_CalendarTabContent> createState() => _CalendarTabContentState();
+  ConsumerState<_CalendarTabContent> createState() =>
+      _CalendarTabContentState();
 }
 
-class _CalendarTabContentState extends State<_CalendarTabContent>
+class _CalendarTabContentState extends ConsumerState<_CalendarTabContent>
     with SingleTickerProviderStateMixin {
   static const _snapDuration = Duration(milliseconds: 250);
   static const _flingVelocityThreshold = 200.0;
@@ -99,7 +92,7 @@ class _CalendarTabContentState extends State<_CalendarTabContent>
   void _onScroll() {
     final position = _scrollController.position;
     if (position.pixels >= position.maxScrollExtent - 300) {
-      context.read<CalendarTabViewModel>().loadMoreFeeds();
+      ref.read(calendarTabViewModelProvider.notifier).loadMoreFeeds();
     }
   }
 
@@ -173,12 +166,12 @@ class _CalendarTabContentState extends State<_CalendarTabContent>
 
   // 탭 시점의 캐시와 포인트로 판단한다.
   Future<bool> _requestUnlock(int albumId) async {
-    final repository = context.read<AlbumRepository>();
+    final repository = ref.read(albumRepositoryProvider);
     final cache = repository.currentCache;
     final success = await showUnlockDialog(
       context,
       price: cache.postOf(albumId)?.price,
-      point: context.read<PointRepository>().currentStatus.point,
+      point: ref.read(pointRepositoryProvider).currentStatus.point,
       isUnlocking: cache.isUnlocking(albumId),
       onPurchase: () => repository.unlock(albumId),
       onGoToGoal: () => context.go(AppRoute.goal.path),
@@ -186,9 +179,48 @@ class _CalendarTabContentState extends State<_CalendarTabContent>
     return success && !repository.isDisposed;
   }
 
+  // 행마다 자기 게시물 데이터만 구독한다.
+  Widget _buildFeed(int albumId) {
+    return Consumer(
+      key: ValueKey(albumId),
+      builder: (context, ref, _) {
+        final (post, stat, isUnlocked, isContentExpanded) = ref.watch(
+          calendarTabViewModelProvider.select(
+            (s) => (
+              s.cache.postOf(albumId),
+              s.cache.statOf(albumId),
+              s.cache.isUnlocked(albumId),
+              s.expandedFeedIds.contains(albumId),
+            ),
+          ),
+        );
+        // 행은 목록과 따로 구독하므로 캐시에서 빠진 게시물일 수 있다.
+        if (post == null) return const SizedBox.shrink();
+        final viewModel = ref.watch(calendarTabViewModelProvider.notifier);
+        return FeedWidget(
+          feed: post,
+          stat: stat,
+          isLocked: !isUnlocked,
+          onToggleLike: () => viewModel.toggleLike(albumId),
+          onDelete: () => viewModel.deleteFeed(albumId),
+          onRequestUnlock: () => _requestUnlock(albumId),
+          isContentExpanded: isContentExpanded,
+          onContentExpandChanged: (expanded) =>
+              viewModel.setContentExpanded(albumId, expanded),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final viewModel = context.watch<CalendarTabViewModel>();
+    // 달력은 월·선택일·일정 있는 날만 구독하고, 피드 목록은 아래 Consumer로 따로 구독한다.
+    final viewModel = ref.watch(calendarTabViewModelProvider.notifier);
+    final (focusedMonth, selectedDay, daysWithEvents) = ref.watch(
+      calendarTabViewModelProvider.select(
+        (s) => (s.focusedMonth, s.selectedDay, s.daysWithEvents),
+      ),
+    );
 
     return Column(
       children: [
@@ -201,7 +233,13 @@ class _CalendarTabContentState extends State<_CalendarTabContent>
           child: AnimatedBuilder(
             animation: _shrinkController,
             builder: (context, _) => _CalendarHeaderView(
-              viewModel: viewModel,
+              focusedMonth: focusedMonth,
+              selectedDay: selectedDay,
+              hasEvent: (day) =>
+                  day.isSameMonth(focusedMonth) &&
+                  daysWithEvents.contains(day.day),
+              onPageChanged: viewModel.onPageChanged,
+              onSelectDay: viewModel.selectDay,
               shrink: _shrink,
               onHandleTap: _toggleHeader,
             ),
@@ -210,10 +248,23 @@ class _CalendarTabContentState extends State<_CalendarTabContent>
         Expanded(
           child: NotificationListener<ScrollNotification>(
             onNotification: _handleScrollNotification,
-            child: _CalendarFeedList(
-              viewModel: viewModel,
-              controller: _scrollController,
-              onRequestUnlock: _requestUnlock,
+            child: Consumer(
+              builder: (context, ref, _) {
+                final feedState = ref.watch(
+                  calendarTabViewModelProvider.select(
+                    (s) => s.selectedDayState,
+                  ),
+                );
+                return _CalendarFeedList(
+                  albumIds: feedState.albumIds,
+                  isLoading: feedState.isLoading,
+                  isLoadingMore: feedState.isLoadingMore,
+                  hasError: feedState.hasError,
+                  controller: _scrollController,
+                  onRetry: viewModel.retry,
+                  itemBuilder: _buildFeed,
+                );
+              },
             ),
           ),
         ),

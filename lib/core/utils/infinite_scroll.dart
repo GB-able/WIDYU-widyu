@@ -47,7 +47,10 @@ class InfiniteScroller<T> {
 
   int _generation = 0;
 
-  bool _isCurrent(int generation) => mounted() && generation == _generation;
+  // fetch 안에서 응답이 아직 유효한지 확인할 때 쓴다.
+  int get generation => _generation;
+
+  bool isCurrent(int generation) => mounted() && generation == _generation;
 
   Future<void> init() async {
     if (!mounted()) return;
@@ -59,7 +62,7 @@ class InfiniteScroller<T> {
     ));
     try {
       final result = await fetch(null);
-      if (!_isCurrent(generation)) return;
+      if (!isCurrent(generation)) return;
       write(read().copyWith(
         items: result.items,
         nextCursor: result.nextCursor,
@@ -67,7 +70,7 @@ class InfiniteScroller<T> {
         isFetching: false,
       ));
     } catch (e, stack) {
-      if (!_isCurrent(generation)) return;
+      if (!isCurrent(generation)) return;
       WiduLog.ui.w('첫 페이지 불러오기 실패', error: e, stackTrace: stack);
       write(read().copyWith(isFetching: false, hasError: true));
     }
@@ -86,7 +89,7 @@ class InfiniteScroller<T> {
     write(current.copyWith(isLoadingMore: true));
     try {
       final result = await fetch(current.nextCursor);
-      if (!_isCurrent(generation)) return;
+      if (!isCurrent(generation)) return;
       final latest = read();
       write(latest.copyWith(
         items: [...latest.items, ...result.items],
@@ -95,7 +98,7 @@ class InfiniteScroller<T> {
         isLoadingMore: false,
       ));
     } catch (e, stack) {
-      if (!_isCurrent(generation)) return;
+      if (!isCurrent(generation)) return;
       WiduLog.ui.w('다음 페이지 불러오기 실패', error: e, stackTrace: stack);
       write(read().copyWith(isLoadingMore: false, hasError: true));
     }

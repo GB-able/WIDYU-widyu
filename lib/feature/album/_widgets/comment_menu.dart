@@ -1,24 +1,22 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/effects.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
 import 'package:widyu/core/ui/widgets/custom_dialog.dart';
 import 'package:widyu/core/ui/widgets/widu_icon.dart';
 import 'package:widyu/core/utils/show_toast.dart';
-import 'package:widyu/feature/album/post/post_view_model.dart';
 import 'package:widyu/gen/assets.gen.dart';
 
 class CommentMoreButton extends StatefulWidget {
   const CommentMoreButton({
     super.key,
-    required this.commentId,
     required this.onEdit,
+    required this.onDelete,
     this.padding = const EdgeInsets.symmetric(horizontal: 4),
   });
 
-  final int commentId;
   final VoidCallback onEdit;
+  final Future<bool> Function() onDelete;
   final EdgeInsets padding;
 
   @override
@@ -29,8 +27,6 @@ class _CommentMoreButtonState extends State<CommentMoreButton> {
   final link = LayerLink();
 
   void showMenu() {
-    final viewModel = context.read<PostViewModel>();
-
     showGeneralDialog<void>(
       context: context,
       barrierDismissible: true,
@@ -54,7 +50,7 @@ class _CommentMoreButtonState extends State<CommentMoreButton> {
                 },
                 onDelete: () {
                   Navigator.pop(dialogContext);
-                  _confirmDelete(context, viewModel, widget.commentId);
+                  _confirmDelete(context, widget.onDelete);
                 },
               ),
             ),
@@ -158,11 +154,7 @@ class _CommentMenuItem extends StatelessWidget {
   }
 }
 
-void _confirmDelete(
-  BuildContext context,
-  PostViewModel viewModel,
-  int commentId,
-) {
+void _confirmDelete(BuildContext context, Future<bool> Function() onDelete) {
   showDialog<void>(
     context: context,
     builder: (_) => CustomDialog(
@@ -171,7 +163,7 @@ void _confirmDelete(
       description: '삭제한 댓글은 다시 볼 수 없어요.',
       posText: '삭제',
       onPosTap: () async {
-        final success = await viewModel.deleteComment(commentId);
+        final success = await onDelete();
         if (!success) showToast('댓글 삭제에 실패했습니다.');
       },
     ),
