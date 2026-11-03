@@ -63,12 +63,13 @@ class _Home extends Fake implements HomeRepository {
 }
 
 class _MyPage extends Fake implements MyPageRepository {
+  ApiResult<User> result = const ApiResult.failure('unused');
   Completer<void>? pending;
 
   @override
   Future<ApiResult<User>> fetchUser() async {
     await pending?.future;
-    return const ApiResult.failure('unused');
+    return result;
   }
 }
 
@@ -445,6 +446,20 @@ void main() {
       expect(h.state.isHeartRateLoading, isTrue);
       expect(h.state.isNotificationLoading, isTrue);
       expect(h.state.isSeniorCardLoading, isTrue);
+    });
+
+    test('사용자 이름과 워치 착용 상태를 반영한다', () async {
+      final h = _Harness();
+      h.myPage.result = const ApiResult.success(
+        User(memberId: 1, name: '박춘자', points: 0),
+      );
+      await h.initialize();
+      expect(h.state.name, '박춘자');
+      expect(h.state.isUserLoading, isFalse);
+
+      h.heartRate.connection.add(true);
+      await Future<void>.delayed(Duration.zero);
+      expect(h.state.isWearing, isTrue);
     });
 
     test('조회 시작 전에 폐기되면 조회하지 않는다', () async {
