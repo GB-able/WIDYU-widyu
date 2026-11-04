@@ -18,8 +18,10 @@ import com.widucorp.widu.data.util.latestHeartRate
 import com.widucorp.widu.data.util.toReading
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.channels.trySendBlocking
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 
@@ -84,6 +86,16 @@ class HeartRateLocalDataSourceImpl @Inject constructor(
             exerciseClient.setUpdateCallback(callback)
             startExerciseSession()
 
+            // 화면이 꺼진 채 다시 차면 Health Services 가 5초 묶음 설정을 놓치고, 화면이 켜질 때까지 심박을 쥐고 있는다(SM-R860 실측, 최대 6분 30초).
+            // 묶음 주기마다 밀어내 지연을 그 안으로 묶는다. 세션이 없을 때의 실패는 다음 주기에 다시 시도하면 되므로 넘긴다.
+            launch {
+                while (true) {
+                    delay(FLUSH_INTERVAL_MS)
+                    runCatching { exerciseClient.flushAsync().await() }
+                        .onFailure { Log.d("Widyu", "Failed to flush exercise data", it) }
+                }
+            }
+
             awaitClose {
                 runBlocking {
                     stopExerciseSession()
@@ -114,5 +126,10 @@ class HeartRateLocalDataSourceImpl @Inject constructor(
         runCatching {
             exerciseClient.endExerciseAsync().await()
         }.onFailure { Log.e("Widyu", "Failed to stop exercise session", it) }
+    }
+
+    private companion object {
+        /** [BatchingMode.HEART_RATE_5_SECONDS] 와 같은 주기. */
+        const val FLUSH_INTERVAL_MS = 5_000L
     }
 }
