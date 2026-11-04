@@ -779,7 +779,7 @@ final class WalkTrackerProvider
   }
 }
 
-String _$walkTrackerHash() => r'66303436f7ba223b4e8a4d2680ea391fa46e6cc9';
+String _$walkTrackerHash() => r'69d04caa692ffa9f277ca16323eab7f2d2769a6d';
 
 @ProviderFor(albumRepository)
 final albumRepositoryProvider = AlbumRepositoryProvider._();

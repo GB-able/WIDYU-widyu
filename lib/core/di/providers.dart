@@ -179,8 +179,10 @@ WalkRepository walkRepository(Ref ref) {
 
 @riverpod
 WalkTracker walkTracker(Ref ref) {
-  final tracker = WalkTracker(repository: ref.watch(walkRepositoryProvider))
-    ..start();
+  final tracker = WalkTracker(
+    repository: ref.watch(walkRepositoryProvider),
+    pointRepository: ref.watch(pointRepositoryProvider),
+  )..start();
   ref.onDispose(tracker.dispose);
   return tracker;
 }
