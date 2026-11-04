@@ -79,10 +79,7 @@ class HeartRateRepositoryImpl @Inject constructor(
                                         watchBatteryPct = deviceInfoLocalDataSource.batteryPercent(),
                                     )
                                 }
-                            withContext(ioDispatcher) {
-                                batches.forEach { transmit(it) }
-                                measureResult.value?.let { heartRateRemoteDataSource.sendHeartRate(it) }
-                            }
+                            withContext(ioDispatcher) { batches.forEach { transmit(it) } }
                         }
 
                         MeasureResult.SessionSuperseded -> Unit

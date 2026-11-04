@@ -114,7 +114,6 @@ class HeartRateRepositoryImplTest {
 
             // then
             remote.sentBatches.size shouldBe 1
-            remote.sentHeartRates shouldBe listOf(70)
         }
 
     @Test
@@ -157,7 +156,7 @@ class HeartRateRepositoryImplTest {
         }
 
     @Test
-    @DisplayName("화면에 쓸 값이 없는 묶음도 샘플은 보내고 화면 값은 보내지 않는다")
+    @DisplayName("화면에 쓸 값이 없는 묶음도 샘플은 정확도와 함께 보낸다")
     fun sendsSamplesEvenWithoutADisplayValue() =
         testScope.runTest {
             // when
@@ -165,7 +164,6 @@ class HeartRateRepositoryImplTest {
 
             // then
             remote.sentBatches.single().samples.single().accuracy shouldBe UNRELIABLE
-            remote.sentHeartRates shouldBe emptyList()
         }
 
     @Test
@@ -257,11 +255,6 @@ class HeartRateRepositoryImplTest {
     private class FakeRemoteDataSource : HeartRateRemoteDataSource {
         var failuresBeforeSuccess = 0
         val sentBatches = mutableListOf<HeartRateBatch>()
-        val sentHeartRates = mutableListOf<Int>()
-
-        override fun sendHeartRate(heartRate: Int) {
-            sentHeartRates += heartRate
-        }
 
         override suspend fun sendBatch(batch: HeartRateBatch) {
             if (failuresBeforeSuccess > 0) {

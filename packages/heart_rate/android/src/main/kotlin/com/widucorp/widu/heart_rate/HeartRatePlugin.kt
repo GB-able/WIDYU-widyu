@@ -245,11 +245,29 @@ class HeartRatePlugin :
         private const val REASON_KEY = "reason"
         private const val TS_MS_KEY = "ts_ms"
 
+        // 워치가 정확도를 주지 않은 샘플은 UNKNOWN 으로 온다.
+        private val DISPLAY_ACCURACIES = setOf("HIGH", "MEDIUM", "UNKNOWN")
+
         // Data Layer 콜백 스레드에서 등록·해제되고 메인 스레드에서 순회된다.
         private val eventSinks = CopyOnWriteArraySet<EventChannel.EventSink>()
         private val sensorBatchSinks = CopyOnWriteArraySet<EventChannel.EventSink>()
 
-        fun sendHeartRate(
+        /**
+         * 심박 배치에서 믿을 만한 마지막 샘플을 심박 채널로 흘린다. 없으면 흘리지 않는다.
+         * 워치의 예전 `/heart_rate` 가 값을 보내던 조건(HIGH·MEDIUM·정확도 없음)과 같다.
+         */
+        fun sendLatestHeartRate(json: String) {
+            runCatching {
+                val samples = JSONObject(json).getJSONArray("samples")
+                val latest =
+                    (0 until samples.length())
+                        .map(samples::getJSONObject)
+                        .lastOrNull { it.optString("accuracy") in DISPLAY_ACCURACIES } ?: return
+                sendHeartRate(latest.getInt("bpm"), latest.getLong(TS_MS_KEY))
+            }.onFailure { Log.w("HeartRatePlugin", "Malformed heart rate batch", it) }
+        }
+
+        private fun sendHeartRate(
             heartRate: Int,
             timestamp: Long,
         ) {
