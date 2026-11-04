@@ -36,6 +36,7 @@ class AlbumRepositoryImpl extends AlbumRepository {
   final Set<int> _pendingLikeIds = {};
   bool _isUnlockedLoaded = false;
   Future<void>? _unlockedLoading;
+  final Map<int, Future<bool>> _deletingFeeds = {};
   bool _disposed = false;
 
   @override
@@ -246,9 +247,15 @@ class AlbumRepositoryImpl extends AlbumRepository {
   }
 
   @override
-  Future<bool> deleteFeed(int albumId) async {
-    if (_disposed) return false;
-    if (_cache.isDeleted(albumId)) return true;
+  Future<bool> deleteFeed(int albumId) {
+    if (_disposed) return Future.value(false);
+    if (_cache.isDeleted(albumId)) return Future.value(true);
+    return _deletingFeeds[albumId] ??= _deleteFeed(albumId).whenComplete(() {
+      _deletingFeeds.remove(albumId);
+    });
+  }
+
+  Future<bool> _deleteFeed(int albumId) async {
     final result = await _remoteDataSource.deleteFeed(albumId).toApiResult();
 
     if (result is Failure) {

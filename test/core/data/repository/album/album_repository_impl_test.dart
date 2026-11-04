@@ -225,6 +225,33 @@ void main() {
     expect(cache().isUnlocked(1), isTrue);
   });
 
+  test('삭제를 연달아 불러도 한 번만 요청하고 같은 결과를 돌려준다', () async {
+    int requests() =>
+        dataSource.calls.where((name) => name == 'deleteFeed').length;
+    final pending = gate('deleteFeed');
+
+    final first = repository.deleteFeed(1);
+    final second = repository.deleteFeed(1);
+    pending.complete();
+
+    expect(await first, isTrue);
+    expect(await second, isTrue);
+    expect(requests(), 1);
+    expect(cache().isDeleted(1), isTrue);
+  });
+
+  test('삭제에 실패한 뒤에는 다시 삭제를 요청할 수 있다', () async {
+    dataSource.deleted = errorResponse();
+    expect(await repository.deleteFeed(1), isFalse);
+
+    dataSource.deleted = okResponse();
+    expect(await repository.deleteFeed(1), isTrue);
+    expect(
+      dataSource.calls.where((name) => name == 'deleteFeed').length,
+      2,
+    );
+  });
+
   test('이전 세션의 변경은 같은 id의 새 게시물을 바꾸지 않는다', () async {
     final like = gate('likeFeed');
     final unlock = gate('unlockFeed');
