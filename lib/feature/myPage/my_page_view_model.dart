@@ -54,11 +54,15 @@ class MyPageViewModel extends _$MyPageViewModel {
       );
     });
     ref.onDispose(pointStatus.cancel);
-    unawaited(fetchUser());
+    // 프로필에서 이름·사진이 바뀐 경우에만 다시 조회한다. 포인트는 위 구독으로 반영된다.
+    final userChanges =
+        _repository.userChanges.listen((_) => unawaited(_fetchUser()));
+    ref.onDispose(userChanges.cancel);
+    unawaited(_fetchUser());
     unawaited(_fetchAppVersion());
   }
 
-  Future<void> fetchUser() async {
+  Future<void> _fetchUser() async {
     final pointRepository = _pointRepository;
     final pointRevision = pointRepository.revision;
     state = state.copyWith(isLoading: true);

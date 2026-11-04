@@ -15,7 +15,13 @@ import 'package:widyu/feature/myPage/my_page_view_model.dart';
 
 class _Repository extends Fake implements MyPageRepository {
   final pending = Completer<ApiResult<User>>();
+  final _changes = StreamController<void>.broadcast();
   int calls = 0;
+
+  @override
+  Stream<void> get userChanges => _changes.stream;
+
+  void change() => _changes.add(null);
 
   @override
   Future<ApiResult<User>> fetchUser() {
@@ -153,6 +159,16 @@ void main() {
     await pumpEventQueue();
     expect(fcm.started, 1);
     expect(events.single, isA<LogoutFailure>());
+  });
+
+  test('사용자 정보가 바뀌었을 때만 다시 조회한다', () async {
+    listen();
+    await pumpEventQueue();
+    expect(repository.calls, 1);
+
+    repository.change();
+    await pumpEventQueue();
+    expect(repository.calls, 2);
   });
 
   test('포인트 상태가 바뀌면 포인트와 로딩 여부를 반영한다', () async {

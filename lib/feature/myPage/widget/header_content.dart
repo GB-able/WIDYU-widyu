@@ -6,7 +6,6 @@ class _HeaderContent extends StatelessWidget {
   final bool isLoading;
   final int? point;
   final bool isPointLoading;
-  final Future<void> Function() onProfileClosed;
 
   const _HeaderContent({
     required this.profileImage,
@@ -14,7 +13,6 @@ class _HeaderContent extends StatelessWidget {
     required this.isLoading,
     required this.point,
     required this.isPointLoading,
-    required this.onProfileClosed,
   });
 
   @override
@@ -25,7 +23,6 @@ class _HeaderContent extends StatelessWidget {
           isLoading: isLoading,
           profileImage: profileImage,
           name: name,
-          onProfileClosed: onProfileClosed,
         ),
         const SizedBox(height: 20),
         _PointView(point: point, isPointLoading: isPointLoading),

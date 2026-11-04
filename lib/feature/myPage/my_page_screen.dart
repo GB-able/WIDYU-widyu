@@ -60,7 +60,6 @@ class MyPageScreen extends ConsumerWidget {
               isLoading: uiState.isLoading,
               point: uiState.point,
               isPointLoading: uiState.isPointLoading,
-              onProfileClosed: viewModel.fetchUser,
             ),
             Expanded(
               child: SingleChildScrollView(
