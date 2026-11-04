@@ -114,7 +114,6 @@ class HeartRateRepositoryImplTest {
 
             // then
             remote.sentBatches.size shouldBe 1
-            remote.sentHeartRates shouldBe listOf(70)
         }
 
     @Test
@@ -157,7 +156,7 @@ class HeartRateRepositoryImplTest {
         }
 
     @Test
-    @DisplayName("화면에 쓸 값이 없는 묶음도 샘플은 보내고 화면 값은 보내지 않는다")
+    @DisplayName("화면에 쓸 값이 없는 묶음도 샘플은 정확도와 함께 보낸다")
     fun sendsSamplesEvenWithoutADisplayValue() =
         testScope.runTest {
             // when
@@ -165,7 +164,6 @@ class HeartRateRepositoryImplTest {
 
             // then
             remote.sentBatches.single().samples.single().accuracy shouldBe UNRELIABLE
-            remote.sentHeartRates shouldBe emptyList()
         }
 
     @Test
@@ -182,6 +180,37 @@ class HeartRateRepositoryImplTest {
             // then
             remote.sentBatches.map { it.onBody } shouldBe listOf(true, false)
             onBodyStateHolder.state.value shouldBe false
+        }
+
+    @Test
+    @DisplayName("몸에서 떨어졌다고 알린 뒤 믿을 만한 심박이 다시 오면 착용으로 되돌린다")
+    fun reliableHeartRateAfterOffBodyRestoresOnBody() =
+        testScope.runTest {
+            // given — 몸에서 떨어졌다
+            local.events.emit(MeasureResult.Availability(isAvailable = false, isOnBody = false))
+            runCurrent()
+
+            // when — AVAILABLE 콜백 없이 믿을 만한 심박이 다시 온다
+            emit(72, reading(72, 1_000, HIGH))
+
+            // then
+            remote.sentBatches.single().onBody shouldBe true
+            onBodyStateHolder.state.value shouldBe true
+        }
+
+    @Test
+    @DisplayName("몸에서 떨어진 뒤 믿을 수 없는 심박만 오면 착용으로 바꾸지 않는다")
+    fun unreliableHeartRateAfterOffBodyKeepsOffBody() =
+        testScope.runTest {
+            // given
+            local.events.emit(MeasureResult.Availability(isAvailable = false, isOnBody = false))
+            runCurrent()
+
+            // when
+            emit(null, reading(0, 1_000, UNRELIABLE))
+
+            // then
+            remote.sentBatches.single().onBody shouldBe false
         }
 
     @Test
@@ -226,11 +255,6 @@ class HeartRateRepositoryImplTest {
     private class FakeRemoteDataSource : HeartRateRemoteDataSource {
         var failuresBeforeSuccess = 0
         val sentBatches = mutableListOf<HeartRateBatch>()
-        val sentHeartRates = mutableListOf<Int>()
-
-        override fun sendHeartRate(heartRate: Int) {
-            sentHeartRates += heartRate
-        }
 
         override suspend fun sendBatch(batch: HeartRateBatch) {
             if (failuresBeforeSuccess > 0) {

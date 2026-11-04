@@ -62,6 +62,9 @@ class HeartRateRepositoryImpl @Inject constructor(
                     send(measureResult)
                     when (measureResult) {
                         is MeasureResult.HeartRate -> {
+                            // 다시 찰 때 Health Services 가 AVAILABLE 가용성 콜백 없이 심박만 다시 보내는 경우가 있어
+                            // 착용이 false 로 굳는다(10/27·10/31·11/1 실측). 믿을 만한 심박(HIGH·MEDIUM)이 왔으면 몸에 찬 것으로 본다.
+                            if (measureResult.value != null) onBodyStateHolder.update(true)
                             val batches =
                                 measureResult.readings.toBatchSamples(clock).map { samples ->
                                     HeartRateBatch(
@@ -76,10 +79,7 @@ class HeartRateRepositoryImpl @Inject constructor(
                                         watchBatteryPct = deviceInfoLocalDataSource.batteryPercent(),
                                     )
                                 }
-                            withContext(ioDispatcher) {
-                                batches.forEach { transmit(it) }
-                                measureResult.value?.let { heartRateRemoteDataSource.sendHeartRate(it) }
-                            }
+                            withContext(ioDispatcher) { batches.forEach { transmit(it) } }
                         }
 
                         MeasureResult.SessionSuperseded -> Unit
