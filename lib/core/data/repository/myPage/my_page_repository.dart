@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:widyu/core/model/api/api_result.dart';
 import 'package:widyu/core/model/myPage/code/family_code.dart';
 import 'package:widyu/core/model/myPage/contact/contact.dart';
@@ -8,16 +6,9 @@ import 'package:widyu/core/model/myPage/profile/user_profile.dart';
 import 'package:widyu/core/model/myPage/user/user.dart';
 
 abstract class MyPageRepository {
-  /// 이름·프로필 사진 변경이 성공하면 알린다.
-  Stream<void> get userChanges;
-
   Future<ApiResult<User>> fetchUser();
 
   Future<ApiResult<UserProfile>> fetchUserProfile();
-
-  Future<ApiResult<void>> updateName(String name);
-
-  Future<ApiResult<void>> updateProfileImage(File profileImage);
 
   Future<ApiResult<PointHistory>> fetchPointHistory();
 

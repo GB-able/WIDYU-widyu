@@ -23,6 +23,8 @@ import 'package:widyu/core/data/repository/notification/notification_repository.
 import 'package:widyu/core/data/repository/notification/notification_repository_impl.dart';
 import 'package:widyu/core/data/repository/point/point_repository.dart';
 import 'package:widyu/core/data/repository/point/point_repository_impl.dart';
+import 'package:widyu/core/data/repository/user/user_repository.dart';
+import 'package:widyu/core/data/repository/user/user_repository_impl.dart';
 import 'package:widyu/core/data/source/album/album_remote_data_source_impl.dart';
 import 'package:widyu/core/data/source/auth/auth_local_data_source_impl.dart';
 import 'package:widyu/core/data/source/auth/auth_remote_data_source_impl.dart';
@@ -151,6 +153,15 @@ FcmTokenService fcmTokenService(Ref ref) {
 PointRepository pointRepository(Ref ref) {
   final repository = PointRepositoryImpl(
     remoteDataSource: PointRemoteDataSourceImpl(apiClient: ApiClient()),
+  );
+  ref.onDispose(repository.dispose);
+  return repository;
+}
+
+@riverpod
+UserRepository userRepository(Ref ref) {
+  final repository = UserRepositoryImpl(
+    remoteDataSource: MyPageRemoteDataSourceImpl(apiClient: ApiClient()),
   );
   ref.onDispose(repository.dispose);
   return repository;

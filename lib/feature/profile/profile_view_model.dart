@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:widyu/core/data/repository/myPage/my_page_repository.dart';
+import 'package:widyu/core/data/repository/user/user_repository.dart';
 import 'package:widyu/core/di/providers.dart';
 import 'package:widyu/core/log/log.dart';
 import 'package:widyu/core/model/api/api_result.dart';
@@ -21,6 +22,7 @@ class ProfileViewModel extends _$ProfileViewModel {
   Stream<ProfileUiEvent> get uiEvent => _uiEvent.stream;
 
   MyPageRepository get _repository => ref.read(myPageRepositoryProvider);
+  UserRepository get _userRepository => ref.read(userRepositoryProvider);
 
   @override
   ProfileUiState build() {
@@ -38,7 +40,7 @@ class ProfileViewModel extends _$ProfileViewModel {
 
     state = state.copyWith(name: newName);
 
-    final result = await _repository.updateName(newName);
+    final result = await _userRepository.updateName(newName);
     if (!ref.mounted) return;
     if (result is Failure) {
       state = state.copyWith(name: oldName);
@@ -49,7 +51,7 @@ class ProfileViewModel extends _$ProfileViewModel {
   }
 
   Future<void> updateProfileImage(File file) async {
-    final result = await _repository.updateProfileImage(file);
+    final result = await _userRepository.updateProfileImage(file);
     if (!ref.mounted) return;
 
     if (result is Success) {

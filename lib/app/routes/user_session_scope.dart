@@ -16,6 +16,7 @@ class UserSessionScope extends ConsumerWidget {
     ref
       ..listen(fcmTokenServiceProvider, (_, __) {})
       ..listen(pointRepositoryProvider, (_, __) {})
+      ..listen(userRepositoryProvider, (_, __) {})
       ..listen(walkRepositoryProvider, (_, __) {})
       ..listen(walkTrackerProvider, (_, __) {})
       ..listen(albumRepositoryProvider, (_, __) {});

@@ -5,8 +5,8 @@ import 'package:widyu/core/data/repository/goal/walk_repository.dart';
 import 'package:widyu/core/data/repository/heartRate/heart_rate_repository.dart';
 import 'package:widyu/core/data/repository/home/home_repository.dart';
 import 'package:widyu/core/data/repository/location/location_repository.dart';
-import 'package:widyu/core/data/repository/myPage/my_page_repository.dart';
 import 'package:widyu/core/data/repository/notification/notification_repository.dart';
+import 'package:widyu/core/data/repository/user/user_repository.dart';
 import 'package:widyu/core/di/providers.dart';
 import 'package:widyu/core/log/log.dart';
 import 'package:widyu/core/model/api/api_result.dart';
@@ -16,7 +16,6 @@ import 'package:widyu/core/model/heartRate/heart_rate_status.dart';
 import 'package:widyu/core/model/home/medication_status.dart';
 import 'package:widyu/core/model/home/senior_card.dart';
 import 'package:widyu/core/model/location/user_location.dart';
-import 'package:widyu/core/model/myPage/user/user.dart';
 import 'package:widyu/core/model/notification/notification_page.dart';
 import 'package:widyu/core/model/permission/permission_recovery_prompt.dart';
 import 'package:widyu/core/model/permission/permission_type.dart';
@@ -58,7 +57,7 @@ class HomeViewModel extends _$HomeViewModel {
   bool _isTakingMedicationPhoto = false;
 
   HomeRepository get _homeRepository => ref.read(homeRepositoryProvider);
-  MyPageRepository get _myPageRepository => ref.read(myPageRepositoryProvider);
+  UserRepository get _userRepository => ref.read(userRepositoryProvider);
   NotificationRepository get _notificationRepository =>
       ref.read(notificationRepositoryProvider);
   HeartRateRepository get _heartRateRepository =>
@@ -99,7 +98,7 @@ class HomeViewModel extends _$HomeViewModel {
     });
     ref.onDispose(todaySteps.cancel);
     unawaited(_fetchNotification());
-    unawaited(_fetchUser());
+    _observeUser();
     _observeWatchConnection();
     unawaited(fetchHeartRate());
     unawaited(_fetchSeniorCard());
@@ -109,10 +108,6 @@ class HomeViewModel extends _$HomeViewModel {
         .medicationChanges
         .listen((_) => unawaited(_fetchSeniorCard()));
     ref.onDispose(medicationChanges.cancel);
-    // 홈 탭은 계속 살아 있으므로 프로필에서 바뀐 이름을 다시 불러온다.
-    final userChanges = _myPageRepository.userChanges
-        .listen((_) => unawaited(_fetchUser()));
-    ref.onDispose(userChanges.cancel);
     // 갱신용 타이머
     final medicationTicker = Timer.periodic(
       const Duration(seconds: 30),
@@ -322,18 +317,21 @@ class HomeViewModel extends _$HomeViewModel {
     state = state.copyWith(isHeartRateLoading: false);
   }
 
-  Future<void> _fetchUser() async {
-    state = state.copyWith(isUserLoading: true);
-
-    final result = await _myPageRepository.fetchUser();
-    if (!ref.mounted) return;
-    if (result is Success) {
-      final data = (result as Success<User>).data;
-      state = state.copyWith(name: data.name);
-    } else {
-      _emit(const FetchUserFailure());
-    }
-    state = state.copyWith(isUserLoading: false);
+  /// 세션에 캐시된 사용자 정보를 구독한다. 프로필에서 이름을 바꾸면 바로 반영된다.
+  void _observeUser() {
+    final userRepository = _userRepository;
+    // 조회를 먼저 시작해 구독 시 '조회 중'을 받도록 한다.
+    final loading = userRepository.ensureLoaded();
+    final user = userRepository.status.listen((status) {
+      state = state.copyWith(
+        name: status.user?.name ?? state.name,
+        isUserLoading: status.user == null && status.isLoading,
+      );
+    });
+    ref.onDispose(user.cancel);
+    unawaited(loading.then((isLoaded) {
+      if (!isLoaded) _emit(const FetchUserFailure());
+    }));
   }
 
   Future<void> _fetchNotification() async {
