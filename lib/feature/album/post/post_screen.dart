@@ -94,7 +94,7 @@ class _PostScreenState extends ConsumerState<PostScreen> {
     final success = await showUnlockDialog(
       context,
       price: cache.postOf(postId)?.price,
-      point: ref.read(pointRepositoryProvider).currentStatus.point,
+      pointRepository: ref.read(pointRepositoryProvider),
       isUnlocking: cache.isUnlocking(postId),
       onPurchase: () => repository.unlock(postId),
       onGoToGoal: () => context.go(AppRoute.goal.path),

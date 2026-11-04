@@ -171,7 +171,7 @@ class _CalendarTabContentState extends ConsumerState<_CalendarTabContent>
     final success = await showUnlockDialog(
       context,
       price: cache.postOf(albumId)?.price,
-      point: ref.read(pointRepositoryProvider).currentStatus.point,
+      pointRepository: ref.read(pointRepositoryProvider),
       isUnlocking: cache.isUnlocking(albumId),
       onPurchase: () => repository.unlock(albumId),
       onGoToGoal: () => context.go(AppRoute.goal.path),

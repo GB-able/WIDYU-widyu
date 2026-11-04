@@ -91,7 +91,7 @@ class _PhotoGridState extends ConsumerState<_PhotoGrid> {
     final success = await showUnlockDialog(
       context,
       price: media.price,
-      point: ref.read(pointRepositoryProvider).currentStatus.point,
+      pointRepository: ref.read(pointRepositoryProvider),
       isUnlocking: repository.currentCache.isUnlocking(media.postId),
       onPurchase: () => repository.unlock(media.postId),
       onGoToGoal: () => context.go(AppRoute.goal.path),
