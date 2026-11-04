@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -102,6 +104,12 @@ class _PostScreenState extends ConsumerState<PostScreen> {
     return success && !repository.isDisposed;
   }
 
+  Future<bool> _unlockAndRetry() async {
+    final unlocked = await _requestUnlock();
+    if (unlocked) unawaited(_viewModel.retry());
+    return unlocked;
+  }
+
   void _handleEvent(PostViewModel viewModel, PostUiEvent event) {
     switch (event) {
       case SendCommentFailure():
@@ -120,9 +128,7 @@ class _PostScreenState extends ConsumerState<PostScreen> {
           ),
         );
       case FeedLocked():
-        _requestUnlock().then((unlocked) {
-          if (unlocked) viewModel.retry();
-        });
+        _unlockAndRetry();
     }
   }
 
@@ -194,7 +200,7 @@ class _PostScreenState extends ConsumerState<PostScreen> {
                                   isLocked: !isUnlocked,
                                   onToggleLike: viewModel.toggleLike,
                                   onDelete: viewModel.deleteFeed,
-                                  onRequestUnlock: _requestUnlock,
+                                  onRequestUnlock: _unlockAndRetry,
                                   key: ValueKey(postId),
                                   isDetail: true,
                                   onDeleted: () => context.pop(),
