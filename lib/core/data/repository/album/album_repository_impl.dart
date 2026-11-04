@@ -35,6 +35,7 @@ class AlbumRepositoryImpl extends AlbumRepository {
   AlbumCache _cache = const AlbumCache();
   final Set<int> _pendingLikeIds = {};
   bool _isUnlockedLoaded = false;
+  Future<void>? _unlockedLoading;
   bool _disposed = false;
 
   @override
@@ -125,9 +126,10 @@ class AlbumRepositoryImpl extends AlbumRepository {
   }
 
   @override
-  Future<void> ensureUnlockedLoaded() async {
-    if (_isUnlockedLoaded) return;
-    await loadUnlockedAlbumIds();
+  Future<void> ensureUnlockedLoaded() {
+    if (_isUnlockedLoaded) return Future.value();
+    return _unlockedLoading ??=
+        loadUnlockedAlbumIds().whenComplete(() => _unlockedLoading = null);
   }
 
   @override

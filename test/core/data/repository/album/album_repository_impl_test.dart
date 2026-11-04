@@ -204,6 +204,27 @@ void main() {
     expect(cache().isUnlocked(2), isTrue);
   });
 
+  test('잠금 해제 목록 확인을 동시에 불러도 한 번만 요청하고, 실패하면 다시 요청한다', () async {
+    int requests() =>
+        dataSource.calls.where((name) => name == 'fetchUnlockedAlbums').length;
+    final pending = gate('fetchUnlockedAlbums');
+    dataSource.unlocked = errorResponse();
+
+    final first = repository.ensureUnlockedLoaded();
+    final second = repository.ensureUnlockedLoaded();
+    pending.complete();
+    await Future.wait([first, second]);
+    expect(requests(), 1);
+
+    dataSource
+      ..gates.remove('fetchUnlockedAlbums')
+      ..unlocked = okResponse([1]);
+    await repository.ensureUnlockedLoaded();
+    await repository.ensureUnlockedLoaded();
+    expect(requests(), 2);
+    expect(cache().isUnlocked(1), isTrue);
+  });
+
   test('이전 세션의 변경은 같은 id의 새 게시물을 바꾸지 않는다', () async {
     final like = gate('likeFeed');
     final unlock = gate('unlockFeed');
