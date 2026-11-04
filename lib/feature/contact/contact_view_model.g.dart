@@ -41,7 +41,7 @@ final class ContactViewModelProvider
   }
 }
 
-String _$contactViewModelHash() => r'95d4805993ff4df620268f5db8df8ad903ce7546';
+String _$contactViewModelHash() => r'8e0520f0f63bde77a243bdff7acaaa56970ed79e';
 
 abstract class _$ContactViewModel extends $Notifier<ContactUiState> {
   ContactUiState build();

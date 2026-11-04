@@ -4,6 +4,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/widgets.dart';
 import 'package:widyu/core/data/repository/goal/walk_repository.dart';
+import 'package:widyu/core/data/repository/point/point_repository.dart';
 import 'package:widyu/core/log/log.dart';
 import 'package:widyu/core/model/notification/notification_type.dart';
 import 'package:widyu/core/network/token_manager.dart';
@@ -14,9 +15,12 @@ import 'package:widyu/walk_background_service.dart';
 class WalkTracker with WidgetsBindingObserver {
   WalkTracker({
     required WalkRepository repository,
-  }) : _repository = repository;
+    required PointRepository pointRepository,
+  })  : _repository = repository,
+        _pointRepository = pointRepository;
 
   final WalkRepository _repository;
+  final PointRepository _pointRepository;
   Timer? _timer;
   StreamSubscription<int>? _live;
   StreamSubscription<void>? _syncRequests;
@@ -126,6 +130,8 @@ class WalkTracker with WidgetsBindingObserver {
       if (!result.unauthorized) {
         // 걸음 수는 건강값이라 남기지 않는다(docs/logging-strategy.md §6.1).
         WiduLog.data.d('걸음수 동기화 완료 uploaded=${result.uploaded}');
+        // 목표를 처음 달성하면 서버가 포인트를 준다.
+        if (result.rewardChanged) unawaited(_pointRepository.refresh());
         return;
       }
       WiduLog.data.w('인증 만료로 걸음수 동기화 중단');
@@ -145,6 +151,8 @@ class WalkTracker with WidgetsBindingObserver {
       _resume();
       unawaited(refresh());
       unawaited(sync());
+      // 백그라운드 작업이 먼저 목표 달성을 보고했으면 위 sync는 rewardChanged를 모른다.
+      if (_tracking) unawaited(_pointRepository.refresh());
     } else if (state == AppLifecycleState.paused ||
         state == AppLifecycleState.hidden) {
       _pause();

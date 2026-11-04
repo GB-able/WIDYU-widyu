@@ -7,7 +7,6 @@ import 'package:widyu/core/data/repository/goal/walk_repository.dart';
 import 'package:widyu/core/data/repository/heartRate/heart_rate_repository.dart';
 import 'package:widyu/core/data/repository/home/home_repository.dart';
 import 'package:widyu/core/data/repository/location/location_repository.dart';
-import 'package:widyu/core/data/repository/myPage/my_page_repository.dart';
 import 'package:widyu/core/data/repository/notification/notification_repository.dart';
 import 'package:widyu/core/di/providers.dart';
 import 'package:widyu/core/model/api/api_result.dart';
@@ -27,6 +26,8 @@ import 'package:widyu/core/utils/permission_recovery_controller.dart';
 import 'package:widyu/feature/home/home_ui_event.dart';
 import 'package:widyu/feature/home/home_ui_state.dart';
 import 'package:widyu/feature/home/home_view_model.dart';
+
+import '../user_fakes.dart';
 
 class _Home extends Fake implements HomeRepository {
   int? scheduleId = 7;
@@ -59,17 +60,6 @@ class _Home extends Fake implements HomeRepository {
       ),
       walk: walk,
     ));
-  }
-}
-
-class _MyPage extends Fake implements MyPageRepository {
-  ApiResult<User> result = const ApiResult.failure('unused');
-  Completer<void>? pending;
-
-  @override
-  Future<ApiResult<User>> fetchUser() async {
-    await pending?.future;
-    return result;
   }
 }
 
@@ -150,7 +140,7 @@ class _Medication extends Fake implements MedicationRepository {
 
 class _Harness {
   final home = _Home();
-  final myPage = _MyPage();
+  final user = FakeUserRepository();
   final notification = _Notification();
   final heartRate = _HeartRate();
   final location = _Location();
@@ -179,7 +169,7 @@ class _Harness {
     );
     container = ProviderContainer.test(overrides: [
       homeRepositoryProvider.overrideWithValue(home),
-      myPageRepositoryProvider.overrideWithValue(myPage),
+      userRepositoryProvider.overrideWithValue(user),
       notificationRepositoryProvider.overrideWithValue(notification),
       heartRateRepositoryProvider.overrideWithValue(heartRate),
       locationRepositoryProvider.overrideWithValue(location),
@@ -450,7 +440,7 @@ void main() {
 
     test('사용자 이름과 워치 착용 상태를 반영한다', () async {
       final h = _Harness();
-      h.myPage.result = const ApiResult.success(
+      h.user.result = const ApiResult.success(
         User(memberId: 1, name: '박춘자', points: 0),
       );
       await h.initialize();
@@ -487,7 +477,7 @@ void main() {
     test('사용자·심박수·알림 조회 중 폐기되면 상태와 실패 안내를 쓰지 않는다', () async {
       final h = _Harness();
       final gate = Completer<void>();
-      h.myPage.pending = gate;
+      h.user.pending = gate;
       h.heartRate.pending = gate;
       h.notification.pending = gate;
       await h.initialize();

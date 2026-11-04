@@ -19,6 +19,7 @@ class PointRepositoryImpl extends PointRepository {
       BehaviorSubject<PointStatus>.seeded((point: null, isLoading: false));
   Future<void> _requestQueue = Future<void>.value();
   int _queuedRequests = 0;
+  int _revision = 0;
   int? _point;
   bool _isLoading = false;
   bool _disposed = false;
@@ -41,8 +42,12 @@ class PointRepositoryImpl extends PointRepository {
   }
 
   @override
-  void sync(int? point) {
+  int get revision => _revision;
+
+  @override
+  void sync(int? point, {required int revision}) {
     if (_disposed || point == null || point == _point) return;
+    if (revision != _revision) return;
     _point = point;
     _emit();
   }
@@ -56,6 +61,7 @@ class PointRepositoryImpl extends PointRepository {
   Future<void> _fetchPoints() {
     if (_disposed) return Future.value();
 
+    _revision++;
     _queuedRequests++;
     if (!_isLoading) {
       _isLoading = true;

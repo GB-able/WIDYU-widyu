@@ -41,6 +41,7 @@ class ContactViewModel extends _$ContactViewModel {
       await _fetchContact();
     } else {
       _uiEvent.add(const UpdateRepresentativeContactFailure());
+      state = state.copyWith(isLoading: false);
     }
   }
 
