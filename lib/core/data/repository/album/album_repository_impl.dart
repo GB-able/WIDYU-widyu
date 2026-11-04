@@ -138,7 +138,9 @@ class AlbumRepositoryImpl extends AlbumRepository {
 
     _isUnlockedLoaded = true;
     _emit(_cache.copyWith(
-      unlockedIds: result.data.where((id) => !_cache.isDeleted(id)).toSet(),
+      unlockedIds: {..._cache.unlockedIds, ...result.data}
+          .where((id) => !_cache.isDeleted(id))
+          .toSet(),
     ));
   }
 

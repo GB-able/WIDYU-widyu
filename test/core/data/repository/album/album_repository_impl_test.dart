@@ -189,6 +189,21 @@ void main() {
     expect(cache().isUnlocked(1), isFalse);
   });
 
+  test('잠금 해제 목록을 불러오는 중 해제한 게시물은 목록 응답 뒤에도 열려 있다', () async {
+    final pending = gate('fetchUnlockedAlbums');
+    dataSource
+      ..unlocked = okResponse([2])
+      ..unlockResult = unlocked;
+
+    final loading = repository.loadUnlockedAlbumIds();
+    expect(await repository.unlock(1), isTrue);
+    pending.complete();
+    await loading;
+
+    expect(cache().isUnlocked(1), isTrue);
+    expect(cache().isUnlocked(2), isTrue);
+  });
+
   test('이전 세션의 변경은 같은 id의 새 게시물을 바꾸지 않는다', () async {
     final like = gate('likeFeed');
     final unlock = gate('unlockFeed');
