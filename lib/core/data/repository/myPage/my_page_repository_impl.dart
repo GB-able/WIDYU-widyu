@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:widyu/core/data/repository/myPage/my_page_repository.dart';
@@ -12,9 +13,13 @@ import 'package:widyu/core/utils/extensions/api_result_extension.dart';
 
 class MyPageRepositoryImpl extends MyPageRepository {
   final MyPageRemoteDataSource _remoteDataSource;
+  final _userChanges = StreamController<void>.broadcast();
 
   MyPageRepositoryImpl({required MyPageRemoteDataSource remoteDataSource})
       : _remoteDataSource = remoteDataSource;
+
+  @override
+  Stream<void> get userChanges => _userChanges.stream;
 
   @override
   Future<ApiResult<User>> fetchUser() async =>
@@ -25,12 +30,13 @@ class MyPageRepositoryImpl extends MyPageRepository {
       _remoteDataSource.fetchUserProfile().toApiResult();
 
   @override
-  Future<ApiResult<void>> updateName(String name) async =>
-      _remoteDataSource.updateName(name).toApiResult();
+  Future<ApiResult<void>> updateName(String name) =>
+      _notifyOnSuccess(_remoteDataSource.updateName(name).toApiResult());
 
   @override
-  Future<ApiResult<void>> updateProfileImage(File profileImage) async =>
-      _remoteDataSource.updateProfileImage(profileImage).toApiResult();
+  Future<ApiResult<void>> updateProfileImage(File profileImage) =>
+      _notifyOnSuccess(
+          _remoteDataSource.updateProfileImage(profileImage).toApiResult());
 
   @override
   Future<ApiResult<PointHistory>> fetchPointHistory() async =>
@@ -47,4 +53,11 @@ class MyPageRepositoryImpl extends MyPageRepository {
   @override
   Future<ApiResult<FamilyCode>> fetchFamilyCode() async =>
       _remoteDataSource.fetchFamilyCode().toApiResult();
+
+  Future<ApiResult<void>> _notifyOnSuccess(
+      Future<ApiResult<void>> request) async {
+    final result = await request;
+    if (result is Success) _userChanges.add(null);
+    return result;
+  }
 }

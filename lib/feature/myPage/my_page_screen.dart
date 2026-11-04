@@ -48,6 +48,8 @@ class MyPageScreen extends ConsumerWidget {
     return UiEventListener(
       stream: viewModel.uiEvent,
       onEvent: (event) => _handleEvent(context, ref, event),
+      // 세션이 이미 끝났으므로 다른 탭에 있어도 바로 온보딩으로 보낸다.
+      runWhileInactive: (event) => event is LogoutSuccess,
       child: Scaffold(
         appBar: const _MyPageAppBar(),
         body: Column(

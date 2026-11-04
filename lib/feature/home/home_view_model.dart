@@ -109,6 +109,10 @@ class HomeViewModel extends _$HomeViewModel {
         .medicationChanges
         .listen((_) => unawaited(_fetchSeniorCard()));
     ref.onDispose(medicationChanges.cancel);
+    // 홈 탭은 계속 살아 있으므로 프로필에서 바뀐 이름을 다시 불러온다.
+    final userChanges = _myPageRepository.userChanges
+        .listen((_) => unawaited(_fetchUser()));
+    ref.onDispose(userChanges.cancel);
     // 갱신용 타이머
     final medicationTicker = Timer.periodic(
       const Duration(seconds: 30),

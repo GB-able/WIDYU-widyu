@@ -43,7 +43,10 @@ class _Point extends Fake implements PointRepository {
   PointStatus get currentStatus => (point: 10, isLoading: false);
 
   @override
-  void sync(int? point) => synced = point;
+  int get revision => 0;
+
+  @override
+  void sync(int? point, {required int revision}) => synced = point;
 
   void emit(PointStatus status) => _status.add(status);
 }

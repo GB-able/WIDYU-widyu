@@ -60,11 +60,14 @@ class MyPageViewModel extends _$MyPageViewModel {
 
   Future<void> fetchUser() async {
     final pointRepository = _pointRepository;
+    final pointRevision = pointRepository.revision;
     state = state.copyWith(isLoading: true);
 
     final result = await _repository.fetchUser();
     // 화면이 먼저 닫혀도 세션 포인트는 갱신한다(기존 동작).
-    if (result is Success<User>) pointRepository.sync(result.data.points);
+    if (result is Success<User>) {
+      pointRepository.sync(result.data.points, revision: pointRevision);
+    }
     if (!ref.mounted) return;
     if (result is Success) {
       final user = (result as Success<User>).data;

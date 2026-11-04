@@ -67,6 +67,9 @@ class _MyPage extends Fake implements MyPageRepository {
   Completer<void>? pending;
 
   @override
+  Stream<void> get userChanges => const Stream.empty();
+
+  @override
   Future<ApiResult<User>> fetchUser() async {
     await pending?.future;
     return result;
