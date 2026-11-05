@@ -142,6 +142,21 @@ void main() {
     expect(cache().statOf(1).isLiked, isTrue);
   });
 
+  test('좋아요 목록 요청 뒤에 바꾼 좋아요는 늦게 온 목록이 되돌리지 않는다', () async {
+    final pending = gate('fetchLikedFeeds');
+    dataSource.liked = okResponse(<int>[]);
+
+    final loading = repository.loadLikedAlbumIds();
+    await repository.toggleLike(1);
+    pending.complete();
+    await loading;
+
+    expect(cache().statOf(1).isLiked, isTrue);
+
+    await repository.loadLikedAlbumIds();
+    expect(cache().statOf(1).isLiked, isFalse);
+  });
+
   test('수정·좋아요 성공은 그사이 늘어난 댓글 수를 지우지 않는다', () async {
     final edit = gate('updateFeed');
     final like = gate('likeFeed');

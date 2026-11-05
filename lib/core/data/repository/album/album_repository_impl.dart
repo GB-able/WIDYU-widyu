@@ -34,6 +34,8 @@ class AlbumRepositoryImpl extends AlbumRepository {
   final _cacheSubject = BehaviorSubject<AlbumCache>.seeded(const AlbumCache());
   AlbumCache _cache = const AlbumCache();
   final Set<int> _pendingLikeIds = {};
+  final Map<int, int> _likeChangedAt = {};
+  int _likeVersion = 0;
   bool _isUnlockedLoaded = false;
   Future<void>? _unlockedLoading;
   final Map<int, Future<bool>> _deletingFeeds = {};
@@ -114,13 +116,14 @@ class AlbumRepositoryImpl extends AlbumRepository {
   @override
   Future<void> loadLikedAlbumIds() async {
     if (_disposed) return;
+    final startedAt = _likeVersion;
     final result = await _remoteDataSource.fetchLikedFeeds().toApiResult();
     if (_disposed || result is! Success<List<int>>) return;
 
     final liked = result.data.toSet();
     final stats = {..._cache.stats};
     for (final id in {...stats.keys, ...liked}) {
-      if (!_canApplyRead(id)) continue;
+      if (!_canApplyRead(id) || (_likeChangedAt[id] ?? 0) > startedAt) continue;
       stats[id] = _cache.statOf(id).copyWith(isLiked: liked.contains(id));
     }
     _emit(_cache.copyWith(stats: stats));
@@ -156,6 +159,7 @@ class AlbumRepositoryImpl extends AlbumRepository {
     final wasLiked = before.isLiked;
 
     _pendingLikeIds.add(albumId);
+    _likeChangedAt[albumId] = ++_likeVersion;
     _emit(_cache.copyWith(stats: {
       ..._cache.stats,
       albumId: before.copyWith(
