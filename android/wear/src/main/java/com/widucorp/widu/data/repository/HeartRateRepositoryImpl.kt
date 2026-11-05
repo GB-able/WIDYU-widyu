@@ -65,6 +65,9 @@ class HeartRateRepositoryImpl @Inject constructor(
                             // 다시 찰 때 Health Services 가 AVAILABLE 가용성 콜백 없이 심박만 다시 보내는 경우가 있어
                             // 착용이 false 로 굳는다(10/27·10/31·11/1 실측). 믿을 만한 심박(HIGH·MEDIUM)이 왔으면 몸에 찬 것으로 본다.
                             if (measureResult.value != null) onBodyStateHolder.update(true)
+                            measureResult.readings
+                                .maxByOrNull { it.elapsedNs }
+                                ?.let { onBodyStateHolder.updateHeartRateAccuracy(it.accuracy) }
                             val batches =
                                 measureResult.readings.toBatchSamples(clock).map { samples ->
                                     HeartRateBatch(
@@ -76,6 +79,7 @@ class HeartRateRepositoryImpl @Inject constructor(
                                         samples = samples,
                                         // 서버는 boolean 필수다. 미관측이면 false 로 떨구지 않고 true 로 둔다(IMU 와 같은 절충).
                                         onBody = onBodyStateHolder.state.value ?: true,
+                                        wearState = onBodyStateHolder.wearState(),
                                         watchBatteryPct = deviceInfoLocalDataSource.batteryPercent(),
                                     )
                                 }

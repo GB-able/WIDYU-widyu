@@ -18,7 +18,7 @@ data class ImuBatch(
     val missingReason: String? = null,
     /** 서버가 boolean 필수로 받는다. */
     val onBody: Boolean,
-    /** 미관측일 때만 `unknown` 을 싣는다. */
+    /** [com.widucorp.widu.data.util.WearState] 값. */
     val wearState: String? = null,
     val watchBatteryPct: Int? = null,
     val studyId: String? = null,

@@ -140,6 +140,7 @@ Map<String, dynamic> _heartRateBatch() => {
         {'bpm': 83, 'ts_ms': 1760000001000, 'accuracy': 'HIGH'},
       ],
       'on_body': true,
+      'wear_state': 'WORN_VALID',
       'watch_battery_pct': 63,
       'phone_received_at_ms': null,
       'resend': null,

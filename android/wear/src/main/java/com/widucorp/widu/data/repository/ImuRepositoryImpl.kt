@@ -112,7 +112,7 @@ class ImuRepositoryImpl @Inject constructor(
                                 else -> MissingReason.OMITTED_BY_MODE
                             },
                         onBody = onBody(),
-                        wearState = wearState(),
+                        wearState = onBodyStateHolder.wearState(),
                         watchBatteryPct = deviceInfoLocalDataSource.batteryPercent(),
                     )
                 emit(batch, urgent = trigger != null)
@@ -138,7 +138,7 @@ class ImuRepositoryImpl @Inject constructor(
                         gyroMode = config.gyroMode,
                         collectionMode = config.collectionMode,
                         onBody = onBody(),
-                        wearState = wearState(),
+                        wearState = onBodyStateHolder.wearState(),
                         watchBatteryPct = deviceInfoLocalDataSource.batteryPercent(),
                     ),
                     urgent = true,
@@ -182,11 +182,9 @@ class ImuRepositoryImpl @Inject constructor(
 
     /**
      * 서버는 `on_body` boolean 필수, 정책서는 미관측을 false 로 떨구지 말라고 한다.
-     * 절충으로 미관측일 때 true + [wearState] `unknown` 을 보낸다. 서버 규약이 확정되면 여기만 바꾼다.
+     * 절충으로 미관측일 때 true 를 보내고, 실제 상태는 `wear_state` 의 `UNKNOWN` 으로 구분한다.
      */
     private fun onBody(): Boolean = onBodyStateHolder.state.value ?: true
-
-    private fun wearState(): String? = if (onBodyStateHolder.state.value == null) WEAR_STATE_UNKNOWN else null
 
     /** 전송·정리 실패는 삼킨다. 배치 수집을 멈출 이유가 되지 않는다. */
     private suspend fun transmit(
@@ -222,7 +220,6 @@ class ImuRepositoryImpl @Inject constructor(
         const val TAG = "Widyu"
         const val RESEARCH_MODE = "research"
         const val NANOS_PER_MILLI = 1_000_000L
-        const val WEAR_STATE_UNKNOWN = "unknown"
     }
 
     private fun takeClock(mapper: ClockMapper): ClockInfo {

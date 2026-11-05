@@ -32,6 +32,8 @@ data class HeartRateBatch(
     val clock: ClockInfo,
     val samples: List<HeartRateSample>,
     val onBody: Boolean,
+    /** [com.widucorp.widu.data.util.WearState] 값. */
+    val wearState: String,
     val watchBatteryPct: Int? = null,
     val studyId: String? = null,
     val participationId: String? = null,
@@ -51,6 +53,7 @@ data class HeartRateBatch(
             "clock" to clock.toMap(),
             "samples" to samples.map { mapOf("bpm" to it.bpm, "ts_ms" to it.tsMs, "accuracy" to it.accuracy) },
             "on_body" to onBody,
+            "wear_state" to wearState,
             "watch_battery_pct" to watchBatteryPct,
             "resend" to null,
         )
