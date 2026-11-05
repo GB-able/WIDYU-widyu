@@ -43,6 +43,7 @@ class HeartRateBatchTest {
             )
         map["v"] shouldBe 2
         map["stream"] shouldBe "hr"
+        map["wear_state"] shouldBe "WORN_VALID"
         map["resend"] shouldBe null
     }
 

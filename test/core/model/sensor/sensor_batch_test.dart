@@ -175,6 +175,12 @@ void main() {
       }
     });
 
+    test('wear_state 가 없는 예전 워치의 심박 배치는 null 로 읽는다', () {
+      final json = _heartRateBatch()..remove('wear_state');
+
+      expect(HeartRateBatch.fromJson(json).wearState, isNull);
+    });
+
     test('폐기 레코드는 원본 Map 과 같다', () {
       final json = _droppedRecord();
       expect(SensorDroppedRecord.fromJson(json).toJson(), json);

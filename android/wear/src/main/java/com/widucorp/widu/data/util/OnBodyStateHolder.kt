@@ -25,9 +25,9 @@ class OnBodyStateHolder @Inject constructor() {
         heartRateAccuracy = accuracy
     }
 
-    /** IMU 배치 `wear_state` 값. */
-    fun wearState(): String =
-        when (_state.value) {
+    /** 배치 `wear_state` 값. `on_body` 와 같은 관측을 쓰도록 한 번 읽은 [isOnBody] 를 넘긴다. */
+    fun wearState(isOnBody: Boolean? = _state.value): String =
+        when (isOnBody) {
             null -> WearState.UNKNOWN
             false -> WearState.ACTUAL_NOT_WORN
             true ->

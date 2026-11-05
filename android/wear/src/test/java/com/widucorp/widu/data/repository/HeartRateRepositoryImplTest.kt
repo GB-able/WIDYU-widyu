@@ -198,6 +198,34 @@ class HeartRateRepositoryImplTest {
         }
 
     @Test
+    @DisplayName("도착 순서가 뒤섞여도 측정 시각이 가장 늦은 샘플의 정확도로 판정한다")
+    fun latestMeasuredReadingDecidesWearState() =
+        testScope.runTest {
+            // given
+            onBodyStateHolder.update(true)
+
+            // when — 목록 마지막은 HIGH 지만 측정 시각은 더 이르다
+            emit(null, reading(25, 2_000, LOW), reading(70, 1_000, HIGH))
+
+            // then
+            remote.sentBatches.single().wearState shouldBe "WORN_INVALID"
+        }
+
+    @Test
+    @DisplayName("범위 밖 bpm 은 정확도가 HIGH 여도 UNRELIABLE 로 보내므로 WORN_INVALID 다")
+    fun outOfRangeBpmIsWornInvalid() =
+        testScope.runTest {
+            // given
+            onBodyStateHolder.update(true)
+
+            // when
+            emit(null, reading(400, 1_000, HIGH))
+
+            // then
+            remote.sentBatches.single().wearState shouldBe "WORN_INVALID"
+        }
+
+    @Test
     @DisplayName("몸에서 떨어졌다고 알린 뒤 믿을 만한 심박이 다시 오면 착용으로 되돌린다")
     fun reliableHeartRateAfterOffBodyRestoresOnBody() =
         testScope.runTest {
