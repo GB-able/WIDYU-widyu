@@ -131,4 +131,17 @@ void main() {
     expect(state().selectedDayState.albumIds, [1, 2]);
     expect(state().selectedDayState.hasError, isFalse);
   });
+
+  test('삭제로 그날 목록이 비어도 다음 페이지가 있으면 이어서 불러온다', () async {
+    dataSource.feeds = okResponse(page([feed(1)], next: 'c1'));
+    listen();
+    await pumpEventQueue();
+
+    dataSource.feeds = okResponse(page([feed(2)]));
+    await repository.deleteFeed(1);
+    await pumpEventQueue();
+
+    expect(state().selectedDayState.albumIds, [2]);
+    expect(state().selectedDayState.hasNext, isFalse);
+  });
 }

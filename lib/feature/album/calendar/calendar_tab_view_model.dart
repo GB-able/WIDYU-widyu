@@ -22,6 +22,11 @@ class CalendarTabViewModel extends _$CalendarTabViewModel {
   @override
   CalendarTabUiState build() {
     final today = DateTime.now().onlyDateTime;
+    listenSelf((_, next) {
+      if (_isEmptyWithNext(next)) {
+        unawaited(Future.microtask(_loadMoreIfEmpty));
+      }
+    });
     unawaited(Future.microtask(_start));
     return CalendarTabUiState(
       selectedDay: today,
@@ -205,6 +210,18 @@ class CalendarTabViewModel extends _$CalendarTabViewModel {
           current.copyWith(isLoadingMore: false, hasError: true),
         );
     }
+  }
+
+  bool _isEmptyWithNext(CalendarTabUiState state) {
+    final day = state.feedStates[state.selectedDay];
+    return day != null &&
+        day.albumIds.isEmpty &&
+        day.hasNext &&
+        !day.isLoading;
+  }
+
+  void _loadMoreIfEmpty() {
+    if (ref.mounted && _isEmptyWithNext(state)) unawaited(loadMoreFeeds());
   }
 
   Future<void> retry() async {

@@ -26,6 +26,11 @@ class FeedTabViewModel extends _$FeedTabViewModel {
       write: (list) => state = state.copyWith(list: list),
       mounted: () => ref.mounted,
     );
+    listenSelf((_, next) {
+      if (_isEmptyWithNext(next.list)) {
+        unawaited(Future.microtask(_loadMoreIfEmpty));
+      }
+    });
     unawaited(Future.microtask(_start));
     return FeedTabUiState(
       list: const InfiniteScrollState(isFetching: true),
@@ -65,6 +70,13 @@ class FeedTabViewModel extends _$FeedTabViewModel {
   Future<void> refresh() => _scroller.init();
 
   Future<void> loadMore() => _scroller.loadMore();
+
+  bool _isEmptyWithNext(InfiniteScrollState<Object> list) =>
+      list.isEmpty && list.hasNext && !list.isFetching;
+
+  void _loadMoreIfEmpty() {
+    if (ref.mounted && _isEmptyWithNext(state.list)) unawaited(loadMore());
+  }
 
   Future<void> retry() => _scroller.retry();
 
