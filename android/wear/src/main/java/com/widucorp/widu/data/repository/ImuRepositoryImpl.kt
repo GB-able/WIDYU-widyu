@@ -92,6 +92,7 @@ class ImuRepositoryImpl @Inject constructor(
                 val gyro = closedGyro?.also { closedGyro = null } ?: gyroBatcher.flush()
                 // 연구 세션 모드에는 평시 생략이 없다. 제품 모드는 보강 창 안에서만 싣는다. (A 1.6.4)
                 val attach = hasGyroscope && (isResearch || nowNs <= postWindowEndNs)
+                val (onBody, wearState) = wearFields()
                 val batch =
                     ImuBatch(
                         batchId = newUlid(),
@@ -111,8 +112,8 @@ class ImuRepositoryImpl @Inject constructor(
                                 attach -> null
                                 else -> MissingReason.OMITTED_BY_MODE
                             },
-                        onBody = onBody(),
-                        wearState = wearState(),
+                        onBody = onBody,
+                        wearState = wearState,
                         watchBatteryPct = deviceInfoLocalDataSource.batteryPercent(),
                     )
                 emit(batch, urgent = trigger != null)
@@ -124,6 +125,7 @@ class ImuRepositoryImpl @Inject constructor(
                 impactBatch: ImuBatch,
             ) {
                 val series = ImuBatcher.samplesToSeries(ringBuffer.takeBefore(eventNs), config.accHz) ?: return
+                val (onBody, wearState) = wearFields()
                 emit(
                     ImuBatch(
                         batchId = newUlid(),
@@ -137,8 +139,8 @@ class ImuRepositoryImpl @Inject constructor(
                         backfillFor = impactBatch.batchId,
                         gyroMode = config.gyroMode,
                         collectionMode = config.collectionMode,
-                        onBody = onBody(),
-                        wearState = wearState(),
+                        onBody = onBody,
+                        wearState = wearState,
                         watchBatteryPct = deviceInfoLocalDataSource.batteryPercent(),
                     ),
                     urgent = true,
@@ -182,11 +184,13 @@ class ImuRepositoryImpl @Inject constructor(
 
     /**
      * 서버는 `on_body` boolean 필수, 정책서는 미관측을 false 로 떨구지 말라고 한다.
-     * 절충으로 미관측일 때 true + [wearState] `unknown` 을 보낸다. 서버 규약이 확정되면 여기만 바꾼다.
+     * 절충으로 미관측일 때 true 를 보내고, 실제 상태는 `wear_state` 의 `UNKNOWN` 으로 구분한다.
+     * 두 값이 어긋나지 않도록 착용 상태를 한 번만 읽는다.
      */
-    private fun onBody(): Boolean = onBodyStateHolder.state.value ?: true
-
-    private fun wearState(): String? = if (onBodyStateHolder.state.value == null) WEAR_STATE_UNKNOWN else null
+    private fun wearFields(): Pair<Boolean, String> {
+        val observed = onBodyStateHolder.state.value
+        return (observed ?: true) to onBodyStateHolder.wearState(observed)
+    }
 
     /** 전송·정리 실패는 삼킨다. 배치 수집을 멈출 이유가 되지 않는다. */
     private suspend fun transmit(
@@ -222,7 +226,6 @@ class ImuRepositoryImpl @Inject constructor(
         const val TAG = "Widyu"
         const val RESEARCH_MODE = "research"
         const val NANOS_PER_MILLI = 1_000_000L
-        const val WEAR_STATE_UNKNOWN = "unknown"
     }
 
     private fun takeClock(mapper: ClockMapper): ClockInfo {

@@ -179,7 +179,50 @@ class HeartRateRepositoryImplTest {
 
             // then
             remote.sentBatches.map { it.onBody } shouldBe listOf(true, false)
+            remote.sentBatches.map { it.wearState } shouldBe listOf("WORN_VALID", "ACTUAL_NOT_WORN")
             onBodyStateHolder.state.value shouldBe false
+        }
+
+    @Test
+    @DisplayName("차고 있는데 이번 묶음의 마지막 정확도가 LOW 면 wear_state 는 WORN_INVALID 다")
+    fun lowAccuracyWhileWornIsWornInvalid() =
+        testScope.runTest {
+            // given
+            onBodyStateHolder.update(true)
+
+            // when
+            emit(null, reading(25, 1_000, HIGH), reading(25, 2_000, LOW))
+
+            // then
+            remote.sentBatches.single().wearState shouldBe "WORN_INVALID"
+        }
+
+    @Test
+    @DisplayName("도착 순서가 뒤섞여도 측정 시각이 가장 늦은 샘플의 정확도로 판정한다")
+    fun latestMeasuredReadingDecidesWearState() =
+        testScope.runTest {
+            // given
+            onBodyStateHolder.update(true)
+
+            // when — 목록 마지막은 HIGH 지만 측정 시각은 더 이르다
+            emit(null, reading(25, 2_000, LOW), reading(70, 1_000, HIGH))
+
+            // then
+            remote.sentBatches.single().wearState shouldBe "WORN_INVALID"
+        }
+
+    @Test
+    @DisplayName("범위 밖 bpm 은 정확도가 HIGH 여도 UNRELIABLE 로 보내므로 WORN_INVALID 다")
+    fun outOfRangeBpmIsWornInvalid() =
+        testScope.runTest {
+            // given
+            onBodyStateHolder.update(true)
+
+            // when
+            emit(null, reading(400, 1_000, HIGH))
+
+            // then
+            remote.sentBatches.single().wearState shouldBe "WORN_INVALID"
         }
 
     @Test
@@ -211,6 +254,7 @@ class HeartRateRepositoryImplTest {
 
             // then
             remote.sentBatches.single().onBody shouldBe false
+            remote.sentBatches.single().wearState shouldBe "ACTUAL_NOT_WORN"
         }
 
     @Test

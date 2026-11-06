@@ -22,6 +22,7 @@ _HeartRateBatch _$HeartRateBatchFromJson(Map<String, dynamic> json) =>
           .map((e) => HeartRateSample.fromJson(e as Map<String, dynamic>))
           .toList(),
       onBody: json['on_body'] as bool,
+      wearState: json['wear_state'] as String?,
       watchBatteryPct: (json['watch_battery_pct'] as num?)?.toInt(),
       phoneReceivedAtMs: (json['phone_received_at_ms'] as num?)?.toInt(),
       resend: json['resend'] == null
@@ -43,6 +44,7 @@ Map<String, dynamic> _$HeartRateBatchToJson(_HeartRateBatch instance) =>
       'clock': nestedToJson(instance.clock),
       'samples': listToJson(instance.samples),
       'on_body': instance.onBody,
+      'wear_state': instance.wearState,
       'watch_battery_pct': instance.watchBatteryPct,
       'phone_received_at_ms': instance.phoneReceivedAtMs,
       'resend': nestedToJson(instance.resend),
