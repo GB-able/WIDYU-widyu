@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:widyu/core/data/source/location/location_local_data_source.dart';
 import 'package:widyu/core/log/log.dart';
@@ -28,7 +29,7 @@ class LocationLocalDataSourceImpl extends LocationLocalDataSource {
           );
     return Geolocator.getPositionStream(locationSettings: locationSetting)
         .map((position) {
-      return _toUserLocation(position);
+      return toUserLocation(position);
     });
   }
 
@@ -54,21 +55,26 @@ class LocationLocalDataSourceImpl extends LocationLocalDataSource {
         ),
       );
 
-      return _toUserLocation(position);
+      return toUserLocation(position);
     } catch (e, stack) {
       WiduLog.data.w('현재 위치 조회 실패', error: e, stackTrace: stack);
       return null;
     }
   }
 
-  UserLocation _toUserLocation(Position position) => UserLocation(
+  /// 플랫폼이 재지 못한 속도·속도 정확도·방향은 0 이 아니라 null 로 둔다.
+  /// 지하 역 와이파이처럼 위성 없이 잡힌 위치는 이 값들이 없는데, 0 으로 보내면
+  /// 서버에서 「멈춤」과 구별되지 않는다.
+  @visibleForTesting
+  static UserLocation toUserLocation(Position position) => UserLocation(
         latitude: position.latitude,
         longitude: position.longitude,
         measuredAt: position.timestamp.millisecondsSinceEpoch,
         accuracyM: position.accuracy,
-        speedMps: position.speed,
-        speedAccuracyMps: position.speedAccuracy,
-        headingDeg: position.heading,
+        speedMps: position.hasSpeed ? position.speed : null,
+        speedAccuracyMps:
+            position.hasSpeedAccuracy ? position.speedAccuracy : null,
+        headingDeg: position.hasHeading ? position.heading : null,
         altitudeM: position.altitude,
         isMock: position.isMocked,
       );
