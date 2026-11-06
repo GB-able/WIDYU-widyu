@@ -155,6 +155,11 @@ class CalendarTabViewModel extends _$CalendarTabViewModel {
   }
 
   Future<void> loadMoreFeeds() async {
+    if (state.selectedDayState.hasError) return;
+    await _loadMoreFeeds();
+  }
+
+  Future<void> _loadMoreFeeds() async {
     if (!ref.mounted) return;
     final normalized = state.selectedDay;
     final feedState = state.feedStates[normalized] ?? const DateFeedState();
@@ -206,7 +211,7 @@ class CalendarTabViewModel extends _$CalendarTabViewModel {
     if (state.selectedDayState.albumIds.isEmpty) {
       await loadFeeds(state.selectedDay);
     } else {
-      await loadMoreFeeds();
+      await _loadMoreFeeds();
     }
   }
 }

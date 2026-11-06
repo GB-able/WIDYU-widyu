@@ -112,4 +112,23 @@ void main() {
     expect(state().selectedDayState.hasNext, isFalse);
     expect(state().selectedDayState.isLoadingMore, isFalse);
   });
+
+  test('다음 페이지 요청이 실패하면 스크롤로는 다시 요청하지 않고 재시도로만 요청한다', () async {
+    int requests() => dataSource.calls.where((n) => n == 'fetchFeeds').length;
+    dataSource.feeds = okResponse(page([feed(1)], next: 'c1'));
+    final viewModel = listen();
+    await pumpEventQueue();
+
+    dataSource.feeds = errorResponse();
+    await viewModel.loadMoreFeeds();
+    await viewModel.loadMoreFeeds();
+    expect(requests(), 2);
+    expect(state().selectedDayState.hasError, isTrue);
+
+    dataSource.feeds = okResponse(page([feed(2)]));
+    await viewModel.retry();
+    expect(requests(), 3);
+    expect(state().selectedDayState.albumIds, [1, 2]);
+    expect(state().selectedDayState.hasError, isFalse);
+  });
 }
