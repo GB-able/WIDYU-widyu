@@ -41,7 +41,7 @@ void main() {
     await pumpEventQueue();
     expect(state().isCalendarLoading, isFalse);
     expect(state().daysWithEvents, {1, 15});
-    expect(state().selectedDayState.albumIds, [1, 2]);
+    expect(state().selectedDayState.items, [1, 2]);
     expect(state().cache.postOf(1), isNotNull);
   });
 
@@ -78,7 +78,7 @@ void main() {
 
     await viewModel.deleteFeed(1);
     await pumpEventQueue();
-    expect(state().feedStates.values.map((s) => s.albumIds), [
+    expect(state().feedStates.values.map((s) => s.items), [
       [2],
       [2],
     ]);
@@ -108,7 +108,7 @@ void main() {
 
     dataSource.feeds = okResponse(page([feed(2), feed(3)]));
     await viewModel.loadMoreFeeds();
-    expect(state().selectedDayState.albumIds, [1, 2, 3]);
+    expect(state().selectedDayState.items, [1, 2, 3]);
     expect(state().selectedDayState.hasNext, isFalse);
     expect(state().selectedDayState.isLoadingMore, isFalse);
   });
@@ -128,7 +128,7 @@ void main() {
     dataSource.feeds = okResponse(page([feed(2)]));
     await viewModel.retry();
     expect(requests(), 3);
-    expect(state().selectedDayState.albumIds, [1, 2]);
+    expect(state().selectedDayState.items, [1, 2]);
     expect(state().selectedDayState.hasError, isFalse);
   });
 
@@ -141,7 +141,7 @@ void main() {
     await repository.deleteFeed(1);
     await pumpEventQueue();
 
-    expect(state().selectedDayState.albumIds, [2]);
+    expect(state().selectedDayState.items, [2]);
     expect(state().selectedDayState.hasNext, isFalse);
   });
 }

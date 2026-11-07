@@ -256,7 +256,7 @@ class _CalendarTabContentState extends ConsumerState<_CalendarTabContent>
                   ),
                 );
                 return _CalendarFeedList(
-                  albumIds: feedState.albumIds,
+                  albumIds: feedState.items,
                   isLoading: feedState.isLoading,
                   isLoadingMore: feedState.isLoadingMore,
                   hasError: feedState.hasError,
