@@ -41,7 +41,7 @@ final class PointViewModelProvider
   }
 }
 
-String _$pointViewModelHash() => r'4cbb517d530f0cbe9c316acffff3b0dfd096beb9';
+String _$pointViewModelHash() => r'9ec33699d2efbc298b260eb74347f8c5ec9ade82';
 
 abstract class _$PointViewModel extends $Notifier<PointUiState> {
   PointUiState build();

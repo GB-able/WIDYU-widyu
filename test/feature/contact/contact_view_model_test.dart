@@ -74,7 +74,7 @@ void main() {
     expect(container.read(contactViewModelProvider).isLoading, isFalse);
   });
 
-  test('대표 연락처 변경에 실패하면 실패를 알린다', () async {
+  test('대표 연락처 변경에 실패하면 로딩을 풀고 실패를 알린다', () async {
     repository.contact = const ApiResult.success(
       Contact(representative: null, familyMembers: []),
     );
@@ -86,6 +86,7 @@ void main() {
         .updateRepresentativeContact(1);
     await pumpEventQueue();
     expect(events.single, isA<UpdateRepresentativeContactFailure>());
+    expect(container.read(contactViewModelProvider).isLoading, isFalse);
   });
 
   test('조회 시작 전에 폐기되면 조회하지 않는다', () async {

@@ -22,6 +22,9 @@ abstract class HeartRateBatch with _$HeartRateBatch implements SensorUpload {
     @JsonKey(toJson: nestedToJson) required ClockInfo clock,
     @JsonKey(toJson: listToJson) required List<HeartRateSample> samples,
     @JsonKey(name: 'on_body') required bool onBody,
+
+    /// WORN_VALID·WORN_INVALID·ACTUAL_NOT_WORN·UNKNOWN. 워치가 정한 값을 그대로 넘긴다.
+    @JsonKey(name: 'wear_state') String? wearState,
     @JsonKey(name: 'watch_battery_pct') int? watchBatteryPct,
     @JsonKey(name: 'phone_received_at_ms') int? phoneReceivedAtMs,
     @JsonKey(toJson: nestedToJson) ResendInfo? resend,

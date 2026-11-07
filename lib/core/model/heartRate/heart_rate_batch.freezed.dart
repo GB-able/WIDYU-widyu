@@ -35,6 +35,10 @@ mixin _$HeartRateBatch {
   List<HeartRateSample> get samples;
   @JsonKey(name: 'on_body')
   bool get onBody;
+
+  /// WORN_VALID·WORN_INVALID·ACTUAL_NOT_WORN·UNKNOWN. 워치가 정한 값을 그대로 넘긴다.
+  @JsonKey(name: 'wear_state')
+  String? get wearState;
   @JsonKey(name: 'watch_battery_pct')
   int? get watchBatteryPct;
   @JsonKey(name: 'phone_received_at_ms')
@@ -73,6 +77,8 @@ mixin _$HeartRateBatch {
             (identical(other.clock, clock) || other.clock == clock) &&
             const DeepCollectionEquality().equals(other.samples, samples) &&
             (identical(other.onBody, onBody) || other.onBody == onBody) &&
+            (identical(other.wearState, wearState) ||
+                other.wearState == wearState) &&
             (identical(other.watchBatteryPct, watchBatteryPct) ||
                 other.watchBatteryPct == watchBatteryPct) &&
             (identical(other.phoneReceivedAtMs, phoneReceivedAtMs) ||
@@ -96,13 +102,14 @@ mixin _$HeartRateBatch {
       clock,
       const DeepCollectionEquality().hash(samples),
       onBody,
+      wearState,
       watchBatteryPct,
       phoneReceivedAtMs,
       resend);
 
   @override
   String toString() {
-    return 'HeartRateBatch(v: $v, stream: $stream, batchId: $batchId, deviceId: $deviceId, sessionId: $sessionId, seq: $seq, studyId: $studyId, participationId: $participationId, runId: $runId, clock: $clock, samples: $samples, onBody: $onBody, watchBatteryPct: $watchBatteryPct, phoneReceivedAtMs: $phoneReceivedAtMs, resend: $resend)';
+    return 'HeartRateBatch(v: $v, stream: $stream, batchId: $batchId, deviceId: $deviceId, sessionId: $sessionId, seq: $seq, studyId: $studyId, participationId: $participationId, runId: $runId, clock: $clock, samples: $samples, onBody: $onBody, wearState: $wearState, watchBatteryPct: $watchBatteryPct, phoneReceivedAtMs: $phoneReceivedAtMs, resend: $resend)';
   }
 }
 
@@ -125,6 +132,7 @@ abstract mixin class $HeartRateBatchCopyWith<$Res> {
       @JsonKey(toJson: nestedToJson) ClockInfo clock,
       @JsonKey(toJson: listToJson) List<HeartRateSample> samples,
       @JsonKey(name: 'on_body') bool onBody,
+      @JsonKey(name: 'wear_state') String? wearState,
       @JsonKey(name: 'watch_battery_pct') int? watchBatteryPct,
       @JsonKey(name: 'phone_received_at_ms') int? phoneReceivedAtMs,
       @JsonKey(toJson: nestedToJson) ResendInfo? resend});
@@ -158,6 +166,7 @@ class _$HeartRateBatchCopyWithImpl<$Res>
     Object? clock = null,
     Object? samples = null,
     Object? onBody = null,
+    Object? wearState = freezed,
     Object? watchBatteryPct = freezed,
     Object? phoneReceivedAtMs = freezed,
     Object? resend = freezed,
@@ -211,6 +220,10 @@ class _$HeartRateBatchCopyWithImpl<$Res>
           ? _self.onBody
           : onBody // ignore: cast_nullable_to_non_nullable
               as bool,
+      wearState: freezed == wearState
+          ? _self.wearState
+          : wearState // ignore: cast_nullable_to_non_nullable
+              as String?,
       watchBatteryPct: freezed == watchBatteryPct
           ? _self.watchBatteryPct
           : watchBatteryPct // ignore: cast_nullable_to_non_nullable
@@ -357,6 +370,7 @@ extension HeartRateBatchPatterns on HeartRateBatch {
             @JsonKey(toJson: nestedToJson) ClockInfo clock,
             @JsonKey(toJson: listToJson) List<HeartRateSample> samples,
             @JsonKey(name: 'on_body') bool onBody,
+            @JsonKey(name: 'wear_state') String? wearState,
             @JsonKey(name: 'watch_battery_pct') int? watchBatteryPct,
             @JsonKey(name: 'phone_received_at_ms') int? phoneReceivedAtMs,
             @JsonKey(toJson: nestedToJson) ResendInfo? resend)?
@@ -379,6 +393,7 @@ extension HeartRateBatchPatterns on HeartRateBatch {
             _that.clock,
             _that.samples,
             _that.onBody,
+            _that.wearState,
             _that.watchBatteryPct,
             _that.phoneReceivedAtMs,
             _that.resend);
@@ -415,6 +430,7 @@ extension HeartRateBatchPatterns on HeartRateBatch {
             @JsonKey(toJson: nestedToJson) ClockInfo clock,
             @JsonKey(toJson: listToJson) List<HeartRateSample> samples,
             @JsonKey(name: 'on_body') bool onBody,
+            @JsonKey(name: 'wear_state') String? wearState,
             @JsonKey(name: 'watch_battery_pct') int? watchBatteryPct,
             @JsonKey(name: 'phone_received_at_ms') int? phoneReceivedAtMs,
             @JsonKey(toJson: nestedToJson) ResendInfo? resend)
@@ -436,6 +452,7 @@ extension HeartRateBatchPatterns on HeartRateBatch {
             _that.clock,
             _that.samples,
             _that.onBody,
+            _that.wearState,
             _that.watchBatteryPct,
             _that.phoneReceivedAtMs,
             _that.resend);
@@ -471,6 +488,7 @@ extension HeartRateBatchPatterns on HeartRateBatch {
             @JsonKey(toJson: nestedToJson) ClockInfo clock,
             @JsonKey(toJson: listToJson) List<HeartRateSample> samples,
             @JsonKey(name: 'on_body') bool onBody,
+            @JsonKey(name: 'wear_state') String? wearState,
             @JsonKey(name: 'watch_battery_pct') int? watchBatteryPct,
             @JsonKey(name: 'phone_received_at_ms') int? phoneReceivedAtMs,
             @JsonKey(toJson: nestedToJson) ResendInfo? resend)?
@@ -492,6 +510,7 @@ extension HeartRateBatchPatterns on HeartRateBatch {
             _that.clock,
             _that.samples,
             _that.onBody,
+            _that.wearState,
             _that.watchBatteryPct,
             _that.phoneReceivedAtMs,
             _that.resend);
@@ -517,6 +536,7 @@ class _HeartRateBatch implements HeartRateBatch {
       @JsonKey(toJson: nestedToJson) required this.clock,
       @JsonKey(toJson: listToJson) required final List<HeartRateSample> samples,
       @JsonKey(name: 'on_body') required this.onBody,
+      @JsonKey(name: 'wear_state') this.wearState,
       @JsonKey(name: 'watch_battery_pct') this.watchBatteryPct,
       @JsonKey(name: 'phone_received_at_ms') this.phoneReceivedAtMs,
       @JsonKey(toJson: nestedToJson) this.resend})
@@ -565,6 +585,11 @@ class _HeartRateBatch implements HeartRateBatch {
   @override
   @JsonKey(name: 'on_body')
   final bool onBody;
+
+  /// WORN_VALID·WORN_INVALID·ACTUAL_NOT_WORN·UNKNOWN. 워치가 정한 값을 그대로 넘긴다.
+  @override
+  @JsonKey(name: 'wear_state')
+  final String? wearState;
   @override
   @JsonKey(name: 'watch_battery_pct')
   final int? watchBatteryPct;
@@ -610,6 +635,8 @@ class _HeartRateBatch implements HeartRateBatch {
             (identical(other.clock, clock) || other.clock == clock) &&
             const DeepCollectionEquality().equals(other._samples, _samples) &&
             (identical(other.onBody, onBody) || other.onBody == onBody) &&
+            (identical(other.wearState, wearState) ||
+                other.wearState == wearState) &&
             (identical(other.watchBatteryPct, watchBatteryPct) ||
                 other.watchBatteryPct == watchBatteryPct) &&
             (identical(other.phoneReceivedAtMs, phoneReceivedAtMs) ||
@@ -633,13 +660,14 @@ class _HeartRateBatch implements HeartRateBatch {
       clock,
       const DeepCollectionEquality().hash(_samples),
       onBody,
+      wearState,
       watchBatteryPct,
       phoneReceivedAtMs,
       resend);
 
   @override
   String toString() {
-    return 'HeartRateBatch(v: $v, stream: $stream, batchId: $batchId, deviceId: $deviceId, sessionId: $sessionId, seq: $seq, studyId: $studyId, participationId: $participationId, runId: $runId, clock: $clock, samples: $samples, onBody: $onBody, watchBatteryPct: $watchBatteryPct, phoneReceivedAtMs: $phoneReceivedAtMs, resend: $resend)';
+    return 'HeartRateBatch(v: $v, stream: $stream, batchId: $batchId, deviceId: $deviceId, sessionId: $sessionId, seq: $seq, studyId: $studyId, participationId: $participationId, runId: $runId, clock: $clock, samples: $samples, onBody: $onBody, wearState: $wearState, watchBatteryPct: $watchBatteryPct, phoneReceivedAtMs: $phoneReceivedAtMs, resend: $resend)';
   }
 }
 
@@ -664,6 +692,7 @@ abstract mixin class _$HeartRateBatchCopyWith<$Res>
       @JsonKey(toJson: nestedToJson) ClockInfo clock,
       @JsonKey(toJson: listToJson) List<HeartRateSample> samples,
       @JsonKey(name: 'on_body') bool onBody,
+      @JsonKey(name: 'wear_state') String? wearState,
       @JsonKey(name: 'watch_battery_pct') int? watchBatteryPct,
       @JsonKey(name: 'phone_received_at_ms') int? phoneReceivedAtMs,
       @JsonKey(toJson: nestedToJson) ResendInfo? resend});
@@ -699,6 +728,7 @@ class __$HeartRateBatchCopyWithImpl<$Res>
     Object? clock = null,
     Object? samples = null,
     Object? onBody = null,
+    Object? wearState = freezed,
     Object? watchBatteryPct = freezed,
     Object? phoneReceivedAtMs = freezed,
     Object? resend = freezed,
@@ -752,6 +782,10 @@ class __$HeartRateBatchCopyWithImpl<$Res>
           ? _self.onBody
           : onBody // ignore: cast_nullable_to_non_nullable
               as bool,
+      wearState: freezed == wearState
+          ? _self.wearState
+          : wearState // ignore: cast_nullable_to_non_nullable
+              as String?,
       watchBatteryPct: freezed == watchBatteryPct
           ? _self.watchBatteryPct
           : watchBatteryPct // ignore: cast_nullable_to_non_nullable

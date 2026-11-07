@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:widyu/core/data/repository/auth/auth_repository.dart';
-import 'package:widyu/core/data/repository/myPage/my_page_repository.dart';
 import 'package:widyu/core/data/repository/point/point_repository.dart';
 import 'package:widyu/core/di/providers.dart';
 import 'package:widyu/core/model/api/api_result.dart';
@@ -13,16 +12,7 @@ import 'package:widyu/core/notification/fcm_token_service.dart';
 import 'package:widyu/feature/myPage/my_page_ui_event.dart';
 import 'package:widyu/feature/myPage/my_page_view_model.dart';
 
-class _Repository extends Fake implements MyPageRepository {
-  final pending = Completer<ApiResult<User>>();
-  int calls = 0;
-
-  @override
-  Future<ApiResult<User>> fetchUser() {
-    calls++;
-    return pending.future;
-  }
-}
+import '../user_fakes.dart';
 
 class _Auth extends Fake implements AuthRepository {
   ApiResult<void> result = const ApiResult.failure('error');
@@ -34,16 +24,12 @@ class _Auth extends Fake implements AuthRepository {
 
 class _Point extends Fake implements PointRepository {
   final _status = StreamController<PointStatus>.broadcast();
-  int? synced;
 
   @override
   Stream<PointStatus> get status => _status.stream;
 
   @override
   PointStatus get currentStatus => (point: 10, isLoading: false);
-
-  @override
-  void sync(int? point) => synced = point;
 
   void emit(PointStatus status) => _status.add(status);
 }
@@ -62,7 +48,7 @@ class _Fcm extends Fake implements FcmTokenService {
 const _user = User(memberId: 1, name: '홍길동', points: 30);
 
 void main() {
-  late _Repository repository;
+  late FakeUserRepository user;
   late _Auth auth;
   late _Point point;
   late _Fcm fcm;
@@ -77,12 +63,12 @@ void main() {
       buildNumber: '1',
       buildSignature: '',
     );
-    repository = _Repository();
+    user = FakeUserRepository()..result = const ApiResult.success(_user);
     auth = _Auth();
     point = _Point();
     fcm = _Fcm();
     container = ProviderContainer.test(overrides: [
-      myPageRepositoryProvider.overrideWithValue(repository),
+      userRepositoryProvider.overrideWithValue(user),
       authRepositoryProvider.overrideWithValue(auth),
       pointRepositoryProvider.overrideWithValue(point),
       fcmTokenServiceProvider.overrideWithValue(fcm),
@@ -102,20 +88,20 @@ void main() {
     container.dispose();
     // 가드가 없으면 폐기된 Notifier의 state에 접근하다가 예외가 나서 실패한다.
     await pumpEventQueue();
-    expect(repository.calls, 0);
+    expect(user.loads, 0);
     expect(events, isEmpty);
   });
 
-  test('조회 중 폐기돼도 세션 포인트는 갱신하고 화면 상태는 쓰지 않는다', () async {
+  test('조회 중 폐기되면 실패를 알리지 않는다', () async {
+    user.pending = Completer();
     listen();
     await pumpEventQueue();
-    expect(repository.calls, 1);
+    expect(user.loads, 1);
 
     container.dispose();
-    repository.pending.complete(const ApiResult.success(_user));
-    // 가드가 없으면 폐기된 Notifier의 state에 쓰다가 예외가 나서 실패한다.
+    user.pending!.complete();
+    // 가드가 없으면 닫힌 이벤트 stream에 쓰다가 예외가 나서 실패한다.
     await pumpEventQueue();
-    expect(point.synced, 30);
     expect(events, isEmpty);
   });
 
@@ -124,8 +110,6 @@ void main() {
     expect(container.read(myPageViewModelProvider).point, 10);
     await pumpEventQueue();
 
-    repository.pending.complete(const ApiResult.success(_user));
-    await pumpEventQueue();
     final state = container.read(myPageViewModelProvider);
     expect(state.isLoading, isFalse);
     expect(state.name, '홍길동');
@@ -150,6 +134,23 @@ void main() {
     await pumpEventQueue();
     expect(fcm.started, 1);
     expect(events.single, isA<LogoutFailure>());
+  });
+
+  test('사용자 정보를 불러오지 못하면 실패를 알린다', () async {
+    user.result = const ApiResult.failure('error');
+    listen();
+    await pumpEventQueue();
+    expect(events.single, isA<FetchUserFailure>());
+  });
+
+  test('캐시된 사용자 정보가 바뀌면 다시 조회하지 않고 반영한다', () async {
+    listen();
+    await pumpEventQueue();
+
+    user.emit(const User(memberId: 1, name: '김철수', points: 30));
+    await pumpEventQueue();
+    expect(container.read(myPageViewModelProvider).name, '김철수');
+    expect(user.loads, 1);
   });
 
   test('포인트 상태가 바뀌면 포인트와 로딩 여부를 반영한다', () async {

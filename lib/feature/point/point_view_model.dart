@@ -49,12 +49,16 @@ class PointViewModel extends _$PointViewModel {
 
   Future<void> _fetchPointHistory() async {
     final pointRepository = _pointRepository;
+    final pointRevision = pointRepository.revision;
     state = state.copyWith(isLoading: true);
 
     final result = await _repository.fetchPointHistory();
     // 화면이 먼저 닫혀도 세션 포인트는 갱신한다(기존 동작).
     if (result is Success<PointHistory>) {
-      pointRepository.sync(result.data.currentPoints);
+      pointRepository.sync(
+        result.data.currentPoints,
+        revision: pointRevision,
+      );
     }
     if (!ref.mounted) return;
     if (result is Success) {

@@ -271,8 +271,8 @@ class ImuRepositoryImplTest {
         }
 
     @Test
-    @DisplayName("착용 상태를 알게 되면 그 값을 싣고 wear_state 는 비운다")
-    fun onBodyFollowsTheHolder() =
+    @DisplayName("벗은 상태면 on_body 는 false, wear_state 는 ACTUAL_NOT_WORN 이다")
+    fun offBodyIsSentAsActualNotWorn() =
         testScope.runTest {
             // given
             start()
@@ -283,11 +283,11 @@ class ImuRepositoryImplTest {
 
             // then
             collected.last().onBody shouldBe false
-            collected.last().wearState shouldBe null
+            collected.last().wearState shouldBe "ACTUAL_NOT_WORN"
         }
 
     @Test
-    @DisplayName("착용 상태를 관측하지 못하면 on_body 는 true, wear_state 는 unknown 이다")
+    @DisplayName("착용 상태를 관측하지 못하면 on_body 는 true, wear_state 는 UNKNOWN 이다")
     fun unobservedOnBodyIsSentAsTrueWithUnknownWearState() =
         testScope.runTest {
             // given — 홀더가 null 인 상태
@@ -298,7 +298,23 @@ class ImuRepositoryImplTest {
 
             // then
             collected.last().onBody shouldBe true
-            collected.last().wearState shouldBe "unknown"
+            collected.last().wearState shouldBe "UNKNOWN"
+        }
+
+    @Test
+    @DisplayName("차고 있어도 최근 심박 정확도가 LOW 면 wear_state 는 WORN_INVALID 이다")
+    fun lowHeartRateAccuracyIsWornInvalid() =
+        testScope.runTest {
+            // given
+            start()
+            onBodyStateHolder.update(true)
+            onBodyStateHolder.updateHeartRateAccuracy("LOW")
+
+            // when
+            emitSamplesUpTo(seconds = 1)
+
+            // then
+            collected.last().wearState shouldBe "WORN_INVALID"
         }
 
     @Test

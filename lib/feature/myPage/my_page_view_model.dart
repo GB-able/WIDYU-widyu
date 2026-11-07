@@ -3,12 +3,11 @@ import 'dart:async';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:widyu/core/data/repository/auth/auth_repository.dart';
-import 'package:widyu/core/data/repository/myPage/my_page_repository.dart';
 import 'package:widyu/core/data/repository/point/point_repository.dart';
+import 'package:widyu/core/data/repository/user/user_repository.dart';
 import 'package:widyu/core/di/providers.dart';
 import 'package:widyu/core/log/log.dart';
 import 'package:widyu/core/model/api/api_result.dart';
-import 'package:widyu/core/model/myPage/user/user.dart';
 import 'package:widyu/core/notification/fcm_token_service.dart';
 import 'package:widyu/feature/myPage/my_page_ui_event.dart';
 import 'package:widyu/feature/myPage/my_page_ui_state.dart';
@@ -23,7 +22,7 @@ class MyPageViewModel extends _$MyPageViewModel {
   // ignore: riverpod_lint/avoid_public_notifier_properties
   Stream<MyPageUiEvent> get uiEvent => _uiEvent.stream;
 
-  MyPageRepository get _repository => ref.read(myPageRepositoryProvider);
+  UserRepository get _userRepository => ref.read(userRepositoryProvider);
   AuthRepository get _authRepository => ref.read(authRepositoryProvider);
   PointRepository get _pointRepository => ref.read(pointRepositoryProvider);
   FcmTokenService get _fcmTokenService => ref.read(fcmTokenServiceProvider);
@@ -54,28 +53,26 @@ class MyPageViewModel extends _$MyPageViewModel {
       );
     });
     ref.onDispose(pointStatus.cancel);
-    unawaited(fetchUser());
+    _observeUser();
     unawaited(_fetchAppVersion());
   }
 
-  Future<void> fetchUser() async {
-    final pointRepository = _pointRepository;
-    state = state.copyWith(isLoading: true);
-
-    final result = await _repository.fetchUser();
-    // 화면이 먼저 닫혀도 세션 포인트는 갱신한다(기존 동작).
-    if (result is Success<User>) pointRepository.sync(result.data.points);
-    if (!ref.mounted) return;
-    if (result is Success) {
-      final user = (result as Success<User>).data;
+  /// 세션에 캐시된 사용자 정보를 구독한다. 프로필에서 바꾼 이름·사진도 여기로 반영된다.
+  void _observeUser() {
+    final userRepository = _userRepository;
+    // 조회를 먼저 시작해 구독 시 '조회 중'을 받도록 한다.
+    final loading = userRepository.ensureLoaded();
+    final user = userRepository.status.listen((status) {
       state = state.copyWith(
-        profileImage: user.profileImage,
-        name: user.name,
+        profileImage: status.user?.profileImage,
+        name: status.user?.name,
+        isLoading: status.user == null && status.isLoading,
       );
-    } else {
-      _uiEvent.add(const FetchUserFailure());
-    }
-    state = state.copyWith(isLoading: false);
+    });
+    ref.onDispose(user.cancel);
+    unawaited(loading.then((isLoaded) {
+      if (!isLoaded && ref.mounted) _uiEvent.add(const FetchUserFailure());
+    }));
   }
 
   Future<void> logout() async {
