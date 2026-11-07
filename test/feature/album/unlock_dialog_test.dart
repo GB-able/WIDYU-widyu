@@ -246,7 +246,10 @@ class _FakePointRepository extends PointRepository {
   }
 
   @override
-  void sync(int? point) {}
+  int get revision => refreshes;
+
+  @override
+  void sync(int? point, {required int revision}) {}
 
   @override
   void dispose() {}
