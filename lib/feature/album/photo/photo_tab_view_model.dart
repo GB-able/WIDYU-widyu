@@ -26,11 +26,6 @@ class PhotoTabViewModel extends _$PhotoTabViewModel {
       write: (list) => state = state.copyWith(list: list),
       mounted: () => ref.mounted,
     );
-    listenSelf((_, next) {
-      if (_isEmptyWithNext(next.list)) {
-        unawaited(Future.microtask(_loadMoreIfEmpty));
-      }
-    });
     unawaited(Future.microtask(_start));
     return PhotoTabUiState(
       list: const InfiniteScrollState(isFetching: true),
@@ -48,24 +43,18 @@ class PhotoTabViewModel extends _$PhotoTabViewModel {
   // 썸네일은 잠금 여부만 구독하므로 다른 캐시 변경에는 다시 그려지지 않는다.
   void _onCache(AlbumCache cache) {
     if (identical(cache, state.cache)) return;
-    state = state.copyWith(
-      cache: cache,
-      list: identical(cache.deletedIds, state.cache.deletedIds)
-          ? state.list
-          : state.list.removeWhere((media) => cache.isDeleted(media.postId)),
-    );
+    final deletedChanged = !identical(cache.deletedIds, state.cache.deletedIds);
+    state = state.copyWith(cache: cache);
+    if (deletedChanged) {
+      _scroller.update(
+        (list) => list.removeWhere((media) => cache.isDeleted(media.postId)),
+      );
+    }
   }
 
   Future<void> refresh() => _scroller.init();
 
   Future<void> loadMore() => _scroller.loadMore();
-
-  bool _isEmptyWithNext(InfiniteScrollState<Object> list) =>
-      list.isEmpty && list.hasNext && !list.isFetching;
-
-  void _loadMoreIfEmpty() {
-    if (ref.mounted && _isEmptyWithNext(state.list)) unawaited(loadMore());
-  }
 
   Future<void> retry() => _scroller.retry();
 
