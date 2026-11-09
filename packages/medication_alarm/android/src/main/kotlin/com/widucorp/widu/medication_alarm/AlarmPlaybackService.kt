@@ -22,6 +22,8 @@ class AlarmPlaybackService : Service() {
     private var wakeLock: PowerManager.WakeLock? = null
     private var focus: AudioFocusRequest? = null
     private var groupId: String? = null
+    private val attributes = AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_ALARM)
+        .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION).build()
     override fun onBind(intent: Intent?): IBinder? = null
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val id = intent?.getStringExtra("groupId")
@@ -54,19 +56,31 @@ class AlarmPlaybackService : Service() {
         if (groupId == id) return START_NOT_STICKY
         releaseAudio()
         groupId = id
-        val attributes = AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_ALARM)
-            .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION).build()
         val audio = getSystemService(AudioManager::class.java)
-        focus = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT)
-            .setAudioAttributes(attributes).setOnAudioFocusChangeListener { change ->
-                if (change == AudioManager.AUDIOFOCUS_LOSS) stopSelf()
-            }.build().also { audio.requestAudioFocus(it) }
+        val request = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT)
+            .setAudioAttributes(attributes).setAcceptsDelayedFocusGain(true)
+            .setOnAudioFocusChangeListener { change ->
+                when (change) {
+                    AudioManager.AUDIOFOCUS_LOSS_TRANSIENT -> {
+                        player?.pause()
+                        getSystemService(Vibrator::class.java).cancel()
+                    }
+                    AudioManager.AUDIOFOCUS_GAIN -> {
+                        player?.apply { setVolume(1f, 1f); start() }
+                        vibrate()
+                    }
+                }
+            }.build()
+        focus = request
+        val granted = audio.requestAudioFocus(request) == AudioManager.AUDIOFOCUS_REQUEST_GRANTED
         wakeLock = getSystemService(PowerManager::class.java).newWakeLock(
             PowerManager.PARTIAL_WAKE_LOCK,
             "widyu:medication-alarm"
         ).apply { acquire(5 * 60 * 1000L) }
+        vibrate()
+        val media = MediaPlayer()
         try {
-            player = MediaPlayer().apply {
+            player = media.apply {
                 setAudioAttributes(attributes)
                 setDataSource(
                     this@AlarmPlaybackService,
@@ -75,23 +89,31 @@ class AlarmPlaybackService : Service() {
                 )
                 isLooping = true
                 prepare()
+                if (!granted) setVolume(IN_CALL_VOLUME, IN_CALL_VOLUME)
                 start()
             }
-            getSystemService(Vibrator::class.java).vibrate(
-                VibrationEffect.createWaveform(
-                    longArrayOf(0, 600, 500),
-                    0
-                )
-            )
         } catch (e: Exception) {
-            synchronized(AlarmStore.lock) {
-                val state = AlarmStore.read(this).put("playbackError", e.javaClass.simpleName)
-                AlarmStore.write(this, state)
-            }
+            media.release()
+            recordError("playbackError", e)
         }
         handler.removeCallbacksAndMessages(null)
         handler.postDelayed({ MedicationAlarmPlugin.stop(this, id) }, 5 * 60 * 1000L)
         return START_NOT_STICKY
+    }
+
+    private fun vibrate() {
+        try {
+            getSystemService(Vibrator::class.java).vibrate(
+                VibrationEffect.createWaveform(longArrayOf(0, 600, 500), 0),
+                attributes
+            )
+        } catch (e: Exception) {
+            recordError("vibrationError", e)
+        }
+    }
+
+    private fun recordError(key: String, e: Exception) = synchronized(AlarmStore.lock) {
+        AlarmStore.write(this, AlarmStore.read(this).put(key, e.javaClass.simpleName))
     }
 
     private fun releaseAudio() {
@@ -119,6 +141,8 @@ class AlarmPlaybackService : Service() {
     }
 
     companion object {
+        private const val IN_CALL_VOLUME = 0.125f
+
         internal fun doseLabel(dose: Double) =
             if (dose % 1.0 == 0.0) dose.toInt().toString() else String.format(
                 java.util.Locale.US,
