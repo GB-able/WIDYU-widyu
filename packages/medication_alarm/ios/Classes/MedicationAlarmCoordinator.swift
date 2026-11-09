@@ -438,6 +438,8 @@ final class MedicationAlarmCoordinator {
                 components.hour = time[0]; components.minute = time[1]
                 guard let at = calendar.date(from: components), at > now else { continue }
                 let localDate = String(format: "%04d-%02d-%02d", components.year!, components.month!, components.day!)
+                if let from = rule["effectiveFrom"] as? String, from > localDate { continue }
+                if let to = rule["effectiveTo"] as? String, to < localDate { continue }
                 let occurrenceID = "\(rule["scheduleId"]!):\(localDate)"
                 if excluded.contains(occurrenceID) { continue }
                 let end = calendar.date(bySettingHour: 23, minute: 59, second: 0, of: date)!
