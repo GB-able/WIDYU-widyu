@@ -10,7 +10,7 @@ class TokenInterceptor extends Interceptor {
   final TokenManager _tokenManager = TokenManager();
 
   late final Dio _dio;
-  Completer<String>? _reissueCompleter;
+  Future<String>? _reissuing;
 
   TokenInterceptor() {
     _dio = Dio(BaseOptions(
@@ -46,52 +46,48 @@ class TokenInterceptor extends Interceptor {
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) async {
     final tokenType = err.requestOptions.extra['tokenType'] as TokenType;
-    if (err.response?.statusCode == 401 && tokenType == TokenType.access) {
-      try {
-        String newAccessToken;
-
-        if (_reissueCompleter != null) {
-          try {
-            newAccessToken = await _reissueCompleter!.future;
-          } catch (e) {
-            await _tokenManager.removeToken();
-            super.onError(err, handler);
-            return;
-          }
-        } else {
-          _reissueCompleter = Completer<String>();
-          try {
-            newAccessToken = await _reissue();
-            WiduLog.network.i('토큰 재발급 성공');
-            _reissueCompleter!.complete(newAccessToken);
-          } catch (e) {
-            _reissueCompleter!.completeError(e);
-            rethrow;
-          } finally {
-            _reissueCompleter = null;
-          }
-        }
-
-        err.requestOptions.headers['Authorization'] = 'Bearer $newAccessToken';
-        final retryResponse = await _dio.fetch<dynamic>(err.requestOptions);
-        handler.resolve(retryResponse);
-        return;
-      } catch (e, stack) {
-        // 재발급이나 재요청이 실패하면 토큰을 모두 지우므로 사실상 로그아웃된다.
-        WiduLog.network.w('토큰 재발급·재요청 실패로 토큰 삭제', error: e, stackTrace: stack);
-        await _tokenManager.removeAll();
-        super.onError(err, handler);
-        return;
-      }
+    if (err.response?.statusCode != 401 || tokenType != TokenType.access) {
+      return super.onError(err, handler);
     }
 
-    super.onError(err, handler);
+    final String newAccessToken;
+    try {
+      newAccessToken = await (_reissuing ??=
+          _reissueOrLogout().whenComplete(() => _reissuing = null));
+    } catch (_) {
+      return super.onError(err, handler);
+    }
+
+    try {
+      err.requestOptions.headers['Authorization'] = 'Bearer $newAccessToken';
+      handler.resolve(await _dio.fetch<dynamic>(err.requestOptions));
+    } on DioException catch (retryError) {
+      handler.next(retryError);
+    }
+  }
+
+  Future<String> _reissueOrLogout() async {
+    try {
+      final token = await _reissue();
+      WiduLog.network.i('토큰 재발급 성공');
+      return token;
+    } catch (e, stack) {
+      final rejected = e is _NoRefreshToken ||
+          (e is DioException && e.response?.statusCode == 401);
+      if (rejected) {
+        WiduLog.network.w('리프레시 토큰 거절로 토큰 삭제', error: e, stackTrace: stack);
+        await _tokenManager.removeAll();
+      } else {
+        WiduLog.network.w('토큰 재발급 실패, 토큰 유지', error: e, stackTrace: stack);
+      }
+      rethrow;
+    }
   }
 
   Future<String> _reissue() async {
     final refreshToken = await _tokenManager.refreshToken;
     if (refreshToken == null) {
-      throw Exception('No refresh token');
+      throw _NoRefreshToken();
     }
 
     final response = await _dio.post<Map<String, dynamic>>(
@@ -109,3 +105,5 @@ class TokenInterceptor extends Interceptor {
     return tokens.accessToken;
   }
 }
+
+class _NoRefreshToken implements Exception {}
