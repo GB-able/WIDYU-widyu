@@ -201,11 +201,13 @@ internal class AlarmScheduler(private val context: Context) {
         )) {
             if (!rule.getBoolean("enabled")) continue
             val time = LocalTime.parse(rule.getString("alarmTime"))
+            val from = if (rule.isNull("effectiveFrom")) null else rule.getString("effectiveFrom")
+            val to = if (rule.isNull("effectiveTo")) null else rule.getString("effectiveTo")
             for (offset in 0L..366L) {
                 val date = LocalDate.now(zone).plusDays(offset)
                 val at = date.atTime(time).atZone(zone).toInstant().toEpochMilli()
                 val id = "${rule.getLong("scheduleId")}:$date"
-                if (at <= now || excluded.contains(id)) continue
+                if (at <= now || excluded.contains(id) || !isEffective(date.toString(), from, to)) continue
                 val occurrence = JSONObject().put("occurrenceId", id)
                     .put("scheduleId", rule.getLong("scheduleId"))
                     .put("localDate", date.toString()).put("timeZone", zone.id)
@@ -280,3 +282,6 @@ internal class AlarmScheduler(private val context: Context) {
         const val CHANNEL = "widyu_medication_alarm_v1"
     }
 }
+
+internal fun isEffective(date: String, from: String?, to: String?): Boolean =
+    (from == null || from <= date) && (to == null || to >= date)
