@@ -64,7 +64,12 @@ class _AssetVideoPreviewState extends State<_AssetVideoPreview> {
       width: widget.width,
       height: widget.height,
       child: controller == null || !controller.value.isInitialized
-          ? AssetEntityImage(widget.asset, fit: BoxFit.cover)
+          ? AssetEntityImage(
+              widget.asset,
+              isOriginal: false,
+              thumbnailSize: const ThumbnailSize.square(1280),
+              fit: BoxFit.cover,
+            )
           : ClipRect(
               child: FittedBox(
                 fit: BoxFit.cover,
