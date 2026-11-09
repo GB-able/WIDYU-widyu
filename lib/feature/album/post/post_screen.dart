@@ -84,8 +84,11 @@ class _PostScreenState extends ConsumerState<PostScreen> {
   void _submitEdit() => _viewModel.submitEdit(_editController.text);
 
   Future<void> _sendComment() async {
-    final sent = await _viewModel.sendComment(_commentController.text);
-    if (sent && mounted) _commentController.clear();
+    final text = _commentController.text;
+    final sent = await _viewModel.sendComment(text);
+    if (sent && mounted && _commentController.text == text) {
+      _commentController.clear();
+    }
   }
 
   // 탭(이벤트) 시점의 캐시와 포인트로 판단한다.
