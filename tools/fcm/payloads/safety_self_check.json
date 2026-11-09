@@ -1,0 +1,12 @@
+{
+  "notification": { "title": "위급 상황 확인", "body": "지금 괜찮으신가요? 확인 버튼을 눌러주세요." },
+  "data": { "notificationType": "SAFETY_SELF_CHECK", "entityId": "1" },
+  "android": {
+    "priority": "high",
+    "notification": { "channelId": "widyu_safety_channel" }
+  },
+  "apns": {
+    "headers": { "apns-priority": "10", "apns-push-type": "alert" },
+    "payload": { "aps": { "interruption-level": "time-sensitive", "sound": "default" } }
+  }
+}

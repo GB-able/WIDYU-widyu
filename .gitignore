@@ -70,3 +70,8 @@ firebase.json
 
 # Docs
 docs/
+
+# FCM 테스트 도구
+tools/fcm/serviceAccount.json
+tools/fcm/node_modules/
+tools/fcm/package-lock.json

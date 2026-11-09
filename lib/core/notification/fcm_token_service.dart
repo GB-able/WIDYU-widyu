@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:widyu/core/data/repository/notification/notification_repository.dart';
 import 'package:widyu/core/log/log.dart';
 import 'package:widyu/core/model/api/api_result.dart';
@@ -46,6 +47,7 @@ class FcmTokenService {
   }
 
   Future<void> registerToken(String token) async {
+    if (kDebugMode) WiduLog.data.i('FCM 토큰: $token');
     try {
       if (_disposed || token.isEmpty || !await TokenManager().hasToken()) {
         return;
