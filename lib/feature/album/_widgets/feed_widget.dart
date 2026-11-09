@@ -193,6 +193,8 @@ class _FeedWidgetState extends State<FeedWidget> {
                                 width: thumbnailWidth,
                                 height: thumbnailHeight,
                                 isActive: idx == index,
+                                thumbnailUrl:
+                                    feed.thumbnailUrls.elementAtOrNull(index),
                               )
                             : CustomNetworkImage(
                                 url: url,
