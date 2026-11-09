@@ -6,7 +6,7 @@ import UIKit
 final class MedicationAlarmPlayer {
     static let shared = MedicationAlarmPlayer()
     static let keepaliveLead: TimeInterval = 15 * 60
-    static let maxRing: TimeInterval = 10 * 60
+    static let maxRing: TimeInterval = 5 * 60
     static let hapticInterval: TimeInterval = 2
     static let heartbeatInterval: TimeInterval = 60
     static let watchdogDelay: TimeInterval = 120
