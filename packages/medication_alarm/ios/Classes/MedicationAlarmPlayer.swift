@@ -108,8 +108,8 @@ final class MedicationAlarmPlayer {
         onFire?(id)
     }
 
-    private func activate() throws {
-        try session.setCategory(.playback, mode: .default, options: [])
+    private func activate(mixing: Bool) throws {
+        try session.setCategory(.playback, mode: .default, options: mixing ? [.mixWithOthers] : [])
         try session.setActive(true)
     }
 
@@ -126,7 +126,7 @@ final class MedicationAlarmPlayer {
     private func startKeepalive() {
         guard silence?.isPlaying != true, alarm == nil else { return }
         do {
-            try activate()
+            try activate(mixing: true)
             let player = try player("medication_silence")
             player.play()
             silence = player
@@ -146,7 +146,10 @@ final class MedicationAlarmPlayer {
 
     private func startAudio() {
         do {
-            try activate()
+            do { try activate(mixing: false) } catch {
+                log("exclusive audio failed \(error)")
+                try activate(mixing: true)
+            }
             silence?.stop(); silence = nil
             let player = try player("medication_alarm")
             player.play()
@@ -164,10 +167,18 @@ final class MedicationAlarmPlayer {
 
     private func interrupted(_ note: Notification) {
         guard let raw = note.userInfo?[AVAudioSessionInterruptionTypeKey] as? UInt,
-              AVAudioSession.InterruptionType(rawValue: raw) == .ended else { return }
+              let type = AVAudioSession.InterruptionType(rawValue: raw) else { return }
+        if type == .began {
+            hapticTimer?.invalidate(); hapticTimer = nil
+            log("interruption began")
+            return
+        }
         try? session.setActive(true)
-        alarm?.play()
         silence?.play()
+        if ringingID != nil {
+            if sound { if let alarm { alarm.play() } else { startAudio() } }
+            if haptics, hapticTimer == nil { startHaptics() }
+        }
         log("interruption ended")
     }
 
