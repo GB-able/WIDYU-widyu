@@ -79,6 +79,7 @@ class LoginCodeView extends StatelessWidget {
                   Positioned.fill(
                     child: TextField(
                       controller: controller,
+                      autofocus: true,
                       maxLength: LoginViewModel.inviteCodeLength,
                       keyboardType: TextInputType.number,
                       autofillHints: const [AutofillHints.oneTimeCode],
