@@ -171,6 +171,7 @@ class _FeedWidgetState extends State<FeedWidget> {
                         url: feed.thumbnailUrls.firstOrNull,
                         width: thumbnailWidth,
                         height: thumbnailHeight,
+                        decodeWidth: lockedImageDecodeWidth,
                       ),
                     ),
                   ),

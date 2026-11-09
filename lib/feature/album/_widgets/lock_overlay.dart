@@ -6,6 +6,8 @@ import 'package:widyu/core/ui/theme/typos.dart';
 import 'package:widyu/core/ui/widgets/widu_icon.dart';
 import 'package:widyu/gen/assets.gen.dart';
 
+const lockedImageDecodeWidth = 200;
+
 class FeedLockOverlay extends StatelessWidget {
   const FeedLockOverlay({super.key, required this.price, required this.child});
 

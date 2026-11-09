@@ -69,6 +69,9 @@ class _MediaThumbnail extends StatelessWidget {
     final url = media.thumbnailUrl;
     if (url == null) return Container(color: MyColor.grey100);
 
-    return CustomNetworkImage(url: url);
+    return CustomNetworkImage(
+      url: url,
+      decodeWidth: isLocked ? lockedImageDecodeWidth : null,
+    );
   }
 }
