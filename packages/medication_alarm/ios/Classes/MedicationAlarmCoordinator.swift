@@ -107,8 +107,13 @@ final class MedicationAlarmCoordinator {
         let notifications = settings.authorizationStatus == .authorized || settings.authorizationStatus == .provisional
         var authorized = notifications
         var mode = "scheduledNotification"
-        if #available(iOS 26.0, *) { authorized = AlarmManager.shared.authorizationState == .authorized; mode = "alarmKit" }
-        return ["platform": "ios", "mode": mode, "authorized": authorized,
+        var alarmDenied = false
+        if #available(iOS 26.0, *) {
+            authorized = AlarmManager.shared.authorizationState == .authorized
+            alarmDenied = AlarmManager.shared.authorizationState == .denied
+            mode = "alarmKit"
+        }
+        return ["platform": "ios", "mode": mode, "authorized": authorized, "alarmDenied": alarmDenied,
                 "notifications": notifications, "fullScreen": false,
                 "timeZone": TimeZone.current.identifier, "osVersion": UIDevice.current.systemVersion]
     }

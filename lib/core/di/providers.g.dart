@@ -270,6 +270,52 @@ final class MedicationRepositoryProvider extends $FunctionalProvider<
 String _$medicationRepositoryHash() =>
     r'e56da345d089a266a56793b381712dd68a38758e';
 
+@ProviderFor(alarmPermissionRecoveryController)
+final alarmPermissionRecoveryControllerProvider =
+    AlarmPermissionRecoveryControllerProvider._();
+
+final class AlarmPermissionRecoveryControllerProvider
+    extends $FunctionalProvider<PermissionRecoveryController,
+        PermissionRecoveryController, PermissionRecoveryController>
+    with $Provider<PermissionRecoveryController> {
+  AlarmPermissionRecoveryControllerProvider._()
+      : super(
+          from: null,
+          argument: null,
+          retry: null,
+          name: r'alarmPermissionRecoveryControllerProvider',
+          isAutoDispose: false,
+          dependencies: null,
+          $allTransitiveDependencies: null,
+        );
+
+  @override
+  String debugGetCreateSourceHash() =>
+      _$alarmPermissionRecoveryControllerHash();
+
+  @$internal
+  @override
+  $ProviderElement<PermissionRecoveryController> $createElement(
+          $ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  PermissionRecoveryController create(Ref ref) {
+    return alarmPermissionRecoveryController(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(PermissionRecoveryController value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<PermissionRecoveryController>(value),
+    );
+  }
+}
+
+String _$alarmPermissionRecoveryControllerHash() =>
+    r'df71fc1ab2d3d6b650d0a872e86f331d938e7549';
+
 @ProviderFor(heartRateRepository)
 final heartRateRepositoryProvider = HeartRateRepositoryProvider._();
 

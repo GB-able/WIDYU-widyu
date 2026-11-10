@@ -13,10 +13,12 @@ import 'package:widyu/core/di/providers.dart';
 import 'package:widyu/core/log/log.dart';
 import 'package:widyu/core/model/goal/medication/medication_point_result.dart';
 import 'package:widyu/core/model/permission/permission_recovery_prompt.dart';
+import 'package:widyu/core/model/permission/permission_type.dart';
 import 'package:widyu/core/notification/local_notification_manager.dart';
 import 'package:widyu/core/notification/medication_push_manager.dart';
 import 'package:widyu/core/ui/widgets/medication_reward_dialog.dart';
 import 'package:widyu/core/ui/widgets/permission_recovery_dialog.dart';
+import 'package:widyu/core/utils/permission_manager.dart';
 import 'package:widyu/feature/goal/medication/medication_ringing_screen.dart';
 
 class MedicationSessionScope extends ConsumerStatefulWidget {
@@ -62,12 +64,11 @@ class _MedicationSessionScopeState
       if (member == null || !mounted) return;
       await repository.activateAlarm(member);
       ready = true;
-      await requestAlarmPermissionIfNeeded();
       await refreshAlarmMember();
       unawaited(drainLaunch());
       startAlarmTimer();
       unawaited(refreshActiveAlarm());
-      unawaited(repository.syncAlarmSchedule());
+      unawaited(guideAlarmPermissions(repository.syncAlarmSchedule()));
       if (Firebase.apps.isNotEmpty) {
         subscriptions.add(FirebaseMessaging.onMessage.listen(onMessage));
         subscriptions
@@ -80,25 +81,81 @@ class _MedicationSessionScopeState
     } catch (_) {/* Status card retains retry access. */}
   }
 
-  Future<void> requestAlarmPermissionIfNeeded() async {
+  Future<bool> isAlarmBusy() async {
+    final launch = await repository.pendingAlarmLaunch();
+    final ringing = await repository.activeAlarmGroup();
+    return !mounted || launch.isNotEmpty || ringing['groupId'] is String;
+  }
+
+  Future<void> guideAlarmPermissions(Future<void> synced) async {
     try {
+      if (await isAlarmBusy()) return;
+      final controller = ref.read(alarmPermissionRecoveryControllerProvider);
       final caps = await repository.alarmCapabilities();
-      if (Platform.isIOS) {
-        if (caps['mode'] != 'alarmKit' || caps['authorized'] == true) return;
-        await repository.requestAlarmPermission();
-        return;
+      final types = [
+        if (caps['mode'] != 'alarmKit') PermissionType.notification,
+        PermissionType.alarm,
+      ];
+      var prompted = false;
+      for (final type in types) {
+        final result = await controller.ensurePermission(
+          type,
+          showPrompt: (type, mode) {
+            prompted = true;
+            return showAlarmPermissionPrompt(type, mode);
+          },
+        );
+        if (result != PermissionRequestResult.granted &&
+            result != PermissionRequestResult.unsupported) {
+          return;
+        }
       }
-      if (caps['fullScreen'] != false || !mounted) return;
-      final action = await PermissionRecoveryDialog.show(
-        context,
-        permissionName: '전체 화면 알림',
-        description: '잠긴 화면에서도 약 복용 알람 화면을 띄우려면 전체 화면 알림을 허용해야 해요.',
-        mode: PermissionRecoveryMode.settings,
-      );
-      if (action == PermissionRecoveryAction.openSettings) {
-        await repository.requestAlarmPermission();
-      }
+      if (prompted) unawaited(repository.syncAlarmSchedule());
+      await synced;
+      await guideFullScreenAlarm();
     } catch (_) {}
+  }
+
+  Future<PermissionRecoveryAction> showAlarmPermissionPrompt(
+    PermissionType type,
+    PermissionRecoveryMode mode,
+  ) async {
+    if (!mounted) return PermissionRecoveryAction.cancel;
+    final isNotification = type == PermissionType.notification;
+    return PermissionRecoveryDialog.show(
+      context,
+      permissionName: isNotification
+          ? '알림'
+          : Platform.isIOS
+              ? '알람'
+              : '알람 및 리마인더',
+      description: isNotification
+          ? Platform.isIOS
+              ? '약 복용 시간에 알람이 울리려면 알림을 허용해야 해요.'
+              : '약 복용 시간에 알람이 울리려면 알림을 허용해야 해요. 알림 설정에서 약 복용 알람 항목도 켜 주세요.'
+          : '약 복용 시간에 알람이 울리려면 이 권한을 허용해야 해요.',
+      mode: mode,
+    );
+  }
+
+  Future<void> guideFullScreenAlarm() async {
+    if (!Platform.isAndroid || await isAlarmBusy()) return;
+    final caps = await repository.alarmCapabilities();
+    if (caps['fullScreen'] != false) return;
+    final schedule = (await repository.alarmState())['schedule'];
+    if (schedule is! Map || (schedule['schedules'] as List?)?.isNotEmpty != true) {
+      return;
+    }
+    if (!mounted) return;
+    final action = await PermissionRecoveryDialog.show(
+      context,
+      permissionName: '전체 화면 알림',
+      description: '잠긴 화면에서도 약 복용 알람 화면을 띄우려면 전체 화면 알림을 허용해야 해요.',
+      mode: PermissionRecoveryMode.settings,
+    );
+    if (action == PermissionRecoveryAction.openSettings) {
+      await repository.requestAlarmPermission();
+    }
   }
 
   Future<void> refreshAlarmMember() async {
