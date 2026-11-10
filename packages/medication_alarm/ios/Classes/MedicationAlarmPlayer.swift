@@ -90,8 +90,11 @@ final class MedicationAlarmPlayer {
         arm(next: nil)
     }
 
-    func startForeground(id: UUID) {
+    func startForeground(id: UUID) -> Bool {
         fire(id)
+        guard sound, alarm?.isPlaying != true else { return true }
+        stop()
+        return false
     }
 
     private func fire(_ id: UUID) {

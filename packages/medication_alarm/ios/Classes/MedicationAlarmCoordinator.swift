@@ -343,8 +343,8 @@ final class MedicationAlarmCoordinator {
             guard let id = ((try? AlarmManager.shared.alarms) ?? []).first(where: { $0.state == .alerting })?.id,
                   let group = group(for: id, in: state),
                   group["memberId"] as? String == state["memberId"] as? String else { return [:] }
-            if UIApplication.shared.applicationState == .active {
-                MedicationAlarmPlayer.shared.startForeground(id: id)
+            if UIApplication.shared.applicationState == .active,
+               MedicationAlarmPlayer.shared.startForeground(id: id) {
                 do { try AlarmManager.shared.stop(id: id) }
                 catch { MedicationAlarmPlayer.shared.stop() }
             }
