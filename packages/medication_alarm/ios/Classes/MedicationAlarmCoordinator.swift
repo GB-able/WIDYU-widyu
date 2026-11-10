@@ -33,6 +33,7 @@ final class MedicationAlarmCoordinator {
             MedicationAlarmPlayer.shared.onStop = { [weak self] in self?.rearm() }
             MedicationAlarmPlayer.shared.onHeartbeat = { [weak self] in self?.watchdog(after: MedicationAlarmPlayer.watchdogDelay) }
             MedicationAlarmPlayer.shared.onIdle = { [weak self] in self?.center.removePendingNotificationRequests(withIdentifiers: [Self.watchdogID]) }
+            applyAlertMode()
             rearm()
         }
         BGTaskScheduler.shared.register(forTaskWithIdentifier: Self.refreshID, using: .main) { task in
@@ -143,6 +144,15 @@ final class MedicationAlarmCoordinator {
             var state = try load(); state["capabilities"] = await capabilities(); return state
         case "activeGroup": return try activeGroup()
         case "clearSession": try await clear(); return nil
+        case "setAlertMode":
+            if #available(iOS 26.0, *) { return nil }
+            var state = try load()
+            state["alertMode"] = ["sound": args["sound"] as? Bool ?? true, "vibration": args["vibration"] as? Bool ?? true]
+            state.removeValue(forKey: "scheduled")
+            try save(state)
+            applyAlertMode()
+            _ = try await reconcile()
+            return nil
         case "applySchedule":
             var state = try load(); try requireSession(state, args)
             guard let medicationSchedule = args["schedule"] as? [String: Any], medicationSchedule["complete"] as? Bool == true,
@@ -183,9 +193,18 @@ final class MedicationAlarmCoordinator {
         default: throw AlarmBridgeError.invalid("UNKNOWN_METHOD")
         }
     }
+    private func alertMode(_ key: String) -> Bool {
+        ((try? load())?["alertMode"] as? [String: Any])?[key] as? Bool ?? true
+    }
+    private func applyAlertMode() {
+        MedicationAlarmPlayer.shared.sound = alertMode("sound")
+        MedicationAlarmPlayer.shared.haptics = alertMode("vibration")
+    }
     private func clear() async throws {
         let old = try load()
-        try save(["installationId": old["installationId"]!])
+        var fresh: [String: Any] = ["installationId": old["installationId"]!]
+        fresh["alertMode"] = old["alertMode"]
+        try save(fresh)
         BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: Self.refreshID)
         MedicationAlarmPlayer.shared.disarm()
         if #available(iOS 26.0, *) {
@@ -313,7 +332,7 @@ final class MedicationAlarmCoordinator {
         } else {
             let content = UNMutableNotificationContent()
             content.title = title; content.body = "눌러서 복용 사진을 인증해 주세요."
-            content.sound = .default; content.categoryIdentifier = "WIDYU_MEDICATION"
+            content.sound = alertMode("sound") ? .default : nil; content.categoryIdentifier = "WIDYU_MEDICATION"
             content.interruptionLevel = .timeSensitive
             content.userInfo = ["widyuMedication": id.uuidString]
             var calendar = Calendar(identifier: .gregorian); calendar.timeZone = .current

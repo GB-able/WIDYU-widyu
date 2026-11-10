@@ -22,13 +22,14 @@ class AlarmPlaybackService : Service() {
     private var wakeLock: PowerManager.WakeLock? = null
     private var focus: AudioFocusRequest? = null
     private var groupId: String? = null
+    private var vibration = true
     private val attributes = AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_ALARM)
         .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION).build()
     override fun onBind(intent: Intent?): IBinder? = null
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val id = intent?.getStringExtra("groupId")
-        val group =
-            synchronized(AlarmStore.lock) { AlarmStore.read(this).optJSONObject("activeGroup") }
+        val state = synchronized(AlarmStore.lock) { AlarmStore.read(this) }
+        val group = state.optJSONObject("activeGroup")
         if (id == null || group?.optString("groupId") != id) {
             stopSelf(); return START_NOT_STICKY
         }
@@ -56,6 +57,20 @@ class AlarmPlaybackService : Service() {
         if (groupId == id) return START_NOT_STICKY
         releaseAudio()
         groupId = id
+        val mode = state.optJSONObject("alertMode")
+        vibration = mode?.optBoolean("vibration", true) ?: true
+        wakeLock = getSystemService(PowerManager::class.java).newWakeLock(
+            PowerManager.PARTIAL_WAKE_LOCK,
+            "widyu:medication-alarm"
+        ).apply { acquire(5 * 60 * 1000L) }
+        vibrate()
+        if (mode?.optBoolean("sound", true) != false) playSound()
+        handler.removeCallbacksAndMessages(null)
+        handler.postDelayed({ MedicationAlarmPlugin.stop(this, id) }, 5 * 60 * 1000L)
+        return START_NOT_STICKY
+    }
+
+    private fun playSound() {
         val audio = getSystemService(AudioManager::class.java)
         val request = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT)
             .setAudioAttributes(attributes).setAcceptsDelayedFocusGain(true)
@@ -73,11 +88,6 @@ class AlarmPlaybackService : Service() {
             }.build()
         focus = request
         val granted = audio.requestAudioFocus(request) == AudioManager.AUDIOFOCUS_REQUEST_GRANTED
-        wakeLock = getSystemService(PowerManager::class.java).newWakeLock(
-            PowerManager.PARTIAL_WAKE_LOCK,
-            "widyu:medication-alarm"
-        ).apply { acquire(5 * 60 * 1000L) }
-        vibrate()
         val media = MediaPlayer()
         try {
             player = media.apply {
@@ -96,12 +106,10 @@ class AlarmPlaybackService : Service() {
             media.release()
             recordError("playbackError", e)
         }
-        handler.removeCallbacksAndMessages(null)
-        handler.postDelayed({ MedicationAlarmPlugin.stop(this, id) }, 5 * 60 * 1000L)
-        return START_NOT_STICKY
     }
 
     private fun vibrate() {
+        if (!vibration) return
         try {
             getSystemService(Vibrator::class.java).vibrate(
                 VibrationEffect.createWaveform(longArrayOf(0, 600, 500), 0),

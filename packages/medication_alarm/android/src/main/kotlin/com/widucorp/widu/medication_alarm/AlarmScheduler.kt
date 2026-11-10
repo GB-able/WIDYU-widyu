@@ -67,6 +67,7 @@ internal class AlarmScheduler(private val context: Context) {
         AlarmStore.write(
             context,
             JSONObject().put("installationId", state.getString("installationId"))
+                .put("alertMode", state.optJSONObject("alertMode"))
         )
         (AlarmStore.objects(AlarmStore.array(state, "scheduled")) +
                 AlarmStore.objects(AlarmStore.array(state, "applying"))).forEach { cancel(it) }
