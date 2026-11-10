@@ -8,6 +8,7 @@ import 'package:widyu/core/model/album/feed.dart';
 import 'package:widyu/core/model/api/api_result.dart';
 import 'package:widyu/core/model/api/infinite_page_result.dart';
 import 'package:widyu/core/utils/extensions/date_extension.dart';
+import 'package:widyu/core/utils/infinite_scroll.dart';
 import 'package:widyu/feature/album/calendar/calendar_tab_ui_state.dart';
 
 part 'calendar_tab_view_model.g.dart';
@@ -15,7 +16,7 @@ part 'calendar_tab_view_model.g.dart';
 @riverpod
 class CalendarTabViewModel extends _$CalendarTabViewModel {
   int _calendarRequest = 0;
-  final Map<DateTime, int> _feedRequests = {};
+  final Map<DateTime, InfiniteScroller<int>> _scrollers = {};
 
   AlbumRepository get _repository => ref.read(albumRepositoryProvider);
 
@@ -27,7 +28,7 @@ class CalendarTabViewModel extends _$CalendarTabViewModel {
       selectedDay: today,
       focusedMonth: today,
       isCalendarLoading: true,
-      feedStates: {today: const DateFeedState(isLoading: true)},
+      feedStates: {today: const InfiniteScrollState(isFetching: true)},
       cache: _repository.currentCache,
     );
   }
@@ -51,12 +52,11 @@ class CalendarTabViewModel extends _$CalendarTabViewModel {
     bool exists(int id) => cache.postOf(id) != null;
     state = state.copyWith(
       cache: cache,
-      feedStates: {
-        for (final MapEntry(:key, :value) in state.feedStates.entries)
-          key: value.copyWith(albumIds: value.albumIds.where(exists).toList()),
-      },
       expandedFeedIds: state.expandedFeedIds.where(exists).toSet(),
     );
+    for (final day in state.feedStates.keys.toList()) {
+      _scrollerOf(day).update((list) => list.removeWhere((id) => !exists(id)));
+    }
     unawaited(loadCalendar(state.focusedMonth));
   }
 
@@ -110,103 +110,49 @@ class CalendarTabViewModel extends _$CalendarTabViewModel {
     }
   }
 
-  void _setFeedState(DateTime day, DateFeedState feedState) {
-    state = state.copyWith(feedStates: {...state.feedStates, day: feedState});
-  }
+  InfiniteScroller<int> _scrollerOf(DateTime day) =>
+      _scrollers[day] ??= InfiniteScroller(
+        fetch: (cursor) => _fetch(day, cursor),
+        read: () => state.feedStates[day] ?? const InfiniteScrollState(),
+        write: (list) => state = state.copyWith(
+          feedStates: {...state.feedStates, day: list},
+        ),
+        mounted: () => ref.mounted,
+      );
 
-  // 조회 결과를 캐시에 반영하고, 캐시에 남은 게시물 id만 돌려준다.
-  List<int> _hydrate(AlbumRepository repository, List<Feed> feeds) {
-    repository.hydrate(feeds);
+  Future<InfinitePageResult<int>> _fetch(DateTime day, String? cursor) async {
+    final repository = _repository;
+    final scroller = _scrollerOf(day);
+    final generation = scroller.generation;
+    final result = await repository.fetchFeeds(cursor: cursor, date: day);
+    // 오래된 응답으로 공유 캐시를 덮어쓰지 않는다.
+    if (!scroller.isCurrent(generation) || repository.isDisposed) {
+      return const InfinitePageResult(items: <int>[], nextCursor: null);
+    }
+    if (result case Failure(:final message)) throw Exception(message);
+
+    final page = (result as Success<InfinitePageResult<Feed>>).data;
+    repository.hydrate(page.items);
     final cache = repository.currentCache;
     _onCache(cache);
-    return [
-      for (final feed in feeds)
-        if (cache.postOf(feed.albumId) != null) feed.albumId,
-    ];
-  }
-
-  Future<void> loadFeeds(DateTime day) async {
-    final normalized = day.onlyDateTime;
-    if (!ref.mounted) return;
-    final repository = _repository;
-    final request = (_feedRequests[normalized] ?? 0) + 1;
-    _feedRequests[normalized] = request;
-    _setFeedState(normalized, const DateFeedState(isLoading: true));
-
-    final result = await repository.fetchFeeds(date: normalized);
-    if (!ref.mounted ||
-        repository.isDisposed ||
-        request != _feedRequests[normalized]) {
-      return;
-    }
-    switch (result) {
-      case Success<InfinitePageResult<Feed>>(:final data):
-        _setFeedState(
-          normalized,
-          DateFeedState(
-            albumIds: _hydrate(repository, data.items),
-            nextCursor: data.nextCursor,
-            hasNext: data.hasNext,
-          ),
-        );
-      case Failure():
-        _setFeedState(normalized, const DateFeedState(hasError: true));
-    }
-  }
-
-  Future<void> loadMoreFeeds() async {
-    if (!ref.mounted) return;
-    final normalized = state.selectedDay;
-    final feedState = state.feedStates[normalized] ?? const DateFeedState();
-
-    if (feedState.isLoading || feedState.isLoadingMore || !feedState.hasNext) {
-      return;
-    }
-    final repository = _repository;
-    final request = _feedRequests[normalized];
-
-    _setFeedState(
-      normalized,
-      feedState.copyWith(isLoadingMore: true, hasError: false),
+    final loaded = cursor == null
+        ? const <int>{}
+        : (state.feedStates[day]?.items ?? const <int>[]).toSet();
+    return InfinitePageResult(
+      items: [
+        for (final feed in page.items)
+          if (cache.postOf(feed.albumId) != null &&
+              !loaded.contains(feed.albumId))
+            feed.albumId,
+      ],
+      nextCursor: page.nextCursor,
+      hasNext: page.hasNext,
     );
-
-    final result = await repository.fetchFeeds(
-      cursor: feedState.nextCursor,
-      date: normalized,
-    );
-    if (!ref.mounted ||
-        repository.isDisposed ||
-        request != _feedRequests[normalized]) {
-      return;
-    }
-    switch (result) {
-      case Success<InfinitePageResult<Feed>>(:final data):
-        final albumIds = _hydrate(repository, data.items);
-        final current = state.feedStates[normalized]!;
-        _setFeedState(
-          normalized,
-          current.copyWith(
-            albumIds: {...current.albumIds, ...albumIds}.toList(),
-            cursor: feedState.nextCursor,
-            nextCursor: data.nextCursor,
-            hasNext: data.hasNext,
-            isLoadingMore: false,
-          ),
-        );
-      case Failure():
-        final current = state.feedStates[normalized]!;
-        _setFeedState(
-          normalized,
-          current.copyWith(isLoadingMore: false, hasError: true),
-        );
-    }
   }
 
-  Future<void> retry() async {
-    if (state.selectedDayState.albumIds.isEmpty) {
-      await loadFeeds(state.selectedDay);
-    } else {
-      await loadMoreFeeds();
-    }
-  }
+  Future<void> loadFeeds(DateTime day) => _scrollerOf(day.onlyDateTime).init();
+
+  Future<void> loadMoreFeeds() => _scrollerOf(state.selectedDay).loadMore();
+
+  Future<void> retry() => _scrollerOf(state.selectedDay).retry();
 }

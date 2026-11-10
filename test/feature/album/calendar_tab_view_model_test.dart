@@ -41,7 +41,7 @@ void main() {
     await pumpEventQueue();
     expect(state().isCalendarLoading, isFalse);
     expect(state().daysWithEvents, {1, 15});
-    expect(state().selectedDayState.albumIds, [1, 2]);
+    expect(state().selectedDayState.items, [1, 2]);
     expect(state().cache.postOf(1), isNotNull);
   });
 
@@ -78,7 +78,7 @@ void main() {
 
     await viewModel.deleteFeed(1);
     await pumpEventQueue();
-    expect(state().feedStates.values.map((s) => s.albumIds), [
+    expect(state().feedStates.values.map((s) => s.items), [
       [2],
       [2],
     ]);
@@ -108,8 +108,40 @@ void main() {
 
     dataSource.feeds = okResponse(page([feed(2), feed(3)]));
     await viewModel.loadMoreFeeds();
-    expect(state().selectedDayState.albumIds, [1, 2, 3]);
+    expect(state().selectedDayState.items, [1, 2, 3]);
     expect(state().selectedDayState.hasNext, isFalse);
     expect(state().selectedDayState.isLoadingMore, isFalse);
+  });
+
+  test('다음 페이지 요청이 실패하면 스크롤로는 다시 요청하지 않고 재시도로만 요청한다', () async {
+    int requests() => dataSource.calls.where((n) => n == 'fetchFeeds').length;
+    dataSource.feeds = okResponse(page([feed(1)], next: 'c1'));
+    final viewModel = listen();
+    await pumpEventQueue();
+
+    dataSource.feeds = errorResponse();
+    await viewModel.loadMoreFeeds();
+    await viewModel.loadMoreFeeds();
+    expect(requests(), 2);
+    expect(state().selectedDayState.hasError, isTrue);
+
+    dataSource.feeds = okResponse(page([feed(2)]));
+    await viewModel.retry();
+    expect(requests(), 3);
+    expect(state().selectedDayState.items, [1, 2]);
+    expect(state().selectedDayState.hasError, isFalse);
+  });
+
+  test('삭제로 그날 목록이 비어도 다음 페이지가 있으면 이어서 불러온다', () async {
+    dataSource.feeds = okResponse(page([feed(1)], next: 'c1'));
+    listen();
+    await pumpEventQueue();
+
+    dataSource.feeds = okResponse(page([feed(2)]));
+    await repository.deleteFeed(1);
+    await pumpEventQueue();
+
+    expect(state().selectedDayState.items, [2]);
+    expect(state().selectedDayState.hasNext, isFalse);
   });
 }

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -82,8 +84,11 @@ class _PostScreenState extends ConsumerState<PostScreen> {
   void _submitEdit() => _viewModel.submitEdit(_editController.text);
 
   Future<void> _sendComment() async {
-    final sent = await _viewModel.sendComment(_commentController.text);
-    if (sent && mounted) _commentController.clear();
+    final text = _commentController.text;
+    final sent = await _viewModel.sendComment(text);
+    if (sent && mounted && _commentController.text == text) {
+      _commentController.clear();
+    }
   }
 
   // 탭(이벤트) 시점의 캐시와 포인트로 판단한다.
@@ -94,12 +99,18 @@ class _PostScreenState extends ConsumerState<PostScreen> {
     final success = await showUnlockDialog(
       context,
       price: cache.postOf(postId)?.price,
-      point: ref.read(pointRepositoryProvider).currentStatus.point,
+      pointRepository: ref.read(pointRepositoryProvider),
       isUnlocking: cache.isUnlocking(postId),
       onPurchase: () => repository.unlock(postId),
       onGoToGoal: () => context.go(AppRoute.goal.path),
     );
     return success && !repository.isDisposed;
+  }
+
+  Future<bool> _unlockAndRetry() async {
+    final unlocked = await _requestUnlock();
+    if (unlocked) unawaited(_viewModel.retry());
+    return unlocked;
   }
 
   void _handleEvent(PostViewModel viewModel, PostUiEvent event) {
@@ -120,9 +131,7 @@ class _PostScreenState extends ConsumerState<PostScreen> {
           ),
         );
       case FeedLocked():
-        _requestUnlock().then((unlocked) {
-          if (unlocked) viewModel.retry();
-        });
+        _unlockAndRetry();
     }
   }
 
@@ -194,7 +203,7 @@ class _PostScreenState extends ConsumerState<PostScreen> {
                                   isLocked: !isUnlocked,
                                   onToggleLike: viewModel.toggleLike,
                                   onDelete: viewModel.deleteFeed,
-                                  onRequestUnlock: _requestUnlock,
+                                  onRequestUnlock: _unlockAndRetry,
                                   key: ValueKey(postId),
                                   isDetail: true,
                                   onDeleted: () => context.pop(),

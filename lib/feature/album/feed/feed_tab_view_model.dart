@@ -49,9 +49,9 @@ class FeedTabViewModel extends _$FeedTabViewModel {
     bool exists(int id) => cache.postOf(id) != null;
     state = state.copyWith(
       cache: cache,
-      list: state.list.removeWhere((id) => !exists(id)),
       expandedFeedIds: state.expandedFeedIds.where(exists).toSet(),
     );
+    _scroller.update((list) => list.removeWhere((id) => !exists(id)));
   }
 
   void setContentExpanded(int albumId, bool expanded) {

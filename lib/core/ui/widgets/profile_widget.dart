@@ -24,6 +24,9 @@ class ProfileWidget extends StatelessWidget {
                 width: size,
                 height: size,
                 fit: BoxFit.cover,
+                memCacheWidth:
+                    (size * MediaQuery.devicePixelRatioOf(context) * 1.5)
+                        .round(),
                 fadeInDuration: Duration.zero,
                 placeholder: (_, __) => _placeholder,
                 errorWidget: (_, __, ___) => _placeholder,

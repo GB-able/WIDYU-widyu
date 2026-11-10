@@ -7,6 +7,7 @@ import 'package:widyu/core/data/repository/point/point_repository.dart';
 import 'package:widyu/core/data/source/album/album_remote_data_source.dart';
 import 'package:widyu/core/model/album/album_comment_create_request.dart';
 import 'package:widyu/core/model/album/album_comment_update_request.dart';
+import 'package:widyu/core/model/album/album_unlock.dart';
 import 'package:widyu/core/model/album/comment.dart';
 import 'package:widyu/core/model/album/feed.dart';
 import 'package:widyu/core/model/album/feed_detail.dart';
@@ -84,6 +85,7 @@ class FakeAlbumDataSource extends Fake implements AlbumRemoteDataSource {
 
   /// 이름이 같은 요청은 complete될 때까지 응답을 붙잡는다.
   final gates = <String, Completer<void>>{};
+  final errors = <String, Object>{};
 
   // 응답은 요청 시점의 값을 쓴다.
   ApiResponse<InfinitePageResult<Feed>> feeds = okResponse(page(<Feed>[]));
@@ -97,10 +99,16 @@ class FakeAlbumDataSource extends Fake implements AlbumRemoteDataSource {
   ApiResponse<void> deletedComment = okResponse();
   ApiResponse<void> uploaded = okResponse();
   ApiResponse<void> updated = okResponse();
+  ApiResponse<void> deleted = okResponse();
+  ApiResponse<List<int>> liked = okResponse(<int>[]);
+  ApiResponse<void> likeResult = okResponse();
+  ApiResponse<AlbumUnlock> unlockResult = errorResponse();
 
   Future<R> _call<R>(String name, R response) async {
     calls.add(name);
+    final error = errors[name];
     await gates[name]?.future;
+    if (error != null) throw error;
     return response;
   }
 
@@ -134,7 +142,23 @@ class FakeAlbumDataSource extends Fake implements AlbumRemoteDataSource {
 
   @override
   Future<ApiResponse<void>> deleteFeed(int albumId) =>
-      _call('deleteFeed', okResponse<void>());
+      _call('deleteFeed', deleted);
+
+  @override
+  Future<ApiResponse<List<int>>> fetchLikedFeeds() =>
+      _call('fetchLikedFeeds', liked);
+
+  @override
+  Future<ApiResponse<void>> likeFeed(int albumId) =>
+      _call('likeFeed', likeResult);
+
+  @override
+  Future<ApiResponse<void>> unlikeFeed(int albumId) =>
+      _call('unlikeFeed', likeResult);
+
+  @override
+  Future<ApiResponse<AlbumUnlock>> unlockFeed(int albumId) =>
+      _call('unlockFeed', unlockResult);
 
   @override
   Future<ApiResponse<Comment>> createComment({

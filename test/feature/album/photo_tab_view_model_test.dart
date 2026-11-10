@@ -72,4 +72,17 @@ void main() {
     await pumpEventQueue();
     expect(state().list.items.map((m) => m.id), [2]);
   });
+
+  test('삭제로 목록이 비어도 다음 페이지가 있으면 이어서 불러온다', () async {
+    dataSource.mediaFeed = okResponse(page([media(1, postId: 10)], next: 'c1'));
+    listen();
+    await pumpEventQueue();
+
+    dataSource.mediaFeed = okResponse(page([media(2, postId: 11)]));
+    await repository.deleteFeed(10);
+    await pumpEventQueue();
+
+    expect(state().list.items.map((m) => m.id), [2]);
+    expect(state().list.hasNext, isFalse);
+  });
 }
