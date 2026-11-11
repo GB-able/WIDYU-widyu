@@ -2,7 +2,10 @@ package com.widucorp.widu.medication_alarm
 
 import android.app.PendingIntent
 import android.app.Service
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.media.AudioAttributes
 import android.media.AudioFocusRequest
 import android.media.AudioManager
@@ -15,6 +18,7 @@ import android.os.PowerManager
 import android.os.VibrationEffect
 import android.os.Vibrator
 import androidx.core.app.NotificationCompat
+import androidx.core.content.ContextCompat
 
 class AlarmPlaybackService : Service() {
     private val handler = Handler(Looper.getMainLooper())
@@ -23,6 +27,13 @@ class AlarmPlaybackService : Service() {
     private var focus: AudioFocusRequest? = null
     private var groupId: String? = null
     private var vibration = true
+    private var paused = false
+    private var watchingScreen = false
+    private val screenOff = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            if (!paused) handler.postDelayed({ vibrate() }, 300)
+        }
+    }
     private val attributes = AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_ALARM)
         .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION).build()
     override fun onBind(intent: Intent?): IBinder? = null
@@ -64,6 +75,13 @@ class AlarmPlaybackService : Service() {
             "widyu:medication-alarm"
         ).apply { acquire(5 * 60 * 1000L) }
         vibrate()
+        if (vibration) {
+            ContextCompat.registerReceiver(
+                this, screenOff, IntentFilter(Intent.ACTION_SCREEN_OFF),
+                ContextCompat.RECEIVER_NOT_EXPORTED
+            )
+            watchingScreen = true
+        }
         if (mode?.optBoolean("sound", true) != false) playSound()
         handler.removeCallbacksAndMessages(null)
         handler.postDelayed({ MedicationAlarmPlugin.stop(this, id) }, 5 * 60 * 1000L)
@@ -77,10 +95,12 @@ class AlarmPlaybackService : Service() {
             .setOnAudioFocusChangeListener { change ->
                 when (change) {
                     AudioManager.AUDIOFOCUS_LOSS_TRANSIENT -> {
+                        paused = true
                         player?.pause()
                         getSystemService(Vibrator::class.java).cancel()
                     }
                     AudioManager.AUDIOFOCUS_GAIN -> {
+                        paused = false
                         player?.apply { setVolume(1f, 1f); start() }
                         vibrate()
                     }
@@ -125,6 +145,8 @@ class AlarmPlaybackService : Service() {
     }
 
     private fun releaseAudio() {
+        if (watchingScreen) unregisterReceiver(screenOff)
+        watchingScreen = false; paused = false
         player?.release(); player = null
         getSystemService(Vibrator::class.java).cancel()
         focus?.let { getSystemService(AudioManager::class.java).abandonAudioFocusRequest(it) }; focus =
