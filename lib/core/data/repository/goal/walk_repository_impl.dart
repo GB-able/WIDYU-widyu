@@ -189,7 +189,7 @@ class WalkRepositoryImpl implements WalkRepository {
     final readHealth =
         !background || await _localDataSource.canReadInBackground();
     final owner = await _localDataSource.acquireLock('steps');
-    if (owner == null) return const WalkSaveResult();
+    if (owner == null) return const WalkSaveResult(retry: true);
     Future<bool> active() async =>
         isCancelled?.call() != true &&
         elapsed.elapsed < budget &&
@@ -233,7 +233,7 @@ class WalkRepositoryImpl implements WalkRepository {
             elapsed.elapsed <= budget - const Duration(seconds: 6),
         save: save,
       )) {
-        return const WalkSaveResult();
+        return const WalkSaveResult(retry: true);
       }
       final days = state['days'] as Map<String, dynamic>;
       final summary = await _uploadAndSaveSteps(
