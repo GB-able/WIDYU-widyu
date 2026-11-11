@@ -54,7 +54,7 @@ class _GoalContent extends StatelessWidget {
                       onVerified: onMedicationVerified,
                     )
                   : const GoalEmptyCard(type: GoalType.medicine),
-              walk != null
+              walk != null && walk.goal > 0
                   ? Consumer(
                       builder: (context, ref, _) => WalkCard(
                         walk: walk.copyWith(
