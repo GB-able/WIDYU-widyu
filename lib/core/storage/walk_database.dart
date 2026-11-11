@@ -36,6 +36,14 @@ class WalkDatabase {
     return jsonDecode(rows.single['value'] as String) as Map<String, dynamic>;
   }
 
+  Future<bool> hasDay(String date) async {
+    final rows = await (await database).query('state', columns: ['value']);
+    return rows.any((row) {
+      final state = jsonDecode(row['value'] as String) as Map<String, dynamic>;
+      return (state['days'] as Map?)?.containsKey(date) ?? false;
+    });
+  }
+
   Future<void> save(String session, Map<String, dynamic> state) async {
     await (await database).insert(
         'state',

@@ -19,6 +19,8 @@ abstract class WalkLocalDataSource {
 
   Future<void> saveState(String memberId, Map<String, dynamic> state);
 
+  Future<bool> hasDayInAnyState(String date);
+
   Future<String?> acquireLock(String name);
 
   Future<bool> ownsLock(String name, String owner);

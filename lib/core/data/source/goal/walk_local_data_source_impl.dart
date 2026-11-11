@@ -152,6 +152,9 @@ class WalkLocalDataSourceImpl implements WalkLocalDataSource {
       _db.save(memberId, state);
 
   @override
+  Future<bool> hasDayInAnyState(String date) => _db.hasDay(date);
+
+  @override
   Future<String?> acquireLock(String name) => _db.acquire(name);
 
   @override
