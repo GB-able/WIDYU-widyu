@@ -98,12 +98,16 @@ final class MedicationAlarmPlayer {
     }
 
     private func fire(_ id: UUID) {
-        guard ringingID == nil else { return }
+        guard ringingID != id else { return }
+        let ringing = ringingID != nil
         ringingID = id
         lastFired = id
         fireTimer = nil
-        if sound { startAudio() }
-        if haptics { startHaptics() }
+        if !ringing {
+            if sound { startAudio() }
+            if haptics { startHaptics() }
+        }
+        ceilingTimer?.invalidate()
         ceilingTimer = Timer.scheduledTimer(withTimeInterval: Self.maxRing, repeats: false) { [weak self] _ in
             MainActor.assumeIsolated { self?.stop() }
         }

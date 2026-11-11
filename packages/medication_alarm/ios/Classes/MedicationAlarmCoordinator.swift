@@ -29,7 +29,7 @@ final class MedicationAlarmCoordinator {
         guard !backgroundRegistered else { return }
         backgroundRegistered = true
         if #unavailable(iOS 26.0) {
-            MedicationAlarmPlayer.shared.onFire = { [weak self] id in self?.fired(id) }
+            MedicationAlarmPlayer.shared.onFire = { [weak self] id in self?.fired(id); self?.rearm() }
             MedicationAlarmPlayer.shared.onStop = { [weak self] in self?.rearm() }
             MedicationAlarmPlayer.shared.onHeartbeat = { [weak self] in self?.watchdog(after: MedicationAlarmPlayer.watchdogDelay) }
             MedicationAlarmPlayer.shared.onIdle = { [weak self] in self?.center.removePendingNotificationRequests(withIdentifiers: [Self.watchdogID]) }
