@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:clock/clock.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:widyu/core/data/repository/album/album_repository.dart';
 import 'package:widyu/core/di/providers.dart';
@@ -22,7 +23,7 @@ class CalendarTabViewModel extends _$CalendarTabViewModel {
 
   @override
   CalendarTabUiState build() {
-    final today = DateTime.now().onlyDateTime;
+    final today = clock.now().onlyDateTime;
     unawaited(Future.microtask(_start));
     return CalendarTabUiState(
       selectedDay: today,

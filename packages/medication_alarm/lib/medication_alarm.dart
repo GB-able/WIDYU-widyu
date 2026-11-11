@@ -8,7 +8,8 @@ export 'src/medication_schedule_rule.dart';
 
 class MedicationAlarm {
   static const _channel = MethodChannel('com.widucorp.widu/medication_alarm');
-  static const _events = EventChannel('com.widucorp.widu/medication_alarm/events');
+  static const _events =
+      EventChannel('com.widucorp.widu/medication_alarm/events');
   static final Stream<void> changes =
       _events.receiveBroadcastStream().map((_) => null).asBroadcastStream();
 
@@ -46,6 +47,9 @@ class MedicationAlarm {
       });
   Future<void> stop(String groupId) =>
       _channel.invokeMethod('stop', {'groupId': groupId});
+  Future<void> setAlertMode({required bool sound, required bool vibration}) =>
+      _channel.invokeMethod(
+          'setAlertMode', {'sound': sound, 'vibration': vibration});
   Future<void> clearSession() => _channel.invokeMethod('clearSession');
   Future<Map<String, dynamic>> pendingLaunch() => _map('pendingLaunch');
   Future<void> acknowledgeLaunch(String eventId) =>

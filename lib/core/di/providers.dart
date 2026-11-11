@@ -44,6 +44,7 @@ import 'package:widyu/core/data/source/location/location_remote_data_source_impl
 import 'package:widyu/core/data/source/myPage/my_page_remote_data_source_impl.dart';
 import 'package:widyu/core/data/source/notification/notification_remote_data_source_impl.dart';
 import 'package:widyu/core/data/source/point/point_remote_data_source_impl.dart';
+import 'package:widyu/core/model/permission/permission_type.dart';
 import 'package:widyu/core/network/api_client.dart';
 import 'package:widyu/core/network/socket_client.dart';
 import 'package:widyu/core/notification/fcm_token_service.dart';
@@ -51,6 +52,7 @@ import 'package:widyu/core/notification/medication_push_manager.dart';
 import 'package:widyu/core/utils/app_service_controller.dart';
 import 'package:widyu/core/utils/background_location_notice_controller.dart';
 import 'package:widyu/core/utils/kakao_map_launcher.dart';
+import 'package:widyu/core/utils/permission_manager.dart';
 import 'package:widyu/core/utils/permission_recovery_controller.dart';
 import 'package:widyu/core/utils/walk_tracker.dart';
 
@@ -95,6 +97,37 @@ MedicationRepository medicationRepository(Ref ref) => MedicationRepositoryImpl(
       remoteDataSource: MedicationRemoteDataSourceImpl(apiClient: ApiClient()),
       currentMember: authenticatedMedicationMember,
     );
+
+@Riverpod(keepAlive: true)
+PermissionRecoveryController alarmPermissionRecoveryController(Ref ref) {
+  final repository = ref.watch(medicationRepositoryProvider);
+
+  Future<PermissionRequestResult> status(PermissionType type) async {
+    final current = await PermissionManager.status(type);
+    if (type != PermissionType.notification ||
+        current != PermissionRequestResult.granted) {
+      return current;
+    }
+    final capabilities = await repository.alarmCapabilities();
+    return capabilities['notifications'] == false
+        ? PermissionRequestResult.permanentlyDenied
+        : current;
+  }
+
+  final controller = PermissionRecoveryController(
+    statusReader: status,
+    rationaleReader: (_) async => true,
+    settingsRechecker: (type, settings) =>
+        PermissionManager.openSettingsAndRecheck(
+      type,
+      settings,
+      isGrantedReader: (type) async =>
+          await status(type) == PermissionRequestResult.granted,
+    ),
+  );
+  ref.onDispose(controller.dispose);
+  return controller;
+}
 
 @Riverpod(keepAlive: true)
 HeartRateRepository heartRateRepository(Ref ref) => HeartRateRepositoryImpl(

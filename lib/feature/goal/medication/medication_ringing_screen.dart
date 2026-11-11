@@ -53,66 +53,70 @@ class _MedicationRingingScreenState extends State<MedicationRingingScreen> {
       value: SystemUiOverlayStyle.light,
       child: PopScope(
         canPop: false,
-        child: Scaffold(
-          backgroundColor: MyColor.dim,
-          body: SafeArea(
-            child: Column(children: [
-              const SizedBox(height: 24),
-              Assets.images.img64Logo
-                  .image(width: 64, fit: BoxFit.contain),
-              const Spacer(flex: 5),
-              Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Assets.images.img93MascotMedicine
-                        .image(width: 93, fit: BoxFit.contain),
-                    const SizedBox(height: 12),
-                    Text('$doseLabel정',
-                        style: MyTypo.title1.copyWith(color: MyColor.primary)),
-                    const SizedBox(height: 4),
-                    Text('복용하실 시간이에요!',
-                        style: MyTypo.subTitle6.copyWith(color: MyColor.white)),
-                    const SizedBox(height: 12),
-                    SizedBox(
-                      width: 234,
-                      height: 56,
-                      child: FilledButton(
-                        onPressed: widget.busy ? null : widget.onVerify,
-                        style: FilledButton.styleFrom(
-                          backgroundColor: MyColor.primary,
-                          foregroundColor: MyColor.white,
-                          disabledBackgroundColor: MyColor.grey300,
-                          shape: const StadiumBorder(),
+        child: MediaQuery.withClampedTextScaling(
+          maxScaleFactor: 1.3,
+          child: Scaffold(
+            backgroundColor: MyColor.dim,
+            body: SafeArea(
+              child: Column(children: [
+                const SizedBox(height: 24),
+                Assets.images.img64Logo.image(width: 64, fit: BoxFit.contain),
+                const Spacer(flex: 5),
+                Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Assets.images.img93MascotMedicine
+                          .image(width: 93, fit: BoxFit.contain),
+                      const SizedBox(height: 12),
+                      Text('$doseLabel정',
+                          style:
+                              MyTypo.title1.copyWith(color: MyColor.primary)),
+                      const SizedBox(height: 4),
+                      Text('복용하실 시간이에요!',
+                          style:
+                              MyTypo.subTitle6.copyWith(color: MyColor.white)),
+                      const SizedBox(height: 12),
+                      SizedBox(
+                        width: 234,
+                        height: 56,
+                        child: FilledButton(
+                          onPressed: widget.busy ? null : widget.onVerify,
+                          style: FilledButton.styleFrom(
+                            backgroundColor: MyColor.primary,
+                            foregroundColor: MyColor.white,
+                            disabledBackgroundColor: MyColor.grey300,
+                            shape: const StadiumBorder(),
+                          ),
+                          child: Text('인증 하러 가기',
+                              style:
+                                  MyTypo.title3.copyWith(color: MyColor.white)),
                         ),
-                        child: Text('인증 하러 가기',
-                            style:
-                                MyTypo.title3.copyWith(color: MyColor.white)),
                       ),
+                    ],
+                  ),
+                ),
+                const Spacer(flex: 8),
+                SizedBox(
+                  width: 95,
+                  height: 41,
+                  child: FilledButton(
+                    onPressed: widget.busy ? null : widget.onStop,
+                    style: FilledButton.styleFrom(
+                      backgroundColor: MyColor.grey800,
+                      foregroundColor: MyColor.white,
+                      disabledBackgroundColor: MyColor.grey300,
+                      shape: const StadiumBorder(),
                     ),
-                  ],
-                ),
-              ),
-              const Spacer(flex: 8),
-              SizedBox(
-                width: 95,
-                height: 41,
-                child: FilledButton(
-                  onPressed: widget.busy ? null : widget.onStop,
-                  style: FilledButton.styleFrom(
-                    backgroundColor: MyColor.grey800,
-                    foregroundColor: MyColor.white,
-                    disabledBackgroundColor: MyColor.grey300,
-                    shape: const StadiumBorder(),
-                  ),
-                  child: Text(
-                    '중단',
-                    style: MyTypo.subTitle2.copyWith(color: MyColor.white),
+                    child: Text(
+                      '중단',
+                      style: MyTypo.subTitle2.copyWith(color: MyColor.white),
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 24),
-            ]),
+                const SizedBox(height: 24),
+              ]),
+            ),
           ),
         ),
       ),
