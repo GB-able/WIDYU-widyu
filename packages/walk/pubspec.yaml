@@ -1,5 +1,5 @@
 name: walk
-description: Android Recording API bridge for Widyu steps.
+description: Step count bridge for Widyu (Android Recording API, iOS CoreMotion).
 version: 0.0.1
 publish_to: none
 
@@ -16,4 +16,6 @@ flutter:
     platforms:
       android:
         package: com.widucorp.widu.walk
+        pluginClass: WalkPlugin
+      ios:
         pluginClass: WalkPlugin
