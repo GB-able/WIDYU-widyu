@@ -172,7 +172,7 @@ class WalkTracker with WidgetsBindingObserver {
     } else if (state == AppLifecycleState.paused ||
         state == AppLifecycleState.hidden) {
       _pause();
-      unawaited(sync());
+      if (state == AppLifecycleState.paused) unawaited(sync());
     }
   }
 
