@@ -38,7 +38,8 @@ class WalkRepositoryImpl implements WalkRepository {
   bool _disposed = false;
   final _syncRequests = StreamController<void>.broadcast();
   Future<void>? _reading;
-  String? _achievedSyncDate;
+  String? _achievedDate;
+  DateTime? _achievedRequestedAt;
 
   // 재생되는 마지막 값이 어제 것일 수 있어 받는 시점의 날짜로 다시 계산한다.
   @override
@@ -94,6 +95,7 @@ class WalkRepositoryImpl implements WalkRepository {
   @override
   Future<void> refreshTodaySteps() {
     if (_disposed || _goal == null) return Future.value();
+    _syncIfAchieved();
     return _reading ??=
         _refreshTodaySteps().whenComplete(() => _reading = null);
   }
@@ -124,14 +126,17 @@ class WalkRepositoryImpl implements WalkRepository {
 
   void _syncIfAchieved() {
     final goal = _goal;
-    final today = now().walkDate;
+    final instant = now();
+    final requestedAt = _achievedRequestedAt;
     if (_disposed ||
         goal == null ||
         currentTodaySteps < goal ||
-        _achievedSyncDate == today) {
+        _achievedDate == instant.walkDate ||
+        (requestedAt != null &&
+            instant.difference(requestedAt) < const Duration(minutes: 1))) {
       return;
     }
-    _achievedSyncDate = today;
+    _achievedRequestedAt = instant;
     _syncRequests.add(null);
   }
 
@@ -233,6 +238,10 @@ class WalkRepositoryImpl implements WalkRepository {
           isCancelled?.call() == true ||
           !await _localDataSource.ownsLock('steps', owner)) {
         return const WalkSaveResult();
+      }
+      final sentToday = (days[serverDate] as Map?)?['sent'] as int? ?? 0;
+      if (math.max(sentToday, detail.actual) >= detail.goal) {
+        _achievedDate = serverDate;
       }
       final resultDate = now().walkDate;
       return WalkSaveResult(
