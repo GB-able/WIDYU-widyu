@@ -196,10 +196,12 @@ class WalkRepositoryImpl implements WalkRepository {
         final response = await _remoteDataSource.fetchToday();
         final status = response.statusCode ?? 0;
         if (status == 401) return const WalkSaveResult(unauthorized: true);
-        if (status < 200 || status >= 300) return const WalkSaveResult();
+        if (status < 200 || status >= 300) {
+          return const WalkSaveResult(retry: true);
+        }
         detail = response.data;
       } catch (_) {
-        return const WalkSaveResult();
+        return const WalkSaveResult(retry: true);
       }
       if (now().walkDate != serverDate) return const WalkSaveResult();
       _goal = detail != null && detail.goal > 0 ? detail.goal : null;
@@ -250,6 +252,7 @@ class WalkRepositoryImpl implements WalkRepository {
         uploaded: summary.uploaded,
         rewardChanged: summary.rewardChanged,
         unauthorized: summary.unauthorized,
+        retry: summary.retry,
       );
     } finally {
       await _localDataSource.releaseLock('steps', owner);
@@ -361,7 +364,7 @@ class WalkRepositoryImpl implements WalkRepository {
     return today.walkDateShift(1).walkStartOf;
   }
 
-  Future<({int uploaded, bool rewardChanged, bool unauthorized})>
+  Future<({int uploaded, bool rewardChanged, bool unauthorized, bool retry})>
       _uploadAndSaveSteps({
     required Map<String, dynamic> days,
     required String serverDate,
@@ -372,8 +375,12 @@ class WalkRepositoryImpl implements WalkRepository {
     var uploaded = 0;
     var rewardChanged = false;
     var unauthorized = false;
+    var retry = false;
     for (final date in days.keys.toList()..sort()) {
-      if (!await active()) break;
+      if (!await active()) {
+        retry = true;
+        break;
+      }
       if (!date.isWalkDateAllowed(now())) {
         days.remove(date);
         await save();
@@ -390,19 +397,25 @@ class WalkRepositoryImpl implements WalkRepository {
         unauthorized = true;
         break;
       }
-      if (!await active()) break;
+      if (!await active()) {
+        retry = true;
+        break;
+      }
       if (result.status == WalkSyncStatus.success) {
         uploaded++;
         rewardChanged |= result.achieved && day['achieved'] != true;
         day['sent'] = total;
         if (result.achieved) day['achieved'] = true;
         await save();
+      } else {
+        retry = true;
       }
     }
     return (
       uploaded: uploaded,
       rewardChanged: rewardChanged,
       unauthorized: unauthorized,
+      retry: retry,
     );
   }
 
