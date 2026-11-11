@@ -112,7 +112,11 @@ class WalkRepositoryImpl implements WalkRepository {
     } catch (_) {
       return;
     }
-    if (_disposed || steps == null || steps < 0) return;
+    if (_disposed) return;
+    if (steps == null || steps < 0) {
+      if (_date != today) _emit();
+      return;
+    }
     _raise(steps + (_offsetDate == today ? _offset : 0));
   }
 
