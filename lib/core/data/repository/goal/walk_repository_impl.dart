@@ -68,6 +68,9 @@ class WalkRepositoryImpl implements WalkRepository {
   Future<bool> ensurePermission() => _localDataSource.ensurePermission();
 
   @override
+  Future<bool> hasPermission() => _localDataSource.canReadInBackground();
+
+  @override
   Stream<int> get liveStepCounts => _localDataSource.liveStepCounts;
 
   @override

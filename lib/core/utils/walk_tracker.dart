@@ -57,20 +57,35 @@ class WalkTracker with WidgetsBindingObserver {
       }
       final permitted = await _repository.ensurePermission();
       if (_disposed) return;
-      _tracking = permitted;
-      if (permitted) {
-        try {
-          await startWalkBackgroundService();
-        } catch (error, stack) {
-          WiduLog.data.w('걸음수 백그라운드 등록 보류', error: error, stackTrace: stack);
-        }
-        if (_disposed) return;
-      }
+      if (permitted) await _track();
+      if (_disposed) return;
       _resume();
       await refresh();
       unawaited(sync());
     } catch (error, stack) {
       WiduLog.data.w('걸음수 연동 시작 실패', error: error, stackTrace: stack);
+    }
+  }
+
+  Future<void> _track() async {
+    _tracking = true;
+    try {
+      await startWalkBackgroundService();
+    } catch (error, stack) {
+      WiduLog.data.w('걸음수 백그라운드 등록 보류', error: error, stackTrace: stack);
+    }
+  }
+
+  Future<void> _trackIfPermitted() async {
+    try {
+      if (!await _repository.hasPermission()) return;
+      if (_disposed || _tracking || _memberId == null) return;
+      await _track();
+      if (_disposed) return;
+      _resume();
+      await refresh();
+    } catch (error, stack) {
+      WiduLog.data.w('걸음수 권한 재확인 실패', error: error, stackTrace: stack);
     }
   }
 
@@ -148,6 +163,7 @@ class WalkTracker with WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (_disposed) return;
     if (state == AppLifecycleState.resumed) {
+      if (!_tracking && _memberId != null) unawaited(_trackIfPermitted());
       _resume();
       unawaited(refresh());
       unawaited(sync());
