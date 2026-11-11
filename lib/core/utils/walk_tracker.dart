@@ -163,7 +163,9 @@ class WalkTracker with WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (_disposed) return;
     if (state == AppLifecycleState.resumed) {
-      if (!_tracking && _memberId != null) unawaited(_trackIfPermitted());
+      if (!_tracking && _memberId != null && _starting == null) {
+        unawaited(_trackIfPermitted());
+      }
       _resume();
       unawaited(refresh());
       unawaited(sync());
