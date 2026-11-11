@@ -19,8 +19,6 @@ class WalkLocalDataSourceImpl implements WalkLocalDataSource {
   final WalkRecording _walkRecording = WalkRecording();
   final WalkDatabase _db = WalkDatabase.instance;
   Future<void>? _configuration;
-  WalkPermissionStatus _permissionStatus = WalkPermissionStatus.unknown;
-  bool _backgroundReadGranted = false;
 
   @override
   String get stepSource => defaultTargetPlatform == TargetPlatform.android
@@ -28,23 +26,14 @@ class WalkLocalDataSourceImpl implements WalkLocalDataSource {
       : 'healthAutomatic';
 
   @override
-  WalkPermissionStatus get permissionStatus => _permissionStatus;
-  @override
-  bool get backgroundReadGranted => _backgroundReadGranted;
-
-  @override
   Future<bool> ensurePermission() async {
     try {
       if (!await _ensureReady()) return false;
       if (defaultTargetPlatform == TargetPlatform.android) {
         if (!(await Permission.activityRecognition.request()).isGranted) {
-          _permissionStatus = WalkPermissionStatus.denied;
-          _backgroundReadGranted = false;
           return false;
         }
         await _walkRecording.startRecording();
-        _permissionStatus = WalkPermissionStatus.granted;
-        _backgroundReadGranted = true;
         return true;
       }
       final allowed = await _health.hasPermissions(
@@ -56,20 +45,12 @@ class WalkLocalDataSourceImpl implements WalkLocalDataSource {
           _types,
           permissions: _access,
         );
-        if (!completed) {
-          _permissionStatus = WalkPermissionStatus.unknown;
-          return false;
-        }
+        if (!completed) return false;
       }
       final now = DateTime.now();
       await _readPedometerSteps(now.subtract(const Duration(minutes: 1)), now);
-      _permissionStatus = WalkPermissionStatus.unknown;
       return true;
-    } on PlatformException catch (error) {
-      _recordPlatformError(error);
-      return false;
     } catch (_) {
-      _permissionStatus = WalkPermissionStatus.error;
       return false;
     }
   }
@@ -81,14 +62,8 @@ class WalkLocalDataSourceImpl implements WalkLocalDataSource {
       if (defaultTargetPlatform == TargetPlatform.iOS) return true;
       if (!await _hasAndroidReadPermission()) return false;
       await _walkRecording.startRecording();
-      _backgroundReadGranted = true;
       return true;
-    } on PlatformException catch (error) {
-      _recordPlatformError(error);
-      return false;
     } catch (_) {
-      _backgroundReadGranted = false;
-      _permissionStatus = WalkPermissionStatus.error;
       return false;
     }
   }
@@ -125,11 +100,7 @@ class WalkLocalDataSourceImpl implements WalkLocalDataSource {
             (point.value as NumericHealthValue).numericValue == 0,
       );
       return knownZero ? 0 : null;
-    } on PlatformException catch (error) {
-      _recordPlatformError(error);
-      return null;
     } catch (_) {
-      _permissionStatus = WalkPermissionStatus.error;
       return null;
     }
   }
@@ -180,15 +151,10 @@ class WalkLocalDataSourceImpl implements WalkLocalDataSource {
     if (kIsWeb ||
         (defaultTargetPlatform != TargetPlatform.android &&
             defaultTargetPlatform != TargetPlatform.iOS)) {
-      _permissionStatus = WalkPermissionStatus.unavailable;
-      _backgroundReadGranted = false;
       return false;
     }
     if (defaultTargetPlatform == TargetPlatform.android) {
-      if (await _walkRecording.isAvailable()) return true;
-      _permissionStatus = WalkPermissionStatus.unavailable;
-      _backgroundReadGranted = false;
-      return false;
+      return _walkRecording.isAvailable();
     }
     try {
       await (_configuration ??= _health.configure());
@@ -196,24 +162,9 @@ class WalkLocalDataSourceImpl implements WalkLocalDataSource {
       _configuration = null;
       rethrow;
     }
-    _permissionStatus = WalkPermissionStatus.unknown;
     return true;
   }
 
-  Future<bool> _hasAndroidReadPermission() async {
-    final allowed = (await Permission.activityRecognition.status).isGranted;
-    _permissionStatus =
-        allowed ? WalkPermissionStatus.granted : WalkPermissionStatus.denied;
-    if (!allowed) _backgroundReadGranted = false;
-    return allowed;
-  }
-
-  void _recordPlatformError(PlatformException error) {
-    _backgroundReadGranted = false;
-    _permissionStatus = switch (error.code) {
-      'PERMISSION_DENIED' => WalkPermissionStatus.denied,
-      'UNAVAILABLE' => WalkPermissionStatus.unavailable,
-      _ => WalkPermissionStatus.error,
-    };
-  }
+  Future<bool> _hasAndroidReadPermission() async =>
+      (await Permission.activityRecognition.status).isGranted;
 }
