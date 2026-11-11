@@ -49,6 +49,7 @@ class WalkTracker with WidgetsBindingObserver {
       }
       _syncRequests ??=
           _repository.syncRequests.listen((_) => unawaited(sync()));
+      foregroundWalkSync = sync;
       if (Firebase.apps.isNotEmpty) {
         _syncPushes ??= FirebaseMessaging.onMessage
             .where((m) => NotificationType.walkDataSync.matches(m.data))
@@ -84,8 +85,7 @@ class WalkTracker with WidgetsBindingObserver {
     );
     _live = _repository.liveStepCounts.listen(
       _repository.applyLiveCount,
-      onError: (Object error) =>
-          WiduLog.data.w('실시간 걸음수 스트림 보류', error: error),
+      onError: (Object error) => WiduLog.data.w('실시간 걸음수 스트림 보류', error: error),
     );
   }
 
@@ -166,6 +166,7 @@ class WalkTracker with WidgetsBindingObserver {
     _pause();
     unawaited(_syncRequests?.cancel());
     _syncRequests = null;
+    if (foregroundWalkSync == sync) foregroundWalkSync = null;
     unawaited(_syncPushes?.cancel());
     _syncPushes = null;
     if (_observing) WidgetsBinding.instance.removeObserver(this);

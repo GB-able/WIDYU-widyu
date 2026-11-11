@@ -16,6 +16,7 @@ const _walkBackgroundTaskName = 'widyu.steps.sync';
 const _channel = MethodChannel('com.widucorp.widu/step_background');
 const _uniqueTaskName = 'widyu.steps.periodic';
 Future<void>? _initialization;
+Future<void> Function()? foregroundWalkSync;
 
 @pragma('vm:entry-point')
 void onWalkStart() {
@@ -83,7 +84,7 @@ Future<void> _initializeWalkService() async {
   } else if (Platform.isIOS) {
     _channel.setMethodCallHandler((call) async {
       if (call.method != 'sync') throw MissingPluginException();
-      await syncWalkBackground();
+      await (foregroundWalkSync ?? syncWalkBackground)();
     });
     final callback = PluginUtilities.getCallbackHandle(
       onIosWalkBackground,
