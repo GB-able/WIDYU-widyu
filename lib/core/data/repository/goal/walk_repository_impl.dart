@@ -284,6 +284,7 @@ class WalkRepositoryImpl implements WalkRepository {
     reads.removeWhere((date, _) => !date.isWalkDateAllowed(now()));
     final dates = now()
         .walkDateWindow
+        .reversed
         .where(
           (date) =>
               full ||
