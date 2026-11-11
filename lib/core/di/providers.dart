@@ -1,4 +1,5 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:rxdart/rxdart.dart';
 import 'package:widyu/core/data/repository/album/album_repository.dart';
 import 'package:widyu/core/data/repository/album/album_repository_impl.dart';
 import 'package:widyu/core/data/repository/auth/auth_repository.dart';
@@ -218,6 +219,19 @@ WalkTracker walkTracker(Ref ref) {
   )..start();
   ref.onDispose(tracker.dispose);
   return tracker;
+}
+
+@riverpod
+class TodaySteps extends _$TodaySteps {
+  @override
+  int build() {
+    final repository = ref.watch(walkRepositoryProvider);
+    final subscription = repository.todaySteps
+        .throttleTime(const Duration(seconds: 1), trailing: true)
+        .listen((steps) => state = steps);
+    ref.onDispose(subscription.cancel);
+    return repository.currentTodaySteps;
+  }
 }
 
 @riverpod

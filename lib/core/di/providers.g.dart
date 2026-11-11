@@ -827,6 +827,51 @@ final class WalkTrackerProvider
 
 String _$walkTrackerHash() => r'69d04caa692ffa9f277ca16323eab7f2d2769a6d';
 
+@ProviderFor(TodaySteps)
+final todayStepsProvider = TodayStepsProvider._();
+
+final class TodayStepsProvider extends $NotifierProvider<TodaySteps, int> {
+  TodayStepsProvider._()
+      : super(
+          from: null,
+          argument: null,
+          retry: null,
+          name: r'todayStepsProvider',
+          isAutoDispose: true,
+          dependencies: null,
+          $allTransitiveDependencies: null,
+        );
+
+  @override
+  String debugGetCreateSourceHash() => _$todayStepsHash();
+
+  @$internal
+  @override
+  TodaySteps create() => TodaySteps();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(int value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<int>(value),
+    );
+  }
+}
+
+String _$todayStepsHash() => r'6fe007c7b01be5b680625bc152bf270f10b94eb3';
+
+abstract class _$TodaySteps extends $Notifier<int> {
+  int build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final ref = this.ref as $Ref<int, int>;
+    final element = ref.element
+        as $ClassProviderElement<AnyNotifier<int, int>, int, Object?, Object?>;
+    element.handleCreate(ref, build);
+  }
+}
+
 @ProviderFor(albumRepository)
 final albumRepositoryProvider = AlbumRepositoryProvider._();
 

@@ -12,6 +12,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:widyu/app/routes/app_route.dart';
+import 'package:widyu/core/di/providers.dart';
 import 'package:widyu/core/model/heartRate/heart_rate_status.dart';
 import 'package:widyu/core/model/home/medication_status.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
@@ -203,8 +204,7 @@ class HomeScreen extends ConsumerWidget {
                             hasGoal: uiState.hasGoal,
                             thumbanils: uiState.thumbnails,
                             medicationStatus: uiState.medicationStatus,
-                            hasStepGoal: uiState.hasStepGoal,
-                            stepProgress: uiState.stepProgress,
+                            stepGoal: uiState.stepGoal,
                             hasHealthSchedule: uiState.hasHealthSchedule,
                             onCameraTap: () => viewModel.takeMedicationPhoto(
                               showPrompt: (type, mode) =>

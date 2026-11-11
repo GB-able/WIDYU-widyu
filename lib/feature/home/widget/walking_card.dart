@@ -1,17 +1,14 @@
 part of '../home_screen.dart';
 
-class _WalkingCard extends StatelessWidget {
-  final bool hasStepGoal;
-  final double stepProgress;
+class _WalkingCard extends ConsumerWidget {
+  final int stepGoal;
 
-  const _WalkingCard({
-    required this.hasStepGoal,
-    required this.stepProgress,
-  });
+  const _WalkingCard({required this.stepGoal});
 
   @override
-  Widget build(BuildContext context) {
-    if (!hasStepGoal) return const _WalkingGoalEmpty();
+  Widget build(BuildContext context, WidgetRef ref) {
+    if (stepGoal <= 0) return const _WalkingGoalEmpty();
+    final stepProgress = ref.watch(todayStepsProvider) / stepGoal * 100;
 
     return _CarouselCardShell(
       title: '걷기',

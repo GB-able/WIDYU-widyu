@@ -7,8 +7,7 @@ class _CarouselMenu extends StatefulWidget {
   final bool hasGoal;
   final List<String> thumbanils;
   final MedicationStatus medicationStatus;
-  final bool hasStepGoal;
-  final double stepProgress;
+  final int stepGoal;
   final bool hasHealthSchedule;
   final VoidCallback onCameraTap;
   final VoidCallback onRouteTap;
@@ -18,8 +17,7 @@ class _CarouselMenu extends StatefulWidget {
     required this.hasGoal,
     required this.thumbanils,
     required this.medicationStatus,
-    required this.hasStepGoal,
-    required this.stepProgress,
+    required this.stepGoal,
     required this.hasHealthSchedule,
     required this.onCameraTap,
     required this.onRouteTap,
@@ -85,10 +83,7 @@ class _CarouselMenuState extends State<_CarouselMenu> {
           isCentered: isCentered,
           onRouteTap: widget.onRouteTap,
         ),
-      _CarouselCard.walking => _WalkingCard(
-          hasStepGoal: widget.hasStepGoal,
-          stepProgress: widget.stepProgress,
-        ),
+      _CarouselCard.walking => _WalkingCard(stepGoal: widget.stepGoal),
       _CarouselCard.album => _AlbumCard(thumbnails: widget.thumbanils),
     };
   }

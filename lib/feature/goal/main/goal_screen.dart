@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:widyu/app/routes/app_route.dart';
+import 'package:widyu/core/di/providers.dart';
 import 'package:widyu/core/model/goal/medication/medication_point_result.dart';
 import 'package:widyu/core/model/goal/weekly_goal_status_response.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
@@ -128,7 +129,6 @@ class _GoalScreenState extends ConsumerState<GoalScreen> {
                           ),
                           child: _GoalContent(
                             state: uiState.cards,
-                            steps: uiState.steps,
                             onRetry: viewModel.refresh,
                             onMedicationVerified:
                                 viewModel.onMedicationVerified,

@@ -45,10 +45,7 @@ class GoalViewModel extends _$GoalViewModel {
       if (!ref.mounted) _uiEvent.close();
     });
     unawaited(Future.microtask(_start));
-    return GoalUiState(
-      point: _pointRepository.currentStatus.point,
-      steps: _walkRepository.currentTodaySteps,
-    );
+    return GoalUiState(point: _pointRepository.currentStatus.point);
   }
 
   void _start() {
@@ -59,10 +56,6 @@ class GoalViewModel extends _$GoalViewModel {
       state = state.copyWith(point: status.point);
     });
     ref.onDispose(pointStatus.cancel);
-    final todaySteps = _walkRepository.todaySteps.listen((steps) {
-      state = state.copyWith(steps: steps);
-    });
-    ref.onDispose(todaySteps.cancel);
     unawaited(ref.read(walkTrackerProvider).start());
     unawaited(refresh());
     final medicationChanges = ref
