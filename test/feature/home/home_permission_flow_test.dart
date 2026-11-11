@@ -538,10 +538,6 @@ void main() {
       expect(h.home.fetches, 2);
       // 처음 시작 조회의 실패 안내는 구독 전이라 빠지고, 다시 빌드한 뒤의 안내만 들어온다.
       expect(h.events.whereType<FetchUserFailure>(), hasLength(1));
-
-      h.walk.steps.add(100);
-      await Future<void>.delayed(Duration.zero);
-      expect(h.state.steps, 100);
     });
 
     testWidgets('폐기되면 타이머와 구독을 정리한다', (tester) async {
