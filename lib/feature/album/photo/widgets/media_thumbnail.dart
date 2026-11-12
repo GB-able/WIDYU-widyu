@@ -27,21 +27,19 @@ class _MediaThumbnail extends StatelessWidget {
           if (isLocked) MediaLockOverlay(child: _thumbnail) else _thumbnail,
           if (!isLocked && media.type == MediaType.video) ...[
             Center(
-              child: ClipOval(
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
-                  child: Container(
-                    width: 32,
-                    height: 32,
-                    alignment: Alignment.center,
-                    padding: const EdgeInsets.all(7),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: MyColor.white.withValues(alpha: 0.24),
-                    ),
-                    child: WiduIcon(icon: Assets.icons.ic18Play, width: 18),
-                  ),
+              // 뒤를 흐리는 BackdropFilter는 칸마다 매 프레임 화면 전체를 복사해야 해서
+              // 스크롤 중 비용이 크다. 블러 없이 반투명 원만 둔다.
+              // 아이콘이 원 안쪽에 있어 ClipOval도 필요 없다(둥근 clip은 칸마다 stencil draw가 든다).
+              child: Container(
+                width: 32,
+                height: 32,
+                alignment: Alignment.center,
+                padding: const EdgeInsets.all(7),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: MyColor.white.withValues(alpha: 0.24),
                 ),
+                child: WiduIcon(icon: Assets.icons.ic18Play, width: 18),
               ),
             ),
             if (media.duration != null)

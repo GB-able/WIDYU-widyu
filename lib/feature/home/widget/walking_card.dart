@@ -54,14 +54,10 @@ class _WalkingCard extends ConsumerWidget {
               tween: Tween(begin: 0, end: stepProgress),
               duration: const Duration(milliseconds: 800), // 애니메이션 시간
               curve: Curves.easeOutCubic,
-              child: BackdropFilter(
-                filter: ImageFilter.blur(
-                  sigmaX: 10,
-                  sigmaY: 10,
-                ),
-                child: ColoredBox(
-                  color: MyColor.white.withValues(alpha: 0.3),
-                ),
+              // 뒤를 흐리는 BackdropFilter는 매 프레임 화면 전체를 복사해야 해서 뺐다.
+              // 뒤는 그라데이션과 원 하나라 원 테두리만 또렷해진다.
+              child: ColoredBox(
+                color: MyColor.white.withValues(alpha: 0.3),
               ),
               builder: (context, animatedProgress, child) => CustomPaint(
                 painter: _StepProgressTickPainter(progress: animatedProgress),

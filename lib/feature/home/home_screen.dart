@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:math';
-import 'dart:ui';
 
 import 'package:app_settings/app_settings.dart';
+import 'package:clock/clock.dart';
 import 'package:flutter/foundation.dart' show listEquals;
 import 'package:flutter/material.dart';
 import 'package:flutter/physics.dart' show SpringSimulation;

@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -117,32 +115,30 @@ class _PhotoPreviewScreenState extends ConsumerState<PhotoPreviewScreen> {
                     right: 16,
                     child: GestureDetector(
                       onTap: () => viewModel.toggleSelection(media),
+                      // 뒤를 흐리는 BackdropFilter는 넘기는 동안 매 프레임 화면 전체를 복사해야 해서 뺐다.
                       child: ClipOval(
-                        child: BackdropFilter(
-                          filter: ImageFilter.blur(sigmaX: 320, sigmaY: 320),
-                          child: Container(
-                            width: 44,
-                            height: 44,
-                            alignment: Alignment.center,
-                            decoration: BoxDecoration(
-                              color: order != null
-                                  ? MyColor.primary
-                                  : const Color(0x6616161D),
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: MyColor.white,
-                                width: 2,
-                              ),
+                        child: Container(
+                          width: 44,
+                          height: 44,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            color: order != null
+                                ? MyColor.primary
+                                : const Color(0x6616161D),
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: MyColor.white,
+                              width: 2,
                             ),
-                            child: order != null
-                                ? Text(
-                                    order.toString(),
-                                    style: MyTypo.title1.copyWith(
-                                      color: MyColor.white,
-                                    ),
-                                  )
-                                : null,
                           ),
+                          child: order != null
+                              ? Text(
+                                  order.toString(),
+                                  style: MyTypo.title1.copyWith(
+                                    color: MyColor.white,
+                                  ),
+                                )
+                              : null,
                         ),
                       ),
                     ),

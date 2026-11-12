@@ -8,8 +8,6 @@ import 'package:widyu/core/model/goal/weekly_goal_status_response.dart';
 
 part 'goal_ui_state.freezed.dart';
 
-enum MedicationVerifyStatus { pending, verified, expired }
-
 @freezed
 sealed class GoalCardsState with _$GoalCardsState {
   const factory GoalCardsState.loading() = GoalCardsLoading;
@@ -20,9 +18,6 @@ sealed class GoalCardsState with _$GoalCardsState {
     Medication? medicine,
     Walk? walk,
     Hospital? hospital,
-    @Default(Duration.zero) Duration verifyRemaining,
-    @Default(MedicationVerifyStatus.pending)
-    MedicationVerifyStatus verifyStatus,
     File? proofPhoto,
   }) = GoalCardsData;
 }

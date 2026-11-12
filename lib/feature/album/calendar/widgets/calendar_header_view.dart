@@ -66,13 +66,12 @@ class _CalendarHeaderView extends StatelessWidget {
             ],
           ),
         ),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
+        // 그림자는 네 모서리가 같은 둥근 사각형이어야 Impeller가 블러 패스 없이 한 번에 그린다.
+        // 아래만 둥근 모양이면 블러 패스로 그리므로 그림자만 바깥 상자로 뺐다.
+        // 헤더가 화면 폭 전체이고 위가 흰 배경이라 그림자 위 모서리 모양은 보이지 않는다.
+        DecoratedBox(
           decoration: BoxDecoration(
-            color: MyColor.white,
-            borderRadius: const BorderRadius.vertical(
-              bottom: Radius.circular(20),
-            ),
+            borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
                 color: MyColor.black.withValues(alpha: 0.1),
@@ -81,59 +80,68 @@ class _CalendarHeaderView extends StatelessWidget {
               ),
             ],
           ),
-          child: Column(
-            children: [
-              ClipRect(
-                child: SizedBox(
-                  height: gridVisibleHeight,
-                  child: OverflowBox(
-                    alignment: Alignment.topCenter,
-                    maxHeight: _HeaderMetrics.gridMaxHeight,
-                    child: Stack(
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            decoration: const BoxDecoration(
+              color: MyColor.white,
+              borderRadius: BorderRadius.vertical(
+                bottom: Radius.circular(20),
+              ),
+            ),
+            child: Column(
+              children: [
+                ClipRect(
+                  child: SizedBox(
+                    height: gridVisibleHeight,
+                    child: OverflowBox(
                       alignment: Alignment.topCenter,
-                      children: [
-                        IgnorePointer(
-                          ignoring: monthOpacity == 0,
-                          child: Opacity(
-                            opacity: monthOpacity,
-                            child: _CalendarGrid(
-                              format: CalendarFormat.month,
-                              focusedDay: focusedMonth,
-                              selectedDay: selectedDay,
-                              hasEvent: hasEvent,
-                              onPageChanged: onPageChanged,
-                              onSelectDay: onSelectDay,
+                      maxHeight: _HeaderMetrics.gridMaxHeight,
+                      child: Stack(
+                        alignment: Alignment.topCenter,
+                        children: [
+                          IgnorePointer(
+                            ignoring: monthOpacity == 0,
+                            child: Opacity(
+                              opacity: monthOpacity,
+                              child: _CalendarGrid(
+                                format: CalendarFormat.month,
+                                focusedDay: focusedMonth,
+                                selectedDay: selectedDay,
+                                hasEvent: hasEvent,
+                                onPageChanged: onPageChanged,
+                                onSelectDay: onSelectDay,
+                              ),
                             ),
                           ),
-                        ),
-                        IgnorePointer(
-                          ignoring: weekOpacity == 0,
-                          child: Opacity(
-                            opacity: weekOpacity,
-                            child: _CalendarGrid(
-                              format: CalendarFormat.week,
-                              focusedDay: selectedDay,
-                              selectedDay: selectedDay,
-                              hasEvent: hasEvent,
-                              onPageChanged: onPageChanged,
-                              onSelectDay: onSelectDay,
+                          IgnorePointer(
+                            ignoring: weekOpacity == 0,
+                            child: Opacity(
+                              opacity: weekOpacity,
+                              child: _CalendarGrid(
+                                format: CalendarFormat.week,
+                                focusedDay: selectedDay,
+                                selectedDay: selectedDay,
+                                hasEvent: hasEvent,
+                                onPageChanged: onPageChanged,
+                                onSelectDay: onSelectDay,
+                              ),
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              ),
-              GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onTap: onHandleTap,
-                child: const Padding(
-                  padding: EdgeInsets.fromLTRB(0, 21, 0, 8),
-                  child: _CalendarHandle(),
+                GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: onHandleTap,
+                  child: const Padding(
+                    padding: EdgeInsets.fromLTRB(0, 21, 0, 8),
+                    child: _CalendarHandle(),
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ],

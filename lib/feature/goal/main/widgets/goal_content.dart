@@ -40,7 +40,6 @@ class _GoalContent extends StatelessWidget {
           :final medicine,
           :final walk,
           :final hospital,
-          :final verifyRemaining,
           :final proofPhoto,
         ) =>
           Column(
@@ -50,7 +49,6 @@ class _GoalContent extends StatelessWidget {
                   ? MedicationCard(
                       medicine: medicine,
                       proofPhoto: proofPhoto,
-                      verifyRemaining: verifyRemaining,
                       onVerified: onMedicationVerified,
                     )
                   : const GoalEmptyCard(type: GoalType.medicine),
