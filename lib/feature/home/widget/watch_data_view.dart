@@ -84,7 +84,14 @@ class _WatchDataView extends StatelessWidget {
                   right: -16,
                   child: IgnorePointer(
                     child: RepaintBoundary(
-                      child: Assets.images.img111Mascot.image(width: 111),
+                      // 카드 뒤로 들어가는 다리·발은 블러가 없으면 카드 너머로 또렷하게 비친다.
+                      // 그래서 카드 윗변까지만 그린다.
+                      child: Assets.images.img111Mascot.image(
+                        width: 111,
+                        height: 108,
+                        fit: BoxFit.cover,
+                        alignment: Alignment.topCenter,
+                      ),
                     ),
                   ),
                 ),
@@ -176,28 +183,27 @@ class _TranslucentContainer extends StatelessWidget {
     required this.onTap,
   });
 
+  /// 바탕 흰색의 불투명도.
+  /// 뒤를 흐리는 `BackdropFilter`는 매 프레임 화면 전체를 복사하고 여러 번 흐려야 해서 raster 비용이 크다.
+  /// 블러를 빼면 뒤 배경(나무·벤치)이 또렷하게 비치므로 0.5에서 올렸다. 디자인 확인 전 임시값이다.
+  static const _fillAlpha = 0.7;
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
       child: ClipRRect(
         borderRadius: BorderRadius.circular(20),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(
-            sigmaX: 10,
-            sigmaY: 10,
-          ),
-          child: Container(
-            height: double.infinity,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20),
-              color: MyColor.white.withValues(alpha: 0.5),
-              border: Border.all(
-                color: MyColor.white.withValues(alpha: 0.6),
-              ),
+        child: Container(
+          height: double.infinity,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            color: MyColor.white.withValues(alpha: _fillAlpha),
+            border: Border.all(
+              color: MyColor.white.withValues(alpha: 0.6),
             ),
-            child: content,
           ),
+          child: content,
         ),
       ),
     );
