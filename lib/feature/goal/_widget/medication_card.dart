@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:clock/clock.dart';
@@ -31,19 +32,60 @@ enum _VerifyState {
   bool get isFailed => this == expiredFailed;
 }
 
-class MedicationCard extends StatelessWidget {
+/// 인증 가능 시간 카운트다운과 상태 전환(대기 → 인증 가능 → 만료)을 위해
+/// 카드만 1초마다 다시 그린다. 화면 전체를 다시 그리지 않으려고 ViewModel이 아닌 카드가 시계를 가진다.
+class MedicationCard extends StatefulWidget {
   const MedicationCard({
     super.key,
     required this.medicine,
     required this.proofPhoto,
-    required this.verifyRemaining,
     required this.onVerified,
   });
 
   final Medication medicine;
   final File? proofPhoto;
-  final Duration verifyRemaining;
   final ValueChanged<MedicationPointResult> onVerified;
+
+  @override
+  State<MedicationCard> createState() => _MedicationCardState();
+}
+
+class _MedicationCardState extends State<MedicationCard> {
+  late final Timer _timer;
+
+  Medication get medicine => widget.medicine;
+
+  @override
+  void initState() {
+    super.initState();
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) => _tick());
+  }
+
+  // 보이는 값(남은 시간·상태)이 바뀔 때만 다시 그린다. 만료 뒤에는 거의 그리지 않는다.
+  ({Duration remaining, _VerifyState state})? _shown;
+
+  // 다른 탭에 있으면(TickerMode 꺼짐) 다시 그리지 않는다. 돌아오면 TickerMode가 바뀌어 build가 다시 돈다.
+  bool _visible = true;
+
+  void _tick() {
+    if (!_visible) return;
+    final now = clock.now();
+    final next = (
+      remaining: medicine.verifyRemainingAt(now),
+      state: _resolveState(now),
+    );
+    if (next.remaining.inSeconds == _shown?.remaining.inSeconds &&
+        next.state == _shown?.state) {
+      return;
+    }
+    setState(() {});
+  }
+
+  @override
+  void dispose() {
+    _timer.cancel();
+    super.dispose();
+  }
 
   _VerifyState _resolveState(DateTime now) {
     if (medicine.isDoneAt(now)) {
@@ -58,8 +100,10 @@ class MedicationCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    _visible = TickerMode.of(context);
     final now = clock.now();
     final state = _resolveState(now);
+    _shown = (remaining: medicine.verifyRemainingAt(now), state: state);
 
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 20),
@@ -98,14 +142,14 @@ class MedicationCard extends StatelessWidget {
               alarmTime: medicine.alarmTimeAt(now),
               doseCount: medicine.doseCountAt(now),
               proofImage: medicine.proofImageAt(now),
-              proofPhoto: proofPhoto,
-              verifyRemaining: verifyRemaining,
+              proofPhoto: widget.proofPhoto,
+              verifyRemaining: medicine.verifyRemainingAt(now),
               onOpenVerification: () async {
                 final tapped = clock.now();
                 final result = await openMedicationForSchedule(
                     context, medicine.scheduleIdAt(tapped), tapped,
                     doseCount: medicine.doseCountAt(tapped));
-                if (result != null) onVerified(result);
+                if (result != null) widget.onVerified(result);
               },
             ),
           ),
