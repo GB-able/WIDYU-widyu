@@ -128,11 +128,19 @@ void main() {
 
   GoalUiState state() => container.read(goalViewModelProvider);
 
-  test('처음에는 현재 포인트·걸음 수와 로딩을 보여 준다', () {
+  test('처음에는 현재 포인트와 로딩을 보여 준다', () {
     listen();
     expect(state().point, 10);
-    expect(state().steps, 7);
     expect(state().isLoading, isTrue);
+  });
+
+  test('오늘 걸음 수는 현재 값으로 시작하고 바뀐 값을 받는다', () async {
+    final steps = <int>[];
+    container.listen(todayStepsProvider, (_, next) => steps.add(next));
+    expect(container.read(todayStepsProvider), 7);
+    walk.emit(100);
+    await pumpEventQueue();
+    expect(steps, [100]);
   });
 
   test('조회 시작 전에 폐기되면 조회하지 않는다', () async {
@@ -182,15 +190,13 @@ void main() {
     expect(walk.applied, isEmpty);
   });
 
-  test('포인트·걸음 수가 바뀌면 반영하고, 약 복용이 바뀌면 로딩 없이 다시 조회한다', () async {
+  test('포인트가 바뀌면 반영하고, 약 복용이 바뀌면 로딩 없이 다시 조회한다', () async {
     listen();
     await pumpEventQueue();
 
     point.emit(30);
-    walk.emit(100);
     await pumpEventQueue();
     expect(state().point, 30);
-    expect(state().steps, 100);
 
     goal.pending = Completer();
     medication.changes.add(null);

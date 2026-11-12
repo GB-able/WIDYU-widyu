@@ -85,18 +85,11 @@ class HomeViewModel extends _$HomeViewModel {
       isHeartRateLoading: true,
       isNotificationLoading: true,
       isSeniorCardLoading: true,
-      steps: _walkRepository.currentTodaySteps,
     );
   }
 
   void _start() {
     if (!ref.mounted) return;
-    // 구독하면 최신 값이 다시 전달된다. 전달 시점이 stream 구현에 따라 다르므로
-    // build() 중에 state를 쓰지 않도록 build() 뒤에 구독한다.
-    final todaySteps = _walkRepository.todaySteps.listen((steps) {
-      state = state.copyWith(steps: steps);
-    });
-    ref.onDispose(todaySteps.cancel);
     unawaited(_fetchNotification());
     _observeUser();
     _observeWatchConnection();

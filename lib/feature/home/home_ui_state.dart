@@ -23,7 +23,6 @@ abstract class HomeUiState with _$HomeUiState {
     required List<String> thumbnails,
     required MedicationStatus medicationStatus,
     required int stepGoal,
-    required int steps,
     required String? healthSchedulePlace,
     required double? healthScheduleLatitude,
     required double? healthScheduleLongitude,
@@ -41,9 +40,6 @@ abstract class HomeUiState with _$HomeUiState {
   /// 건강 일정 등록 여부
   bool get hasHealthSchedule => healthSchedulePlace?.isNotEmpty ?? false;
 
-  /// 목표 대비 진행률(%)
-  double get stepProgress => hasStepGoal ? (steps / stepGoal) * 100 : 0.0;
-
   /// 최상단에 나타날 알림
   NotificationUiModel? get notification =>
       notifications.isEmpty ? null : notifications.first;
@@ -60,7 +56,6 @@ abstract class HomeUiState with _$HomeUiState {
         thumbnails: [],
         medicationStatus: MedicationStatus.unknown(),
         stepGoal: 0,
-        steps: 0,
         healthSchedulePlace: null,
         healthScheduleLatitude: null,
         healthScheduleLongitude: null,

@@ -38,7 +38,8 @@ class WalkRepositoryImpl implements WalkRepository {
   bool _disposed = false;
   final _syncRequests = StreamController<void>.broadcast();
   Future<void>? _reading;
-  String? _achievedSyncDate;
+  String? _achievedDate;
+  DateTime? _achievedRequestedAt;
 
   // 재생되는 마지막 값이 어제 것일 수 있어 받는 시점의 날짜로 다시 계산한다.
   @override
@@ -65,6 +66,9 @@ class WalkRepositoryImpl implements WalkRepository {
 
   @override
   Future<bool> ensurePermission() => _localDataSource.ensurePermission();
+
+  @override
+  Future<bool> hasPermission() => _localDataSource.canReadInBackground();
 
   @override
   Stream<int> get liveStepCounts => _localDataSource.liveStepCounts;
@@ -94,6 +98,7 @@ class WalkRepositoryImpl implements WalkRepository {
   @override
   Future<void> refreshTodaySteps() {
     if (_disposed || _goal == null) return Future.value();
+    _syncIfAchieved();
     return _reading ??=
         _refreshTodaySteps().whenComplete(() => _reading = null);
   }
@@ -107,7 +112,11 @@ class WalkRepositoryImpl implements WalkRepository {
     } catch (_) {
       return;
     }
-    if (_disposed || steps == null || steps < 0) return;
+    if (_disposed) return;
+    if (steps == null || steps < 0) {
+      if (_date != today) _emit();
+      return;
+    }
     _raise(steps + (_offsetDate == today ? _offset : 0));
   }
 
@@ -124,14 +133,17 @@ class WalkRepositoryImpl implements WalkRepository {
 
   void _syncIfAchieved() {
     final goal = _goal;
-    final today = now().walkDate;
+    final instant = now();
+    final requestedAt = _achievedRequestedAt;
     if (_disposed ||
         goal == null ||
         currentTodaySteps < goal ||
-        _achievedSyncDate == today) {
+        _achievedDate == instant.walkDate ||
+        (requestedAt != null &&
+            instant.difference(requestedAt) < const Duration(minutes: 1))) {
       return;
     }
-    _achievedSyncDate = today;
+    _achievedRequestedAt = instant;
     _syncRequests.add(null);
   }
 
@@ -177,7 +189,7 @@ class WalkRepositoryImpl implements WalkRepository {
     final readHealth =
         !background || await _localDataSource.canReadInBackground();
     final owner = await _localDataSource.acquireLock('steps');
-    if (owner == null) return const WalkSaveResult();
+    if (owner == null) return const WalkSaveResult(retry: true);
     Future<bool> active() async =>
         isCancelled?.call() != true &&
         elapsed.elapsed < budget &&
@@ -191,10 +203,12 @@ class WalkRepositoryImpl implements WalkRepository {
         final response = await _remoteDataSource.fetchToday();
         final status = response.statusCode ?? 0;
         if (status == 401) return const WalkSaveResult(unauthorized: true);
-        if (status < 200 || status >= 300) return const WalkSaveResult();
+        if (status < 200 || status >= 300) {
+          return const WalkSaveResult(retry: true);
+        }
         detail = response.data;
       } catch (_) {
-        return const WalkSaveResult();
+        return const WalkSaveResult(retry: true);
       }
       if (now().walkDate != serverDate) return const WalkSaveResult();
       _goal = detail != null && detail.goal > 0 ? detail.goal : null;
@@ -219,7 +233,7 @@ class WalkRepositoryImpl implements WalkRepository {
             elapsed.elapsed <= budget - const Duration(seconds: 6),
         save: save,
       )) {
-        return const WalkSaveResult();
+        return const WalkSaveResult(retry: true);
       }
       final days = state['days'] as Map<String, dynamic>;
       final summary = await _uploadAndSaveSteps(
@@ -234,6 +248,10 @@ class WalkRepositoryImpl implements WalkRepository {
           !await _localDataSource.ownsLock('steps', owner)) {
         return const WalkSaveResult();
       }
+      final sentToday = (days[serverDate] as Map?)?['sent'] as int? ?? 0;
+      if (math.max(sentToday, detail.actual) >= detail.goal) {
+        _achievedDate = serverDate;
+      }
       final resultDate = now().walkDate;
       return WalkSaveResult(
         date: resultDate,
@@ -241,6 +259,7 @@ class WalkRepositoryImpl implements WalkRepository {
         uploaded: summary.uploaded,
         rewardChanged: summary.rewardChanged,
         unauthorized: summary.unauthorized,
+        retry: summary.retry,
       );
     } finally {
       await _localDataSource.releaseLock('steps', owner);
@@ -269,6 +288,7 @@ class WalkRepositoryImpl implements WalkRepository {
     reads.removeWhere((date, _) => !date.isWalkDateAllowed(now()));
     final dates = now()
         .walkDateWindow
+        .reversed
         .where(
           (date) =>
               full ||
@@ -307,7 +327,10 @@ class WalkRepositoryImpl implements WalkRepository {
       if (total != null && total >= 0) {
         final day = Map<String, dynamic>.from(days[date] as Map? ?? {});
         final isServerDate = date == serverDate;
-        if (isServerDate && !days.containsKey(date) && serverSteps > total) {
+        if (isServerDate &&
+            !days.containsKey(date) &&
+            serverSteps > total &&
+            !await _localDataSource.hasDayInAnyState(date)) {
           day['offset'] = _localDataSource.stepSource == 'recordingApi'
               ? serverSteps
               : serverSteps - total;
@@ -352,7 +375,7 @@ class WalkRepositoryImpl implements WalkRepository {
     return today.walkDateShift(1).walkStartOf;
   }
 
-  Future<({int uploaded, bool rewardChanged, bool unauthorized})>
+  Future<({int uploaded, bool rewardChanged, bool unauthorized, bool retry})>
       _uploadAndSaveSteps({
     required Map<String, dynamic> days,
     required String serverDate,
@@ -363,8 +386,12 @@ class WalkRepositoryImpl implements WalkRepository {
     var uploaded = 0;
     var rewardChanged = false;
     var unauthorized = false;
+    var retry = false;
     for (final date in days.keys.toList()..sort()) {
-      if (!await active()) break;
+      if (!await active()) {
+        retry = true;
+        break;
+      }
       if (!date.isWalkDateAllowed(now())) {
         days.remove(date);
         await save();
@@ -381,19 +408,25 @@ class WalkRepositoryImpl implements WalkRepository {
         unauthorized = true;
         break;
       }
-      if (!await active()) break;
+      if (!await active()) {
+        retry = true;
+        break;
+      }
       if (result.status == WalkSyncStatus.success) {
         uploaded++;
         rewardChanged |= result.achieved && day['achieved'] != true;
         day['sent'] = total;
         if (result.achieved) day['achieved'] = true;
         await save();
+      } else {
+        retry = true;
       }
     }
     return (
       uploaded: uploaded,
       rewardChanged: rewardChanged,
       unauthorized: unauthorized,
+      retry: retry,
     );
   }
 

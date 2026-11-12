@@ -49,6 +49,7 @@ class WalkTracker with WidgetsBindingObserver {
       }
       _syncRequests ??=
           _repository.syncRequests.listen((_) => unawaited(sync()));
+      foregroundWalkSync = sync;
       if (Firebase.apps.isNotEmpty) {
         _syncPushes ??= FirebaseMessaging.onMessage
             .where((m) => NotificationType.walkDataSync.matches(m.data))
@@ -56,20 +57,35 @@ class WalkTracker with WidgetsBindingObserver {
       }
       final permitted = await _repository.ensurePermission();
       if (_disposed) return;
-      _tracking = permitted;
-      if (permitted) {
-        try {
-          await startWalkBackgroundService();
-        } catch (error, stack) {
-          WiduLog.data.w('걸음수 백그라운드 등록 보류', error: error, stackTrace: stack);
-        }
-        if (_disposed) return;
-      }
+      if (permitted) await _track();
+      if (_disposed) return;
       _resume();
       await refresh();
       unawaited(sync());
     } catch (error, stack) {
       WiduLog.data.w('걸음수 연동 시작 실패', error: error, stackTrace: stack);
+    }
+  }
+
+  Future<void> _track() async {
+    _tracking = true;
+    try {
+      await startWalkBackgroundService();
+    } catch (error, stack) {
+      WiduLog.data.w('걸음수 백그라운드 등록 보류', error: error, stackTrace: stack);
+    }
+  }
+
+  Future<void> _trackIfPermitted() async {
+    try {
+      if (!await _repository.hasPermission()) return;
+      if (_disposed || _tracking || _memberId == null) return;
+      await _track();
+      if (_disposed) return;
+      _resume();
+      await refresh();
+    } catch (error, stack) {
+      WiduLog.data.w('걸음수 권한 재확인 실패', error: error, stackTrace: stack);
     }
   }
 
@@ -84,8 +100,7 @@ class WalkTracker with WidgetsBindingObserver {
     );
     _live = _repository.liveStepCounts.listen(
       _repository.applyLiveCount,
-      onError: (Object error) =>
-          WiduLog.data.w('실시간 걸음수 스트림 보류', error: error),
+      onError: (Object error) => WiduLog.data.w('실시간 걸음수 스트림 보류', error: error),
     );
   }
 
@@ -148,6 +163,9 @@ class WalkTracker with WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (_disposed) return;
     if (state == AppLifecycleState.resumed) {
+      if (!_tracking && _memberId != null && _starting == null) {
+        unawaited(_trackIfPermitted());
+      }
       _resume();
       unawaited(refresh());
       unawaited(sync());
@@ -156,7 +174,7 @@ class WalkTracker with WidgetsBindingObserver {
     } else if (state == AppLifecycleState.paused ||
         state == AppLifecycleState.hidden) {
       _pause();
-      unawaited(sync());
+      if (state == AppLifecycleState.paused) unawaited(sync());
     }
   }
 
@@ -166,6 +184,7 @@ class WalkTracker with WidgetsBindingObserver {
     _pause();
     unawaited(_syncRequests?.cancel());
     _syncRequests = null;
+    if (foregroundWalkSync == sync) foregroundWalkSync = null;
     unawaited(_syncPushes?.cancel());
     _syncPushes = null;
     if (_observing) WidgetsBinding.instance.removeObserver(this);
