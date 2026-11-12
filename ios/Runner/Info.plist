@@ -83,6 +83,8 @@
         </array>
         <key>NSHealthShareUsageDescription</key>
         <string>걸음수를 읽어 매일 걷기 목표와 보호자 화면에 반영합니다.</string>
+        <key>NSHealthUpdateUsageDescription</key>
+        <string>걸음 수를 건강 앱과 연동해 매일 걷기 목표에 반영합니다.</string>
         <key>LSApplicationQueriesSchemes</key>
         <array>
             <string>sms</string>
