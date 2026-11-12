@@ -20,6 +20,7 @@ mixin _$PostUiState {
   User? get me;
   int? get replyParentId;
   int? get editingCommentId;
+  AlbumCache get cache;
 
   /// Create a copy of PostUiState
   /// with the given fields replaced by the non-null parameter values.
@@ -40,16 +41,17 @@ mixin _$PostUiState {
             (identical(other.replyParentId, replyParentId) ||
                 other.replyParentId == replyParentId) &&
             (identical(other.editingCommentId, editingCommentId) ||
-                other.editingCommentId == editingCommentId));
+                other.editingCommentId == editingCommentId) &&
+            (identical(other.cache, cache) || other.cache == cache));
   }
 
   @override
-  int get hashCode => Object.hash(
-      runtimeType, status, isBusy, feed, me, replyParentId, editingCommentId);
+  int get hashCode => Object.hash(runtimeType, status, isBusy, feed, me,
+      replyParentId, editingCommentId, cache);
 
   @override
   String toString() {
-    return 'PostUiState(status: $status, isBusy: $isBusy, feed: $feed, me: $me, replyParentId: $replyParentId, editingCommentId: $editingCommentId)';
+    return 'PostUiState(status: $status, isBusy: $isBusy, feed: $feed, me: $me, replyParentId: $replyParentId, editingCommentId: $editingCommentId, cache: $cache)';
   }
 }
 
@@ -65,7 +67,8 @@ abstract mixin class $PostUiStateCopyWith<$Res> {
       FeedDetail? feed,
       User? me,
       int? replyParentId,
-      int? editingCommentId});
+      int? editingCommentId,
+      AlbumCache cache});
 
   $FeedDetailCopyWith<$Res>? get feed;
   $UserCopyWith<$Res>? get me;
@@ -89,6 +92,7 @@ class _$PostUiStateCopyWithImpl<$Res> implements $PostUiStateCopyWith<$Res> {
     Object? me = freezed,
     Object? replyParentId = freezed,
     Object? editingCommentId = freezed,
+    Object? cache = null,
   }) {
     return _then(_self.copyWith(
       status: null == status
@@ -115,6 +119,10 @@ class _$PostUiStateCopyWithImpl<$Res> implements $PostUiStateCopyWith<$Res> {
           ? _self.editingCommentId
           : editingCommentId // ignore: cast_nullable_to_non_nullable
               as int?,
+      cache: null == cache
+          ? _self.cache
+          : cache // ignore: cast_nullable_to_non_nullable
+              as AlbumCache,
     ));
   }
 
@@ -241,7 +249,7 @@ extension PostUiStatePatterns on PostUiState {
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>(
     TResult Function(PostStatus status, bool isBusy, FeedDetail? feed, User? me,
-            int? replyParentId, int? editingCommentId)?
+            int? replyParentId, int? editingCommentId, AlbumCache cache)?
         $default, {
     required TResult orElse(),
   }) {
@@ -249,7 +257,7 @@ extension PostUiStatePatterns on PostUiState {
     switch (_that) {
       case _PostUiState() when $default != null:
         return $default(_that.status, _that.isBusy, _that.feed, _that.me,
-            _that.replyParentId, _that.editingCommentId);
+            _that.replyParentId, _that.editingCommentId, _that.cache);
       case _:
         return orElse();
     }
@@ -271,14 +279,14 @@ extension PostUiStatePatterns on PostUiState {
   @optionalTypeArgs
   TResult when<TResult extends Object?>(
     TResult Function(PostStatus status, bool isBusy, FeedDetail? feed, User? me,
-            int? replyParentId, int? editingCommentId)
+            int? replyParentId, int? editingCommentId, AlbumCache cache)
         $default,
   ) {
     final _that = this;
     switch (_that) {
       case _PostUiState():
         return $default(_that.status, _that.isBusy, _that.feed, _that.me,
-            _that.replyParentId, _that.editingCommentId);
+            _that.replyParentId, _that.editingCommentId, _that.cache);
       case _:
         throw StateError('Unexpected subclass');
     }
@@ -298,15 +306,21 @@ extension PostUiStatePatterns on PostUiState {
 
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>(
-    TResult? Function(PostStatus status, bool isBusy, FeedDetail? feed,
-            User? me, int? replyParentId, int? editingCommentId)?
+    TResult? Function(
+            PostStatus status,
+            bool isBusy,
+            FeedDetail? feed,
+            User? me,
+            int? replyParentId,
+            int? editingCommentId,
+            AlbumCache cache)?
         $default,
   ) {
     final _that = this;
     switch (_that) {
       case _PostUiState() when $default != null:
         return $default(_that.status, _that.isBusy, _that.feed, _that.me,
-            _that.replyParentId, _that.editingCommentId);
+            _that.replyParentId, _that.editingCommentId, _that.cache);
       case _:
         return null;
     }
@@ -315,14 +329,16 @@ extension PostUiStatePatterns on PostUiState {
 
 /// @nodoc
 
-class _PostUiState implements PostUiState {
+class _PostUiState extends PostUiState {
   const _PostUiState(
       {this.status = PostStatus.loading,
       this.isBusy = false,
       this.feed,
       this.me,
       this.replyParentId,
-      this.editingCommentId});
+      this.editingCommentId,
+      this.cache = const AlbumCache()})
+      : super._();
 
   @override
   @JsonKey()
@@ -338,6 +354,9 @@ class _PostUiState implements PostUiState {
   final int? replyParentId;
   @override
   final int? editingCommentId;
+  @override
+  @JsonKey()
+  final AlbumCache cache;
 
   /// Create a copy of PostUiState
   /// with the given fields replaced by the non-null parameter values.
@@ -359,16 +378,17 @@ class _PostUiState implements PostUiState {
             (identical(other.replyParentId, replyParentId) ||
                 other.replyParentId == replyParentId) &&
             (identical(other.editingCommentId, editingCommentId) ||
-                other.editingCommentId == editingCommentId));
+                other.editingCommentId == editingCommentId) &&
+            (identical(other.cache, cache) || other.cache == cache));
   }
 
   @override
-  int get hashCode => Object.hash(
-      runtimeType, status, isBusy, feed, me, replyParentId, editingCommentId);
+  int get hashCode => Object.hash(runtimeType, status, isBusy, feed, me,
+      replyParentId, editingCommentId, cache);
 
   @override
   String toString() {
-    return 'PostUiState(status: $status, isBusy: $isBusy, feed: $feed, me: $me, replyParentId: $replyParentId, editingCommentId: $editingCommentId)';
+    return 'PostUiState(status: $status, isBusy: $isBusy, feed: $feed, me: $me, replyParentId: $replyParentId, editingCommentId: $editingCommentId, cache: $cache)';
   }
 }
 
@@ -386,7 +406,8 @@ abstract mixin class _$PostUiStateCopyWith<$Res>
       FeedDetail? feed,
       User? me,
       int? replyParentId,
-      int? editingCommentId});
+      int? editingCommentId,
+      AlbumCache cache});
 
   @override
   $FeedDetailCopyWith<$Res>? get feed;
@@ -412,6 +433,7 @@ class __$PostUiStateCopyWithImpl<$Res> implements _$PostUiStateCopyWith<$Res> {
     Object? me = freezed,
     Object? replyParentId = freezed,
     Object? editingCommentId = freezed,
+    Object? cache = null,
   }) {
     return _then(_PostUiState(
       status: null == status
@@ -438,6 +460,10 @@ class __$PostUiStateCopyWithImpl<$Res> implements _$PostUiStateCopyWith<$Res> {
           ? _self.editingCommentId
           : editingCommentId // ignore: cast_nullable_to_non_nullable
               as int?,
+      cache: null == cache
+          ? _self.cache
+          : cache // ignore: cast_nullable_to_non_nullable
+              as AlbumCache,
     ));
   }
 

@@ -1,54 +1,73 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:widyu/core/data/repository/album/album_repository.dart';
+import 'package:widyu/core/di/providers.dart';
 import 'package:widyu/core/model/album/album_cache.dart';
 import 'package:widyu/core/model/album/media.dart';
 import 'package:widyu/core/model/api/api_result.dart';
 import 'package:widyu/core/model/api/infinite_page_result.dart';
-import 'package:widyu/core/utils/mixins/infinite_scroll_mixin.dart';
+import 'package:widyu/core/utils/infinite_scroll.dart';
+import 'package:widyu/feature/album/photo/photo_tab_ui_state.dart';
 
-class PhotoTabViewModel extends ChangeNotifier with InfiniteScrollMixin<Media> {
-  PhotoTabViewModel({required AlbumRepository repository})
-      : _repository = repository,
-        _cache = repository.currentCache {
-    _cacheChanges = repository.cache.listen(_onCache);
+part 'photo_tab_view_model.g.dart';
+
+@riverpod
+class PhotoTabViewModel extends _$PhotoTabViewModel {
+  late InfiniteScroller<Media> _scroller;
+
+  AlbumRepository get _repository => ref.read(albumRepositoryProvider);
+
+  @override
+  PhotoTabUiState build() {
+    _scroller = InfiniteScroller(
+      fetch: _fetch,
+      read: () => state.list,
+      write: (list) => state = state.copyWith(list: list),
+      mounted: () => ref.mounted,
+    );
+    unawaited(Future.microtask(_start));
+    return PhotoTabUiState(
+      list: const InfiniteScrollState(isFetching: true),
+      cache: _repository.currentCache,
+    );
   }
 
-  AlbumCache _cache;
-  late final StreamSubscription<AlbumCache> _cacheChanges;
+  Future<void> _start() async {
+    if (!ref.mounted) return;
+    final cacheChanges = _repository.cache.listen(_onCache);
+    ref.onDispose(cacheChanges.cancel);
+    await _scroller.init();
+  }
 
-  AlbumCache get cache => _cache;
-
-  @override
-  List<Media> get items =>
-      super.items.where((media) => !_cache.isDeleted(media.postId)).toList();
-
-  @override
-  bool get isEmpty => items.isEmpty;
-
-  // 썸네일은 잠금 여부만 보여주므로 삭제·잠금 상태가 바뀔 때만 다시 그린다.
+  // 썸네일은 잠금 여부만 구독하므로 다른 캐시 변경에는 다시 그려지지 않는다.
   void _onCache(AlbumCache cache) {
-    final changed = !identical(cache.deletedIds, _cache.deletedIds) ||
-        !identical(cache.unlockedIds, _cache.unlockedIds) ||
-        !identical(cache.unlockingIds, _cache.unlockingIds);
-    _cache = cache;
-    if (changed) notifyListeners();
+    if (identical(cache, state.cache)) return;
+    final deletedChanged = !identical(cache.deletedIds, state.cache.deletedIds);
+    state = state.copyWith(cache: cache);
+    if (deletedChanged) {
+      _scroller.update(
+        (list) => list.removeWhere((media) => cache.isDeleted(media.postId)),
+      );
+    }
   }
 
-  @override
-  void dispose() {
-    _cacheChanges.cancel();
-    super.dispose();
-  }
+  Future<void> refresh() => _scroller.init();
 
-  final AlbumRepository _repository;
+  Future<void> loadMore() => _scroller.loadMore();
 
-  @override
-  Future<InfinitePageResult<Media>> fetch(String? cursor) async {
-    final result = await _repository.fetchMediaFeed(cursor: cursor);
+  Future<void> retry() => _scroller.retry();
+
+  Future<InfinitePageResult<Media>> _fetch(String? cursor) async {
+    final repository = _repository;
+    final result = await repository.fetchMediaFeed(cursor: cursor);
     if (result case Failure(:final message)) throw Exception(message);
 
-    return (result as Success<InfinitePageResult<Media>>).data;
+    final page = (result as Success<InfinitePageResult<Media>>).data;
+    final cache = repository.currentCache;
+    return page.copyWith(
+      items:
+          page.items.where((media) => !cache.isDeleted(media.postId)).toList(),
+    );
   }
 }

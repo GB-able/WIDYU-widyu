@@ -1,0 +1,8 @@
+{
+  "data": { "notificationType": "WALK_DATA_SYNC" },
+  "android": { "priority": "high" },
+  "apns": {
+    "headers": { "apns-priority": "5", "apns-push-type": "background" },
+    "payload": { "aps": { "content-available": 1 } }
+  }
+}

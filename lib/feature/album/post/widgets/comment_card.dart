@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:widyu/core/model/album/comment.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
 import 'package:widyu/core/ui/widgets/profile_widget.dart';
 import 'package:widyu/core/utils/extensions/date_extension.dart';
 import 'package:widyu/feature/album/_widgets/comment_menu.dart';
-import 'package:widyu/feature/album/post/post_view_model.dart';
 import 'package:widyu/feature/album/post/widgets/comment_edit_field.dart';
 import 'package:widyu/feature/album/post/widgets/re_comment_card.dart';
 
@@ -15,14 +13,25 @@ class CommentCard extends StatelessWidget {
     super.key,
     required this.comment,
     required this.editingId,
+    required this.editController,
+    required this.editFocusNode,
+    required this.onSubmitEdit,
+    required this.onReply,
+    required this.onEdit,
+    required this.onDelete,
   });
 
   final Comment comment;
   final int? editingId;
+  final TextEditingController editController;
+  final FocusNode editFocusNode;
+  final VoidCallback onSubmitEdit;
+  final ValueChanged<int> onReply;
+  final ValueChanged<Comment> onEdit;
+  final Future<bool> Function(int commentId) onDelete;
 
   @override
   Widget build(BuildContext context) {
-    final viewModel = context.read<PostViewModel>();
     final isEditing = editingId == comment.commentId;
 
     return Column(
@@ -60,10 +69,10 @@ class CommentCard extends StatelessWidget {
                   ),
                   if (isEditing)
                     CommentEditField(
-                      controller: viewModel.editController,
-                      focusNode: viewModel.editFocusNode,
+                      controller: editController,
+                      focusNode: editFocusNode,
                       hintText: '댓글을 수정해 주세요.',
-                      onSubmitted: viewModel.submitEdit,
+                      onSubmitted: onSubmitEdit,
                     )
                   else
                     Text(
@@ -72,7 +81,7 @@ class CommentCard extends StatelessWidget {
                       overflow: TextOverflow.visible,
                     ),
                   GestureDetector(
-                    onTap: () => viewModel.startReply(comment.commentId),
+                    onTap: () => onReply(comment.commentId),
                     child: Text(
                       '답글달기',
                       style: MyTypo.helper.copyWith(color: MyColor.grey500),
@@ -83,8 +92,8 @@ class CommentCard extends StatelessWidget {
             ),
             if (comment.canEdit && !isEditing)
               CommentMoreButton(
-                commentId: comment.commentId,
-                onEdit: () => viewModel.startEdit(comment),
+                onEdit: () => onEdit(comment),
+                onDelete: () => onDelete(comment.commentId),
               ),
           ],
         ),
@@ -100,10 +109,11 @@ class CommentCard extends StatelessWidget {
                         ? ReCommentMode.edit
                         : ReCommentMode.normal,
                     reply: reply,
-                    controller: viewModel.editController,
-                    focusNode: viewModel.editFocusNode,
-                    onSubmitted: viewModel.submitEdit,
-                    onEdit: () => viewModel.startEdit(reply),
+                    controller: editController,
+                    focusNode: editFocusNode,
+                    onSubmitted: onSubmitEdit,
+                    onEdit: () => onEdit(reply),
+                    onDelete: () => onDelete(reply.commentId),
                   ),
               ],
             ),

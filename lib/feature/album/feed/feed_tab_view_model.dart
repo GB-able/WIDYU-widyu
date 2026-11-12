@@ -1,80 +1,96 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:widyu/core/data/repository/album/album_repository.dart';
+import 'package:widyu/core/di/providers.dart';
 import 'package:widyu/core/model/album/album_cache.dart';
 import 'package:widyu/core/model/album/feed.dart';
 import 'package:widyu/core/model/api/api_result.dart';
 import 'package:widyu/core/model/api/infinite_page_result.dart';
-import 'package:widyu/core/utils/mixins/infinite_scroll_mixin.dart';
+import 'package:widyu/core/utils/infinite_scroll.dart';
+import 'package:widyu/feature/album/feed/feed_tab_ui_state.dart';
 
-class FeedTabViewModel extends ChangeNotifier with InfiniteScrollMixin<int> {
-  FeedTabViewModel({required AlbumRepository repository})
-      : _repository = repository,
-        _cache = repository.currentCache {
-    _cacheChanges = repository.cache.listen(_onCache);
-  }
+part 'feed_tab_view_model.g.dart';
 
-  final AlbumRepository _repository;
-  AlbumCache _cache;
-  late final StreamSubscription<AlbumCache> _cacheChanges;
+@riverpod
+class FeedTabViewModel extends _$FeedTabViewModel {
+  late InfiniteScroller<int> _scroller;
 
-  AlbumCache get cache => _cache;
-
-  final Set<int> _expandedFeedIds = {};
-
-  bool isContentExpanded(int albumId) => _expandedFeedIds.contains(albumId);
-
-  void setContentExpanded(int albumId, bool expanded) {
-    if (expanded) {
-      _expandedFeedIds.add(albumId);
-    } else {
-      _expandedFeedIds.remove(albumId);
-    }
-    notifyListeners();
-  }
+  AlbumRepository get _repository => ref.read(albumRepositoryProvider);
 
   @override
-  List<int> get items =>
-      super.items.where((id) => _cache.postOf(id) != null).toList();
+  FeedTabUiState build() {
+    _scroller = InfiniteScroller(
+      fetch: _fetch,
+      read: () => state.list,
+      write: (list) => state = state.copyWith(list: list),
+      mounted: () => ref.mounted,
+    );
+    unawaited(Future.microtask(_start));
+    return FeedTabUiState(
+      list: const InfiniteScrollState(isFetching: true),
+      cache: _repository.currentCache,
+    );
+  }
 
-  @override
-  bool get isEmpty => items.isEmpty;
+  Future<void> _start() async {
+    if (!ref.mounted) return;
+    final cacheChanges = _repository.cache.listen(_onCache);
+    ref.onDispose(cacheChanges.cancel);
+    await _scroller.init();
+  }
 
   void _onCache(AlbumCache cache) {
-    if (identical(cache, _cache)) return;
-    final deleted = !identical(cache.deletedIds, _cache.deletedIds);
-    _cache = cache;
-    if (deleted) {
-      _expandedFeedIds.removeWhere((id) => _cache.postOf(id) == null);
+    if (identical(cache, state.cache)) return;
+    if (identical(cache.deletedIds, state.cache.deletedIds)) {
+      state = state.copyWith(cache: cache);
+      return;
     }
-    notifyListeners();
+    bool exists(int id) => cache.postOf(id) != null;
+    state = state.copyWith(
+      cache: cache,
+      expandedFeedIds: state.expandedFeedIds.where(exists).toSet(),
+    );
+    _scroller.update((list) => list.removeWhere((id) => !exists(id)));
   }
+
+  void setContentExpanded(int albumId, bool expanded) {
+    state = state.copyWith(
+      expandedFeedIds: expanded
+          ? {...state.expandedFeedIds, albumId}
+          : ({...state.expandedFeedIds}..remove(albumId)),
+    );
+  }
+
+  Future<void> refresh() => _scroller.init();
+
+  Future<void> loadMore() => _scroller.loadMore();
+
+  Future<void> retry() => _scroller.retry();
 
   Future<void> toggleLike(int albumId) => _repository.toggleLike(albumId);
 
   Future<bool> deleteFeed(int albumId) => _repository.deleteFeed(albumId);
 
-  @override
-  void dispose() {
-    _cacheChanges.cancel();
-    super.dispose();
-  }
-
-  @override
-  Future<InfinitePageResult<int>> fetch(String? cursor) async {
-    final generation = requestGeneration;
-    final result = await _repository.fetchFeeds(cursor: cursor);
-    if (!isRequestCurrent(generation)) {
+  Future<InfinitePageResult<int>> _fetch(String? cursor) async {
+    final repository = _repository;
+    final generation = _scroller.generation;
+    final result = await repository.fetchFeeds(cursor: cursor);
+    // 오래된 응답으로 공유 캐시를 덮어쓰지 않는다.
+    if (!_scroller.isCurrent(generation)) {
       return const InfinitePageResult(items: <int>[], nextCursor: null);
     }
     if (result case Failure(:final message)) throw Exception(message);
 
     final page = (result as Success<InfinitePageResult<Feed>>).data;
-    _repository.hydrate(page.items);
-    _onCache(_repository.currentCache);
+    repository.hydrate(page.items);
+    final cache = repository.currentCache;
+    _onCache(cache);
     return InfinitePageResult(
-      items: page.items.map((feed) => feed.albumId).toList(),
+      items: [
+        for (final feed in page.items)
+          if (cache.postOf(feed.albumId) != null) feed.albumId,
+      ],
       nextCursor: page.nextCursor,
       hasNext: page.hasNext,
     );

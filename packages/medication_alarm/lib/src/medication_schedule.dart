@@ -62,6 +62,7 @@ class MedicationSchedule {
             now.year, now.month, now.day + day, schedule.hour, schedule.minute);
         if (!at.isAfter(now)) continue;
         final date = localDate(at);
+        if (!schedule.activeOn(date)) continue;
         final id = MedicationOccurrence(
                 scheduleId: schedule.scheduleId, localDate: date)
             .id;

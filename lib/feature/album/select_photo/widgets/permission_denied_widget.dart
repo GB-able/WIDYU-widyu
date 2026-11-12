@@ -1,9 +1,7 @@
 part of '../select_photo_screen.dart';
 
 class _PermissionDeniedWidget extends StatelessWidget {
-  const _PermissionDeniedWidget({required this.viewModel});
-
-  final SelectPhotoViewModel viewModel;
+  const _PermissionDeniedWidget();
 
   @override
   Widget build(BuildContext context) {

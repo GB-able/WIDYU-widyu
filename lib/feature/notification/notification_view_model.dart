@@ -55,11 +55,10 @@ class NotificationViewModel extends _$NotificationViewModel {
 
     bool isTarget(NotificationItemUiModel item) =>
         item.notificationId == notification.notificationId;
-    state = state.copyWith(
-      list: state.category == 'UNREAD'
-          ? state.list.removeWhere(isTarget)
-          : state.list
-              .replaceWhere(isTarget, (item) => item.copyWith(isRead: true)),
+    _scroller.update(
+      (list) => state.category == 'UNREAD'
+          ? list.removeWhere(isTarget)
+          : list.replaceWhere(isTarget, (item) => item.copyWith(isRead: true)),
     );
     await _fetchCategories();
   }

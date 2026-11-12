@@ -100,6 +100,50 @@ final class BackgroundLocationNoticeControllerProvider
 String _$backgroundLocationNoticeControllerHash() =>
     r'841a68c48ab383d58ad41f116d9caac8f1b6839a';
 
+@ProviderFor(kakaoMapRouteOpener)
+final kakaoMapRouteOpenerProvider = KakaoMapRouteOpenerProvider._();
+
+final class KakaoMapRouteOpenerProvider extends $FunctionalProvider<
+    KakaoMapRouteOpener,
+    KakaoMapRouteOpener,
+    KakaoMapRouteOpener> with $Provider<KakaoMapRouteOpener> {
+  KakaoMapRouteOpenerProvider._()
+      : super(
+          from: null,
+          argument: null,
+          retry: null,
+          name: r'kakaoMapRouteOpenerProvider',
+          isAutoDispose: false,
+          dependencies: null,
+          $allTransitiveDependencies: null,
+        );
+
+  @override
+  String debugGetCreateSourceHash() => _$kakaoMapRouteOpenerHash();
+
+  @$internal
+  @override
+  $ProviderElement<KakaoMapRouteOpener> $createElement(
+          $ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  KakaoMapRouteOpener create(Ref ref) {
+    return kakaoMapRouteOpener(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(KakaoMapRouteOpener value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<KakaoMapRouteOpener>(value),
+    );
+  }
+}
+
+String _$kakaoMapRouteOpenerHash() =>
+    r'8e8672b68aa8ce2fd691cb85b9af8fe8748552b6';
+
 @ProviderFor(authRepository)
 final authRepositoryProvider = AuthRepositoryProvider._();
 
@@ -225,6 +269,52 @@ final class MedicationRepositoryProvider extends $FunctionalProvider<
 
 String _$medicationRepositoryHash() =>
     r'e56da345d089a266a56793b381712dd68a38758e';
+
+@ProviderFor(alarmPermissionRecoveryController)
+final alarmPermissionRecoveryControllerProvider =
+    AlarmPermissionRecoveryControllerProvider._();
+
+final class AlarmPermissionRecoveryControllerProvider
+    extends $FunctionalProvider<PermissionRecoveryController,
+        PermissionRecoveryController, PermissionRecoveryController>
+    with $Provider<PermissionRecoveryController> {
+  AlarmPermissionRecoveryControllerProvider._()
+      : super(
+          from: null,
+          argument: null,
+          retry: null,
+          name: r'alarmPermissionRecoveryControllerProvider',
+          isAutoDispose: false,
+          dependencies: null,
+          $allTransitiveDependencies: null,
+        );
+
+  @override
+  String debugGetCreateSourceHash() =>
+      _$alarmPermissionRecoveryControllerHash();
+
+  @$internal
+  @override
+  $ProviderElement<PermissionRecoveryController> $createElement(
+          $ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  PermissionRecoveryController create(Ref ref) {
+    return alarmPermissionRecoveryController(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(PermissionRecoveryController value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<PermissionRecoveryController>(value),
+    );
+  }
+}
+
+String _$alarmPermissionRecoveryControllerHash() =>
+    r'df71fc1ab2d3d6b650d0a872e86f331d938e7549';
 
 @ProviderFor(heartRateRepository)
 final heartRateRepositoryProvider = HeartRateRepositoryProvider._();
@@ -614,6 +704,47 @@ final class PointRepositoryProvider extends $FunctionalProvider<PointRepository,
 
 String _$pointRepositoryHash() => r'9611fb3a6463d798c96bfe675ec44adef3812bee';
 
+@ProviderFor(userRepository)
+final userRepositoryProvider = UserRepositoryProvider._();
+
+final class UserRepositoryProvider
+    extends $FunctionalProvider<UserRepository, UserRepository, UserRepository>
+    with $Provider<UserRepository> {
+  UserRepositoryProvider._()
+      : super(
+          from: null,
+          argument: null,
+          retry: null,
+          name: r'userRepositoryProvider',
+          isAutoDispose: true,
+          dependencies: null,
+          $allTransitiveDependencies: null,
+        );
+
+  @override
+  String debugGetCreateSourceHash() => _$userRepositoryHash();
+
+  @$internal
+  @override
+  $ProviderElement<UserRepository> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  UserRepository create(Ref ref) {
+    return userRepository(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(UserRepository value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<UserRepository>(value),
+    );
+  }
+}
+
+String _$userRepositoryHash() => r'ea8f4337a12363081e4cffd69df1ef0f71a0b230';
+
 @ProviderFor(walkRepository)
 final walkRepositoryProvider = WalkRepositoryProvider._();
 
@@ -694,7 +825,52 @@ final class WalkTrackerProvider
   }
 }
 
-String _$walkTrackerHash() => r'66303436f7ba223b4e8a4d2680ea391fa46e6cc9';
+String _$walkTrackerHash() => r'69d04caa692ffa9f277ca16323eab7f2d2769a6d';
+
+@ProviderFor(TodaySteps)
+final todayStepsProvider = TodayStepsProvider._();
+
+final class TodayStepsProvider extends $NotifierProvider<TodaySteps, int> {
+  TodayStepsProvider._()
+      : super(
+          from: null,
+          argument: null,
+          retry: null,
+          name: r'todayStepsProvider',
+          isAutoDispose: true,
+          dependencies: null,
+          $allTransitiveDependencies: null,
+        );
+
+  @override
+  String debugGetCreateSourceHash() => _$todayStepsHash();
+
+  @$internal
+  @override
+  TodaySteps create() => TodaySteps();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(int value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<int>(value),
+    );
+  }
+}
+
+String _$todayStepsHash() => r'6fe007c7b01be5b680625bc152bf270f10b94eb3';
+
+abstract class _$TodaySteps extends $Notifier<int> {
+  int build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final ref = this.ref as $Ref<int, int>;
+    final element = ref.element
+        as $ClassProviderElement<AnyNotifier<int, int>, int, Object?, Object?>;
+    element.handleCreate(ref, build);
+  }
+}
 
 @ProviderFor(albumRepository)
 final albumRepositoryProvider = AlbumRepositoryProvider._();
@@ -780,3 +956,48 @@ final class PermissionRecoveryControllerProvider extends $FunctionalProvider<
 
 String _$permissionRecoveryControllerHash() =>
     r'95b76a7ad7df9a404cfbedda66c2d11fe6b7ec11';
+
+@ProviderFor(homePermissionRecoveryController)
+final homePermissionRecoveryControllerProvider =
+    HomePermissionRecoveryControllerProvider._();
+
+final class HomePermissionRecoveryControllerProvider
+    extends $FunctionalProvider<PermissionRecoveryController,
+        PermissionRecoveryController, PermissionRecoveryController>
+    with $Provider<PermissionRecoveryController> {
+  HomePermissionRecoveryControllerProvider._()
+      : super(
+          from: null,
+          argument: null,
+          retry: null,
+          name: r'homePermissionRecoveryControllerProvider',
+          isAutoDispose: true,
+          dependencies: null,
+          $allTransitiveDependencies: null,
+        );
+
+  @override
+  String debugGetCreateSourceHash() => _$homePermissionRecoveryControllerHash();
+
+  @$internal
+  @override
+  $ProviderElement<PermissionRecoveryController> $createElement(
+          $ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  PermissionRecoveryController create(Ref ref) {
+    return homePermissionRecoveryController(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(PermissionRecoveryController value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<PermissionRecoveryController>(value),
+    );
+  }
+}
+
+String _$homePermissionRecoveryControllerHash() =>
+    r'13e4aa8131638574ba99af7aa85a0ab8de4b9fb5';

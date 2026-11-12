@@ -29,10 +29,11 @@ final class MedicationAlarmCoordinator {
         guard !backgroundRegistered else { return }
         backgroundRegistered = true
         if #unavailable(iOS 26.0) {
-            MedicationAlarmPlayer.shared.onFire = { [weak self] id in self?.fired(id) }
+            MedicationAlarmPlayer.shared.onFire = { [weak self] id in self?.fired(id); self?.rearm() }
             MedicationAlarmPlayer.shared.onStop = { [weak self] in self?.rearm() }
             MedicationAlarmPlayer.shared.onHeartbeat = { [weak self] in self?.watchdog(after: MedicationAlarmPlayer.watchdogDelay) }
             MedicationAlarmPlayer.shared.onIdle = { [weak self] in self?.center.removePendingNotificationRequests(withIdentifiers: [Self.watchdogID]) }
+            applyAlertMode()
             rearm()
         }
         BGTaskScheduler.shared.register(forTaskWithIdentifier: Self.refreshID, using: .main) { task in
@@ -107,8 +108,13 @@ final class MedicationAlarmCoordinator {
         let notifications = settings.authorizationStatus == .authorized || settings.authorizationStatus == .provisional
         var authorized = notifications
         var mode = "scheduledNotification"
-        if #available(iOS 26.0, *) { authorized = AlarmManager.shared.authorizationState == .authorized; mode = "alarmKit" }
-        return ["platform": "ios", "mode": mode, "authorized": authorized,
+        var alarmDenied = false
+        if #available(iOS 26.0, *) {
+            authorized = AlarmManager.shared.authorizationState == .authorized
+            alarmDenied = AlarmManager.shared.authorizationState == .denied
+            mode = "alarmKit"
+        }
+        return ["platform": "ios", "mode": mode, "authorized": authorized, "alarmDenied": alarmDenied,
                 "notifications": notifications, "fullScreen": false,
                 "timeZone": TimeZone.current.identifier, "osVersion": UIDevice.current.systemVersion]
     }
@@ -138,6 +144,15 @@ final class MedicationAlarmCoordinator {
             var state = try load(); state["capabilities"] = await capabilities(); return state
         case "activeGroup": return try activeGroup()
         case "clearSession": try await clear(); return nil
+        case "setAlertMode":
+            if #available(iOS 26.0, *) { return nil }
+            var state = try load()
+            state["alertMode"] = ["sound": args["sound"] as? Bool ?? true, "vibration": args["vibration"] as? Bool ?? true]
+            state.removeValue(forKey: "scheduled")
+            try save(state)
+            applyAlertMode()
+            _ = try await reconcile()
+            return nil
         case "applySchedule":
             var state = try load(); try requireSession(state, args)
             guard let medicationSchedule = args["schedule"] as? [String: Any], medicationSchedule["complete"] as? Bool == true,
@@ -178,9 +193,18 @@ final class MedicationAlarmCoordinator {
         default: throw AlarmBridgeError.invalid("UNKNOWN_METHOD")
         }
     }
+    private func alertMode(_ key: String) -> Bool {
+        ((try? load())?["alertMode"] as? [String: Any])?[key] as? Bool ?? true
+    }
+    private func applyAlertMode() {
+        MedicationAlarmPlayer.shared.sound = alertMode("sound")
+        MedicationAlarmPlayer.shared.haptics = alertMode("vibration")
+    }
     private func clear() async throws {
         let old = try load()
-        try save(["installationId": old["installationId"]!])
+        var fresh: [String: Any] = ["installationId": old["installationId"]!]
+        fresh["alertMode"] = old["alertMode"]
+        try save(fresh)
         BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: Self.refreshID)
         MedicationAlarmPlayer.shared.disarm()
         if #available(iOS 26.0, *) {
@@ -308,7 +332,7 @@ final class MedicationAlarmCoordinator {
         } else {
             let content = UNMutableNotificationContent()
             content.title = title; content.body = "눌러서 복용 사진을 인증해 주세요."
-            content.sound = .default; content.categoryIdentifier = "WIDYU_MEDICATION"
+            content.sound = alertMode("sound") ? .default : nil; content.categoryIdentifier = "WIDYU_MEDICATION"
             content.interruptionLevel = .timeSensitive
             content.userInfo = ["widyuMedication": id.uuidString]
             var calendar = Calendar(identifier: .gregorian); calendar.timeZone = .current
@@ -338,8 +362,8 @@ final class MedicationAlarmCoordinator {
             guard let id = ((try? AlarmManager.shared.alarms) ?? []).first(where: { $0.state == .alerting })?.id,
                   let group = group(for: id, in: state),
                   group["memberId"] as? String == state["memberId"] as? String else { return [:] }
-            if UIApplication.shared.applicationState == .active {
-                MedicationAlarmPlayer.shared.startForeground(id: id)
+            if UIApplication.shared.applicationState == .active,
+               MedicationAlarmPlayer.shared.startForeground(id: id) {
                 do { try AlarmManager.shared.stop(id: id) }
                 catch { MedicationAlarmPlayer.shared.stop() }
             }
@@ -438,6 +462,8 @@ final class MedicationAlarmCoordinator {
                 components.hour = time[0]; components.minute = time[1]
                 guard let at = calendar.date(from: components), at > now else { continue }
                 let localDate = String(format: "%04d-%02d-%02d", components.year!, components.month!, components.day!)
+                if let from = rule["effectiveFrom"] as? String, from > localDate { continue }
+                if let to = rule["effectiveTo"] as? String, to < localDate { continue }
                 let occurrenceID = "\(rule["scheduleId"]!):\(localDate)"
                 if excluded.contains(occurrenceID) { continue }
                 let end = calendar.date(bySettingHour: 23, minute: 59, second: 0, of: date)!

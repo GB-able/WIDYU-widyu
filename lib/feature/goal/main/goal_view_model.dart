@@ -1,12 +1,12 @@
 import 'dart:async';
 
-import 'package:flutter/widgets.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:widyu/core/data/repository/goal/goal_repository.dart';
-import 'package:widyu/core/data/repository/goal/medication_repository.dart';
 import 'package:widyu/core/data/repository/goal/walk_repository.dart';
 import 'package:widyu/core/data/repository/location/location_repository.dart';
 import 'package:widyu/core/data/repository/point/point_repository.dart';
+import 'package:widyu/core/di/providers.dart';
 import 'package:widyu/core/model/api/api_result.dart';
 import 'package:widyu/core/model/goal/goal_home_response.dart';
 import 'package:widyu/core/model/goal/medication/medication_point_result.dart';
@@ -15,67 +15,64 @@ import 'package:widyu/core/model/location/user_location.dart';
 import 'package:widyu/core/utils/extensions/walk_extension.dart';
 import 'package:widyu/core/utils/kakao_map_launcher.dart';
 import 'package:widyu/core/utils/show_toast.dart';
-import 'package:widyu/core/utils/walk_tracker.dart';
 import 'package:widyu/feature/goal/main/goal_ui_event.dart';
 import 'package:widyu/feature/goal/main/goal_ui_state.dart';
 
-class GoalViewModel with ChangeNotifier {
-  final GoalRepository _repository;
-  final PointRepository _pointRepository;
-  final WalkRepository _walkRepository;
-  final LocationRepository _locationRepository;
-  Timer? _countdownTimer;
-  Timer? _dayTimer;
-  String? _loadedDay;
-  late final StreamSubscription<void> _medicationChanges;
-  late final StreamSubscription<PointStatus> _pointStatus;
-  late final StreamSubscription<int> _todaySteps;
+part 'goal_view_model.g.dart';
 
-  GoalUiState _uiState = const GoalUiState();
-  GoalUiState get uiState => _uiState;
+@riverpod
+class GoalViewModel extends _$GoalViewModel {
+  Timer? _countdownTimer;
+  String? _loadedDay;
 
   final _uiEvent = StreamController<GoalUiEvent>.broadcast();
+
+  // 일회성 이벤트는 state가 아니라 stream으로 내보낸다.
+  // ignore: riverpod_lint/avoid_public_notifier_properties
   Stream<GoalUiEvent> get uiEvent => _uiEvent.stream;
 
-  GoalViewModel({
-    required GoalRepository repository,
-    required PointRepository pointRepository,
-    required WalkTracker walkTracker,
-    required WalkRepository walkRepository,
-    required LocationRepository locationRepository,
-    required MedicationRepository medicationRepository,
-  })  : _repository = repository,
-        _pointRepository = pointRepository,
-        _walkRepository = walkRepository,
-        _locationRepository = locationRepository {
-    _uiState = _uiState.copyWith(point: pointRepository.currentStatus.point);
-    _pointStatus = pointRepository.status.listen((status) {
-      _uiState = _uiState.copyWith(point: status.point);
-      notifyListeners();
+  GoalRepository get _repository => ref.read(goalRepositoryProvider);
+  PointRepository get _pointRepository => ref.read(pointRepositoryProvider);
+  WalkRepository get _walkRepository => ref.read(walkRepositoryProvider);
+  LocationRepository get _locationRepository =>
+      ref.read(locationRepositoryProvider);
+
+  @override
+  GoalUiState build() {
+    // onDispose는 다시 빌드될 때도 불리므로, 실제로 폐기될 때만 닫는다.
+    ref.onDispose(() {
+      _countdownTimer?.cancel();
+      if (!ref.mounted) _uiEvent.close();
     });
-    _uiState = _uiState.copyWith(steps: walkRepository.currentTodaySteps);
-    _todaySteps = walkRepository.todaySteps.listen((steps) {
-      _uiState = _uiState.copyWith(steps: steps);
-      notifyListeners();
+    unawaited(Future.microtask(_start));
+    return GoalUiState(point: _pointRepository.currentStatus.point);
+  }
+
+  void _start() {
+    if (!ref.mounted) return;
+    // 구독하면 최신 값이 다시 전달된다. 전달 시점이 stream 구현에 따라 다르므로
+    // build() 중에 state를 쓰지 않도록 build() 뒤에 구독한다.
+    final pointStatus = _pointRepository.status.listen((status) {
+      state = state.copyWith(point: status.point);
     });
-    unawaited(walkTracker.start());
+    ref.onDispose(pointStatus.cancel);
+    unawaited(ref.read(walkTrackerProvider).start());
     unawaited(refresh());
-    _medicationChanges = medicationRepository.medicationChanges
+    final medicationChanges = ref
+        .read(medicationRepositoryProvider)
+        .medicationChanges
         .listen((_) => unawaited(refresh(showLoading: false)));
-    _dayTimer = Timer.periodic(const Duration(seconds: 30), (_) {
+    ref.onDispose(medicationChanges.cancel);
+    final dayTimer = Timer.periodic(const Duration(seconds: 30), (_) {
       if (_loadedDay != DateTime.now().walkDate) {
         unawaited(refresh(showLoading: false));
       }
     });
-  }
-
-  @override
-  void notifyListeners() {
-    if (!_uiEvent.isClosed) super.notifyListeners();
+    ref.onDispose(dayTimer.cancel);
   }
 
   void _emit(GoalUiEvent event) {
-    if (!_uiEvent.isClosed) _uiEvent.add(event);
+    if (ref.mounted) _uiEvent.add(event);
   }
 
   Future<void> refresh({bool showLoading = true}) async {
@@ -83,18 +80,17 @@ class GoalViewModel with ChangeNotifier {
     _loadedDay = requestedDay;
     if (showLoading) {
       _countdownTimer?.cancel();
-      _uiState = _uiState.copyWith(
+      state = state.copyWith(
         cards: const GoalCardsState.loading(),
         isWeeklyLoading: true,
       );
-      notifyListeners();
     }
 
     final results = await Future.wait<Object>([
       _repository.fetchGoalHome(),
       _repository.fetchWeeklyStatus(),
     ]);
-    if (_uiEvent.isClosed) return;
+    if (!ref.mounted) return;
     unawaited(_pointRepository.refresh());
     final home = results[0] as ApiResult<GoalHomeResponse>;
     final weekly = results[1] as ApiResult<List<GoalRateStatus>>;
@@ -114,7 +110,7 @@ class GoalViewModel with ChangeNotifier {
           );
         }
 
-        _uiState = _uiState.copyWith(
+        state = state.copyWith(
           cards: GoalCardsState.data(
             medicine: medicine,
             walk: home.data.walk,
@@ -128,38 +124,37 @@ class GoalViewModel with ChangeNotifier {
           ),
         );
       case Failure<GoalHomeResponse>():
-        if (showLoading || _uiState.cards is GoalCardsLoading) {
-          _uiState = _uiState.copyWith(cards: const GoalCardsState.error());
+        if (showLoading || state.cards is GoalCardsLoading) {
+          state = state.copyWith(cards: const GoalCardsState.error());
         }
     }
 
     switch (weekly) {
       case Success<List<GoalRateStatus>>():
-        _uiState = _uiState.copyWith(
+        state = state.copyWith(
           isWeeklyLoading: false,
           weeklyStatuses: weekly.data,
         );
       case Failure<List<GoalRateStatus>>():
-        _uiState = _uiState.copyWith(
+        state = state.copyWith(
           isWeeklyLoading: false,
-          weeklyStatuses: showLoading ? const [] : _uiState.weeklyStatuses,
+          weeklyStatuses: showLoading ? const [] : state.weeklyStatuses,
         );
-        if (showLoading && _uiState.cards is! GoalCardsError) {
+        if (showLoading && state.cards is! GoalCardsError) {
           _emit(const FetchWeeklyStatusFailure());
         }
     }
 
     _startCountdownIfNeeded();
-    notifyListeners();
   }
 
   GoalCardsData? get _cards {
-    final cards = _uiState.cards;
+    final cards = state.cards;
     return cards is GoalCardsData ? cards : null;
   }
 
   void _updateCards(GoalCardsData cards) {
-    _uiState = _uiState.copyWith(cards: cards);
+    state = state.copyWith(cards: cards);
   }
 
   void _startCountdownIfNeeded() {
@@ -194,7 +189,6 @@ class GoalViewModel with ChangeNotifier {
       } else {
         _updateCards(cards.copyWith(verifyRemaining: remaining));
       }
-      notifyListeners();
     });
   }
 
@@ -236,16 +230,5 @@ class GoalViewModel with ChangeNotifier {
     } catch (e) {
       showToast('길을 안내할 수 없습니다.');
     }
-  }
-
-  @override
-  void dispose() {
-    _countdownTimer?.cancel();
-    _dayTimer?.cancel();
-    _medicationChanges.cancel();
-    _pointStatus.cancel();
-    _todaySteps.cancel();
-    _uiEvent.close();
-    super.dispose();
   }
 }

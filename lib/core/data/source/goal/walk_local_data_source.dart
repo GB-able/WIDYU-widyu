@@ -1,11 +1,5 @@
-enum WalkPermissionStatus { unknown, granted, denied, unavailable, error }
-
 abstract class WalkLocalDataSource {
   String get stepSource;
-
-  WalkPermissionStatus get permissionStatus;
-
-  bool get backgroundReadGranted;
 
   Future<bool> ensurePermission();
 
@@ -18,6 +12,8 @@ abstract class WalkLocalDataSource {
   Future<Map<String, dynamic>> readState(String memberId);
 
   Future<void> saveState(String memberId, Map<String, dynamic> state);
+
+  Future<bool> hasDayInAnyState(String date);
 
   Future<String?> acquireLock(String name);
 

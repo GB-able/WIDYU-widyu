@@ -13,10 +13,12 @@ class WalkSaveResult {
     this.uploaded = 0,
     this.rewardChanged = false,
     this.unauthorized = false,
+    this.retry = false,
   });
   final String? date;
   final int? steps;
   final int uploaded;
   final bool rewardChanged;
   final bool unauthorized;
+  final bool retry;
 }

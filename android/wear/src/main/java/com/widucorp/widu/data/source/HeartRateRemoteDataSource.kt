@@ -5,9 +5,6 @@ import com.widucorp.widu.data.model.HeartRateStatus
 import kotlinx.coroutines.flow.Flow
 
 interface HeartRateRemoteDataSource {
-    /** 폰 화면의 연결·착용 표시용 최신 값. 서버 전송은 [sendBatch] 가 한다. */
-    fun sendHeartRate(heartRate: Int)
-
     /** `/hr/batch/<sessionId>/<seq>` 로 보낸다. 도착 지연 예산(A 1.1.8)이 짧아 즉시 동기화한다. */
     suspend fun sendBatch(batch: HeartRateBatch)
 

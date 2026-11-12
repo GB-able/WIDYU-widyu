@@ -140,6 +140,7 @@ Map<String, dynamic> _heartRateBatch() => {
         {'bpm': 83, 'ts_ms': 1760000001000, 'accuracy': 'HIGH'},
       ],
       'on_body': true,
+      'wear_state': 'WORN_VALID',
       'watch_battery_pct': 63,
       'phone_received_at_ms': null,
       'resend': null,
@@ -172,6 +173,12 @@ void main() {
       ]) {
         expect(roundTrip.containsKey(key), isFalse, reason: key);
       }
+    });
+
+    test('wear_state 가 없는 예전 워치의 심박 배치는 null 로 읽는다', () {
+      final json = _heartRateBatch()..remove('wear_state');
+
+      expect(HeartRateBatch.fromJson(json).wearState, isNull);
     });
 
     test('폐기 레코드는 원본 Map 과 같다', () {

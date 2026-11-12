@@ -9,8 +9,6 @@ class WalkRecording {
   Future<void> startRecording() =>
       _channel.invokeMethod<void>('startRecording');
 
-  Future<void> stopRecording() => _channel.invokeMethod<void>('stopRecording');
-
   Future<int?> readSteps(DateTime start, DateTime end) =>
       _channel.invokeMethod<int>('readSteps', {
         'startMillis': start.millisecondsSinceEpoch,

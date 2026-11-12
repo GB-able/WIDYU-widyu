@@ -1,13 +1,13 @@
 part of '../feed_tab_view.dart';
 
-class _FeedList extends StatefulWidget {
+class _FeedList extends ConsumerStatefulWidget {
   const _FeedList();
 
   @override
-  State<_FeedList> createState() => _FeedListState();
+  ConsumerState<_FeedList> createState() => _FeedListState();
 }
 
-class _FeedListState extends State<_FeedList> {
+class _FeedListState extends ConsumerState<_FeedList> {
   final _scrollController = ScrollController();
 
   @override
@@ -26,18 +26,18 @@ class _FeedListState extends State<_FeedList> {
   void _onScroll() {
     if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent - 300) {
-      context.read<FeedTabViewModel>().loadMore();
+      ref.read(feedTabViewModelProvider.notifier).loadMore();
     }
   }
 
   // 탭 시점의 캐시와 포인트로 판단한다.
   Future<bool> _requestUnlock(int albumId) async {
-    final repository = context.read<AlbumRepository>();
+    final repository = ref.read(albumRepositoryProvider);
     final cache = repository.currentCache;
     final success = await showUnlockDialog(
       context,
       price: cache.postOf(albumId)?.price,
-      point: context.read<PointRepository>().currentStatus.point,
+      pointRepository: ref.read(pointRepositoryProvider),
       isUnlocking: cache.isUnlocking(albumId),
       onPurchase: () => repository.unlock(albumId),
       onGoToGoal: () => context.go(AppRoute.goal.path),
@@ -47,13 +47,11 @@ class _FeedListState extends State<_FeedList> {
 
   @override
   Widget build(BuildContext context) {
-    // 목록 단위 상태만 구독하고, 각 행은 아래 Selector로 자기 데이터만 구독한다.
-    final viewModel = context.read<FeedTabViewModel>();
-    final (isLoading, hasError, isLoadingMore) = context.select(
-      (FeedTabViewModel vm) => (vm.isLoading, vm.hasError, vm.isLoadingMore),
-    );
-    // 리스트는 최상위 값이어야 DeepCollectionEquality로 비교된다.
-    final feeds = context.select((FeedTabViewModel vm) => vm.items);
+    // 목록 단위 상태만 구독하고, 각 행은 아래 Consumer로 자기 데이터만 구독한다.
+    final viewModel = ref.watch(feedTabViewModelProvider.notifier);
+    final list = ref.watch(feedTabViewModelProvider.select((s) => s.list));
+    final InfiniteScrollState(:isLoading, :hasError, :isLoadingMore) = list;
+    final feeds = list.items;
 
     if (isLoading) {
       return const CustomLoadingWidget();
@@ -63,7 +61,7 @@ class _FeedListState extends State<_FeedList> {
       if (hasError) {
         return CustomErrorWidget(
           errorMsg: '피드를 불러오지 못했어요',
-          onRetry: () => context.read<FeedTabViewModel>().retry(),
+          onRetry: viewModel.retry,
         );
       }
       return const AlbumEmptyWidget();
@@ -74,7 +72,7 @@ class _FeedListState extends State<_FeedList> {
     return RefreshIndicator(
       color: MyColor.primary,
       backgroundColor: MyColor.white,
-      onRefresh: () => context.read<FeedTabViewModel>().init(),
+      onRefresh: viewModel.refresh,
       child: ListView.separated(
         controller: _scrollController,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -91,24 +89,24 @@ class _FeedListState extends State<_FeedList> {
               );
             }
             if (hasError) {
-              return RetryWidget(
-                onRetry: () => context.read<FeedTabViewModel>().retry(),
-              );
+              return RetryWidget(onRetry: viewModel.retry);
             }
             return null;
           }
           final albumId = feeds[index];
-          return Selector<FeedTabViewModel,
-              (AlbumPost?, AlbumStat, bool, bool)>(
+          return Consumer(
             key: ValueKey(albumId),
-            selector: (_, vm) => (
-              vm.cache.postOf(albumId),
-              vm.cache.statOf(albumId),
-              vm.cache.isUnlocked(albumId),
-              vm.isContentExpanded(albumId),
-            ),
-            builder: (context, row, _) {
-              final (post, stat, isUnlocked, isContentExpanded) = row;
+            builder: (context, ref, _) {
+              final (post, stat, isUnlocked, isContentExpanded) = ref.watch(
+                feedTabViewModelProvider.select(
+                  (s) => (
+                    s.cache.postOf(albumId),
+                    s.cache.statOf(albumId),
+                    s.cache.isUnlocked(albumId),
+                    s.expandedFeedIds.contains(albumId),
+                  ),
+                ),
+              );
               // 행은 목록과 따로 구독하므로 캐시에서 빠진 게시물일 수 있다.
               if (post == null) return const SizedBox.shrink();
               return FeedWidget(

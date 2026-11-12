@@ -89,6 +89,16 @@ class MedicationAlarmPlugin : FlutterPlugin, MethodChannel.MethodCallHandler,
                         stop(context, requireNotNull(call.argument<String>("groupId"))); null
                     }
 
+                    "setAlertMode" -> {
+                        AlarmStore.write(
+                            context, AlarmStore.read(context).put(
+                                "alertMode", JSONObject()
+                                    .put("sound", call.argument<Boolean>("sound") ?: true)
+                                    .put("vibration", call.argument<Boolean>("vibration") ?: true)
+                            )
+                        ); null
+                    }
+
                     "clearSession" -> {
                         scheduler.clear(); null
                     }

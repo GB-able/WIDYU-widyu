@@ -63,7 +63,7 @@ class _FeedWidgetState extends State<FeedWidget> {
   }
 
   Future<void> _confirmUnlock() async {
-    if (await widget.onRequestUnlock() && mounted) {
+    if (await widget.onRequestUnlock() && mounted && !widget.isDetail) {
       unawaited(context.push(AppRoute.postOf(widget.feed.albumId)));
     }
   }
@@ -171,6 +171,7 @@ class _FeedWidgetState extends State<FeedWidget> {
                         url: feed.thumbnailUrls.firstOrNull,
                         width: thumbnailWidth,
                         height: thumbnailHeight,
+                        decodeWidth: lockedImageDecodeWidth,
                       ),
                     ),
                   ),
@@ -192,6 +193,8 @@ class _FeedWidgetState extends State<FeedWidget> {
                                 width: thumbnailWidth,
                                 height: thumbnailHeight,
                                 isActive: idx == index,
+                                thumbnailUrl:
+                                    feed.thumbnailUrls.elementAtOrNull(index),
                               )
                             : CustomNetworkImage(
                                 url: url,

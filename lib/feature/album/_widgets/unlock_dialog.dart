@@ -1,23 +1,34 @@
 import 'package:flutter/material.dart';
+import 'package:widyu/core/data/repository/point/point_repository.dart';
 import 'package:widyu/core/log/log.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
 import 'package:widyu/core/ui/widgets/widu_icon.dart';
 import 'package:widyu/core/ui/widgets/widyu_text_button.dart';
+import 'package:widyu/core/utils/show_toast.dart';
 import 'package:widyu/gen/assets.gen.dart';
+
+bool _waitingPoint = false;
 
 Future<bool> showUnlockDialog(
   BuildContext context, {
   required int? price,
-  required int? point,
+  required PointRepository pointRepository,
   required bool isUnlocking,
   required Future<bool> Function() onPurchase,
   required VoidCallback onGoToGoal,
 }) async {
-  if (isUnlocking) return false;
+  if (isUnlocking || _waitingPoint) return false;
   if (price == null) return false;
 
-  if (point != null && point < price) {
+  final point = await _loadPoint(pointRepository);
+  if (!context.mounted) return false;
+  if (point == null) {
+    showToast('포인트를 불러오지 못했어요. 잠시 후 다시 시도해 주세요');
+    return false;
+  }
+
+  if (point < price) {
     await showDialog<void>(
       context: context,
       builder: (_) => UnlockDialog.notEnough(
@@ -38,6 +49,18 @@ Future<bool> showUnlockDialog(
     ),
   );
   return success == true;
+}
+
+Future<int?> _loadPoint(PointRepository repository) async {
+  final point = repository.currentStatus.point;
+  if (point != null) return point;
+  _waitingPoint = true;
+  try {
+    await repository.refresh();
+  } finally {
+    _waitingPoint = false;
+  }
+  return repository.currentStatus.point;
 }
 
 class UnlockDialog extends StatefulWidget {
@@ -74,7 +97,7 @@ class UnlockDialog extends StatefulWidget {
   final AssetGenImage image;
   final String title;
   final int price;
-  final int? point;
+  final int point;
   final String buttonText;
   final VoidCallback? onTap;
   final Future<bool> Function()? onPurchase;
@@ -191,7 +214,7 @@ class _UnlockDialogState extends State<UnlockDialog> {
 class _PointBalance extends StatelessWidget {
   const _PointBalance({required this.point});
 
-  final int? point;
+  final int point;
 
   @override
   Widget build(BuildContext context) {
@@ -211,7 +234,7 @@ class _PointBalance extends StatelessWidget {
             style: MyTypo.subTitle2.copyWith(color: MyColor.grey500),
           ),
           Text(
-            point == null ? '-' : '${point}P',
+            '${point}P',
             style: MyTypo.title2.copyWith(color: MyColor.grey600),
           ),
         ],

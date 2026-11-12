@@ -111,6 +111,8 @@ class _MediaCarousel extends StatelessWidget {
               )
             : AssetEntityImage(
                 photo,
+                isOriginal: false,
+                thumbnailSize: const ThumbnailSize.square(1280),
                 width: _itemWidth,
                 height: _itemHeight,
                 fit: BoxFit.cover,

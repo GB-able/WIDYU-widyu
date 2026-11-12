@@ -61,7 +61,12 @@ class _VideoPreviewState extends State<_VideoPreview> {
       return Stack(
         alignment: Alignment.center,
         children: [
-          AssetEntityImage(widget.asset, fit: BoxFit.contain),
+          AssetEntityImage(
+            widget.asset,
+            isOriginal: false,
+            thumbnailSize: const ThumbnailSize.square(1280),
+            fit: BoxFit.contain,
+          ),
           const CircularProgressIndicator(),
         ],
       );

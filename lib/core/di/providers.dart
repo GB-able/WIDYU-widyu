@@ -1,4 +1,5 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:rxdart/rxdart.dart';
 import 'package:widyu/core/data/repository/album/album_repository.dart';
 import 'package:widyu/core/data/repository/album/album_repository_impl.dart';
 import 'package:widyu/core/data/repository/auth/auth_repository.dart';
@@ -23,6 +24,8 @@ import 'package:widyu/core/data/repository/notification/notification_repository.
 import 'package:widyu/core/data/repository/notification/notification_repository_impl.dart';
 import 'package:widyu/core/data/repository/point/point_repository.dart';
 import 'package:widyu/core/data/repository/point/point_repository_impl.dart';
+import 'package:widyu/core/data/repository/user/user_repository.dart';
+import 'package:widyu/core/data/repository/user/user_repository_impl.dart';
 import 'package:widyu/core/data/source/album/album_remote_data_source_impl.dart';
 import 'package:widyu/core/data/source/auth/auth_local_data_source_impl.dart';
 import 'package:widyu/core/data/source/auth/auth_remote_data_source_impl.dart';
@@ -42,12 +45,15 @@ import 'package:widyu/core/data/source/location/location_remote_data_source_impl
 import 'package:widyu/core/data/source/myPage/my_page_remote_data_source_impl.dart';
 import 'package:widyu/core/data/source/notification/notification_remote_data_source_impl.dart';
 import 'package:widyu/core/data/source/point/point_remote_data_source_impl.dart';
+import 'package:widyu/core/model/permission/permission_type.dart';
 import 'package:widyu/core/network/api_client.dart';
 import 'package:widyu/core/network/socket_client.dart';
 import 'package:widyu/core/notification/fcm_token_service.dart';
 import 'package:widyu/core/notification/medication_push_manager.dart';
 import 'package:widyu/core/utils/app_service_controller.dart';
 import 'package:widyu/core/utils/background_location_notice_controller.dart';
+import 'package:widyu/core/utils/kakao_map_launcher.dart';
+import 'package:widyu/core/utils/permission_manager.dart';
 import 'package:widyu/core/utils/permission_recovery_controller.dart';
 import 'package:widyu/core/utils/walk_tracker.dart';
 
@@ -73,6 +79,9 @@ BackgroundLocationNoticeController backgroundLocationNoticeController(
 }
 
 @Riverpod(keepAlive: true)
+KakaoMapRouteOpener kakaoMapRouteOpener(Ref ref) => KakaoMapLauncher.openRoute;
+
+@Riverpod(keepAlive: true)
 AuthRepository authRepository(Ref ref) => AuthRepositoryImpl(
       remoteDatasource: AuthRemoteDataSourceImpl(apiClient: ApiClient()),
       localDataSource: AuthLocalDataSourceImpl(),
@@ -89,6 +98,37 @@ MedicationRepository medicationRepository(Ref ref) => MedicationRepositoryImpl(
       remoteDataSource: MedicationRemoteDataSourceImpl(apiClient: ApiClient()),
       currentMember: authenticatedMedicationMember,
     );
+
+@Riverpod(keepAlive: true)
+PermissionRecoveryController alarmPermissionRecoveryController(Ref ref) {
+  final repository = ref.watch(medicationRepositoryProvider);
+
+  Future<PermissionRequestResult> status(PermissionType type) async {
+    final current = await PermissionManager.status(type);
+    if (type != PermissionType.notification ||
+        current != PermissionRequestResult.granted) {
+      return current;
+    }
+    final capabilities = await repository.alarmCapabilities();
+    return capabilities['notifications'] == false
+        ? PermissionRequestResult.permanentlyDenied
+        : current;
+  }
+
+  final controller = PermissionRecoveryController(
+    statusReader: status,
+    rationaleReader: (_) async => true,
+    settingsRechecker: (type, settings) =>
+        PermissionManager.openSettingsAndRecheck(
+      type,
+      settings,
+      isGrantedReader: (type) async =>
+          await status(type) == PermissionRequestResult.granted,
+    ),
+  );
+  ref.onDispose(controller.dispose);
+  return controller;
+}
 
 @Riverpod(keepAlive: true)
 HeartRateRepository heartRateRepository(Ref ref) => HeartRateRepositoryImpl(
@@ -123,7 +163,8 @@ MyPageRepository myPageRepository(Ref ref) => MyPageRepositoryImpl(
 @Riverpod(keepAlive: true)
 NotificationRepository notificationRepository(Ref ref) =>
     NotificationRepositoryImpl(
-      remoteDataSource: NotificationRemoteDataSourceImpl(apiClient: ApiClient()),
+      remoteDataSource:
+          NotificationRemoteDataSourceImpl(apiClient: ApiClient()),
     );
 
 /// 걸음 데이터베이스·Health 설정을 세션이 바뀌어도 다시 하지 않도록 앱 수명으로 둔다.
@@ -152,6 +193,15 @@ PointRepository pointRepository(Ref ref) {
 }
 
 @riverpod
+UserRepository userRepository(Ref ref) {
+  final repository = UserRepositoryImpl(
+    remoteDataSource: MyPageRemoteDataSourceImpl(apiClient: ApiClient()),
+  );
+  ref.onDispose(repository.dispose);
+  return repository;
+}
+
+@riverpod
 WalkRepository walkRepository(Ref ref) {
   final repository = WalkRepositoryImpl(
     localDataSource: ref.watch(walkLocalDataSourceProvider),
@@ -163,10 +213,25 @@ WalkRepository walkRepository(Ref ref) {
 
 @riverpod
 WalkTracker walkTracker(Ref ref) {
-  final tracker = WalkTracker(repository: ref.watch(walkRepositoryProvider))
-    ..start();
+  final tracker = WalkTracker(
+    repository: ref.watch(walkRepositoryProvider),
+    pointRepository: ref.watch(pointRepositoryProvider),
+  )..start();
   ref.onDispose(tracker.dispose);
   return tracker;
+}
+
+@riverpod
+class TodaySteps extends _$TodaySteps {
+  @override
+  int build() {
+    final repository = ref.watch(walkRepositoryProvider);
+    final subscription = repository.todaySteps
+        .throttleTime(const Duration(seconds: 1), trailing: true)
+        .listen((steps) => state = steps);
+    ref.onDispose(subscription.cancel);
+    return repository.currentTodaySteps;
+  }
 }
 
 @riverpod
@@ -184,6 +249,13 @@ AlbumRepository albumRepository(Ref ref) {
 
 @riverpod
 PermissionRecoveryController permissionRecoveryController(Ref ref) {
+  final controller = PermissionRecoveryController();
+  ref.onDispose(controller.dispose);
+  return controller;
+}
+
+@riverpod
+PermissionRecoveryController homePermissionRecoveryController(Ref ref) {
   final controller = PermissionRecoveryController();
   ref.onDispose(controller.dispose);
   return controller;

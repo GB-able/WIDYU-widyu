@@ -8,7 +8,6 @@ import com.widucorp.widu.data.util.putBatch
 import com.widucorp.widu.data.util.trimOldest
 import com.google.android.gms.wearable.DataClient
 import com.google.android.gms.wearable.MessageClient
-import com.google.android.gms.wearable.PutDataMapRequest
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -19,20 +18,6 @@ class HeartRateRemoteDataSourceImpl @Inject constructor(
     private val dataClient: DataClient,
     private val messageClient: MessageClient,
 ) : HeartRateRemoteDataSource {
-    override fun sendHeartRate(heartRate: Int) {
-        val putDataReq =
-            PutDataMapRequest.create(HEART_RATE_PATH).run {
-                dataMap.putInt(HEART_RATE_KEY, heartRate)
-                dataMap.putLong(TIMESTAMP_KEY, System.currentTimeMillis())
-                asPutDataRequest().setUrgent()
-            }
-        dataClient
-            .putDataItem(putDataReq)
-            .addOnFailureListener { e ->
-                Log.i("Widyu", "Error sending request to device", e)
-            }
-    }
-
     override suspend fun sendBatch(batch: HeartRateBatch) {
         runSafely("send heart rate batch seq=${batch.seq}") {
             dataClient.putBatch(BATCH_PREFIX, batch.sessionId, batch.seq, batch.toJson().toString().toByteArray(), urgent = true)
@@ -76,9 +61,6 @@ class HeartRateRemoteDataSourceImpl @Inject constructor(
 
     companion object {
         private const val BATCH_PREFIX = "/hr/batch"
-        private const val HEART_RATE_PATH = "/heart_rate"
         private const val HEART_RATE_STATUS_PATH = "/heart_rate_status"
-        private const val HEART_RATE_KEY = "heart_rate"
-        private const val TIMESTAMP_KEY = "timestamp"
     }
 }

@@ -25,6 +25,7 @@ class HeartRateBatchTest {
                 ),
             samples = listOf(HeartRateSample(82, 1_760_000_000_000L, "UNKNOWN"), HeartRateSample(83, 1_760_000_001_000L, "HIGH")),
             onBody = true,
+            wearState = "WORN_VALID",
             watchBatteryPct = 63,
         )
 
@@ -38,10 +39,11 @@ class HeartRateBatchTest {
         map.keys shouldBe
             setOf(
                 "v", "stream", "batch_id", "device_id", "session_id", "seq", "study_id", "participation_id", "run_id",
-                "clock", "samples", "on_body", "watch_battery_pct", "resend",
+                "clock", "samples", "on_body", "wear_state", "watch_battery_pct", "resend",
             )
         map["v"] shouldBe 2
         map["stream"] shouldBe "hr"
+        map["wear_state"] shouldBe "WORN_VALID"
         map["resend"] shouldBe null
     }
 

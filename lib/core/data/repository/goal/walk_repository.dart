@@ -7,6 +7,8 @@ abstract class WalkRepository {
 
   Future<bool> ensurePermission();
 
+  Future<bool> hasPermission();
+
   /// 기기 센서의 누적 걸음 수 스트림. 앱이 보이는 동안만 구독한다.
   Stream<int> get liveStepCounts;
 

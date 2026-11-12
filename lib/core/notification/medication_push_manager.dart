@@ -45,7 +45,11 @@ Future<void> pushBackgroundMessage(RemoteMessage message) async {
   if (NotificationType.walkDataSync.matches(message.data)) {
     WiduLog.bg.i('걸음수 동기화 푸시 수신');
     WidgetsFlutterBinding.ensureInitialized();
-    await syncWalkBackground();
+    try {
+      await syncWalkBackground();
+    } catch (error, stack) {
+      WiduLog.bg.w('걸음수 푸시 동기화 보류', error: error, stackTrace: stack);
+    }
     return;
   }
   if (!isMedicationChange(message)) return;

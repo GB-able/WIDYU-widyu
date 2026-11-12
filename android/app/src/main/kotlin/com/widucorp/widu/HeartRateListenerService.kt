@@ -5,7 +5,6 @@ import com.widucorp.widu.heart_rate.HeartRatePlugin
 import com.google.android.gms.wearable.DataEvent
 import com.google.android.gms.wearable.DataEventBuffer
 import com.google.android.gms.wearable.DataItem
-import com.google.android.gms.wearable.DataMapItem
 import com.google.android.gms.wearable.Wearable
 import com.google.android.gms.wearable.WearableListenerService
 
@@ -16,10 +15,6 @@ class HeartRateListenerService : WearableListenerService() {
                 val item = event.dataItem
                 val path = item.uri.path.orEmpty()
                 when {
-                    path == HEART_RATE_PATH -> {
-                        val dataMap = DataMapItem.fromDataItem(item).dataMap
-                        HeartRatePlugin.sendHeartRate(dataMap.getInt(HEART_RATE_KEY), dataMap.getLong(TIMESTAMP_KEY))
-                    }
                     // 폰이 직접 올린 설정 DataItem 이다. 지우면 워치가 못 읽으므로 손대지 않는다.
                     path == IMU_CONFIG_PATH -> Unit
 
@@ -31,6 +26,8 @@ class HeartRateListenerService : WearableListenerService() {
                             consume(item)
                             return@forEach
                         }
+                        // 홈 화면 착용 표시와 워치 심박 상태 갱신이 이 신호로 돈다. 엔진 재연결 때의 재전달은 여기를 거치지 않는다.
+                        if (path.startsWith(HR_PREFIX)) HeartRatePlugin.sendLatestHeartRate(json)
                         // 넘긴 뒤에도 지우지 않는다. Flutter 가 서버 결과를 받고 지운다(재부팅해도 남아 있게).
                         // 엔진이 죽어 있으면 그대로 두었다가 엔진이 살아난 뒤 다시 읽게 한다.
                         if (HeartRatePlugin.sendSensorBatch(json)) {
@@ -51,9 +48,6 @@ class HeartRateListenerService : WearableListenerService() {
 
     companion object {
         private const val TAG = "Widyu"
-        private const val HEART_RATE_PATH = "/heart_rate"
-        private const val HEART_RATE_KEY = "heart_rate"
-        private const val TIMESTAMP_KEY = "timestamp"
         private const val IMU_PREFIX = "/imu/"
         private const val HR_PREFIX = "/hr/"
         private const val IMU_CONFIG_PATH = "/imu/config"

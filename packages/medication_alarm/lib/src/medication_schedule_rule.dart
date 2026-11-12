@@ -6,6 +6,8 @@ class MedicationScheduleRule {
     required this.minute,
     required this.doseCount,
     this.enabled = true,
+    this.effectiveFrom,
+    this.effectiveTo,
   });
 
   final int scheduleId;
@@ -13,6 +15,13 @@ class MedicationScheduleRule {
   final int minute;
   final double doseCount;
   final bool enabled;
+
+  final String? effectiveFrom;
+  final String? effectiveTo;
+
+  bool activeOn(String localDate) =>
+      (effectiveFrom == null || effectiveFrom!.compareTo(localDate) <= 0) &&
+      (effectiveTo == null || effectiveTo!.compareTo(localDate) >= 0);
 
   factory MedicationScheduleRule.fromJson(Map<String, dynamic> json) {
     final time = (json['alarmTime'] as String).split(':');
@@ -38,7 +47,19 @@ class MedicationScheduleRule {
       minute: minute,
       doseCount: dose,
       enabled: json['enabled'] as bool? ?? true,
+      effectiveFrom: _date(json['effectiveFrom']),
+      effectiveTo: _date(json['effectiveTo']),
     );
+  }
+
+  static final _datePattern = RegExp(r'^\d{4}-\d{2}-\d{2}$');
+
+  static String? _date(Object? value) {
+    if (value == null) return null;
+    if (value is! String || !_datePattern.hasMatch(value)) {
+      throw const FormatException('Invalid medication schedule');
+    }
+    return value;
   }
 
   Map<String, dynamic> toJson() => {
@@ -47,5 +68,7 @@ class MedicationScheduleRule {
             '${hour.toString().padLeft(2, '0')}:${minute.toString().padLeft(2, '0')}',
         'doseCount': doseCount,
         'enabled': enabled,
+        'effectiveFrom': effectiveFrom,
+        'effectiveTo': effectiveTo,
       };
 }

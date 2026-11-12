@@ -37,7 +37,7 @@ class WalkPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
                 result.success(isAvailable())
                 return
             }
-            if (call.method !in setOf("startRecording", "stopRecording", "readSteps")) {
+            if (call.method !in setOf("startRecording", "readSteps")) {
                 result.notImplemented()
                 return
             }
@@ -46,12 +46,6 @@ class WalkPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
                 return
             }
             val client = FitnessLocal.getLocalRecordingClient(context)
-            if (call.method == "stopRecording") {
-                client.unsubscribe(LocalDataType.TYPE_STEP_COUNT_DELTA)
-                    .addOnSuccessListener { result.success(null) }
-                    .addOnFailureListener { fail(result, it) }
-                return
-            }
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q &&
                 context.checkSelfPermission(Manifest.permission.ACTIVITY_RECOGNITION) !=
                 PackageManager.PERMISSION_GRANTED

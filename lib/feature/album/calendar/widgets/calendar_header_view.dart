@@ -2,12 +2,20 @@ part of '../calendar_tab_view.dart';
 
 class _CalendarHeaderView extends StatelessWidget {
   const _CalendarHeaderView({
-    required this.viewModel,
+    required this.focusedMonth,
+    required this.selectedDay,
+    required this.hasEvent,
+    required this.onPageChanged,
+    required this.onSelectDay,
     required this.shrink,
     required this.onHandleTap,
   });
 
-  final CalendarTabViewModel viewModel;
+  final DateTime focusedMonth;
+  final DateTime selectedDay;
+  final bool Function(DateTime day) hasEvent;
+  final ValueChanged<DateTime> onPageChanged;
+  final ValueChanged<DateTime> onSelectDay;
   final double shrink;
   final VoidCallback onHandleTap;
 
@@ -31,9 +39,6 @@ class _CalendarHeaderView extends StatelessWidget {
     }
     final monthOpacity = 1 - weekOpacity;
 
-    final focusedMonth = viewModel.focusedMonth;
-    final selectedDay = viewModel.selectedDay;
-
     return Column(
       children: [
         const SizedBox(height: _HeaderMetrics.topPadding),
@@ -44,7 +49,7 @@ class _CalendarHeaderView extends StatelessWidget {
             children: [
               _MonthArrow(
                 icon: Assets.icons.ic22ChevronLeft,
-                onTap: () => viewModel.onPageChanged(
+                onTap: () => onPageChanged(
                   DateTime(focusedMonth.year, focusedMonth.month - 1),
                 ),
               ),
@@ -54,7 +59,7 @@ class _CalendarHeaderView extends StatelessWidget {
               ),
               _MonthArrow(
                 icon: Assets.icons.ic22ChevronRight,
-                onTap: () => viewModel.onPageChanged(
+                onTap: () => onPageChanged(
                   DateTime(focusedMonth.year, focusedMonth.month + 1),
                 ),
               ),
@@ -92,10 +97,12 @@ class _CalendarHeaderView extends StatelessWidget {
                           child: Opacity(
                             opacity: monthOpacity,
                             child: _CalendarGrid(
-                              viewModel: viewModel,
                               format: CalendarFormat.month,
                               focusedDay: focusedMonth,
                               selectedDay: selectedDay,
+                              hasEvent: hasEvent,
+                              onPageChanged: onPageChanged,
+                              onSelectDay: onSelectDay,
                             ),
                           ),
                         ),
@@ -104,10 +111,12 @@ class _CalendarHeaderView extends StatelessWidget {
                           child: Opacity(
                             opacity: weekOpacity,
                             child: _CalendarGrid(
-                              viewModel: viewModel,
                               format: CalendarFormat.week,
                               focusedDay: selectedDay,
                               selectedDay: selectedDay,
+                              hasEvent: hasEvent,
+                              onPageChanged: onPageChanged,
+                              onSelectDay: onSelectDay,
                             ),
                           ),
                         ),

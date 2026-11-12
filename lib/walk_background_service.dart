@@ -16,6 +16,7 @@ const _walkBackgroundTaskName = 'widyu.steps.sync';
 const _channel = MethodChannel('com.widucorp.widu/step_background');
 const _uniqueTaskName = 'widyu.steps.periodic';
 Future<void>? _initialization;
+Future<void> Function()? foregroundWalkSync;
 
 @pragma('vm:entry-point')
 void onWalkStart() {
@@ -48,28 +49,25 @@ Future<void> onIosWalkBackground() async {
 }
 
 Future<void> syncWalkBackground() async {
-  try {
-    final tokenManager = TokenManager();
-    final memberId = await tokenManager.memberId;
-    if (!await tokenManager.hasToken() || memberId == null) {
-      await stopWalkBackgroundService();
-      return;
-    }
-    await dotenv.load();
-    final repository = WalkRepositoryImpl(
-      localDataSource: WalkLocalDataSourceImpl(),
-      remoteDataSource: WalkRemoteDataSourceImpl(apiClient: ApiClient()),
-    );
-    final result = await repository.sync(memberId: memberId, background: true);
-    if (result.unauthorized) {
-      WiduLog.bg.w('인증 만료로 걸음수 백그라운드 동기화 중단');
-      await stopWalkBackgroundService();
-      return;
-    }
-    WiduLog.bg.i('걸음수 백그라운드 동기화 완료 uploaded=${result.uploaded}');
-  } catch (error, stack) {
-    WiduLog.bg.w('걸음수 백그라운드 동기화 보류', error: error, stackTrace: stack);
+  final tokenManager = TokenManager();
+  final memberId = await tokenManager.memberId;
+  if (!await tokenManager.hasToken() || memberId == null) {
+    await stopWalkBackgroundService();
+    return;
   }
+  await dotenv.load();
+  final repository = WalkRepositoryImpl(
+    localDataSource: WalkLocalDataSourceImpl(),
+    remoteDataSource: WalkRemoteDataSourceImpl(apiClient: ApiClient()),
+  );
+  final result = await repository.sync(memberId: memberId, background: true);
+  if (result.unauthorized) {
+    WiduLog.bg.w('인증 만료로 걸음수 백그라운드 동기화 중단');
+    await stopWalkBackgroundService();
+    return;
+  }
+  if (result.retry) throw StateError('걸음수 전송이 끝나지 않아 다시 시도한다');
+  WiduLog.bg.i('걸음수 백그라운드 동기화 완료 uploaded=${result.uploaded}');
 }
 
 Future<void> initializeWalkService() {
@@ -86,7 +84,7 @@ Future<void> _initializeWalkService() async {
   } else if (Platform.isIOS) {
     _channel.setMethodCallHandler((call) async {
       if (call.method != 'sync') throw MissingPluginException();
-      await syncWalkBackground();
+      await (foregroundWalkSync ?? syncWalkBackground)();
     });
     final callback = PluginUtilities.getCallbackHandle(
       onIosWalkBackground,

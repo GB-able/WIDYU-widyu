@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:widyu/core/log/log.dart';
 import 'package:widyu/core/model/api/infinite_page_result.dart';
@@ -47,29 +49,55 @@ class InfiniteScroller<T> {
 
   int _generation = 0;
 
-  bool _isCurrent(int generation) => mounted() && generation == _generation;
+  // fetch 안에서 응답이 아직 유효한지 확인할 때 쓴다.
+  int get generation => _generation;
+
+  bool isCurrent(int generation) => mounted() && generation == _generation;
+
+  void update(
+    InfiniteScrollState<T> Function(InfiniteScrollState<T> current) change,
+  ) {
+    if (!mounted()) return;
+    _write(change(read()));
+  }
+
+  void _write(InfiniteScrollState<T> next) {
+    write(next);
+    if (_isEmptyWithNext(next)) {
+      scheduleMicrotask(() {
+        if (mounted() && _isEmptyWithNext(read())) unawaited(loadMore());
+      });
+    }
+  }
+
+  bool _isEmptyWithNext(InfiniteScrollState<T> list) =>
+      list.isEmpty &&
+      list.hasNext &&
+      !list.isFetching &&
+      !list.isLoadingMore &&
+      !list.hasError;
 
   Future<void> init() async {
     if (!mounted()) return;
     final generation = ++_generation;
-    write(read().copyWith(
+    _write(read().copyWith(
       isFetching: true,
       isLoadingMore: false,
       hasError: false,
     ));
     try {
       final result = await fetch(null);
-      if (!_isCurrent(generation)) return;
-      write(read().copyWith(
+      if (!isCurrent(generation)) return;
+      _write(read().copyWith(
         items: result.items,
         nextCursor: result.nextCursor,
         hasNext: result.hasNext,
         isFetching: false,
       ));
     } catch (e, stack) {
-      if (!_isCurrent(generation)) return;
+      if (!isCurrent(generation)) return;
       WiduLog.ui.w('첫 페이지 불러오기 실패', error: e, stackTrace: stack);
-      write(read().copyWith(isFetching: false, hasError: true));
+      _write(read().copyWith(isFetching: false, hasError: true));
     }
   }
 
@@ -83,27 +111,27 @@ class InfiniteScroller<T> {
       return;
     }
     final generation = _generation;
-    write(current.copyWith(isLoadingMore: true));
+    _write(current.copyWith(isLoadingMore: true));
     try {
       final result = await fetch(current.nextCursor);
-      if (!_isCurrent(generation)) return;
+      if (!isCurrent(generation)) return;
       final latest = read();
-      write(latest.copyWith(
+      _write(latest.copyWith(
         items: [...latest.items, ...result.items],
         nextCursor: result.nextCursor,
         hasNext: result.hasNext,
         isLoadingMore: false,
       ));
     } catch (e, stack) {
-      if (!_isCurrent(generation)) return;
+      if (!isCurrent(generation)) return;
       WiduLog.ui.w('다음 페이지 불러오기 실패', error: e, stackTrace: stack);
-      write(read().copyWith(isLoadingMore: false, hasError: true));
+      _write(read().copyWith(isLoadingMore: false, hasError: true));
     }
   }
 
   Future<void> retry() {
     if (!mounted()) return Future.value();
-    write(read().copyWith(hasError: false));
+    _write(read().copyWith(hasError: false));
     return read().isEmpty ? init() : loadMore();
   }
 }

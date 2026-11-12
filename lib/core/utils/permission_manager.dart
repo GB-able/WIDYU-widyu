@@ -254,7 +254,9 @@ class PermissionManager {
     }
     return capabilities['authorized'] == true
         ? PermissionRequestResult.granted
-        : denied;
+        : capabilities['alarmDenied'] == true
+            ? PermissionRequestResult.permanentlyDenied
+            : denied;
   }
 
   static PermissionRequestResult _fitnessResult(PermissionStatus status) {

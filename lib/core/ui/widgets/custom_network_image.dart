@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
@@ -10,6 +12,7 @@ class CustomNetworkImage extends StatelessWidget {
     this.height,
     this.fit = BoxFit.cover,
     this.errorIconSize = 48,
+    this.decodeWidth,
   });
 
   final String? url;
@@ -17,21 +20,35 @@ class CustomNetworkImage extends StatelessWidget {
   final double? height;
   final BoxFit fit;
   final double errorIconSize;
+  final int? decodeWidth;
 
   @override
   Widget build(BuildContext context) {
     if (url == null || url!.isEmpty) return _error();
 
-    return CachedNetworkImage(
-      imageUrl: url!,
-      width: width,
-      height: height,
-      fit: fit,
-      fadeInDuration: Duration.zero,
-      fadeOutDuration: Duration.zero,
-      placeholder: (context, url) => _placeholder(),
-      errorWidget: (context, url, error) => _error(),
+    return LayoutBuilder(
+      builder: (context, constraints) => CachedNetworkImage(
+        imageUrl: url!,
+        width: width,
+        height: height,
+        fit: fit,
+        memCacheWidth: decodeWidth ?? _decodeWidth(context, constraints),
+        fadeInDuration: Duration.zero,
+        fadeOutDuration: Duration.zero,
+        placeholder: (context, url) => _placeholder(),
+        errorWidget: (context, url, error) => _error(),
+      ),
     );
+  }
+
+  int? _decodeWidth(BuildContext context, BoxConstraints constraints) {
+    final sides = [
+      width ?? constraints.maxWidth,
+      height ?? constraints.maxHeight,
+    ].where((side) => side.isFinite && side > 0);
+    if (sides.isEmpty) return null;
+    final pixelRatio = MediaQuery.devicePixelRatioOf(context);
+    return (sides.reduce(math.max) * pixelRatio).round();
   }
 
   Widget _placeholder() =>
