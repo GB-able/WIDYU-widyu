@@ -40,6 +40,13 @@ class WalkRepositoryImpl implements WalkRepository {
   Future<void>? _reading;
   String? _achievedDate;
   DateTime? _achievedRequestedAt;
+  bool _goalLoaded = false;
+  DateTime? _goalSince;
+
+  DateTime _readStart(DateTime start) {
+    final since = _goalSince;
+    return since != null && since.isAfter(start) ? since : start;
+  }
 
   // 재생되는 마지막 값이 어제 것일 수 있어 받는 시점의 날짜로 다시 계산한다.
   @override
@@ -99,6 +106,7 @@ class WalkRepositoryImpl implements WalkRepository {
   Future<void> refreshTodaySteps() {
     if (_disposed || _goal == null) return Future.value();
     _syncIfAchieved();
+    if (!_goalLoaded) return Future.value();
     return _reading ??=
         _refreshTodaySteps().whenComplete(() => _reading = null);
   }
@@ -108,7 +116,9 @@ class WalkRepositoryImpl implements WalkRepository {
     final today = instant.walkDate;
     int? steps;
     try {
-      steps = await _localDataSource.readSteps(today.walkStartOf, instant);
+      final start = _readStart(today.walkStartOf);
+      if (!instant.isAfter(start)) return;
+      steps = await _localDataSource.readSteps(start, instant);
     } catch (_) {
       return;
     }
@@ -211,16 +221,38 @@ class WalkRepositoryImpl implements WalkRepository {
         return const WalkSaveResult(retry: true);
       }
       if (now().walkDate != serverDate) return const WalkSaveResult();
-      _goal = detail != null && detail.goal > 0 ? detail.goal : null;
-      if (detail == null || _goal == null || !await active()) {
-        return const WalkSaveResult();
-      }
+      final goal = detail?.goal ?? 0;
+      _goal = goal > 0 ? goal : null;
+      if (!await active()) return const WalkSaveResult();
       final state = await _localDataSource.readState(memberId);
       Future<void> save() async {
         if (await active()) {
           await _localDataSource.saveState(memberId, state);
         }
       }
+
+      if (detail == null || _goal == null) {
+        _goalLoaded = false;
+        _goalSince = null;
+        if (state['goalPending'] != true) {
+          state
+            ..remove('goalSince')
+            ..['goalPending'] = true
+            ..['days'] = <String, dynamic>{}
+            ..['reads'] = <String, dynamic>{};
+          await save();
+        }
+        return const WalkSaveResult();
+      }
+      if (state.remove('goalPending') == true) {
+        state['goalSince'] = now().millisecondsSinceEpoch;
+        await save();
+      }
+      final since = state['goalSince'] as int?;
+      _goalSince = since == null
+          ? null
+          : DateTime.fromMillisecondsSinceEpoch(since, isUtc: true);
+      _goalLoaded = true;
 
       if (!await _readAndSaveSteps(
         state: state,
@@ -308,7 +340,7 @@ class WalkRepositoryImpl implements WalkRepository {
         break;
       }
       if (!date.isWalkDateAllowed(now())) continue;
-      final start = date.walkStartOf;
+      final start = _readStart(date.walkStartOf);
       final nextDay = date.walkDateShift(1).walkStartOf;
       final instant = now();
       final end = nextDay.isBefore(instant) ? nextDay : instant;
