@@ -24,6 +24,7 @@ final class MedicationAlarmCoordinator {
     private var backgroundRegistered = false
     private static let refreshID = "com.widucorp.widu.medication.refresh"
     private static let watchdogID = "widyu.medication.watchdog"
+    private static let alarmVersion = 1
 
     func registerBackground() {
         guard !backgroundRegistered else { return }
@@ -269,10 +270,11 @@ final class MedicationAlarmCoordinator {
         var actual = [[String: Any]]()
         var failures = [[String: Any]]()
         var coverageEnd: Double?
+        let outdated = state["alarmVersion"] as? Int != Self.alarmVersion
         for group in desired {
             let id = alarmID(group["groupId"] as! String)
             do {
-                if !existingIDs.contains(id) || !equal(previousByID[id], group) {
+                if !existingIDs.contains(id) || !equal(previousByID[id], group) || outdated {
                     if existingIDs.contains(id) { try cancel(id) }
                     try await schedule(group, id: id)
                 }
@@ -294,6 +296,7 @@ final class MedicationAlarmCoordinator {
             "status": !authorized ? "permissionRequired" : !failures.isEmpty ? "partialFailure" : needsRefill ? "refillRequired" : "scheduled"
         ]
         state["scheduled"] = actual; state["status"] = status; state.removeValue(forKey: "applying")
+        if failures.isEmpty { state["alarmVersion"] = Self.alarmVersion }
         try save(state)
         if #unavailable(iOS 26.0) { armPlayer(from: actual) }
         emit()
@@ -327,6 +330,7 @@ final class MedicationAlarmCoordinator {
                 metadata: MedicationAlarmMetadata(), tintColor: Color(red: 1, green: 0.47, blue: 0.06))
             let configuration = AlarmManager.AlarmConfiguration<MedicationAlarmMetadata>.alarm(
                 schedule: .fixed(at), attributes: attributes,
+                stopIntent: StopMedicationIntent(alarmID: id.uuidString),
                 secondaryIntent: OpenMedicationIntent(alarmID: id.uuidString), sound: .default)
             _ = try await AlarmManager.shared.schedule(id: id, configuration: configuration)
         } else {
@@ -346,8 +350,16 @@ final class MedicationAlarmCoordinator {
         guard let uuid = UUID(uuidString: id) else { return }
         try recordLaunch(uuid)
         MedicationAlarmPlayer.shared.stop()
-        if #available(iOS 26.0, *) { try? AlarmManager.shared.stop(id: uuid) }
+        if #available(iOS 26.0, *) { try? AlarmManager.shared.stop(id: uuid); stopDue() }
         emit()
+    }
+    @available(iOS 26.0, *)
+    func stopDue() {
+        let now = Date()
+        for alarm in (try? AlarmManager.shared.alarms) ?? [] {
+            if alarm.state == .alerting { try? AlarmManager.shared.stop(id: alarm.id); continue }
+            if case let .fixed(at)? = alarm.schedule, at <= now { try? AlarmManager.shared.cancel(id: alarm.id) }
+        }
     }
     private func group(for id: UUID, in state: [String: Any]) -> [String: Any]? {
         ((state["groups"] as? [[String: Any]] ?? []) + (state["history"] as? [[String: Any]] ?? []))
@@ -493,6 +505,19 @@ private struct MedicationAlarmMetadata: AlarmMetadata {}
 
 @available(iOS 17.0, *)
 public struct MedicationAlarmIntents: AppIntentsPackage {}
+
+@available(iOS 26.0, *)
+struct StopMedicationIntent: LiveActivityIntent {
+    static var title: LocalizedStringResource = "복용 알람 중단"
+    static var openAppWhenRun: Bool = false
+    @Parameter(title: "Alarm ID") var alarmID: String
+    init() { alarmID = "" }
+    init(alarmID: String) { self.alarmID = alarmID }
+    func perform() async throws -> some IntentResult {
+        await MainActor.run { MedicationAlarmCoordinator.shared.stopDue() }
+        return .result()
+    }
+}
 
 @available(iOS 26.0, *)
 struct OpenMedicationIntent: LiveActivityIntent {
