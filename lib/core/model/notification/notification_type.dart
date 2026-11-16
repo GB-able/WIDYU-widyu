@@ -1,6 +1,9 @@
 enum NotificationType {
   safetySelfCheck('SAFETY_SELF_CHECK'),
   medicationScheduleSync('MEDICATION_SCHEDULE_SYNC'),
+  medicationScheduleCreated('MEDICATION_SCHEDULE_CREATED'),
+  medicationScheduleChanged('MEDICATION_SCHEDULE_CHANGED'),
+  medicationScheduleDeleted('MEDICATION_SCHEDULE_DELETED'),
   walkDataSync('WALK_DATA_SYNC');
 
   const NotificationType(this.value);
