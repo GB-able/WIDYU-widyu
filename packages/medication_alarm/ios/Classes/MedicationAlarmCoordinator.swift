@@ -491,6 +491,9 @@ final class MedicationAlarmCoordinator {
 @available(iOS 26.0, *)
 private struct MedicationAlarmMetadata: AlarmMetadata {}
 
+@available(iOS 17.0, *)
+public struct MedicationAlarmIntents: AppIntentsPackage {}
+
 @available(iOS 26.0, *)
 struct OpenMedicationIntent: LiveActivityIntent {
     static var title: LocalizedStringResource = "복용 인증하기"
