@@ -35,6 +35,7 @@ Future<void> _bootstrap() async {
   final WidgetsBinding widgetsBinding =
       WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
+  PaintingBinding.instance.imageCache.maximumSizeBytes = 300 << 20;
 
   // 초기화 단계 중 하나가 실패하더라도 나머지 단계와 runApp 은 반드시 수행한다.
   try {
