@@ -10,6 +10,7 @@ import android.util.Log
 import androidx.core.app.ServiceCompat
 import com.widucorp.widu.BuildConfig
 import com.widucorp.widu.data.model.MeasureResult
+import com.widucorp.widu.data.repository.DeviceEventRepository
 import com.widucorp.widu.data.repository.HeartRateRepository
 import com.widucorp.widu.data.repository.ImuRepository
 import com.widucorp.widu.presentation.util.WidyuNotificationManager
@@ -33,12 +34,16 @@ class HeartRateForegroundService : Service() {
     lateinit var imuRepository: ImuRepository
 
     @Inject
+    lateinit var deviceEventRepository: DeviceEventRepository
+
+    @Inject
     lateinit var notificationManager: WidyuNotificationManager
 
     private val serviceScope: CoroutineScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
     private var isRunning: Boolean = false
     private var job: Job? = null
     private var imuJob: Job? = null
+    private var eventJob: Job? = null
 
     override fun onStartCommand(
         intent: Intent?,
@@ -104,6 +109,13 @@ class HeartRateForegroundService : Service() {
                 .onEach { batch ->
                     if (BuildConfig.DEBUG) Log.d("Widyu", "IMU batch seq=${batch.seq} n=${batch.acc?.values?.size}")
                 }.launchIn(serviceScope)
+
+        eventJob =
+            deviceEventRepository
+                .events()
+                .catch { Log.e("Widyu", "Device event error", it) }
+                .onEach { event -> if (BuildConfig.DEBUG) Log.d("Widyu", "Device event ${event.kind}") }
+                .launchIn(serviceScope)
     }
 
     override fun onDestroy() {
@@ -111,6 +123,8 @@ class HeartRateForegroundService : Service() {
         job = null
         imuJob?.cancel()
         imuJob = null
+        eventJob?.cancel()
+        eventJob = null
         isRunning = false
         super.onDestroy()
     }

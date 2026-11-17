@@ -1,5 +1,7 @@
 package com.widucorp.widu.di
 
+import com.widucorp.widu.data.repository.DeviceEventRepository
+import com.widucorp.widu.data.repository.DeviceEventRepositoryImpl
 import com.widucorp.widu.data.repository.HeartRateRepository
 import com.widucorp.widu.data.repository.HeartRateRepositoryImpl
 import com.widucorp.widu.data.repository.ImuRepository
@@ -20,4 +22,8 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindImuRepository(impl: ImuRepositoryImpl): ImuRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindDeviceEventRepository(impl: DeviceEventRepositoryImpl): DeviceEventRepository
 }

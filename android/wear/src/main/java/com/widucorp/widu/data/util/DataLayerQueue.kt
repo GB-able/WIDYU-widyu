@@ -32,6 +32,26 @@ internal suspend fun DataClient.putBatch(
             asPutDataRequest().apply { if (urgent) setUrgent() }
         }
     putDataItem(request).awaitResult()
+    SendStats.record(body.size)
+}
+
+/** Data Layer 에 넘긴 배치 수·바이트. 연구 모드 SENT_TO_PHONE 이 주기마다 비워 간다. 실제 블루투스 전송 시각은 앱이 알 수 없다. */
+object SendStats {
+    private var count = 0
+    private var bytes = 0L
+
+    @Synchronized
+    fun record(size: Int) {
+        count++
+        bytes += size
+    }
+
+    /** 쌓인 값을 돌려주고 0 으로 되돌린다. */
+    @Synchronized
+    fun drain(): Pair<Int, Long> = (count to bytes).also {
+        count = 0
+        bytes = 0
+    }
 }
 
 /** 쌓인 항목이 [maxItems] 를 넘으면 seq 가 작은 것부터 지우고, 지운 seq 를 오름차순으로 돌려준다. */
