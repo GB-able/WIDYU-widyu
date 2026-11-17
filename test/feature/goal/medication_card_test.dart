@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:widyu/core/model/goal/medication/medication.dart';
 import 'package:widyu/core/model/home/senior_card.dart';
+import 'package:widyu/core/utils/extensions/duration_extension.dart';
 import 'package:widyu/feature/goal/_widget/medication_card.dart';
 
 final now = DateTime(2026, 10, 30, 10, 43);
@@ -40,7 +41,6 @@ Future<void> pumpCard(
         body: MedicationCard(
           medicine: medicine,
           proofPhoto: null,
-          verifyRemaining: medicine.verifyRemainingAt(now),
           onVerified: (_) {},
         ),
       ),
@@ -178,6 +178,42 @@ void main() {
     testWidgets('마감 지남 → 미복용', (tester) async {
       await pumpCard(tester, taken: 2, total: 3, next: '09:00');
       expect(missed, findsOneWidget);
+    });
+  });
+
+  testWidgets('다른 탭(TickerMode 꺼짐)에서는 남은 시간을 다시 그리지 않고, 돌아오면 갱신',
+      (tester) async {
+    var current = now;
+    const medicine = Medication(
+      medicineScheduleId: 1,
+      takenCount: 2,
+      totalCount: 3,
+      nextDoseCount: 1,
+      nextAlarmTime: '23:00',
+      proofImage: null,
+      scheduleStatuses: [],
+    );
+    // 같은 인스턴스를 넘겨야 TickerMode 변경만으로 다시 그려지는지 볼 수 있다.
+    final card = MedicationCard(
+        medicine: medicine, proofPhoto: null, onVerified: (_) {});
+    Widget app({required bool visible}) => MaterialApp(
+          home: Scaffold(body: TickerMode(enabled: visible, child: card)),
+        );
+    Finder remainingText() =>
+        find.text(medicine.verifyRemainingAt(current).str);
+
+    await withClock(Clock(() => current), () async {
+      await tester.pumpWidget(app(visible: false));
+      final shown = remainingText();
+      expect(shown, findsOneWidget);
+
+      current = current.add(const Duration(seconds: 1));
+      await tester.pump(const Duration(seconds: 1));
+      expect(shown, findsOneWidget);
+
+      await tester.pumpWidget(app(visible: true));
+      expect(remainingText(), findsOneWidget);
+      expect(shown, findsNothing);
     });
   });
 }

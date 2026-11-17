@@ -22,7 +22,6 @@ part 'goal_view_model.g.dart';
 
 @riverpod
 class GoalViewModel extends _$GoalViewModel {
-  Timer? _countdownTimer;
   String? _loadedDay;
 
   final _uiEvent = StreamController<GoalUiEvent>.broadcast();
@@ -41,7 +40,6 @@ class GoalViewModel extends _$GoalViewModel {
   GoalUiState build() {
     // onDispose는 다시 빌드될 때도 불리므로, 실제로 폐기될 때만 닫는다.
     ref.onDispose(() {
-      _countdownTimer?.cancel();
       if (!ref.mounted) _uiEvent.close();
     });
     unawaited(Future.microtask(_start));
@@ -79,7 +77,6 @@ class GoalViewModel extends _$GoalViewModel {
     final requestedDay = DateTime.now().walkDate;
     _loadedDay = requestedDay;
     if (showLoading) {
-      _countdownTimer?.cancel();
       state = state.copyWith(
         cards: const GoalCardsState.loading(),
         isWeeklyLoading: true,
@@ -98,8 +95,6 @@ class GoalViewModel extends _$GoalViewModel {
     switch (home) {
       case Success<GoalHomeResponse>():
         final medicine = home.data.medicine;
-        final remaining =
-            medicine?.verifyRemainingAt(DateTime.now()) ?? Duration.zero;
 
         final walk = home.data.walk;
         if (walk != null) {
@@ -115,12 +110,6 @@ class GoalViewModel extends _$GoalViewModel {
             medicine: medicine,
             walk: home.data.walk,
             hospital: home.data.hospital,
-            verifyRemaining: remaining,
-            verifyStatus: medicine?.isDoneAt(DateTime.now()) == true
-                ? MedicationVerifyStatus.verified
-                : remaining > Duration.zero
-                    ? MedicationVerifyStatus.pending
-                    : MedicationVerifyStatus.expired,
           ),
         );
       case Failure<GoalHomeResponse>():
@@ -144,52 +133,11 @@ class GoalViewModel extends _$GoalViewModel {
           _emit(const FetchWeeklyStatusFailure());
         }
     }
-
-    _startCountdownIfNeeded();
   }
 
   GoalCardsData? get _cards {
     final cards = state.cards;
     return cards is GoalCardsData ? cards : null;
-  }
-
-  void _updateCards(GoalCardsData cards) {
-    state = state.copyWith(cards: cards);
-  }
-
-  void _startCountdownIfNeeded() {
-    _countdownTimer?.cancel();
-
-    // 인증 완료 상태여도 마감 전이면 "인증 가능 시간 -> 만료"로 카드가 한 번 더 바뀐다.
-    final medicine = _cards?.medicine;
-    if (medicine == null || medicine.isVerifyExpiredAt(DateTime.now())) return;
-
-    _countdownTimer = Timer.periodic(const Duration(seconds: 1), (_) {
-      final cards = _cards;
-      final medicine = cards?.medicine;
-      if (cards == null || medicine == null) {
-        _countdownTimer?.cancel();
-        return;
-      }
-
-      // 인증 대기 -> 인증 가능으로 넘어가면 남은 시간의 기준이 바뀌므로 매초 다시 구한다.
-      final now = DateTime.now();
-      final remaining = medicine.verifyRemainingAt(now);
-
-      if (medicine.isVerifyExpiredAt(now)) {
-        _updateCards(
-          cards.copyWith(
-            verifyRemaining: Duration.zero,
-            verifyStatus: cards.verifyStatus == MedicationVerifyStatus.verified
-                ? MedicationVerifyStatus.verified
-                : MedicationVerifyStatus.expired,
-          ),
-        );
-        _countdownTimer?.cancel();
-      } else {
-        _updateCards(cards.copyWith(verifyRemaining: remaining));
-      }
-    });
   }
 
   void onMedicationVerified(MedicationPointResult result) {

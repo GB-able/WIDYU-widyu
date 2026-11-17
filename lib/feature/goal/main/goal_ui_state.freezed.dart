@@ -145,12 +145,7 @@ extension GoalCardsStatePatterns on GoalCardsState {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? loading,
     TResult Function()? error,
-    TResult Function(
-            Medication? medicine,
-            Walk? walk,
-            Hospital? hospital,
-            Duration verifyRemaining,
-            MedicationVerifyStatus verifyStatus,
+    TResult Function(Medication? medicine, Walk? walk, Hospital? hospital,
             File? proofPhoto)?
         data,
     required TResult orElse(),
@@ -162,8 +157,8 @@ extension GoalCardsStatePatterns on GoalCardsState {
       case GoalCardsError() when error != null:
         return error();
       case GoalCardsData() when data != null:
-        return data(_that.medicine, _that.walk, _that.hospital,
-            _that.verifyRemaining, _that.verifyStatus, _that.proofPhoto);
+        return data(
+            _that.medicine, _that.walk, _that.hospital, _that.proofPhoto);
       case _:
         return orElse();
     }
@@ -186,13 +181,8 @@ extension GoalCardsStatePatterns on GoalCardsState {
   TResult when<TResult extends Object?>({
     required TResult Function() loading,
     required TResult Function() error,
-    required TResult Function(
-            Medication? medicine,
-            Walk? walk,
-            Hospital? hospital,
-            Duration verifyRemaining,
-            MedicationVerifyStatus verifyStatus,
-            File? proofPhoto)
+    required TResult Function(Medication? medicine, Walk? walk,
+            Hospital? hospital, File? proofPhoto)
         data,
   }) {
     final _that = this;
@@ -202,8 +192,8 @@ extension GoalCardsStatePatterns on GoalCardsState {
       case GoalCardsError():
         return error();
       case GoalCardsData():
-        return data(_that.medicine, _that.walk, _that.hospital,
-            _that.verifyRemaining, _that.verifyStatus, _that.proofPhoto);
+        return data(
+            _that.medicine, _that.walk, _that.hospital, _that.proofPhoto);
     }
   }
 
@@ -223,12 +213,7 @@ extension GoalCardsStatePatterns on GoalCardsState {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? loading,
     TResult? Function()? error,
-    TResult? Function(
-            Medication? medicine,
-            Walk? walk,
-            Hospital? hospital,
-            Duration verifyRemaining,
-            MedicationVerifyStatus verifyStatus,
+    TResult? Function(Medication? medicine, Walk? walk, Hospital? hospital,
             File? proofPhoto)?
         data,
   }) {
@@ -239,8 +224,8 @@ extension GoalCardsStatePatterns on GoalCardsState {
       case GoalCardsError() when error != null:
         return error();
       case GoalCardsData() when data != null:
-        return data(_that.medicine, _that.walk, _that.hospital,
-            _that.verifyRemaining, _that.verifyStatus, _that.proofPhoto);
+        return data(
+            _that.medicine, _that.walk, _that.hospital, _that.proofPhoto);
       case _:
         return null;
     }
@@ -291,20 +276,11 @@ class GoalCardsError implements GoalCardsState {
 
 class GoalCardsData implements GoalCardsState {
   const GoalCardsData(
-      {this.medicine,
-      this.walk,
-      this.hospital,
-      this.verifyRemaining = Duration.zero,
-      this.verifyStatus = MedicationVerifyStatus.pending,
-      this.proofPhoto});
+      {this.medicine, this.walk, this.hospital, this.proofPhoto});
 
   final Medication? medicine;
   final Walk? walk;
   final Hospital? hospital;
-  @JsonKey()
-  final Duration verifyRemaining;
-  @JsonKey()
-  final MedicationVerifyStatus verifyStatus;
   final File? proofPhoto;
 
   /// Create a copy of GoalCardsState
@@ -324,21 +300,17 @@ class GoalCardsData implements GoalCardsState {
             (identical(other.walk, walk) || other.walk == walk) &&
             (identical(other.hospital, hospital) ||
                 other.hospital == hospital) &&
-            (identical(other.verifyRemaining, verifyRemaining) ||
-                other.verifyRemaining == verifyRemaining) &&
-            (identical(other.verifyStatus, verifyStatus) ||
-                other.verifyStatus == verifyStatus) &&
             (identical(other.proofPhoto, proofPhoto) ||
                 other.proofPhoto == proofPhoto));
   }
 
   @override
-  int get hashCode => Object.hash(runtimeType, medicine, walk, hospital,
-      verifyRemaining, verifyStatus, proofPhoto);
+  int get hashCode =>
+      Object.hash(runtimeType, medicine, walk, hospital, proofPhoto);
 
   @override
   String toString() {
-    return 'GoalCardsState.data(medicine: $medicine, walk: $walk, hospital: $hospital, verifyRemaining: $verifyRemaining, verifyStatus: $verifyStatus, proofPhoto: $proofPhoto)';
+    return 'GoalCardsState.data(medicine: $medicine, walk: $walk, hospital: $hospital, proofPhoto: $proofPhoto)';
   }
 }
 
@@ -350,12 +322,7 @@ abstract mixin class $GoalCardsDataCopyWith<$Res>
       _$GoalCardsDataCopyWithImpl;
   @useResult
   $Res call(
-      {Medication? medicine,
-      Walk? walk,
-      Hospital? hospital,
-      Duration verifyRemaining,
-      MedicationVerifyStatus verifyStatus,
-      File? proofPhoto});
+      {Medication? medicine, Walk? walk, Hospital? hospital, File? proofPhoto});
 
   $MedicationCopyWith<$Res>? get medicine;
   $WalkCopyWith<$Res>? get walk;
@@ -377,8 +344,6 @@ class _$GoalCardsDataCopyWithImpl<$Res>
     Object? medicine = freezed,
     Object? walk = freezed,
     Object? hospital = freezed,
-    Object? verifyRemaining = null,
-    Object? verifyStatus = null,
     Object? proofPhoto = freezed,
   }) {
     return _then(GoalCardsData(
@@ -394,14 +359,6 @@ class _$GoalCardsDataCopyWithImpl<$Res>
           ? _self.hospital
           : hospital // ignore: cast_nullable_to_non_nullable
               as Hospital?,
-      verifyRemaining: null == verifyRemaining
-          ? _self.verifyRemaining
-          : verifyRemaining // ignore: cast_nullable_to_non_nullable
-              as Duration,
-      verifyStatus: null == verifyStatus
-          ? _self.verifyStatus
-          : verifyStatus // ignore: cast_nullable_to_non_nullable
-              as MedicationVerifyStatus,
       proofPhoto: freezed == proofPhoto
           ? _self.proofPhoto
           : proofPhoto // ignore: cast_nullable_to_non_nullable
