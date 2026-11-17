@@ -248,7 +248,6 @@ class HeartRatePlugin :
         val mainHandler = Handler(Looper.getMainLooper())
         // 콜백은 시스템 스레드에서 오지만 sink 는 메인 스레드에서만 쓸 수 있다.
         val emit = { type: String -> mainHandler.post { sink.success(type) } }
-        emit(networkType(manager.getNetworkCapabilities(manager.activeNetwork)))
         val callback =
             object : ConnectivityManager.NetworkCallback() {
                 override fun onCapabilitiesChanged(
@@ -263,6 +262,8 @@ class HeartRatePlugin :
                 }
             }
         manager.registerDefaultNetworkCallback(callback)
+        // 등록 뒤에 읽어야 그 사이의 끊김을 놓치지 않는다. 네트워크가 없으면 콜백이 오지 않으므로 이 값이 기준값이 된다.
+        emit(networkType(manager.getNetworkCapabilities(manager.activeNetwork)))
         networkCallback = callback
     }
 

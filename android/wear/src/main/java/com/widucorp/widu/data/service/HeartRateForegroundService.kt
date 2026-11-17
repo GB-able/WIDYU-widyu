@@ -53,13 +53,13 @@ class HeartRateForegroundService : Service() {
         super.onStartCommand(intent, flags, startId)
 
         if (intent?.action == ACTION_RESTART_SESSION) {
-            // 서비스가 죽어 있었다면 측정을 새로 시작하는 것이 곧 세션을 새로 여는 것이다. 재시작까지 겹치면 세션을 두 번 연다.
             if (!isRunning) {
                 startService()
                 startMeasurement()
-            } else {
-                serviceScope.launch { repository.restartSession() }
             }
+            // 심박 스트림은 프로세스당 한 번만 세션을 연다. 서비스만 죽고 프로세스가 살아 있었다면 재구독으로는 세션이 다시 열리지 않으므로 항상 연다.
+            // 새 프로세스라면 세션이 두 번 열리지만, 자기 세션에 밀린 종료는 소유 여부를 보고 알리지 않는다(HeartRateLocalDataSourceImpl).
+            serviceScope.launch { repository.restartSession() }
             return START_STICKY
         }
 
