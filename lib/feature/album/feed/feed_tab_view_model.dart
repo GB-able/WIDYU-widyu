@@ -62,7 +62,11 @@ class FeedTabViewModel extends _$FeedTabViewModel {
     );
   }
 
-  Future<void> refresh() => _scroller.init();
+  Future<void> refresh() => Future.wait([
+        _scroller.init(),
+        _repository.loadLikedAlbumIds(),
+        _repository.loadUnlockedAlbumIds(),
+      ]);
 
   Future<void> loadMore() => _scroller.loadMore();
 
