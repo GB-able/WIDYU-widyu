@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
 import 'package:widyu/app/routes/app_route.dart';
 
@@ -15,20 +16,24 @@ extension CustomGoRoute on GoRoute {
       path: route.path,
       name: route.name,
       routes: routes,
-      pageBuilder: (context, state) => CustomTransitionPage(
-        key: state.pageKey,
-        child: builder(context, state),
-        transitionDuration: duration,
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          return SlideTransition(
-            position: animation.drive(
-              Tween(begin: const Offset(1.0, 0.0), end: Offset.zero)
-                  .chain(CurveTween(curve: Curves.easeInOut)),
+      pageBuilder: (context, state) => defaultTargetPlatform ==
+              TargetPlatform.iOS
+          ? CupertinoPage(key: state.pageKey, child: builder(context, state))
+          : CustomTransitionPage(
+              key: state.pageKey,
+              child: builder(context, state),
+              transitionDuration: duration,
+              transitionsBuilder:
+                  (context, animation, secondaryAnimation, child) {
+                return SlideTransition(
+                  position: animation.drive(
+                    Tween(begin: const Offset(1.0, 0.0), end: Offset.zero)
+                        .chain(CurveTween(curve: Curves.easeInOut)),
+                  ),
+                  child: child,
+                );
+              },
             ),
-            child: child,
-          );
-        },
-      ),
     );
   }
 
