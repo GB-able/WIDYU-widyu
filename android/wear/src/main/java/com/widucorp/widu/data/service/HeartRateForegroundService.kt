@@ -53,8 +53,13 @@ class HeartRateForegroundService : Service() {
         super.onStartCommand(intent, flags, startId)
 
         if (intent?.action == ACTION_RESTART_SESSION) {
-            if (!isRunning) startService()
-            serviceScope.launch { repository.restartSession() }
+            // 서비스가 죽어 있었다면 측정을 새로 시작하는 것이 곧 세션을 새로 여는 것이다. 재시작까지 겹치면 세션을 두 번 연다.
+            if (!isRunning) {
+                startService()
+                startMeasurement()
+            } else {
+                serviceScope.launch { repository.restartSession() }
+            }
             return START_STICKY
         }
 

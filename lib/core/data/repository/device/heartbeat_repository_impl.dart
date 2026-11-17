@@ -46,6 +46,7 @@ class HeartbeatRepositoryImpl implements HeartbeatRepository {
   StreamSubscription<SensorConfig>? _configSubscription;
   StreamSubscription<SensorMessage>? _batches;
   Timer? _timer;
+  bool _isResearch = false;
   String _sessionId = '';
 
   /// 워치 값은 워치가 따로 보내지 않으므로 받은 배치에서 채운다. 재전달된 옛 배치가 덮지 않도록 시각이 앞선 것만 반영한다.
@@ -62,7 +63,7 @@ class HeartbeatRepositoryImpl implements HeartbeatRepository {
     _sessionId = randomUuid();
     _batches = _sensorBatchLocalDataSource.getSensorBatches().listen(_onMessage);
     _configSubscription = _configs.listen((config) {
-      final isResearch = config.collectionMode == _researchMode;
+      final isResearch = _isResearch = config.collectionMode == _researchMode;
       if (isResearch && _timer == null) {
         unawaited(_beat());
         _timer = Timer.periodic(_interval, (_) => unawaited(_beat()));
@@ -99,15 +100,29 @@ class HeartbeatRepositoryImpl implements HeartbeatRepository {
     _watchOnBody = onBody ?? _watchOnBody;
   }
 
+  /// 상태 조회 중 하나라도 실패하면 이번 회차는 건너뛴다. 다음 주기에 다시 보낸다.
   Future<void> _beat() async {
+    try {
+      final heartbeat = await _buildHeartbeat();
+      // 조회를 기다리는 사이 출시 모드로 바뀌었거나 서비스가 멈췄으면 보내지 않는다.
+      if (heartbeat == null || !_isResearch || _configSubscription == null) {
+        return;
+      }
+      await _remoteDataSource.send(heartbeat);
+    } catch (error, stack) {
+      WiduLog.data.w('하트비트 생성 실패', error: error, stackTrace: stack);
+    }
+  }
+
+  Future<Map<String, dynamic>?> _buildHeartbeat() async {
     final phone = await _deviceStatusLocalDataSource.phoneStatus();
     // battery_pct 는 서버 필수다.
     if (phone['battery_pct'] == null) {
       WiduLog.data.w('폰 배터리를 읽지 못해 하트비트 생략');
-      return;
+      return null;
     }
     final watchConnected = await _deviceStatusLocalDataSource.watchConnected();
-    final heartbeat = {
+    return {
       'v': 1,
       'ts_ms': clock.now().millisecondsSinceEpoch,
       'device_id': await _deviceLocalDataSource.getDeviceId(),
@@ -132,8 +147,6 @@ class HeartbeatRepositoryImpl implements HeartbeatRepository {
             }..removeWhere((_, value) => value == null))
           : {'connected': false},
     };
-    if (_configSubscription == null) return;
-    await _remoteDataSource.send(heartbeat);
   }
 
   static int _max(int? current, int next) =>
@@ -141,6 +154,7 @@ class HeartbeatRepositoryImpl implements HeartbeatRepository {
 
   @override
   void stop() {
+    _isResearch = false;
     _configSubscription?.cancel();
     _configSubscription = null;
     _batches?.cancel();

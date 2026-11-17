@@ -74,10 +74,10 @@ class DeviceStateLocalDataSourceImpl @Inject constructor(
         }
 
     override fun offBodyRaw(): Flow<Int?> {
-        // wake-up 변형만 두는 기기와 아닌 기기가 있어 둘 다 찾는다.
+        // wake-up 변형만 두는 기기와 아닌 기기가 있어 둘 다 찾는다. 인자 하나짜리 조회는 이 타입에서 wake-up 만 찾는다.
         val sensor =
             sensorManager.getDefaultSensor(Sensor.TYPE_LOW_LATENCY_OFFBODY_DETECT, true)
-                ?: sensorManager.getDefaultSensor(Sensor.TYPE_LOW_LATENCY_OFFBODY_DETECT)
+                ?: sensorManager.getDefaultSensor(Sensor.TYPE_LOW_LATENCY_OFFBODY_DETECT, false)
                 ?: return flowOf(null)
         return callbackFlow {
             val listener =
@@ -91,8 +91,8 @@ class DeviceStateLocalDataSourceImpl @Inject constructor(
                         accuracy: Int,
                     ) = Unit
                 }
-            // on-change 센서라 등록하면 현재 값이 한 번 온다.
-            sensorManager.registerListener(listener, sensor, SensorManager.SENSOR_DELAY_NORMAL)
+            // on-change 센서라 등록하면 현재 값이 한 번 온다. 등록에 실패하면 센서가 없는 것과 같이 다뤄야 WEAR_CHANGED 가 막히지 않는다.
+            if (!sensorManager.registerListener(listener, sensor, SensorManager.SENSOR_DELAY_NORMAL)) trySend(null)
             awaitClose { sensorManager.unregisterListener(listener) }
         }
     }
