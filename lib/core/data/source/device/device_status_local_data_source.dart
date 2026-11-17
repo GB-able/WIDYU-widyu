@@ -8,4 +8,7 @@ abstract class DeviceStatusLocalDataSource {
   Future<String> locationPermission();
 
   Future<bool> watchConnected();
+
+  /// 기본 네트워크 종류(`wifi`·`mobile`·`none`·`other`). 구독 즉시 현재 값을 내고, 같은 값이 반복될 수 있다.
+  Stream<String> networkType();
 }

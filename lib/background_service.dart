@@ -118,6 +118,10 @@ Future<bool> onIosBackground(ServiceInstance service) async {
     deviceEventRepository: DeviceEventRepositoryImpl(
       localDataSource: sensorBatchLocalDataSource,
       remoteDataSource: DeviceEventRemoteDataSourceImpl(apiClient: apiClient),
+      configs: sensorConfigRepository.configs,
+      deviceLocalDataSource: DeviceLocalDataSourceImpl(),
+      deviceStatusLocalDataSource: DeviceStatusLocalDataSourceImpl(),
+      locationStates: () => LocationServiceManager.locationServiceState,
     ),
     heartbeatRepository: HeartbeatRepositoryImpl(
       configs: sensorConfigRepository.configs,
@@ -248,8 +252,8 @@ Future<void> _onStart(ServiceInstance service) async {
 
   heartRateRepository.observeHeartRate();
   sensorBatchRepository.observeSensorBatches();
-  deviceEventRepository.start();
   // 첫 설정 조회 결과를 놓치지 않도록 설정 저장소보다 먼저 구독한다.
+  deviceEventRepository.start();
   heartbeatRepository.start();
   sensorConfigRepository.start();
   WiduLog.bg.i('서비스 시작');

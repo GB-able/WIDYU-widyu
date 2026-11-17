@@ -6,6 +6,8 @@ import 'package:widyu/core/log/log.dart';
 
 class DeviceStatusLocalDataSourceImpl implements DeviceStatusLocalDataSource {
   static const _channel = MethodChannel('com.widucorp.widu/device_status');
+  static const _networkTypeChannel =
+      EventChannel('com.widucorp.widu/network_type');
 
   @override
   Future<Map<String, dynamic>> phoneStatus() async {
@@ -46,4 +48,9 @@ class DeviceStatusLocalDataSourceImpl implements DeviceStatusLocalDataSource {
     }
     return false;
   }
+
+  @override
+  Stream<String> networkType() => _networkTypeChannel
+      .receiveBroadcastStream()
+      .map((type) => type as String);
 }

@@ -100,8 +100,7 @@ void main() {
   });
 }
 
-SensorBatch _batch({required int epochMs, required int battery}) =>
-    SensorBatch(
+SensorBatch _batch({required int epochMs, required int battery}) => SensorBatch(
       batchId: 'batch-$epochMs',
       deviceId: 'gw-test',
       sessionId: 'session-1',
@@ -168,6 +167,9 @@ class _Status implements DeviceStatusLocalDataSource {
 
   @override
   Future<bool> watchConnected() async => connected;
+
+  @override
+  Stream<String> networkType() => const Stream.empty();
 }
 
 class _Remote implements HeartbeatRemoteDataSource {

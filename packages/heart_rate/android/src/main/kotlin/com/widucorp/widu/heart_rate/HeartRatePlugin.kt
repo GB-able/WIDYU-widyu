@@ -2,6 +2,9 @@ package com.widucorp.widu.heart_rate
 
 import android.app.ActivityManager
 import android.content.Context
+import android.net.ConnectivityManager
+import android.net.Network
+import android.net.NetworkCapabilities
 import android.net.Uri
 import android.os.BatteryManager
 import android.os.Build
@@ -33,6 +36,8 @@ class HeartRatePlugin :
     private var sensorConfigChannel: MethodChannel? = null
     private var sensorBatchAckChannel: MethodChannel? = null
     private var deviceStatusChannel: MethodChannel? = null
+    private var networkTypeChannel: EventChannel? = null
+    private var networkCallback: ConnectivityManager.NetworkCallback? = null
     private lateinit var nodeClient: NodeClient
     private lateinit var messageClient: MessageClient
     private var applicationContext: Context? = null
@@ -110,11 +115,30 @@ class HeartRatePlugin :
                     }
                 }
             }
+        networkTypeChannel =
+            EventChannel(binding.binaryMessenger, NETWORK_TYPE_CHANNEL).apply {
+                setStreamHandler(
+                    object : EventChannel.StreamHandler {
+                        override fun onListen(
+                            arguments: Any?,
+                            events: EventChannel.EventSink?,
+                        ) {
+                            events?.let(::registerNetworkCallback)
+                        }
+
+                        override fun onCancel(arguments: Any?) {
+                            unregisterNetworkCallback()
+                        }
+                    },
+                )
+            }
     }
 
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
         releaseEventSink()
         releaseSensorBatchSink()
+        // 해제에 Context 가 필요해 먼저 한다.
+        unregisterNetworkCallback()
         applicationContext = null
         eventChannel?.setStreamHandler(null)
         sensorBatchChannel?.setStreamHandler(null)
@@ -122,6 +146,7 @@ class HeartRatePlugin :
         sensorConfigChannel?.setMethodCallHandler(null)
         sensorBatchAckChannel?.setMethodCallHandler(null)
         deviceStatusChannel?.setMethodCallHandler(null)
+        networkTypeChannel?.setStreamHandler(null)
     }
 
     override fun onMethodCall(
@@ -215,6 +240,47 @@ class HeartRatePlugin :
             .addOnFailureListener { Log.w("Widyu", "Failed to consume device event", it) }
     }
 
+    /** 기본 네트워크 종류(`wifi`·`mobile`·`none`, 그 밖은 `other`)를 구독 즉시 한 번, 이후 바뀔 때마다 흘린다. 같은 값이 반복될 수 있어 Flutter 가 거른다. */
+    private fun registerNetworkCallback(sink: EventChannel.EventSink) {
+        val context = applicationContext ?: return
+        unregisterNetworkCallback()
+        val manager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val mainHandler = Handler(Looper.getMainLooper())
+        // 콜백은 시스템 스레드에서 오지만 sink 는 메인 스레드에서만 쓸 수 있다.
+        val emit = { type: String -> mainHandler.post { sink.success(type) } }
+        emit(networkType(manager.getNetworkCapabilities(manager.activeNetwork)))
+        val callback =
+            object : ConnectivityManager.NetworkCallback() {
+                override fun onCapabilitiesChanged(
+                    network: Network,
+                    capabilities: NetworkCapabilities,
+                ) {
+                    emit(networkType(capabilities))
+                }
+
+                override fun onLost(network: Network) {
+                    emit(NETWORK_NONE)
+                }
+            }
+        manager.registerDefaultNetworkCallback(callback)
+        networkCallback = callback
+    }
+
+    private fun unregisterNetworkCallback() {
+        val callback = networkCallback ?: return
+        networkCallback = null
+        val context = applicationContext ?: return
+        runCatching { (context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager).unregisterNetworkCallback(callback) }
+    }
+
+    private fun networkType(capabilities: NetworkCapabilities?): String =
+        when {
+            capabilities == null -> NETWORK_NONE
+            capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> "wifi"
+            capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> "mobile"
+            else -> "other"
+        }
+
     /** 하트비트 `phone{}` 중 Flutter 가 직접 읽을 수 없는 값. */
     private fun phoneStatus(): Map<String, Any?> {
         val context = applicationContext ?: return emptyMap()
@@ -271,6 +337,8 @@ class HeartRatePlugin :
         private const val SENSOR_CONFIG_CHANNEL = "com.widucorp.widu/sensor_config"
         private const val SENSOR_BATCH_ACK_CHANNEL = "com.widucorp.widu/sensor_batch_ack"
         private const val DEVICE_STATUS_CHANNEL = "com.widucorp.widu/device_status"
+        private const val NETWORK_TYPE_CHANNEL = "com.widucorp.widu/network_type"
+        private const val NETWORK_NONE = "none"
         private const val IMU_STREAM = "imu_watch"
         private const val HR_STREAM = "hr"
         private const val IMU_DROPPED_STREAM = "imu_dropped"

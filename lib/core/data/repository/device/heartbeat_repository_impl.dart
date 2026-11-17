@@ -61,7 +61,8 @@ class HeartbeatRepositoryImpl implements HeartbeatRepository {
   void start() {
     if (_configSubscription != null) return;
     _sessionId = randomUuid();
-    _batches = _sensorBatchLocalDataSource.getSensorBatches().listen(_onMessage);
+    _batches =
+        _sensorBatchLocalDataSource.getSensorBatches().listen(_onMessage);
     _configSubscription = _configs.listen((config) {
       final isResearch = _isResearch = config.collectionMode == _researchMode;
       if (isResearch && _timer == null) {
