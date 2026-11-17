@@ -74,7 +74,11 @@ class DeviceStateLocalDataSourceImpl @Inject constructor(
         }
 
     override fun offBodyRaw(): Flow<Int?> {
-        val sensor = sensorManager.getDefaultSensor(Sensor.TYPE_LOW_LATENCY_OFFBODY_DETECT, true) ?: return flowOf(null)
+        // wake-up 변형만 두는 기기와 아닌 기기가 있어 둘 다 찾는다.
+        val sensor =
+            sensorManager.getDefaultSensor(Sensor.TYPE_LOW_LATENCY_OFFBODY_DETECT, true)
+                ?: sensorManager.getDefaultSensor(Sensor.TYPE_LOW_LATENCY_OFFBODY_DETECT)
+                ?: return flowOf(null)
         return callbackFlow {
             val listener =
                 object : SensorEventListener {
