@@ -1,7 +1,10 @@
 package com.widucorp.widu.heart_rate
 
+import android.app.ActivityManager
 import android.content.Context
 import android.net.Uri
+import android.os.BatteryManager
+import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
@@ -29,6 +32,7 @@ class HeartRatePlugin :
     private var sensorBatchChannel: EventChannel? = null
     private var sensorConfigChannel: MethodChannel? = null
     private var sensorBatchAckChannel: MethodChannel? = null
+    private var deviceStatusChannel: MethodChannel? = null
     private lateinit var nodeClient: NodeClient
     private lateinit var messageClient: MessageClient
     private var applicationContext: Context? = null
@@ -85,11 +89,24 @@ class HeartRatePlugin :
         sensorBatchAckChannel =
             MethodChannel(binding.binaryMessenger, SENSOR_BATCH_ACK_CHANNEL).apply {
                 setMethodCallHandler { call, result ->
-                    if (call.method == "consume") {
-                        consumeSensorItem(call)
-                        result.success(null)
-                    } else {
-                        result.notImplemented()
+                    when (call.method) {
+                        "consume" -> consumeSensorItem(call)
+                        "consumeEvent" -> consumeDeviceEvent(call)
+                        else -> return@setMethodCallHandler result.notImplemented()
+                    }
+                    result.success(null)
+                }
+            }
+        deviceStatusChannel =
+            MethodChannel(binding.binaryMessenger, DEVICE_STATUS_CHANNEL).apply {
+                setMethodCallHandler { call, result ->
+                    when (call.method) {
+                        "phoneStatus" -> result.success(phoneStatus())
+                        "watchConnected" ->
+                            nodeClient.connectedNodes
+                                .addOnSuccessListener { result.success(it.isNotEmpty()) }
+                                .addOnFailureListener { result.success(false) }
+                        else -> result.notImplemented()
                     }
                 }
             }
@@ -104,6 +121,7 @@ class HeartRatePlugin :
         methodChannel?.setMethodCallHandler(null)
         sensorConfigChannel?.setMethodCallHandler(null)
         sensorBatchAckChannel?.setMethodCallHandler(null)
+        deviceStatusChannel?.setMethodCallHandler(null)
     }
 
     override fun onMethodCall(
@@ -187,6 +205,30 @@ class HeartRatePlugin :
             .addOnFailureListener { Log.w("Widyu", "Failed to consume sensor item", it) }
     }
 
+    /** 워치 이벤트는 `/device_event/<event_id>` 하나씩이다. */
+    private fun consumeDeviceEvent(call: MethodCall) {
+        val context = applicationContext ?: return
+        val eventId = call.argument<String>("event_id") ?: return
+        Wearable
+            .getDataClient(context)
+            .deleteDataItems(Uri.parse("wear://*$DEVICE_EVENT_PREFIX$eventId"))
+            .addOnFailureListener { Log.w("Widyu", "Failed to consume device event", it) }
+    }
+
+    /** 하트비트 `phone{}` 중 Flutter 가 직접 읽을 수 없는 값. */
+    private fun phoneStatus(): Map<String, Any?> {
+        val context = applicationContext ?: return emptyMap()
+        val battery = context.getSystemService(Context.BATTERY_SERVICE) as BatteryManager
+        val activity = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+        return mapOf(
+            "battery_pct" to battery.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY),
+            "charging" to battery.isCharging,
+            "os" to "android/${Build.VERSION.RELEASE}",
+            "background_restricted" to
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) activity.isBackgroundRestricted else null,
+        )
+    }
+
     /** 키 이름은 워치와의 계약이므로 바꾸지 않는다. 늦게 반영되면 의미가 없어 setUrgent() 로 보낸다. */
     private fun putSensorConfig(call: MethodCall) {
         val context = applicationContext ?: return
@@ -228,6 +270,7 @@ class HeartRatePlugin :
         private const val HEART_RATE_STATUS_PATH = "/heart_rate_status"
         private const val SENSOR_CONFIG_CHANNEL = "com.widucorp.widu/sensor_config"
         private const val SENSOR_BATCH_ACK_CHANNEL = "com.widucorp.widu/sensor_batch_ack"
+        private const val DEVICE_STATUS_CHANNEL = "com.widucorp.widu/device_status"
         private const val IMU_STREAM = "imu_watch"
         private const val HR_STREAM = "hr"
         private const val IMU_DROPPED_STREAM = "imu_dropped"
@@ -236,7 +279,8 @@ class HeartRatePlugin :
         private const val IMU_BATCH_PREFIX = "/imu/batch/"
         private const val IMU_DROPPED_PREFIX = "/imu/dropped/"
         private const val HR_BATCH_PREFIX = "/hr/batch/"
-        private val SENSOR_PREFIXES = listOf(IMU_PREFIX, "/hr/")
+        private const val DEVICE_EVENT_PREFIX = "/device_event/"
+        private val SENSOR_PREFIXES = listOf(IMU_PREFIX, "/hr/", DEVICE_EVENT_PREFIX)
         private const val SEQ_KEY = "seq"
         private const val BODY_KEY = "body"
         private const val SESSION_ID_KEY = "session_id"
@@ -296,6 +340,18 @@ class HeartRatePlugin :
             return when {
                 path.startsWith(IMU_BATCH_PREFIX) || path.startsWith(HR_BATCH_PREFIX) ->
                     dataMap.getByteArray(BODY_KEY)?.let { String(it, StandardCharsets.UTF_8) }
+
+                // 서버로 갈 원문은 event 안에 그대로 두고, 스트림 구분용 봉투만 씌운다.
+                path.startsWith(DEVICE_EVENT_PREFIX) ->
+                    // 깨진 본문은 null 로 돌려 호출자가 지우게 한다.
+                    dataMap.getByteArray(BODY_KEY)?.let {
+                        runCatching {
+                            JSONObject()
+                                .put("stream", "device_event")
+                                .put("event", JSONObject(String(it, StandardCharsets.UTF_8)))
+                                .toString()
+                        }.getOrNull()
+                    }
 
                 path.startsWith(IMU_DROPPED_PREFIX) ->
                     JSONObject()

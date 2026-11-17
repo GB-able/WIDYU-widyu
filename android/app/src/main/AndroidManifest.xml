@@ -86,6 +86,7 @@
                 <data android:scheme="wear" android:host="*" android:pathPrefix="/heart_rate" />
                 <data android:scheme="wear" android:host="*" android:pathPrefix="/imu" />
                 <data android:scheme="wear" android:host="*" android:pathPrefix="/hr" />
+                <data android:scheme="wear" android:host="*" android:pathPrefix="/device_event" />
             </intent-filter>
         </service>
 
