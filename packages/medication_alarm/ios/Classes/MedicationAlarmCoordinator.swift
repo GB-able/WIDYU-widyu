@@ -237,7 +237,7 @@ final class MedicationAlarmCoordinator {
         if #unavailable(iOS 26.0) {
             capacity = max(0, min(48, 64 - pending.filter { !$0.identifier.hasPrefix("widyu.medication.") }.count))
             let categories = await center.notificationCategories()
-            let verify = UNNotificationAction(identifier: "MEDICATION_VERIFY", title: "인증하기", options: [.foreground, .authenticationRequired])
+            let verify = UNNotificationAction(identifier: "MEDICATION_VERIFY", title: "인증하러 가기", options: [.foreground, .authenticationRequired])
             let stop = UNNotificationAction(identifier: "MEDICATION_STOP", title: "중단", options: [.destructive])
             center.setNotificationCategories(categories.filter { $0.identifier != "WIDYU_MEDICATION" }.union([UNNotificationCategory(identifier: "WIDYU_MEDICATION",
                 actions: [verify, stop], intentIdentifiers: [], options: [])]))

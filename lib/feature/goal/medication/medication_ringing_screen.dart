@@ -88,7 +88,7 @@ class _MedicationRingingScreenState extends State<MedicationRingingScreen> {
                             disabledBackgroundColor: MyColor.grey300,
                             shape: const StadiumBorder(),
                           ),
-                          child: Text('인증 하러 가기',
+                          child: Text('인증하러 가기',
                               style:
                                   MyTypo.title3.copyWith(color: MyColor.white)),
                         ),
