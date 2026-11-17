@@ -19,6 +19,8 @@ class CommentCard extends StatelessWidget {
     required this.onReply,
     required this.onEdit,
     required this.onDelete,
+    this.targetCommentId,
+    this.targetKey,
   });
 
   final Comment comment;
@@ -29,6 +31,10 @@ class CommentCard extends StatelessWidget {
   final ValueChanged<int> onReply;
   final ValueChanged<Comment> onEdit;
   final Future<bool> Function(int commentId) onDelete;
+  final int? targetCommentId;
+  final GlobalKey? targetKey;
+
+  Key? _keyOf(int commentId) => commentId == targetCommentId ? targetKey : null;
 
   @override
   Widget build(BuildContext context) {
@@ -38,6 +44,7 @@ class CommentCard extends StatelessWidget {
       spacing: 12,
       children: [
         Row(
+          key: _keyOf(comment.commentId),
           crossAxisAlignment: CrossAxisAlignment.start,
           spacing: 8,
           children: [
@@ -105,6 +112,7 @@ class CommentCard extends StatelessWidget {
               children: [
                 for (final reply in comment.replies!)
                   ReCommentCard(
+                    key: _keyOf(reply.commentId),
                     mode: editingId == reply.commentId
                         ? ReCommentMode.edit
                         : ReCommentMode.normal,
