@@ -198,6 +198,10 @@ class _FeedWidgetState extends State<FeedWidget> {
                               )
                             : CustomNetworkImage(
                                 url: url,
+                                placeholderUrl:
+                                    feed.thumbnailUrls.elementAtOrNull(index),
+                                placeholderDecodeWidth:
+                                    albumGridDecodeWidth(context),
                                 width: thumbnailWidth,
                                 height: thumbnailHeight,
                               );
