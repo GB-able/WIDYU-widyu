@@ -335,7 +335,7 @@ final class MedicationAlarmCoordinator {
             _ = try await AlarmManager.shared.schedule(id: id, configuration: configuration)
         } else {
             let content = UNMutableNotificationContent()
-            content.title = title; content.body = "눌러서 복용 사진을 인증해 주세요."
+            content.title = "약 복용하실 시간이에요!"
             content.sound = alertMode("sound") ? .default : nil; content.categoryIdentifier = "WIDYU_MEDICATION"
             content.interruptionLevel = .timeSensitive
             content.userInfo = ["widyuMedication": id.uuidString]
@@ -418,7 +418,7 @@ final class MedicationAlarmCoordinator {
         guard let state = try? load(), let group = group(for: id, in: state) else { return }
         if UIApplication.shared.applicationState != .active {
             let content = UNMutableNotificationContent()
-            content.title = title(group); content.body = "눌러서 복용 사진을 인증해 주세요."
+            content.title = "약 복용하실 시간이에요!"
             content.categoryIdentifier = "WIDYU_MEDICATION"; content.userInfo = ["widyuMedication": id.uuidString]
             content.interruptionLevel = .timeSensitive
             center.add(UNNotificationRequest(identifier: legacyID(id), content: content, trigger: nil)) { _ in }
