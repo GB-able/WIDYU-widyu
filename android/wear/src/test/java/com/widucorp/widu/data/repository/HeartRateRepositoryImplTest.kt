@@ -3,9 +3,11 @@ package com.widucorp.widu.data.repository
 import com.widucorp.widu.data.model.ClockAnchor
 import com.widucorp.widu.data.model.HeartRateAccuracyLabel.HIGH
 import com.widucorp.widu.data.model.HeartRateAccuracyLabel.LOW
+import com.widucorp.widu.data.model.HeartRateAccuracyLabel.UNKNOWN
 import com.widucorp.widu.data.model.HeartRateAccuracyLabel.UNRELIABLE
 import com.widucorp.widu.data.model.HeartRateBatch
 import com.widucorp.widu.data.model.HeartRateReading
+import com.widucorp.widu.data.model.HeartRateSample
 import com.widucorp.widu.data.model.HeartRateStatus
 import com.widucorp.widu.data.model.MeasureResult
 import com.widucorp.widu.data.source.ClockLocalDataSource
@@ -28,6 +30,7 @@ import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestCoroutineScheduler
 import kotlinx.coroutines.test.TestDispatcher
 import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.AfterEach
@@ -48,6 +51,9 @@ class HeartRateRepositoryImplTest {
     private lateinit var dispatcher: TestDispatcher
     private lateinit var testScope: TestScope
 
+    /** [SendGate] 가 읽는 경과 시간(ms). */
+    private var nowMs = 0L
+
     @BeforeEach
     fun setUp() {
         scheduler = TestCoroutineScheduler()
@@ -57,6 +63,7 @@ class HeartRateRepositoryImplTest {
         remote = FakeRemoteDataSource()
         appScope = testScope.backgroundScope
         onBodyStateHolder = OnBodyStateHolder()
+        nowMs = 0L
         repository =
             HeartRateRepositoryImpl(
                 heartRateLocalDataSource = local,
@@ -64,7 +71,7 @@ class HeartRateRepositoryImplTest {
                 clockLocalDataSource = FakeClockLocalDataSource(),
                 deviceInfoLocalDataSource = FakeDeviceInfoLocalDataSource(),
                 onBodyStateHolder = onBodyStateHolder,
-                sendGate = SendGate(),
+                sendGate = SendGate { nowMs },
                 ioDispatcher = dispatcher,
                 applicationScope = appScope,
             )
@@ -79,23 +86,149 @@ class HeartRateRepositoryImplTest {
         scheduler.runCurrent()
     }
 
-    // 배치 전송은 SendGate 가 실제 경과 시간으로 열어 단위 테스트에서는 일어나지 않는다. 전송 주기·배치 내용은 실기기로 확인한다.
-    // 샘플 변환 규칙은 HeartRateSamplesTest 가 확인한다.
+    @Test
+    @DisplayName("센서 묶음 하나를 샘플 전부와 각자의 잰 시각·정확도로 배치 하나에 담아 보낸다")
+    fun sendsEverySampleOfOneUpdateAsOneBatch() =
+        testScope.runTest {
+            // when — 정확도가 낮은 샘플도 섞여 있다
+            emit(70, reading(71, 1_000, HIGH), reading(72, 2_000, LOW), reading(73, 3_000, UNKNOWN))
+
+            // then
+            val batch = remote.sentBatches.single()
+            batch.samples shouldBe
+                listOf(
+                    HeartRateSample(71, EPOCH_MS + 1_000, HIGH),
+                    HeartRateSample(72, EPOCH_MS + 2_000, LOW),
+                    HeartRateSample(73, EPOCH_MS + 3_000, UNKNOWN),
+                )
+            batch.seq shouldBe 0L
+            batch.batchId.length shouldBe 26
+            batch.deviceId shouldBe "gw-test"
+            batch.watchBatteryPct shouldBe 77
+        }
 
     @Test
-    @DisplayName("몸에서 떨어졌다고 알리면 착용 상태를 false 로 바꾼다")
-    fun offBodyAvailabilityUpdatesTheHolder() =
+    @DisplayName("새 묶음이 없으면 시간이 지나도 최근 값을 다시 보내지 않는다")
+    fun doesNotResendTheLatestValueOnATimer() =
         testScope.runTest {
             // given
             emit(70, reading(70, 1_000, HIGH))
-            onBodyStateHolder.state.value shouldBe true
 
             // when
-            local.events.emit(MeasureResult.Availability(isAvailable = false, isOnBody = false))
+            advanceTimeBy(10_000)
             runCurrent()
 
             // then
+            remote.sentBatches.size shouldBe 1
+        }
+
+    @Test
+    @DisplayName("bpm 이 0 이거나 0~300 밖이면 버리지 않고 0/UNRELIABLE 로 보낸다")
+    fun outOfRangeBpmIsSentAsUnreliableZero() =
+        testScope.runTest {
+            // when
+            emit(null, reading(0, 1_000, HIGH), reading(350, 2_000, MEDIUM_LABEL))
+
+            // then
+            remote.sentBatches.single().samples shouldBe
+                listOf(
+                    HeartRateSample(0, EPOCH_MS + 1_000, UNRELIABLE),
+                    HeartRateSample(0, EPOCH_MS + 2_000, UNRELIABLE),
+                )
+        }
+
+    @Test
+    @DisplayName("같은 ms 로 겹치는 샘플은 나중 것만 남겨 배치 안의 시각이 엄격히 증가한다")
+    fun samplesSharingAMillisecondKeepTheLaterOne() =
+        testScope.runTest {
+            // when — 순서도 섞여 온다
+            emit(null, reading(82, 2_000, HIGH), reading(80, 1_000, HIGH), reading(81, 1_000, LOW))
+
+            // then
+            remote.sentBatches.single().samples.map { it.bpm to it.tsMs } shouldBe
+                listOf(81 to EPOCH_MS + 1_000, 82 to EPOCH_MS + 2_000)
+        }
+
+    @Test
+    @DisplayName("샘플이 60개를 넘으면 배치를 나누고 seq 를 이어 붙인다")
+    fun splitsAtSixtySamples() =
+        testScope.runTest {
+            // when
+            emit(null, *Array(61) { reading(70, (it + 1) * 1_000L, HIGH) })
+
+            // then
+            remote.sentBatches.map { it.samples.size } shouldBe listOf(60, 1)
+            remote.sentBatches.map { it.seq } shouldBe listOf(0L, 1L)
+        }
+
+    @Test
+    @DisplayName("화면에 쓸 값이 없는 묶음도 샘플은 정확도와 함께 보낸다")
+    fun sendsSamplesEvenWithoutADisplayValue() =
+        testScope.runTest {
+            // when
+            emit(null, reading(40, 1_000, UNRELIABLE))
+
+            // then
+            remote.sentBatches.single().samples.single().accuracy shouldBe UNRELIABLE
+        }
+
+    @Test
+    @DisplayName("착용 여부를 모르면 true, 몸에서 떨어졌다고 알렸으면 false 로 싣는다")
+    fun onBodyFollowsTheHolder() =
+        testScope.runTest {
+            // when — 아직 모른다
+            emit(70, reading(70, 1_000, HIGH))
+            // and — 몸에서 떨어졌다
+            local.events.emit(MeasureResult.Availability(isAvailable = false, isOnBody = false))
+            runCurrent()
+            emit(null, reading(0, 2_000, UNRELIABLE))
+
+            // then
+            remote.sentBatches.map { it.onBody } shouldBe listOf(true, false)
+            remote.sentBatches.map { it.wearState } shouldBe listOf("WORN_VALID", "ACTUAL_NOT_WORN")
             onBodyStateHolder.state.value shouldBe false
+        }
+
+    @Test
+    @DisplayName("차고 있는데 이번 묶음의 마지막 정확도가 LOW 면 wear_state 는 WORN_INVALID 다")
+    fun lowAccuracyWhileWornIsWornInvalid() =
+        testScope.runTest {
+            // given
+            onBodyStateHolder.update(true)
+
+            // when
+            emit(null, reading(25, 1_000, HIGH), reading(25, 2_000, LOW))
+
+            // then
+            remote.sentBatches.single().wearState shouldBe "WORN_INVALID"
+        }
+
+    @Test
+    @DisplayName("도착 순서가 뒤섞여도 측정 시각이 가장 늦은 샘플의 정확도로 판정한다")
+    fun latestMeasuredReadingDecidesWearState() =
+        testScope.runTest {
+            // given
+            onBodyStateHolder.update(true)
+
+            // when — 목록 마지막은 HIGH 지만 측정 시각은 더 이르다
+            emit(null, reading(25, 2_000, LOW), reading(70, 1_000, HIGH))
+
+            // then
+            remote.sentBatches.single().wearState shouldBe "WORN_INVALID"
+        }
+
+    @Test
+    @DisplayName("범위 밖 bpm 은 정확도가 HIGH 여도 UNRELIABLE 로 보내므로 WORN_INVALID 다")
+    fun outOfRangeBpmIsWornInvalid() =
+        testScope.runTest {
+            // given
+            onBodyStateHolder.update(true)
+
+            // when
+            emit(null, reading(400, 1_000, HIGH))
+
+            // then
+            remote.sentBatches.single().wearState shouldBe "WORN_INVALID"
         }
 
     @Test
@@ -110,6 +243,7 @@ class HeartRateRepositoryImplTest {
             emit(72, reading(72, 1_000, HIGH))
 
             // then
+            remote.sentBatches.single().onBody shouldBe true
             onBodyStateHolder.state.value shouldBe true
         }
 
@@ -125,52 +259,94 @@ class HeartRateRepositoryImplTest {
             emit(null, reading(0, 1_000, UNRELIABLE))
 
             // then
-            onBodyStateHolder.state.value shouldBe false
+            remote.sentBatches.single().onBody shouldBe false
+            remote.sentBatches.single().wearState shouldBe "ACTUAL_NOT_WORN"
         }
 
     @Test
-    @DisplayName("차고 있는데 이번 묶음의 마지막 정확도가 LOW 면 전송을 기다리지 않고 WORN_INVALID 로 본다")
-    fun lowAccuracyWhileWornIsWornInvalid() =
+    @DisplayName("배치 전송이 실패해도 측정을 멈추지 않고 다음 묶음을 보낸다")
+    fun aFailedSendDoesNotStopMeasurement() =
         testScope.runTest {
             // given
-            onBodyStateHolder.update(true)
+            remote.failuresBeforeSuccess = 1
 
             // when
-            emit(null, reading(25, 1_000, HIGH), reading(25, 2_000, LOW))
+            emit(70, reading(70, 1_000, HIGH))
+            emit(71, reading(71, 2_000, HIGH))
 
-            // then
-            onBodyStateHolder.wearState(true) shouldBe "WORN_INVALID"
+            // then — 못 넣은 seq 0 은 enqueue_failed 로 남긴다
+            remote.sentBatches.map { it.seq } shouldBe listOf(1L)
+            remote.drops.map { it.drop(1) } shouldBe listOf(listOf(0L, 0L, "enqueue_failed"))
         }
 
     @Test
-    @DisplayName("도착 순서가 뒤섞여도 측정 시각이 가장 늦은 샘플의 정확도로 판정한다")
-    fun latestMeasuredReadingDecidesWearState() =
+    @DisplayName("큐 정리로 버린 seq 를 연속 구간마다 queue_overflow 로 기록한다")
+    fun recordsEachContiguousDroppedRangeOnQueueOverflow() =
         testScope.runTest {
-            // given
-            onBodyStateHolder.update(true)
-
-            // when — 목록 마지막은 HIGH 지만 측정 시각은 더 이르다
-            emit(null, reading(25, 2_000, LOW), reading(70, 1_000, HIGH))
-
-            // then
-            onBodyStateHolder.wearState(true) shouldBe "WORN_INVALID"
-        }
-
-    @Test
-    @DisplayName("범위 밖 bpm 은 정확도가 HIGH 여도 UNRELIABLE 이므로 WORN_INVALID 다")
-    fun outOfRangeBpmIsWornInvalid() =
-        testScope.runTest {
-            // given
-            onBodyStateHolder.update(true)
+            // given — seq 0 전송 뒤 정리가 돈다. 6 은 폰이 먼저 지워 큐에 없었다
+            remote.dropOnTrim = listOf(3L, 4L, 5L, 7L)
 
             // when
-            emit(null, reading(400, 1_000, HIGH))
+            emit(70, reading(70, 1_000, HIGH))
 
             // then
+            val sessionId = remote.sentBatches.single().sessionId
+            remote.drops shouldBe
+                listOf(
+                    listOf(sessionId, 3L, 5L, "queue_overflow"),
+                    listOf(sessionId, 7L, 7L, "queue_overflow"),
+                )
+        }
+
+    @Test
+    @DisplayName("전송 주기가 차기 전에 온 묶음은 모아 두었다가 게이트가 열릴 때 한 배치로 보낸다")
+    fun holdsUpdatesUntilTheGateOpens() =
+        testScope.runTest {
+            // given — 게이트가 열린 직후
+            emit(70, reading(70, 1_000, HIGH))
+
+            // when — 2.5초가 안 된 사이에 두 묶음이 온다
+            nowMs += 1_000
+            emitWithoutAdvancing(71, reading(71, 2_000, HIGH))
+            nowMs += 1_000
+            emitWithoutAdvancing(72, reading(72, 3_000, HIGH))
+
+            // then — 아직 보내지 않는다
+            remote.sentBatches.size shouldBe 1
+
+            // when — 주기가 찬 뒤 다음 묶음이 오면
+            emit(73, reading(73, 4_000, HIGH))
+
+            // then — 모아 둔 것까지 한 배치로 보낸다
+            remote.sentBatches.size shouldBe 2
+            remote.sentBatches[1].samples.map { it.bpm } shouldBe listOf(71, 72, 73)
+        }
+
+    @Test
+    @DisplayName("착용 판정용 정확도는 전송을 기다리지 않고 받은 즉시 반영한다")
+    fun accuracyIsAppliedOnReceipt() =
+        testScope.runTest {
+            // given
+            onBodyStateHolder.update(true)
+
+            // when — 게이트가 열리지 않은 상태
+            emitWithoutAdvancing(null, reading(25, 1_000, LOW))
+
+            // then
+            remote.sentBatches shouldBe emptyList()
             onBodyStateHolder.wearState(true) shouldBe "WORN_INVALID"
         }
 
+    /** 전송 주기만큼 시간이 지난 뒤 묶음이 온다 — 게이트가 열려 바로 보낸다. */
     private suspend fun emit(
+        value: Int?,
+        vararg readings: HeartRateReading,
+    ) {
+        nowMs += SEND_INTERVAL_MS
+        emitWithoutAdvancing(value, *readings)
+    }
+
+    private suspend fun emitWithoutAdvancing(
         value: Int?,
         vararg readings: HeartRateReading,
     ) {
@@ -195,19 +371,33 @@ class HeartRateRepositoryImplTest {
     }
 
     private class FakeRemoteDataSource : HeartRateRemoteDataSource {
-        override suspend fun sendBatch(batch: HeartRateBatch): Boolean = true
+        var failuresBeforeSuccess = 0
+        val sentBatches = mutableListOf<HeartRateBatch>()
+        var dropOnTrim: List<Long> = emptyList()
+        val drops = mutableListOf<List<Any>>()
+
+        override suspend fun sendBatch(batch: HeartRateBatch): Boolean {
+            if (failuresBeforeSuccess > 0) {
+                failuresBeforeSuccess -= 1
+                return false
+            }
+            sentBatches += batch
+            return true
+        }
 
         override suspend fun trimQueue(
             sessionId: String,
             maxItems: Int,
-        ): List<Long> = emptyList()
+        ): List<Long> = dropOnTrim
 
         override suspend fun recordDrop(
             sessionId: String,
             fromSeq: Long,
             toSeq: Long,
             reason: String,
-        ) = Unit
+        ) {
+            drops += listOf(sessionId, fromSeq, toSeq, reason)
+        }
 
         override fun fetchHeartRateStatus(): Flow<HeartRateStatus> = emptyFlow()
     }
@@ -228,5 +418,7 @@ class HeartRateRepositoryImplTest {
 
     private companion object {
         const val EPOCH_MS = 1_700_000_000_000L
+        const val SEND_INTERVAL_MS = 5_000L
+        const val MEDIUM_LABEL = "MEDIUM"
     }
 }

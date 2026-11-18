@@ -45,6 +45,9 @@ class ImuRepositoryImplTest {
     private lateinit var collector: Job
     private val collected = mutableListOf<ImuBatch>()
 
+    /** [SendGate] 가 읽는 경과 시간(ms). 올리지 않으면 게이트가 열리지 않는다. */
+    private var nowMs = 0L
+
     @BeforeEach
     fun setUp() {
         scheduler = TestCoroutineScheduler()
@@ -55,6 +58,7 @@ class ImuRepositoryImplTest {
         remote = FakeImuRemoteDataSource()
         onBodyStateHolder = OnBodyStateHolder()
         collected.clear()
+        nowMs = 0L
     }
 
     /** 설정을 바꿔 보는 테스트가 있어 수집 시작을 따로 둔다. */
@@ -68,7 +72,7 @@ class ImuRepositoryImplTest {
                 imuRemoteDataSource = remote,
                 imuConfigLocalDataSource = configSource,
                 onBodyStateHolder = onBodyStateHolder,
-                sendGate = SendGate(),
+                sendGate = SendGate { nowMs },
                 ioDispatcher = dispatcher,
             )
         collector = testScope.backgroundScope.launch { repository.batches().collect { collected += it } }
@@ -98,6 +102,30 @@ class ImuRepositoryImplTest {
             // 끝낼 때 열려 있던 배치(마지막 샘플)도 이어서 보낸다
             remote.sentBatches.map { it.seq } shouldBe listOf(0L, 1L)
             remote.sentBatches.first() shouldBe collected.single()
+        }
+
+    @Test
+    @DisplayName("전송 주기가 차기 전에는 배치를 모아 두고, 차면 모아 둔 배치를 한 번에 보낸다")
+    fun holdsBatchesUntilTheGateOpens() =
+        testScope.runTest {
+            // given
+            start()
+
+            // when — 주기 전
+            emitSamplesUpTo(seconds = 2)
+
+            // then
+            collected.map { it.seq } shouldBe listOf(0L, 1L)
+            remote.sentBatches shouldBe emptyList()
+
+            // when — 주기가 찬 뒤 다음 배치가 닫힌다
+            nowMs += 5_000
+            local.samples.emit(ImuSample(3 * ONE_SECOND_NS, 0f, 0f, 9.80665f))
+            scheduler.runCurrent()
+
+            // then — 수집을 끝내지 않아도 보낸다
+            remote.sentBatches shouldBe collected
+            remote.sentBatches.map { it.seq } shouldBe listOf(0L, 1L, 2L)
         }
 
     @Test
