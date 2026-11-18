@@ -93,6 +93,7 @@ class SensorBatchRepositoryImpl implements SensorBatchRepository {
             stream: record.stream,
             sessionId: record.sessionId,
             seq: record.fromSeq,
+            droppedStream: record.droppedStream,
           );
         } else {
           WiduLog.data.w('센서 유실 기록 전송 실패 '

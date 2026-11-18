@@ -219,7 +219,7 @@ class HeartRatePlugin :
             when (call.argument<String>("stream")) {
                 IMU_STREAM -> IMU_BATCH_PREFIX
                 HR_STREAM -> HR_BATCH_PREFIX
-                IMU_DROPPED_STREAM -> IMU_DROPPED_PREFIX
+                DROPPED_STREAM -> if (call.argument<String>(DROPPED_STREAM_KEY) == HR_STREAM) HR_DROPPED_PREFIX else IMU_DROPPED_PREFIX
                 else -> return
             }
         val sessionId = call.argument<String>("session_id") ?: return
@@ -342,17 +342,19 @@ class HeartRatePlugin :
         private const val NETWORK_NONE = "none"
         private const val IMU_STREAM = "imu_watch"
         private const val HR_STREAM = "hr"
-        private const val IMU_DROPPED_STREAM = "imu_dropped"
+        private const val DROPPED_STREAM = "dropped"
         private const val IMU_CONFIG_PATH = "/imu/config"
         private const val IMU_PREFIX = "/imu/"
         private const val IMU_BATCH_PREFIX = "/imu/batch/"
         private const val IMU_DROPPED_PREFIX = "/imu/dropped/"
         private const val HR_BATCH_PREFIX = "/hr/batch/"
+        private const val HR_DROPPED_PREFIX = "/hr/dropped/"
         private const val DEVICE_EVENT_PREFIX = "/device_event/"
         private val SENSOR_PREFIXES = listOf(IMU_PREFIX, "/hr/", DEVICE_EVENT_PREFIX)
         private const val SEQ_KEY = "seq"
         private const val BODY_KEY = "body"
         private const val SESSION_ID_KEY = "session_id"
+        private const val DROPPED_STREAM_KEY = "dropped_stream"
         private const val FROM_SEQ_KEY = "from_seq"
         private const val TO_SEQ_KEY = "to_seq"
         private const val REASON_KEY = "reason"
@@ -422,10 +424,15 @@ class HeartRatePlugin :
                         }.getOrNull()
                     }
 
-                path.startsWith(IMU_DROPPED_PREFIX) ->
+                // 서버 "버린 묶음" 기록 본문이다. 옛 워치는 dropped_stream 을 넣지 않아 경로로 채운다.
+                path.startsWith(IMU_DROPPED_PREFIX) || path.startsWith(HR_DROPPED_PREFIX) ->
                     JSONObject()
-                        .put("stream", "imu_dropped")
-                        .put("session_id", dataMap.getString(SESSION_ID_KEY))
+                        .put("stream", DROPPED_STREAM)
+                        .put(
+                            DROPPED_STREAM_KEY,
+                            dataMap.getString(DROPPED_STREAM_KEY)
+                                ?: if (path.startsWith(HR_DROPPED_PREFIX)) HR_STREAM else IMU_STREAM,
+                        ).put("session_id", dataMap.getString(SESSION_ID_KEY))
                         .put("from_seq", dataMap.getLong(FROM_SEQ_KEY))
                         .put("to_seq", dataMap.getLong(TO_SEQ_KEY))
                         .put("reason", dataMap.getString(REASON_KEY))

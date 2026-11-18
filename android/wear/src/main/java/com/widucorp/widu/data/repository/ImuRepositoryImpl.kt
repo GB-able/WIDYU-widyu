@@ -14,11 +14,13 @@ import com.widucorp.widu.data.source.ImuConfigLocalDataSource
 import com.widucorp.widu.data.source.ImuLocalDataSource
 import com.widucorp.widu.data.source.ImuRemoteDataSource
 import com.widucorp.widu.data.util.ClockMapper
+import com.widucorp.widu.data.util.DropReason
 import com.widucorp.widu.data.util.GyroRingBuffer
 import com.widucorp.widu.data.util.ImpactDetector
 import com.widucorp.widu.data.util.ImuBatcher
 import com.widucorp.widu.data.util.OnBodyStateHolder
 import com.widucorp.widu.data.util.newUlid
+import com.widucorp.widu.data.util.toRanges
 import com.widucorp.widu.di.IoDispatcher
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
@@ -212,14 +214,18 @@ class ImuRepositoryImpl @Inject constructor(
         urgent: Boolean,
         config: ImuConfig,
     ) {
-        imuRemoteDataSource.sendBatch(batch, urgent)
+        if (!imuRemoteDataSource.sendBatch(batch, urgent)) {
+            imuRemoteDataSource.recordDrop(batch.sessionId, batch.seq, batch.seq, DropReason.ENQUEUE_FAILED)
+        }
         if (batch.seq % config.trimEverySeq != 0L) return
 
         // 워치에 쌓아 둘 배치 상한. 기본 30분치(1초 배치면 1800개).
         val maxQueuedBatches = config.queueMinutes * 60 / config.batchSec
         val dropped = imuRemoteDataSource.trimQueue(batch.sessionId, maxQueuedBatches)
         if (dropped.isEmpty()) return
-        imuRemoteDataSource.recordDrop(batch.sessionId, dropped.min(), dropped.max())
+        dropped.toRanges().forEach { range ->
+            imuRemoteDataSource.recordDrop(batch.sessionId, range.first, range.last, DropReason.QUEUE_OVERFLOW)
+        }
     }
 
     private companion object {

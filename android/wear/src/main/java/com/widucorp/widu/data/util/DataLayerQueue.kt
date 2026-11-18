@@ -1,9 +1,11 @@
 package com.widucorp.widu.data.util
 
 import android.net.Uri
+import android.util.Log
 import com.google.android.gms.tasks.Task
 import com.google.android.gms.wearable.DataClient
 import com.google.android.gms.wearable.PutDataMapRequest
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
@@ -16,6 +18,12 @@ import kotlin.coroutines.resumeWithException
 private const val KEY_BODY = "body"
 private const val KEY_SEQ = "seq"
 private const val KEY_TIMESTAMP = "timestamp"
+private const val KEY_DROPPED_STREAM = "dropped_stream"
+private const val KEY_SESSION_ID = "session_id"
+private const val KEY_FROM_SEQ = "from_seq"
+private const val KEY_TO_SEQ = "to_seq"
+private const val KEY_REASON = "reason"
+private const val KEY_TS_MS = "ts_ms"
 
 internal suspend fun DataClient.putBatch(
     prefix: String,
@@ -33,6 +41,40 @@ internal suspend fun DataClient.putBatch(
         }
     putDataItem(request).awaitResult()
     SendStats.record(body.size)
+}
+
+/**
+ * 버린 배치 구간 하나를 `<prefix>/<sessionId>/<fromSeq>` 항목으로 남긴다. 폰이 서버 `stream: "dropped"` 기록으로 바꿔 올린다.
+ * 조용히 사라지면 서버가 결측 구간을 "기록 없음" 으로 적어 미착용·전송 실패와 구별하지 못한다.
+ */
+internal suspend fun DataClient.putDrop(
+    prefix: String,
+    droppedStream: String,
+    sessionId: String,
+    fromSeq: Long,
+    toSeq: Long,
+    reason: String,
+) {
+    val request =
+        PutDataMapRequest.create("$prefix/$sessionId/$fromSeq").run {
+            dataMap.putString(KEY_DROPPED_STREAM, droppedStream)
+            dataMap.putString(KEY_SESSION_ID, sessionId)
+            dataMap.putLong(KEY_FROM_SEQ, fromSeq)
+            dataMap.putLong(KEY_TO_SEQ, toSeq)
+            dataMap.putString(KEY_REASON, reason)
+            dataMap.putLong(KEY_TS_MS, System.currentTimeMillis())
+            asPutDataRequest()
+        }
+    putDataItem(request).awaitResult()
+}
+
+/** 서버와 합의한 버린 사유 값. 서버는 목록 밖 값도 저장하므로 늘릴 때는 여기와 규격 문서만 고친다. */
+object DropReason {
+    /** 대기열 상한을 넘어 오래된 배치부터 지웠다. */
+    const val QUEUE_OVERFLOW = "queue_overflow"
+
+    /** 배치를 Data Layer 대기열에 넣지 못했다. 그 배치 하나라 from_seq = to_seq 다. */
+    const val ENQUEUE_FAILED = "enqueue_failed"
 }
 
 /** Data Layer 에 넘긴 배치 수·바이트. 연구 모드 SENT_TO_PHONE 이 주기마다 비워 간다. 실제 블루투스 전송 시각은 앱이 알 수 없다. */
@@ -54,7 +96,10 @@ object SendStats {
     }
 }
 
-/** 쌓인 항목이 [maxItems] 를 넘으면 seq 가 작은 것부터 지우고, 지운 seq 를 오름차순으로 돌려준다. */
+/**
+ * 쌓인 항목이 [maxItems] 를 넘으면 seq 가 작은 것부터 지우고, 지운 seq 를 오름차순으로 돌려준다.
+ * 중간에 삭제가 실패하면 거기서 멈추고 그때까지 지운 seq 를 돌려준다 — 이미 지운 것은 버린 구간으로 기록돼야 한다.
+ */
 internal suspend fun DataClient.trimOldest(
     prefix: String,
     sessionId: String,
@@ -70,11 +115,32 @@ internal suspend fun DataClient.trimOldest(
         }
     val excess = queued.size - maxItems
     if (excess <= 0) return emptyList()
-    return queued.take(excess).map { (seq, uri) ->
-        deleteDataItems(uri).awaitResult()
-        seq
+    val deleted = mutableListOf<Long>()
+    for ((seq, uri) in queued.take(excess)) {
+        try {
+            deleteDataItems(uri).awaitResult()
+        } catch (exception: CancellationException) {
+            throw exception
+        } catch (exception: Exception) {
+            Log.w("Widyu", "Failed to trim $uri", exception)
+            break
+        }
+        deleted += seq
     }
+    return deleted
 }
+
+/**
+ * 오름차순 seq 를 연속 구간으로 나눈다. `[0, 1, 2, 5]` → `[0..2, 5..5]`.
+ * 폰이 중간 seq 를 먼저 지웠거나 대기열에 못 넣은 seq 가 끼어 있으면 버린 seq 가 띄엄띄엄이다.
+ * 한 구간으로 묶으면 서버가 받은 seq 까지 버린 것으로 적힌다.
+ */
+internal fun List<Long>.toRanges(): List<LongRange> =
+    fold(mutableListOf()) { ranges, seq ->
+        val last = ranges.lastOrNull()
+        if (last != null && seq == last.last + 1) ranges[ranges.lastIndex] = last.first..seq else ranges += seq..seq
+        ranges
+    }
 
 /** kotlinx-coroutines-play-services 를 더 들이지 않으려고 직접 감싼다. */
 internal suspend fun <T> Task<T>.awaitResult(): T =

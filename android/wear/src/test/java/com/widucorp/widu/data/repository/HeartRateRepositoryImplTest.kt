@@ -268,8 +268,28 @@ class HeartRateRepositoryImplTest {
             emit(70, reading(70, 1_000, HIGH))
             emit(71, reading(71, 2_000, HIGH))
 
-            // then
+            // then — 못 넣은 seq 0 은 enqueue_failed 로 남긴다
             remote.sentBatches.map { it.seq } shouldBe listOf(1L)
+            remote.drops.map { it.drop(1) } shouldBe listOf(listOf(0L, 0L, "enqueue_failed"))
+        }
+
+    @Test
+    @DisplayName("큐 정리로 버린 seq 를 연속 구간마다 queue_overflow 로 기록한다")
+    fun recordsEachContiguousDroppedRangeOnQueueOverflow() =
+        testScope.runTest {
+            // given — seq 0 전송 뒤 정리가 돈다. 6 은 폰이 먼저 지워 큐에 없었다
+            remote.dropOnTrim = listOf(3L, 4L, 5L, 7L)
+
+            // when
+            emit(70, reading(70, 1_000, HIGH))
+
+            // then
+            val sessionId = remote.sentBatches.single().sessionId
+            remote.drops shouldBe
+                listOf(
+                    listOf(sessionId, 3L, 5L, "queue_overflow"),
+                    listOf(sessionId, 7L, 7L, "queue_overflow"),
+                )
         }
 
     private suspend fun emit(
@@ -299,19 +319,31 @@ class HeartRateRepositoryImplTest {
     private class FakeRemoteDataSource : HeartRateRemoteDataSource {
         var failuresBeforeSuccess = 0
         val sentBatches = mutableListOf<HeartRateBatch>()
+        var dropOnTrim: List<Long> = emptyList()
+        val drops = mutableListOf<List<Any>>()
 
-        override suspend fun sendBatch(batch: HeartRateBatch) {
+        override suspend fun sendBatch(batch: HeartRateBatch): Boolean {
             if (failuresBeforeSuccess > 0) {
                 failuresBeforeSuccess -= 1
-                throw IllegalStateException("Temporary failure")
+                return false
             }
             sentBatches += batch
+            return true
         }
 
         override suspend fun trimQueue(
             sessionId: String,
             maxItems: Int,
-        ): List<Long> = emptyList()
+        ): List<Long> = dropOnTrim
+
+        override suspend fun recordDrop(
+            sessionId: String,
+            fromSeq: Long,
+            toSeq: Long,
+            reason: String,
+        ) {
+            drops += listOf(sessionId, fromSeq, toSeq, reason)
+        }
 
         override fun fetchHeartRateStatus(): Flow<HeartRateStatus> = emptyFlow()
     }
