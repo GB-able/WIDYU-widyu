@@ -47,11 +47,13 @@ class SensorBatchLocalDataSourceImpl implements SensorBatchLocalDataSource {
     required String stream,
     required String sessionId,
     required int seq,
+    String? droppedStream,
   }) {
     _ackChannel.invokeMethod<void>('consume', {
       'stream': stream,
       'session_id': sessionId,
       'seq': seq,
+      'dropped_stream': droppedStream,
     }).catchError((Object error, StackTrace stack) {
       // 못 지우면 다음 기동 때 다시 보내질 뿐이고, 서버가 batch_id 로 중복을 거른다.
       WiduLog.data.w('센서 항목 소비 실패 seq=$seq', error: error, stackTrace: stack);

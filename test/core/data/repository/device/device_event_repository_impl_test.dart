@@ -267,6 +267,7 @@ class _LocalDataSource implements SensorBatchLocalDataSource {
     required String stream,
     required String sessionId,
     required int seq,
+    String? droppedStream,
   }) {}
 
   @override

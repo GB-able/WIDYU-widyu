@@ -23,7 +23,7 @@ sealed class SensorMessage with _$SensorMessage {
   /// freezed 의 runtimeType 기반 union JSON 대신 `stream` 값으로 분기하므로 static 이다.
   static SensorMessage fromJson(Map<String, dynamic> json) =>
       switch (json['stream']) {
-        'imu_dropped' =>
+        'dropped' =>
           SensorMessage.dropped(SensorDroppedRecord.fromJson(json)),
         'hr' => SensorMessage.heartRate(HeartRateBatch.fromJson(json)),
         'device_event' =>

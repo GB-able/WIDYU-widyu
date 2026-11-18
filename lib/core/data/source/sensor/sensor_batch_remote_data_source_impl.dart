@@ -40,7 +40,7 @@ class SensorBatchRemoteDataSourceImpl implements SensorBatchRemoteDataSource {
   bool sendBatch(SensorUpload batch) =>
       _socketClient.sendSensorBatch(batch.toJson());
 
-  /// 서버가 이 경로로 폐기 레코드를 받는지는 미확인이다(스키마 확정 시 조정).
+  /// 버린 묶음 기록도 센서 배치와 같은 경로로 보낸다. 서버는 같은 (session_id, from_seq) 를 DUPLICATE 로 거른다.
   @override
   bool sendDropped(SensorDroppedRecord record) =>
       _socketClient.sendSensorBatch(record.toJson());
