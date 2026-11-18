@@ -20,6 +20,7 @@ import com.widucorp.widu.data.util.ImpactDetector
 import com.widucorp.widu.data.util.ImuBatcher
 import com.widucorp.widu.data.util.OnBodyStateHolder
 import com.widucorp.widu.data.util.newUlid
+import com.widucorp.widu.data.util.toRanges
 import com.widucorp.widu.di.IoDispatcher
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
@@ -222,7 +223,9 @@ class ImuRepositoryImpl @Inject constructor(
         val maxQueuedBatches = config.queueMinutes * 60 / config.batchSec
         val dropped = imuRemoteDataSource.trimQueue(batch.sessionId, maxQueuedBatches)
         if (dropped.isEmpty()) return
-        imuRemoteDataSource.recordDrop(batch.sessionId, dropped.min(), dropped.max(), DropReason.QUEUE_OVERFLOW)
+        dropped.toRanges().forEach { range ->
+            imuRemoteDataSource.recordDrop(batch.sessionId, range.first, range.last, DropReason.QUEUE_OVERFLOW)
+        }
     }
 
     private companion object {

@@ -274,17 +274,22 @@ class HeartRateRepositoryImplTest {
         }
 
     @Test
-    @DisplayName("큐 정리로 배치를 버리면 버린 구간을 queue_overflow 로 기록한다")
-    fun recordsTheDroppedRangeOnQueueOverflow() =
+    @DisplayName("큐 정리로 버린 seq 를 연속 구간마다 queue_overflow 로 기록한다")
+    fun recordsEachContiguousDroppedRangeOnQueueOverflow() =
         testScope.runTest {
-            // given — seq 0 전송 뒤 정리가 돈다
-            remote.dropOnTrim = listOf(3L, 4L, 5L)
+            // given — seq 0 전송 뒤 정리가 돈다. 6 은 폰이 먼저 지워 큐에 없었다
+            remote.dropOnTrim = listOf(3L, 4L, 5L, 7L)
 
             // when
             emit(70, reading(70, 1_000, HIGH))
 
             // then
-            remote.drops shouldBe listOf(listOf(remote.sentBatches.single().sessionId, 3L, 5L, "queue_overflow"))
+            val sessionId = remote.sentBatches.single().sessionId
+            remote.drops shouldBe
+                listOf(
+                    listOf(sessionId, 3L, 5L, "queue_overflow"),
+                    listOf(sessionId, 7L, 7L, "queue_overflow"),
+                )
         }
 
     private suspend fun emit(

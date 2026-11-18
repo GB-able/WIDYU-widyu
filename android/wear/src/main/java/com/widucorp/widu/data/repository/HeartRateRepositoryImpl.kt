@@ -14,6 +14,7 @@ import com.widucorp.widu.data.util.DropReason
 import com.widucorp.widu.data.util.OnBodyStateHolder
 import com.widucorp.widu.data.util.newUlid
 import com.widucorp.widu.data.util.toBatchSamples
+import com.widucorp.widu.data.util.toRanges
 import com.widucorp.widu.di.ApplicationScope
 import com.widucorp.widu.di.IoDispatcher
 import kotlinx.coroutines.CancellationException
@@ -121,7 +122,9 @@ class HeartRateRepositoryImpl @Inject constructor(
             val dropped = heartRateRemoteDataSource.trimQueue(batch.sessionId, QUEUE_MAX)
             if (dropped.isEmpty()) return
             Log.w(TAG, "Heart rate queue full; dropped seq=${dropped.min()}..${dropped.max()}")
-            heartRateRemoteDataSource.recordDrop(batch.sessionId, dropped.min(), dropped.max(), DropReason.QUEUE_OVERFLOW)
+            dropped.toRanges().forEach { range ->
+                heartRateRemoteDataSource.recordDrop(batch.sessionId, range.first, range.last, DropReason.QUEUE_OVERFLOW)
+            }
         } catch (exception: CancellationException) {
             throw exception
         } catch (exception: Exception) {

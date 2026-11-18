@@ -411,6 +411,7 @@ class ImuRepositoryImplTest {
         val droppedRanges = mutableListOf<Dropped>()
         var dropOnTrim: List<Long> = emptyList()
         var failSend = false
+        var lastSentSeq = -1L
 
         val urgentFlags = mutableListOf<Boolean>()
 
@@ -418,6 +419,7 @@ class ImuRepositoryImplTest {
             batch: ImuBatch,
             urgent: Boolean,
         ): Boolean {
+            lastSentSeq = batch.seq
             if (failSend) return false
             sentBatches += batch
             urgentFlags += urgent
@@ -430,7 +432,7 @@ class ImuRepositoryImplTest {
             sessionId: String,
             maxItems: Int,
         ): List<Long> {
-            trimmedSeqs += sentBatches.last().seq
+            trimmedSeqs += lastSentSeq
             trimmedMaxItems += maxItems
             return dropOnTrim
         }

@@ -1,9 +1,11 @@
 package com.widucorp.widu.data.util
 
 import android.net.Uri
+import android.util.Log
 import com.google.android.gms.tasks.Task
 import com.google.android.gms.wearable.DataClient
 import com.google.android.gms.wearable.PutDataMapRequest
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
@@ -94,7 +96,10 @@ object SendStats {
     }
 }
 
-/** 쌓인 항목이 [maxItems] 를 넘으면 seq 가 작은 것부터 지우고, 지운 seq 를 오름차순으로 돌려준다. */
+/**
+ * 쌓인 항목이 [maxItems] 를 넘으면 seq 가 작은 것부터 지우고, 지운 seq 를 오름차순으로 돌려준다.
+ * 중간에 삭제가 실패하면 거기서 멈추고 그때까지 지운 seq 를 돌려준다 — 이미 지운 것은 버린 구간으로 기록돼야 한다.
+ */
 internal suspend fun DataClient.trimOldest(
     prefix: String,
     sessionId: String,
@@ -110,11 +115,32 @@ internal suspend fun DataClient.trimOldest(
         }
     val excess = queued.size - maxItems
     if (excess <= 0) return emptyList()
-    return queued.take(excess).map { (seq, uri) ->
-        deleteDataItems(uri).awaitResult()
-        seq
+    val deleted = mutableListOf<Long>()
+    for ((seq, uri) in queued.take(excess)) {
+        try {
+            deleteDataItems(uri).awaitResult()
+        } catch (exception: CancellationException) {
+            throw exception
+        } catch (exception: Exception) {
+            Log.w("Widyu", "Failed to trim $uri", exception)
+            break
+        }
+        deleted += seq
     }
+    return deleted
 }
+
+/**
+ * 오름차순 seq 를 연속 구간으로 나눈다. `[0, 1, 2, 5]` → `[0..2, 5..5]`.
+ * 폰이 중간 seq 를 먼저 지웠거나 대기열에 못 넣은 seq 가 끼어 있으면 버린 seq 가 띄엄띄엄이다.
+ * 한 구간으로 묶으면 서버가 받은 seq 까지 버린 것으로 적힌다.
+ */
+internal fun List<Long>.toRanges(): List<LongRange> =
+    fold(mutableListOf()) { ranges, seq ->
+        val last = ranges.lastOrNull()
+        if (last != null && seq == last.last + 1) ranges[ranges.lastIndex] = last.first..seq else ranges += seq..seq
+        ranges
+    }
 
 /** kotlinx-coroutines-play-services 를 더 들이지 않으려고 직접 감싼다. */
 internal suspend fun <T> Task<T>.awaitResult(): T =
