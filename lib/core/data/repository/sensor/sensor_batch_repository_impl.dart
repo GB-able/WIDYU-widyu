@@ -99,6 +99,9 @@ class SensorBatchRepositoryImpl implements SensorBatchRepository {
               'session=${record.sessionId} '
               'seq=${record.fromSeq}..${record.toSeq}');
         }
+      // DeviceEventRepository 가 같은 스트림에서 받아 올린다.
+      case SensorMessageDeviceEvent():
+        break;
     }
   }
 
@@ -197,6 +200,10 @@ class SensorBatchRepositoryImpl implements SensorBatchRepository {
       _isResending = false;
     }
   }
+
+  /// 서버 결과를 기다리거나 재전송을 기다리는 배치 수. 하트비트 `phone.queue_depth` 다.
+  @override
+  int get queueDepth => _pending.length + _queue.length;
 
   @override
   void stopObserveSensorBatches() {

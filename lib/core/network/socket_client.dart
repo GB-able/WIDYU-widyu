@@ -34,6 +34,9 @@ class SocketClient {
 
   bool get _isConnected => _stompClient?.connected ?? false;
 
+  /// 하트비트 `phone.socket_connected`.
+  bool get isConnected => _isConnected;
+
   static const String _socketPrefix = '/ws/location';
   static const String _locationDestination = '/app/location/update';
   static const String _sensorBatchDestination = '/app/sensor/batches/send';

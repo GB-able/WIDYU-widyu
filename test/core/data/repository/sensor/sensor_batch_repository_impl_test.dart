@@ -435,6 +435,9 @@ class _LocalDataSource implements SensorBatchLocalDataSource {
   }) =>
       consumed.add('$stream/$sessionId/$seq');
 
+  @override
+  void consumeEvent(String eventId) {}
+
   void dispose() => _controller.close();
 }
 

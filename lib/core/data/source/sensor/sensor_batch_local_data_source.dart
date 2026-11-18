@@ -9,4 +9,7 @@ abstract class SensorBatchLocalDataSource {
     required String sessionId,
     required int seq,
   });
+
+  /// 워치 상태 이벤트(`/device_event/<event_id>`)를 지운다.
+  void consumeEvent(String eventId);
 }
