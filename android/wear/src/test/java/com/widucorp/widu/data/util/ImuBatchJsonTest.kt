@@ -2,7 +2,6 @@ package com.widucorp.widu.data.util
 
 import com.widucorp.widu.data.model.AxisSeries
 import com.widucorp.widu.data.model.ClockInfo
-import com.widucorp.widu.data.model.ImpactTrigger
 import com.widucorp.widu.data.model.ImuBatch
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.shouldBe
@@ -67,16 +66,18 @@ class ImuBatchJsonTest {
     }
 
     @Test
-    @DisplayName("보내지 않는 필드도 키를 지우지 않고 null 로 남긴다")
+    @DisplayName("자이로·충격 키는 지우지 않고 수집하지 않음으로 고정한다")
     fun absentFieldsStayAsNullKeys() {
         // when
         val map = batch.toMap()
 
         // then
-        map.keys shouldContainAll listOf("gyro", "trigger", "missing_reason")
+        map.keys shouldContainAll listOf("gyro", "trigger", "gyro_backfill", "backfill_for", "missing_reason")
         map["gyro"] shouldBe null
         map["trigger"] shouldBe null
-        map["missing_reason"] shouldBe null
+        map["gyro_backfill"] shouldBe false
+        map["backfill_for"] shouldBe null
+        map["missing_reason"] shouldBe "omitted_by_mode"
         map["study_id"] shouldBe null
         map["participation_id"] shouldBe null
         map["run_id"] shouldBe null
@@ -120,28 +121,5 @@ class ImuBatchJsonTest {
         map["gyro_mode"] shouldBe "continuous"
         map["collection_mode"] shouldBe "product"
         map["watch_battery_pct"] shouldBe 63
-    }
-
-    @Test
-    @DisplayName("충격 표시와 보강 배치 표시는 부록 A 키로 실린다")
-    fun triggerAndBackfillKeys() {
-        // given
-        val map =
-            batch.copy(
-                trigger = ImpactTrigger(smvG = 3.2f, eventElapsedNs = 993_849_330_000_001L, tsMs = 1_760_000_000_600L),
-                gyroBackfill = true,
-                backfillFor = "batch-0",
-            ).toMap()
-
-        // when
-        val trigger = map["trigger"] as Map<*, *>
-
-        // then
-        trigger["kind"] shouldBe "impact"
-        trigger["smv_g"] shouldBe 3.2f
-        trigger["event_elapsed_ns"] shouldBe "993849330000001"
-        trigger["ts_ms"] shouldBe 1_760_000_000_600L
-        map["gyro_backfill"] shouldBe true
-        map["backfill_for"] shouldBe "batch-0"
     }
 }

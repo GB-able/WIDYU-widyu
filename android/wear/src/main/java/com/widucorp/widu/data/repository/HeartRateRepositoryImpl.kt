@@ -3,6 +3,7 @@ package com.widucorp.widu.data.repository
 import android.util.Log
 import com.widucorp.widu.data.model.ClockInfo
 import com.widucorp.widu.data.model.HeartRateBatch
+import com.widucorp.widu.data.model.HeartRateReading
 import com.widucorp.widu.data.model.HeartRateStatus
 import com.widucorp.widu.data.model.MeasureResult
 import com.widucorp.widu.data.source.ClockLocalDataSource
@@ -12,6 +13,7 @@ import com.widucorp.widu.data.source.HeartRateRemoteDataSource
 import com.widucorp.widu.data.util.ClockMapper
 import com.widucorp.widu.data.util.DropReason
 import com.widucorp.widu.data.util.OnBodyStateHolder
+import com.widucorp.widu.data.util.SendGate
 import com.widucorp.widu.data.util.newUlid
 import com.widucorp.widu.data.util.toBatchSamples
 import com.widucorp.widu.data.util.toRanges
@@ -27,6 +29,8 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import java.util.UUID
 import javax.inject.Inject
@@ -37,11 +41,12 @@ class HeartRateRepositoryImpl @Inject constructor(
     private val clockLocalDataSource: ClockLocalDataSource,
     private val deviceInfoLocalDataSource: DeviceInfoLocalDataSource,
     private val onBodyStateHolder: OnBodyStateHolder,
+    private val sendGate: SendGate,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
     @ApplicationScope applicationScope: CoroutineScope,
 ) : HeartRateRepository {
     /**
-     * 센서가 준 묶음을 그 샘플 전부와 각자의 잰 시각으로 바로 보낸다.
+     * 센서가 준 묶음을 그 샘플 전부와 각자의 잰 시각으로 모아 [SendGate] 주기에 보낸다.
      * 최근 값을 주기적으로 다시 보내지 않는다 — 같은 값이 새 시각으로 복제되면 연구 자료가 오염된다. (지시서 F6)
      */
     private val heartRates: SharedFlow<MeasureResult> =
@@ -50,6 +55,36 @@ class HeartRateRepositoryImpl @Inject constructor(
             val clockMapper = ClockMapper(CLOCK_JUMP_TOLERANCE_MS)
             var clock = takeClock(clockMapper)
             var seq = 0L
+            // 모아 두었다가 [SendGate] 신호에 가속도와 같은 순간에 보낸다.
+            val pending = mutableListOf<HeartRateReading>()
+            val lock = Mutex()
+
+            suspend fun flush() {
+                val batches =
+                    lock.withLock {
+                        val sampleBatches = pending.toBatchSamples(clock).also { pending.clear() }
+                        // 정규화한 샘플 기준이다 — 범위 밖 bpm 은 원래 정확도와 상관없이 UNRELIABLE 로 나간다.
+                        sampleBatches.lastOrNull()?.lastOrNull()?.let { onBodyStateHolder.updateHeartRateAccuracy(it.accuracy) }
+                        val observedOnBody = onBodyStateHolder.state.value
+                        sampleBatches.map { samples ->
+                            HeartRateBatch(
+                                batchId = newUlid(),
+                                deviceId = deviceInfoLocalDataSource.deviceId(),
+                                sessionId = sessionId,
+                                seq = seq++,
+                                clock = clock,
+                                samples = samples,
+                                // 서버는 boolean 필수다. 미관측이면 false 로 떨구지 않고 true 로 둔다(IMU 와 같은 절충).
+                                onBody = observedOnBody ?: true,
+                                wearState = onBodyStateHolder.wearState(observedOnBody),
+                                watchBatteryPct = deviceInfoLocalDataSource.batteryPercent(),
+                            )
+                        }
+                    }
+                withContext(ioDispatcher) { batches.forEach { transmit(it) } }
+            }
+
+            val gateJob = launch { sendGate.ticks.collect { flush() } }
 
             val anchorJob =
                 launch {
@@ -67,26 +102,8 @@ class HeartRateRepositoryImpl @Inject constructor(
                             // 다시 찰 때 Health Services 가 AVAILABLE 가용성 콜백 없이 심박만 다시 보내는 경우가 있어
                             // 착용이 false 로 굳는다(10/27·10/31·11/1 실측). 믿을 만한 심박(HIGH·MEDIUM)이 왔으면 몸에 찬 것으로 본다.
                             if (measureResult.value != null) onBodyStateHolder.update(true)
-                            val sampleBatches = measureResult.readings.toBatchSamples(clock)
-                            // 정규화한 샘플 기준이다 — 범위 밖 bpm 은 원래 정확도와 상관없이 UNRELIABLE 로 나간다.
-                            sampleBatches.lastOrNull()?.lastOrNull()?.let { onBodyStateHolder.updateHeartRateAccuracy(it.accuracy) }
-                            val observedOnBody = onBodyStateHolder.state.value
-                            val batches =
-                                sampleBatches.map { samples ->
-                                    HeartRateBatch(
-                                        batchId = newUlid(),
-                                        deviceId = deviceInfoLocalDataSource.deviceId(),
-                                        sessionId = sessionId,
-                                        seq = seq++,
-                                        clock = clock,
-                                        samples = samples,
-                                        // 서버는 boolean 필수다. 미관측이면 false 로 떨구지 않고 true 로 둔다(IMU 와 같은 절충).
-                                        onBody = observedOnBody ?: true,
-                                        wearState = onBodyStateHolder.wearState(observedOnBody),
-                                        watchBatteryPct = deviceInfoLocalDataSource.batteryPercent(),
-                                    )
-                                }
-                            withContext(ioDispatcher) { batches.forEach { transmit(it) } }
+                            lock.withLock { pending += measureResult.readings }
+                            sendGate.onData()
                         }
 
                         MeasureResult.SessionSuperseded -> Unit
@@ -97,6 +114,7 @@ class HeartRateRepositoryImpl @Inject constructor(
                 }
             } finally {
                 anchorJob.cancel()
+                gateJob.cancel()
             }
         }.shareIn(
             scope = applicationScope,

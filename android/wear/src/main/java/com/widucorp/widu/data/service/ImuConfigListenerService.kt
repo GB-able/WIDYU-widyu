@@ -27,16 +27,11 @@ class ImuConfigListenerService : WearableListenerService() {
     }
 }
 
-/** 폰과 공유하는 키 계약. 빠진 키는 현재 기본값을 유지한다. */
+/** 폰과 공유하는 키 계약. 빠진 키는 현재 기본값을 유지한다. acc_hz·batch_sec 등 나머지 키는 받지 않는다(고정값). */
 private fun DataMap.toImuConfig(): ImuConfig {
     val default = ImuConfig()
     return default.copy(
         collectionMode = getString("collection_mode") ?: default.collectionMode,
         gyroMode = getString("gyro_mode") ?: default.gyroMode,
-        accHz = getInt("acc_hz", default.accHz),
-        batchSec = getInt("batch_sec", default.batchSec),
-        impactG = getFloat("impact_g", default.impactG),
-        backfillPreSec = getInt("backfill_pre_sec", default.backfillPreSec),
-        backfillPostSec = getInt("backfill_post_sec", default.backfillPostSec),
     )
 }

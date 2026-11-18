@@ -18,8 +18,6 @@ import javax.inject.Inject
 class ImuLocalDataSourceImpl @Inject constructor(
     private val sensorManager: SensorManager,
 ) : ImuLocalDataSource {
-    override fun hasGyroscope(): Boolean = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE) != null
-
     override fun samples(config: ImuConfig): Flow<ImuSample> =
         callbackFlow {
             // 중력이 포함된 원래 가속도. TYPE_LINEAR_ACCELERATION 이 아니다. (A 1.6.2)
@@ -29,16 +27,18 @@ class ImuLocalDataSourceImpl @Inject constructor(
                 close()
                 return@callbackFlow
             }
+            // 배치 한 개치(accHz × batchSec)가 FIFO 에 안 들어가면 FIFO 가 찰 때마다 AP 를 깨운다.
+            Log.i(
+                TAG,
+                "Accelerometer ${sensor.name} wakeUp=${sensor.isWakeUpSensor} fifoReserved=${sensor.fifoReservedEventCount} fifoMax=${sensor.fifoMaxEventCount}",
+            )
 
             val thread = HandlerThread("widyu-imu").apply { start() }
             val listener =
                 object : SensorEventListener {
                     override fun onSensorChanged(event: SensorEvent) {
-                        val type =
-                            if (event.sensor.type == Sensor.TYPE_GYROSCOPE) ImuSample.Type.GYRO else ImuSample.Type.ACC
                         trySendBlocking(
                             ImuSample(
-                                type = type,
                                 timestampNs = event.timestamp,
                                 x = event.values[0],
                                 y = event.values[1],
@@ -58,7 +58,8 @@ class ImuLocalDataSourceImpl @Inject constructor(
                     listener,
                     sensor,
                     MICROS_PER_SECOND / config.accHz,
-                    MICROS_PER_SECOND,
+                    // 센서 FIFO 가 배치 한 개치를 모으는 동안 CPU 가 잔다.
+                    config.batchSec * MICROS_PER_SECOND,
                     Handler(thread.looper),
                 )
             if (!registered) {
@@ -66,22 +67,6 @@ class ImuLocalDataSourceImpl @Inject constructor(
                 thread.quitSafely()
                 close()
                 return@callbackFlow
-            }
-
-            // 자이로는 끄는 설정이 없다 — 충격 직전 2초는 상시 수집으로만 확보된다. (A 1.6.4)
-            val gyroscope = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE)
-            if (gyroscope == null) {
-                Log.w(TAG, "Gyroscope not available")
-            } else if (!sensorManager.registerListener(
-                    listener,
-                    gyroscope,
-                    MICROS_PER_SECOND / config.accHz,
-                    MICROS_PER_SECOND,
-                    Handler(thread.looper),
-                )
-            ) {
-                // 가속도는 계속 흐르게 둔다. 자이로만 빠진 것은 flow 를 끝낼 이유가 아니다.
-                Log.w(TAG, "Failed to register gyroscope listener")
             }
 
             awaitClose {
@@ -93,7 +78,7 @@ class ImuLocalDataSourceImpl @Inject constructor(
     private companion object {
         const val TAG = "Widyu"
 
-        /** maxReportLatencyUs 로도 쓴다 — 센서 FIFO 가 1초치를 모으는 동안 CPU 가 잔다. */
+        /** SM-R860 FIFO 는 300개(50Hz 6초치)라 5초 배치가 들어간다. */
         const val MICROS_PER_SECOND = 1_000_000
     }
 }

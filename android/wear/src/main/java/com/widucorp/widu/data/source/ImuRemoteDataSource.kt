@@ -10,14 +10,8 @@ import com.widucorp.widu.data.model.ImuBatch
  * 항목이 각각 보존되게 하고 그것을 큐로 쓴다.
  */
 interface ImuRemoteDataSource {
-    /**
-     * [urgent] 면 동기화를 미루지 않는다 — 충격·보강 배치는 즉시 보낸다. (A 1.6.4)
-     * @return Data Layer 대기열에 넣었으면 true.
-     */
-    suspend fun sendBatch(
-        batch: ImuBatch,
-        urgent: Boolean = false,
-    ): Boolean
+    /** @return Data Layer 대기열에 넣었으면 true. */
+    suspend fun sendBatch(batch: ImuBatch): Boolean
 
     /**
      * 쌓인 배치가 [maxItems] 를 넘으면 오래된 것부터 지운다.
