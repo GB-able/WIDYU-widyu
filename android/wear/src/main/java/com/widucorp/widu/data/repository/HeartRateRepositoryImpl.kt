@@ -63,8 +63,6 @@ class HeartRateRepositoryImpl @Inject constructor(
                 val batches =
                     lock.withLock {
                         val sampleBatches = pending.toBatchSamples(clock).also { pending.clear() }
-                        // 정규화한 샘플 기준이다 — 범위 밖 bpm 은 원래 정확도와 상관없이 UNRELIABLE 로 나간다.
-                        sampleBatches.lastOrNull()?.lastOrNull()?.let { onBodyStateHolder.updateHeartRateAccuracy(it.accuracy) }
                         val observedOnBody = onBodyStateHolder.state.value
                         sampleBatches.map { samples ->
                             HeartRateBatch(
@@ -102,6 +100,13 @@ class HeartRateRepositoryImpl @Inject constructor(
                             // 다시 찰 때 Health Services 가 AVAILABLE 가용성 콜백 없이 심박만 다시 보내는 경우가 있어
                             // 착용이 false 로 굳는다(10/27·10/31·11/1 실측). 믿을 만한 심박(HIGH·MEDIUM)이 왔으면 몸에 찬 것으로 본다.
                             if (measureResult.value != null) onBodyStateHolder.update(true)
+                            // 착용 판정은 전송을 기다리지 않고 받은 즉시 갱신한다. IMU 배치의 wear_state 도 이 값을 쓴다.
+                            // 정규화한 샘플 기준이다 — 범위 밖 bpm 은 원래 정확도와 상관없이 UNRELIABLE 로 나간다.
+                            measureResult.readings
+                                .toBatchSamples(clock)
+                                .lastOrNull()
+                                ?.lastOrNull()
+                                ?.let { onBodyStateHolder.updateHeartRateAccuracy(it.accuracy) }
                             lock.withLock { pending += measureResult.readings }
                             sendGate.onData()
                         }

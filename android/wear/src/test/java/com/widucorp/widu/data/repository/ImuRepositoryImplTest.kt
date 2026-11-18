@@ -95,7 +95,9 @@ class ImuRepositoryImplTest {
 
             // then
             collected.size shouldBe 1
-            remote.sentBatches shouldBe collected
+            // 끝낼 때 열려 있던 배치(마지막 샘플)도 이어서 보낸다
+            remote.sentBatches.map { it.seq } shouldBe listOf(0L, 1L)
+            remote.sentBatches.first() shouldBe collected.single()
         }
 
     @Test
@@ -112,8 +114,9 @@ class ImuRepositoryImplTest {
 
             // then — seq 0, 2 에서만 정리한다
             collected.map { it.seq } shouldBe listOf(0L, 1L, 2L, 3L)
-            remote.trimmedSeqs shouldBe listOf(0L, 2L)
-            remote.trimmedMaxItems shouldBe listOf(600, 600)
+            // seq 4 는 끝낼 때 보낸 열린 배치다
+            remote.trimmedSeqs shouldBe listOf(0L, 2L, 4L)
+            remote.trimmedMaxItems shouldBe listOf(600, 600, 600)
         }
 
     @Test
@@ -150,7 +153,8 @@ class ImuRepositoryImplTest {
             collected.map { it.seq } shouldBe listOf(0L, 1L, 2L)
             remote.sentBatches shouldBe emptyList()
             // 대기열에 못 넣은 배치는 하나씩 enqueue_failed 로 기록한다
-            remote.droppedRanges shouldBe collected.map { Dropped(it.sessionId, it.seq, it.seq, "enqueue_failed") }
+            val sessionId = collected.first().sessionId
+            remote.droppedRanges shouldBe (0L..3L).map { Dropped(sessionId, it, it, "enqueue_failed") }
         }
 
     @Test
@@ -214,8 +218,12 @@ class ImuRepositoryImplTest {
             scheduler.runCurrent()
             emitSamplesUpTo(seconds = 1)
 
-            // then — 끊기기 전 배치는 버려지지 않고, 새 세션은 연구 모드다
-            remote.sentBatches shouldBe before
+            // then — 끊기기 전 배치와 열려 있던 배치(2초 샘플 하나)는 버려지지 않고, 새 세션은 연구 모드다
+            remote.sentBatches.take(before.size) shouldBe before
+            val partial = remote.sentBatches[before.size]
+            partial.seq shouldBe before.size.toLong()
+            partial.acc.t0ElapsedNs shouldBe 2 * ONE_SECOND_NS
+            partial.acc.n shouldBe 1
             val after = collected.drop(before.size)
             after.isNotEmpty() shouldBe true
             after.forEach {

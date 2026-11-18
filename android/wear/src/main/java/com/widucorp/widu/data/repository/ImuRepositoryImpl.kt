@@ -22,6 +22,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
@@ -60,9 +61,13 @@ class ImuRepositoryImpl @Inject constructor(
             val pending = mutableListOf<ImuBatch>()
             val lock = Mutex()
 
+            /** 보낸 뒤에 목록에서 뺀다. 도중에 취소돼도 남은 배치는 종료 처리가 보낸다(같은 seq 경로라 다시 넣어도 덮어쓴다). */
             suspend fun flushPending() {
-                val toSend = lock.withLock { pending.toList().also { pending.clear() } }
-                withContext(ioDispatcher) { toSend.forEach { transmit(it, config) } }
+                while (true) {
+                    val batch = lock.withLock { pending.firstOrNull() } ?: return
+                    withContext(ioDispatcher) { transmit(batch, config) }
+                    lock.withLock { pending.remove(batch) }
+                }
             }
 
             val gateJob = launch { sendGate.ticks.collect { flushPending() } }
@@ -75,7 +80,8 @@ class ImuRepositoryImpl @Inject constructor(
                     }
                 }
 
-            suspend fun emitAcc(series: AxisSeries) {
+            /** 전송 목록에 먼저 넣는다. 화면 쪽 [send] 가 대기하다 취소돼도 배치는 남는다. */
+            suspend fun enqueue(series: AxisSeries): ImuBatch {
                 val (onBody, wearState) = wearFields()
                 val batch =
                     ImuBatch(
@@ -91,10 +97,13 @@ class ImuRepositoryImpl @Inject constructor(
                         wearState = wearState,
                         watchBatteryPct = deviceInfoLocalDataSource.batteryPercent(),
                     )
-                // 전송이 실패해도 다음 배치는 계속 흐르도록 먼저 내보낸다.
-                send(batch)
-                rawLog?.flush()
                 lock.withLock { pending += batch }
+                return batch
+            }
+
+            suspend fun emitAcc(series: AxisSeries) {
+                send(enqueue(series))
+                rawLog?.flush()
                 sendGate.onData()
             }
 
@@ -106,9 +115,12 @@ class ImuRepositoryImpl @Inject constructor(
                 accBatcher.flush()?.let { emitAcc(it) }
             } finally {
                 anchorJob.cancel()
-                gateJob.cancel()
-                // 설정 변경·서비스 종료로 끊겨도 모아 둔 배치(최대 전송 주기치)를 버리지 않는다.
-                withContext(NonCancellable) { flushPending() }
+                // 설정 변경·서비스 종료로 끊겨도 모아 둔 배치(최대 전송 주기치)와 열린 배치를 버리지 않는다.
+                withContext(NonCancellable) {
+                    gateJob.cancelAndJoin()
+                    accBatcher.flush()?.let { enqueue(it) }
+                    flushPending()
+                }
                 runCatching { rawLog?.close() }
             }
         }
