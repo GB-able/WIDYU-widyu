@@ -10,6 +10,7 @@ import com.widucorp.widu.data.source.DeviceInfoLocalDataSource
 import com.widucorp.widu.data.source.HeartRateLocalDataSource
 import com.widucorp.widu.data.source.HeartRateRemoteDataSource
 import com.widucorp.widu.data.util.ClockMapper
+import com.widucorp.widu.data.util.DropReason
 import com.widucorp.widu.data.util.OnBodyStateHolder
 import com.widucorp.widu.data.util.newUlid
 import com.widucorp.widu.data.util.toBatchSamples
@@ -113,10 +114,14 @@ class HeartRateRepositoryImpl @Inject constructor(
     /** 전송·정리 실패는 삼킨다. 측정을 멈출 이유가 되지 않는다. */
     private suspend fun transmit(batch: HeartRateBatch) {
         try {
-            heartRateRemoteDataSource.sendBatch(batch)
+            if (!heartRateRemoteDataSource.sendBatch(batch)) {
+                heartRateRemoteDataSource.recordDrop(batch.sessionId, batch.seq, batch.seq, DropReason.ENQUEUE_FAILED)
+            }
             if (batch.seq % TRIM_EVERY_SEQ != 0L) return
             val dropped = heartRateRemoteDataSource.trimQueue(batch.sessionId, QUEUE_MAX)
-            if (dropped.isNotEmpty()) Log.w(TAG, "Heart rate queue full; dropped seq=${dropped.min()}..${dropped.max()}")
+            if (dropped.isEmpty()) return
+            Log.w(TAG, "Heart rate queue full; dropped seq=${dropped.min()}..${dropped.max()}")
+            heartRateRemoteDataSource.recordDrop(batch.sessionId, dropped.min(), dropped.max(), DropReason.QUEUE_OVERFLOW)
         } catch (exception: CancellationException) {
             throw exception
         } catch (exception: Exception) {

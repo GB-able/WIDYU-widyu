@@ -10,11 +10,14 @@ import com.widucorp.widu.data.model.ImuBatch
  * 항목이 각각 보존되게 하고 그것을 큐로 쓴다.
  */
 interface ImuRemoteDataSource {
-    /** [urgent] 면 동기화를 미루지 않는다 — 충격·보강 배치는 즉시 보낸다. (A 1.6.4) */
+    /**
+     * [urgent] 면 동기화를 미루지 않는다 — 충격·보강 배치는 즉시 보낸다. (A 1.6.4)
+     * @return Data Layer 대기열에 넣었으면 true.
+     */
     suspend fun sendBatch(
         batch: ImuBatch,
         urgent: Boolean = false,
-    )
+    ): Boolean
 
     /**
      * 쌓인 배치가 [maxItems] 를 넘으면 오래된 것부터 지운다.
@@ -25,10 +28,11 @@ interface ImuRemoteDataSource {
         maxItems: Int,
     ): List<Long>
 
-    /** 큐 넘침으로 버린 구간을 기록한다. 조용히 사라지면 서버가 결측인지 미착용인지 구별할 수 없다. */
+    /** 버린 구간을 `/imu/dropped/<sessionId>/<fromSeq>` 로 기록한다. [reason] 은 `DropReason` 값. */
     suspend fun recordDrop(
         sessionId: String,
         fromSeq: Long,
         toSeq: Long,
+        reason: String,
     )
 }

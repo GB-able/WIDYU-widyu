@@ -125,7 +125,7 @@ class ImuRepositoryImplTest {
             emitSamplesUpTo(seconds = 1)
 
             // then
-            remote.droppedRanges shouldBe listOf(Triple(collected.first().sessionId, 3L, 5L))
+            remote.droppedRanges shouldBe listOf(Dropped(collected.first().sessionId, 3L, 5L, "queue_overflow"))
         }
 
     @Test
@@ -142,6 +142,8 @@ class ImuRepositoryImplTest {
             // then
             collected.map { it.seq } shouldBe listOf(0L, 1L, 2L)
             remote.sentBatches shouldBe emptyList()
+            // 대기열에 못 넣은 배치는 하나씩 enqueue_failed 로 기록한다
+            remote.droppedRanges shouldBe collected.map { Dropped(it.sessionId, it.seq, it.seq, "enqueue_failed") }
         }
 
     @Test
@@ -406,7 +408,7 @@ class ImuRepositoryImplTest {
         val sentBatches = mutableListOf<ImuBatch>()
         val trimmedSeqs = mutableListOf<Long>()
         val trimmedMaxItems = mutableListOf<Int>()
-        val droppedRanges = mutableListOf<Triple<String, Long, Long>>()
+        val droppedRanges = mutableListOf<Dropped>()
         var dropOnTrim: List<Long> = emptyList()
         var failSend = false
 
@@ -415,10 +417,11 @@ class ImuRepositoryImplTest {
         override suspend fun sendBatch(
             batch: ImuBatch,
             urgent: Boolean,
-        ) {
-            if (failSend) throw IllegalStateException("Disconnected")
+        ): Boolean {
+            if (failSend) return false
             sentBatches += batch
             urgentFlags += urgent
+            return true
         }
 
         fun wasUrgent(batch: ImuBatch): Boolean = urgentFlags[sentBatches.indexOf(batch)]
@@ -436,10 +439,18 @@ class ImuRepositoryImplTest {
             sessionId: String,
             fromSeq: Long,
             toSeq: Long,
+            reason: String,
         ) {
-            droppedRanges += Triple(sessionId, fromSeq, toSeq)
+            droppedRanges += Dropped(sessionId, fromSeq, toSeq, reason)
         }
     }
+
+    private data class Dropped(
+        val sessionId: String,
+        val fromSeq: Long,
+        val toSeq: Long,
+        val reason: String,
+    )
 
     private companion object {
         const val ONE_SECOND_NS = 1_000_000_000L
