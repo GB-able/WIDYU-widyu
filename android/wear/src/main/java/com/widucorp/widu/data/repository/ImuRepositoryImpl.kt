@@ -5,6 +5,7 @@ import com.widucorp.widu.data.model.AxisSeries
 import com.widucorp.widu.data.model.ClockInfo
 import com.widucorp.widu.data.model.ImuBatch
 import com.widucorp.widu.data.model.ImuConfig
+import com.widucorp.widu.data.model.ImuSample
 import com.widucorp.widu.data.source.ClockLocalDataSource
 import com.widucorp.widu.data.source.DeviceInfoLocalDataSource
 import com.widucorp.widu.data.source.ImuConfigLocalDataSource
@@ -57,6 +58,8 @@ class ImuRepositoryImpl @Inject constructor(
             var clock: ClockInfo = takeClock(clockMapper)
             var seq = 0L
             val rawLog = deviceInfoLocalDataSource.openRawLog()
+            /** 수집이 취소될 때 센서 FIFO 에서 비운 샘플. */
+            var drained: List<ImuSample> = emptyList()
             // 모아 두었다가 [SendGate] 신호에 심박과 같은 순간에 보낸다.
             val pending = mutableListOf<ImuBatch>()
             val lock = Mutex()
@@ -107,17 +110,20 @@ class ImuRepositoryImpl @Inject constructor(
                 sendGate.onData()
             }
 
+            fun batch(sample: ImuSample): AxisSeries? {
+                rawLog?.appendLine("${sample.timestampNs},${sample.x},${sample.y},${sample.z}")
+                return accBatcher.add(sample)
+            }
+
             try {
-                imuLocalDataSource.samples(config).collect { sample ->
-                    rawLog?.appendLine("${sample.timestampNs},${sample.x},${sample.y},${sample.z}")
-                    accBatcher.add(sample)?.let { emitAcc(it) }
-                }
+                imuLocalDataSource.samples(config) { drained = it }.collect { sample -> batch(sample)?.let { emitAcc(it) } }
                 accBatcher.flush()?.let { emitAcc(it) }
             } finally {
                 anchorJob.cancel()
-                // 설정 변경·서비스 종료로 끊겨도 모아 둔 배치(최대 전송 주기치)와 열린 배치를 버리지 않는다.
+                // 설정 변경·서비스 종료로 끊겨도 모아 둔 배치(최대 전송 주기치)와 열린 배치, FIFO 에 남아 있던 샘플을 버리지 않는다.
                 withContext(NonCancellable) {
                     gateJob.cancelAndJoin()
+                    drained.forEach { sample -> batch(sample)?.let { enqueue(it) } }
                     accBatcher.flush()?.let { enqueue(it) }
                     flushPending()
                 }

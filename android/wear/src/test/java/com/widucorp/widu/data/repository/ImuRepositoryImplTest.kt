@@ -19,6 +19,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestCoroutineScheduler
@@ -126,6 +127,23 @@ class ImuRepositoryImplTest {
             // then — 수집을 끝내지 않아도 보낸다
             remote.sentBatches shouldBe collected
             remote.sentBatches.map { it.seq } shouldBe listOf(0L, 1L, 2L)
+        }
+
+    @Test
+    @DisplayName("수집이 끝날 때 센서 FIFO 에 남아 있던 샘플도 배치로 묶어 보낸다")
+    fun drainsTheSensorFifoOnStop() =
+        testScope.runTest {
+            // given — seq 0·1 이 닫히고 2초 샘플이 열린 배치에 있다. FIFO 에는 3·4초 샘플이 남아 있다
+            start()
+            emitSamplesUpTo(seconds = 2)
+            local.drainedOnCancel = listOf(3L, 4L).map { ImuSample(it * ONE_SECOND_NS, 0f, 0f, 9.80665f) }
+
+            // when
+            stop()
+
+            // then — 열린 배치와 FIFO 샘플이 이어서 seq 2·3·4 로 나간다
+            remote.sentBatches.map { it.seq } shouldBe listOf(0L, 1L, 2L, 3L, 4L)
+            remote.sentBatches.map { it.acc.t0ElapsedNs / ONE_SECOND_NS } shouldBe listOf(0L, 1L, 2L, 3L, 4L)
         }
 
     @Test
@@ -289,7 +307,13 @@ class ImuRepositoryImplTest {
     private class FakeImuLocalDataSource : ImuLocalDataSource {
         val samples = MutableSharedFlow<ImuSample>()
 
-        override fun samples(config: ImuConfig): Flow<ImuSample> = samples
+        /** 취소될 때 센서 FIFO 에서 비워 넘길 샘플. */
+        var drainedOnCancel: List<ImuSample> = emptyList()
+
+        override fun samples(
+            config: ImuConfig,
+            onDrained: (List<ImuSample>) -> Unit,
+        ): Flow<ImuSample> = samples.onCompletion { onDrained(drainedOnCancel) }
     }
 
     private class FakeClockLocalDataSource : ClockLocalDataSource {
