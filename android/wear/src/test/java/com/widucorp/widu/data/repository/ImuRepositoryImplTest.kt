@@ -1,26 +1,25 @@
 package com.widucorp.widu.data.repository
 
-import com.widucorp.widu.data.model.AxisSeries
 import com.widucorp.widu.data.model.ClockAnchor
 import com.widucorp.widu.data.model.ImuBatch
 import com.widucorp.widu.data.model.ImuConfig
 import com.widucorp.widu.data.model.ImuSample
-import com.widucorp.widu.data.model.MissingReason
 import com.widucorp.widu.data.source.ClockLocalDataSource
 import com.widucorp.widu.data.source.DeviceInfoLocalDataSource
 import com.widucorp.widu.data.source.ImuConfigLocalDataSource
 import com.widucorp.widu.data.source.ImuLocalDataSource
 import com.widucorp.widu.data.source.ImuRemoteDataSource
 import com.widucorp.widu.data.util.OnBodyStateHolder
-import io.kotest.matchers.doubles.plusOrMinus
-import io.kotest.matchers.nulls.shouldNotBeNull
+import com.widucorp.widu.data.util.SendGate
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestCoroutineScheduler
@@ -47,6 +46,9 @@ class ImuRepositoryImplTest {
     private lateinit var collector: Job
     private val collected = mutableListOf<ImuBatch>()
 
+    /** [SendGate] 가 읽는 경과 시간(ms). 올리지 않으면 게이트가 열리지 않는다. */
+    private var nowMs = 0L
+
     @BeforeEach
     fun setUp() {
         scheduler = TestCoroutineScheduler()
@@ -57,6 +59,7 @@ class ImuRepositoryImplTest {
         remote = FakeImuRemoteDataSource()
         onBodyStateHolder = OnBodyStateHolder()
         collected.clear()
+        nowMs = 0L
     }
 
     /** 설정을 바꿔 보는 테스트가 있어 수집 시작을 따로 둔다. */
@@ -70,6 +73,7 @@ class ImuRepositoryImplTest {
                 imuRemoteDataSource = remote,
                 imuConfigLocalDataSource = configSource,
                 onBodyStateHolder = onBodyStateHolder,
+                sendGate = SendGate { nowMs },
                 ioDispatcher = dispatcher,
             )
         collector = testScope.backgroundScope.launch { repository.batches().collect { collected += it } }
@@ -92,9 +96,54 @@ class ImuRepositoryImplTest {
             // when
             emitSamplesUpTo(seconds = 1)
 
+            stop()
+
             // then
             collected.size shouldBe 1
+            // 끝낼 때 열려 있던 배치(마지막 샘플)도 이어서 보낸다
+            remote.sentBatches.map { it.seq } shouldBe listOf(0L, 1L)
+            remote.sentBatches.first() shouldBe collected.single()
+        }
+
+    @Test
+    @DisplayName("전송 주기가 차기 전에는 배치를 모아 두고, 차면 모아 둔 배치를 한 번에 보낸다")
+    fun holdsBatchesUntilTheGateOpens() =
+        testScope.runTest {
+            // given
+            start()
+
+            // when — 주기 전
+            emitSamplesUpTo(seconds = 2)
+
+            // then
+            collected.map { it.seq } shouldBe listOf(0L, 1L)
+            remote.sentBatches shouldBe emptyList()
+
+            // when — 주기가 찬 뒤 다음 배치가 닫힌다
+            nowMs += 5_000
+            local.samples.emit(ImuSample(3 * ONE_SECOND_NS, 0f, 0f, 9.80665f))
+            scheduler.runCurrent()
+
+            // then — 수집을 끝내지 않아도 보낸다
             remote.sentBatches shouldBe collected
+            remote.sentBatches.map { it.seq } shouldBe listOf(0L, 1L, 2L)
+        }
+
+    @Test
+    @DisplayName("수집이 끝날 때 센서 FIFO 에 남아 있던 샘플도 배치로 묶어 보낸다")
+    fun drainsTheSensorFifoOnStop() =
+        testScope.runTest {
+            // given — seq 0·1 이 닫히고 2초 샘플이 열린 배치에 있다. FIFO 에는 3·4초 샘플이 남아 있다
+            start()
+            emitSamplesUpTo(seconds = 2)
+            local.drainedOnCancel = listOf(3L, 4L).map { ImuSample(it * ONE_SECOND_NS, 0f, 0f, 9.80665f) }
+
+            // when
+            stop()
+
+            // then — 열린 배치와 FIFO 샘플이 이어서 seq 2·3·4 로 나간다
+            remote.sentBatches.map { it.seq } shouldBe listOf(0L, 1L, 2L, 3L, 4L)
+            remote.sentBatches.map { it.acc.t0ElapsedNs / ONE_SECOND_NS } shouldBe listOf(0L, 1L, 2L, 3L, 4L)
         }
 
     @Test
@@ -107,10 +156,13 @@ class ImuRepositoryImplTest {
             // when — seq 0..3 네 배치
             emitSamplesUpTo(seconds = 4)
 
+            stop()
+
             // then — seq 0, 2 에서만 정리한다
             collected.map { it.seq } shouldBe listOf(0L, 1L, 2L, 3L)
-            remote.trimmedSeqs shouldBe listOf(0L, 2L)
-            remote.trimmedMaxItems shouldBe listOf(600, 600)
+            // seq 4 는 끝낼 때 보낸 열린 배치다
+            remote.trimmedSeqs shouldBe listOf(0L, 2L, 4L)
+            remote.trimmedMaxItems shouldBe listOf(600, 600, 600)
         }
 
     @Test
@@ -124,152 +176,38 @@ class ImuRepositoryImplTest {
             // when
             emitSamplesUpTo(seconds = 1)
 
+            stop()
+
             // then
             remote.droppedRanges shouldBe listOf(Dropped(collected.first().sessionId, 3L, 5L, "queue_overflow"))
         }
 
     @Test
-    @DisplayName("전송이 실패해도 다음 배치를 계속 내보낸다")
+    @DisplayName("전송이 실패해도 수집을 멈추지 않고 다음 배치를 보낸다")
     fun aFailedSendDoesNotStopTheStream() =
         testScope.runTest {
             // given
             remote.failSend = true
             start()
 
-            // when
-            emitSamplesUpTo(seconds = 3)
+            // when — 게이트가 열려 seq 0·1 을 보내다 실패한다
+            emitSampleAt(seconds = 0)
+            emitSampleAt(seconds = 1)
+            nowMs += 5_000
+            emitSampleAt(seconds = 2)
 
-            // then
+            // then — 대기열에 못 넣은 배치는 하나씩 enqueue_failed 로 기록한다
+            val sessionId = collected.first().sessionId
+            remote.droppedRanges shouldBe (0L..1L).map { Dropped(sessionId, it, it, "enqueue_failed") }
+
+            // when — 연결이 돌아온 뒤 다음 배치가 닫히고 게이트가 열린다
+            remote.failSend = false
+            nowMs += 5_000
+            emitSampleAt(seconds = 3)
+
+            // then — 같은 세션에서 수집이 이어져 seq 2 를 보낸다
             collected.map { it.seq } shouldBe listOf(0L, 1L, 2L)
-            remote.sentBatches shouldBe emptyList()
-            // 대기열에 못 넣은 배치는 하나씩 enqueue_failed 로 기록한다
-            remote.droppedRanges shouldBe collected.map { Dropped(it.sessionId, it.seq, it.seq, "enqueue_failed") }
-        }
-
-    @Test
-    @DisplayName("제품 모드 평시 배치에는 자이로를 싣지 않고 생략 사유를 남긴다")
-    fun productModeOmitsGyroWhenNothingHappens() =
-        testScope.runTest {
-            // given
-            start(productConfig())
-
-            // when
-            emitPairsUpTo(untilNs = 3 * ONE_SECOND_NS)
-
-            // then — 0 으로 채우지 않고 null 로 둔다 (A 1.2.6)
-            collected.map { it.gyro } shouldBe collected.map { null }
-            collected.map { it.missingReason } shouldBe collected.map { MissingReason.OMITTED_BY_MODE }
-        }
-
-    @Test
-    @DisplayName("충격이 나면 그 배치를 즉시 보내고 직전 2초 자이로를 보강 배치로 잇는다")
-    fun anImpactIsSentAtOnceWithTheTwoSecondsBefore() =
-        testScope.runTest {
-            // given
-            start(productConfig())
-
-            // when — 3초 평시 → 3.4초에 2.5 g → 11초 평시
-            emitPairsUpTo(untilNs = 16 * ONE_SECOND_NS, spikeAtNs = SPIKE_NS, spikeG = 2.5f)
-
-            // then — 충격 배치에 표시가 붙고 urgent 로 나간다
-            val impactIndex = collected.indexOfFirst { it.trigger != null }
-            val impact = collected[impactIndex]
-            val trigger = impact.trigger.shouldNotBeNull()
-            trigger.kind shouldBe "impact"
-            trigger.smvG.toDouble() shouldBe (2.5 plusOrMinus 1e-3)
-            trigger.eventElapsedNs shouldBe SPIKE_NS
-            remote.wasUrgent(impact) shouldBe true
-
-            // and — 바로 다음이 보강 배치다
-            val backfill = collected[impactIndex + 1]
-            backfill.gyroBackfill shouldBe true
-            backfill.backfillFor shouldBe impact.batchId
-            backfill.acc shouldBe null
-            backfill.trigger shouldBe null
-            remote.wasUrgent(backfill) shouldBe true
-            val backfilled = backfill.gyro.shouldNotBeNull().timestamps()
-            backfilled.isNotEmpty() shouldBe true
-            backfilled.all { it >= SPIKE_NS - 2 * ONE_SECOND_NS && it < SPIKE_NS } shouldBe true
-
-            // and — 이후 10초는 자이로가 이어지고 그 뒤로는 다시 끊긴다
-            collected[impactIndex + 2].gyro.shouldNotBeNull()
-            collected.last().gyro shouldBe null
-            collected.last().missingReason shouldBe MissingReason.OMITTED_BY_MODE
-        }
-
-    @Test
-    @DisplayName("연구 모드는 충격이 없어도 모든 배치에 자이로를 싣는다")
-    fun researchModeAlwaysCarriesGyro() =
-        testScope.runTest {
-            // given
-            start(productConfig().copy(collectionMode = "research"))
-
-            // when
-            emitPairsUpTo(untilNs = 3 * ONE_SECOND_NS)
-
-            // then
-            collected.forEach { it.gyro.shouldNotBeNull() }
-            collected.map { it.missingReason } shouldBe collected.map { null }
-        }
-
-    @Test
-    @DisplayName("자이로 센서가 없으면 생략이 아니라 미지원으로 적는다")
-    fun missingSensorIsNotTheSameAsOmission() =
-        testScope.runTest {
-            // given
-            local.hasGyroscope = false
-            start(productConfig().copy(collectionMode = "research"))
-
-            // when
-            emitPairsUpTo(untilNs = 3 * ONE_SECOND_NS)
-
-            // then
-            collected.map { it.gyro } shouldBe collected.map { null }
-            collected.map { it.missingReason } shouldBe collected.map { MissingReason.SENSOR_UNSUPPORTED }
-        }
-
-    @Test
-    @DisplayName("충격 배치와 보강 배치도 seq 를 소비해 번호가 끊기지 않는다")
-    fun seqStaysContiguousAcrossTriggerAndBackfill() =
-        testScope.runTest {
-            // given
-            start(productConfig())
-
-            // when
-            emitPairsUpTo(untilNs = 16 * ONE_SECOND_NS, spikeAtNs = SPIKE_NS, spikeG = 2.5f)
-
-            // then
-            collected.map { it.seq } shouldBe collected.indices.map { it.toLong() }
-            collected.any { it.gyroBackfill } shouldBe true
-        }
-
-    @Test
-    @DisplayName("문턱을 넘는 샘플이 연속으로 와도 충격 배치는 하나만 만들고 창만 연장한다")
-    fun aSustainedSpikeProducesASingleTriggerBatch() =
-        testScope.runTest {
-            // given
-            start(productConfig())
-
-            // when — 3.4초부터 5 샘플(1초) 연속 2.5 g
-            var ts = 0L
-            while (ts <= 16 * ONE_SECOND_NS) {
-                val spiking = ts >= SPIKE_NS && ts < SPIKE_NS + ONE_SECOND_NS
-                val z = if (spiking) 2.5f * STANDARD_GRAVITY else STANDARD_GRAVITY
-                local.samples.emit(ImuSample(ImuSample.Type.ACC, ts, 0f, 0f, z))
-                local.samples.emit(ImuSample(ImuSample.Type.GYRO, ts, 0.1f, 0.2f, 0.3f))
-                scheduler.runCurrent()
-                ts += STEP_NS
-            }
-
-            // then — trigger 배치 1개, 보강 배치 1개
-            collected.count { it.trigger != null } shouldBe 1
-            collected.count { it.gyroBackfill } shouldBe 1
-            // and — 창은 마지막 문턱 초과 샘플 기준으로 연장된다 (3.4 + 0.8 + 10 = 14.2초까지 자이로)
-            val lastSpikeNs = SPIKE_NS + 4 * STEP_NS
-            collected
-                .filter { it.acc != null && it.acc!!.t0ElapsedNs in (SPIKE_NS + 1)..lastSpikeNs + 10 * ONE_SECOND_NS - ONE_SECOND_NS }
-                .forEach { it.gyro.shouldNotBeNull() }
-            collected.last().gyro shouldBe null
+            remote.sentBatches.map { it.seq to it.sessionId } shouldBe listOf(2L to sessionId)
         }
 
     @Test
@@ -320,52 +258,49 @@ class ImuRepositoryImplTest {
         }
 
     @Test
-    @DisplayName("수집 중 설정이 바뀌면 새 설정으로 다시 수집한다")
+    @DisplayName("수집 중 설정이 바뀌면 모아 둔 배치를 보내고 새 설정으로 다시 수집한다")
     fun aConfigChangeRestartsCollection() =
         testScope.runTest {
             // given
-            start(productConfig())
-            emitPairsUpTo(untilNs = 3 * ONE_SECOND_NS)
-            collected.last().collectionMode shouldBe "product"
-            collected.last().gyro shouldBe null
+            start()
+            emitSamplesUpTo(seconds = 2)
+            val before = collected.toList()
 
             // when
             configSource.apply(configSource.config().value.copy(collectionMode = "research"))
             scheduler.runCurrent()
-            collected.clear()
-            emitPairsUpTo(untilNs = 3 * ONE_SECOND_NS)
+            emitSamplesUpTo(seconds = 1)
 
-            // then — 연구 모드로 자이로가 실린다
-            collected.isNotEmpty() shouldBe true
-            collected.forEach {
+            // then — 끊기기 전 배치와 열려 있던 배치(2초 샘플 하나)는 버려지지 않고, 새 세션은 연구 모드다
+            remote.sentBatches.take(before.size) shouldBe before
+            val partial = remote.sentBatches[before.size]
+            partial.seq shouldBe before.size.toLong()
+            partial.acc.t0ElapsedNs shouldBe 2 * ONE_SECOND_NS
+            partial.acc.n shouldBe 1
+            val after = collected.drop(before.size)
+            after.isNotEmpty() shouldBe true
+            after.forEach {
                 it.collectionMode shouldBe "research"
-                it.gyro.shouldNotBeNull()
+                it.sessionId shouldNotBe before.first().sessionId
             }
         }
 
-    private fun productConfig() = ImuConfig(batchSec = 1, accHz = 50, trimEverySeq = 1_000, queueMinutes = 10)
+    /** 수집을 끝내 모아 둔 배치를 내보낸다. 전송 게이트는 실제 경과 시간으로 열려 단위 테스트에서는 열리지 않는다. */
+    private fun stop() {
+        collector.cancel()
+        scheduler.runCurrent()
+    }
 
-    /** [STEP_NS] 간격으로 가속도·자이로 샘플을 함께 흘린다. */
-    private suspend fun emitPairsUpTo(
-        untilNs: Long,
-        spikeAtNs: Long = -1L,
-        spikeG: Float = 1f,
-    ) {
-        var ts = 0L
-        while (ts <= untilNs) {
-            val z = if (ts == spikeAtNs) spikeG * STANDARD_GRAVITY else STANDARD_GRAVITY
-            local.samples.emit(ImuSample(ImuSample.Type.ACC, ts, 0f, 0f, z))
-            local.samples.emit(ImuSample(ImuSample.Type.GYRO, ts, 0.1f, 0.2f, 0.3f))
-            scheduler.runCurrent()
-            ts += STEP_NS
-        }
+    private suspend fun emitSampleAt(seconds: Int) {
+        local.samples.emit(ImuSample(seconds * ONE_SECOND_NS, 0f, 0f, 9.80665f))
+        scheduler.runCurrent()
     }
 
     /** [seconds] 개의 배치가 닫히도록 1초 간격 샘플을 흘린다. */
     private suspend fun emitSamplesUpTo(seconds: Int) {
         repeat(seconds + 1) { index ->
             local.samples.emit(
-                ImuSample(ImuSample.Type.ACC, index * ONE_SECOND_NS, 0f, 0f, 9.80665f),
+                ImuSample(index * ONE_SECOND_NS, 0f, 0f, 9.80665f),
             )
             scheduler.runCurrent()
         }
@@ -383,11 +318,14 @@ class ImuRepositoryImplTest {
 
     private class FakeImuLocalDataSource : ImuLocalDataSource {
         val samples = MutableSharedFlow<ImuSample>()
-        var hasGyroscope = true
 
-        override fun samples(config: ImuConfig): Flow<ImuSample> = samples
+        /** 취소될 때 센서 FIFO 에서 비워 넘길 샘플. */
+        var drainedOnCancel: List<ImuSample> = emptyList()
 
-        override fun hasGyroscope(): Boolean = hasGyroscope
+        override fun samples(
+            config: ImuConfig,
+            onDrained: (List<ImuSample>) -> Unit,
+        ): Flow<ImuSample> = samples.onCompletion { onDrained(drainedOnCancel) }
     }
 
     private class FakeClockLocalDataSource : ClockLocalDataSource {
@@ -413,20 +351,12 @@ class ImuRepositoryImplTest {
         var failSend = false
         var lastSentSeq = -1L
 
-        val urgentFlags = mutableListOf<Boolean>()
-
-        override suspend fun sendBatch(
-            batch: ImuBatch,
-            urgent: Boolean,
-        ): Boolean {
+        override suspend fun sendBatch(batch: ImuBatch): Boolean {
             lastSentSeq = batch.seq
             if (failSend) return false
             sentBatches += batch
-            urgentFlags += urgent
             return true
         }
-
-        fun wasUrgent(batch: ImuBatch): Boolean = urgentFlags[sentBatches.indexOf(batch)]
 
         override suspend fun trimQueue(
             sessionId: String,
@@ -456,12 +386,5 @@ class ImuRepositoryImplTest {
 
     private companion object {
         const val ONE_SECOND_NS = 1_000_000_000L
-        const val STEP_NS = 200_000_000L
-        const val SPIKE_NS = 3_400_000_000L
-        const val STANDARD_GRAVITY = 9.80665f
     }
 }
-
-/** dt_ns 로 표현된 시각을 다시 펼친다. */
-private fun AxisSeries.timestamps(): List<Long> =
-    dtNs.fold(mutableListOf(t0ElapsedNs)) { acc, dt -> acc.apply { add(last() + dt) } }

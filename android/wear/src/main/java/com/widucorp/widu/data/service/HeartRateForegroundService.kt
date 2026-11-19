@@ -112,7 +112,7 @@ class HeartRateForegroundService : Service() {
                 .batches()
                 .catch { Log.e("Widyu", "IMU collection error", it) }
                 .onEach { batch ->
-                    if (BuildConfig.DEBUG) Log.d("Widyu", "IMU batch seq=${batch.seq} n=${batch.acc?.values?.size}")
+                    if (BuildConfig.DEBUG) Log.d("Widyu", "IMU batch seq=${batch.seq} n=${batch.acc.n}")
                 }.launchIn(serviceScope)
 
         eventJob =

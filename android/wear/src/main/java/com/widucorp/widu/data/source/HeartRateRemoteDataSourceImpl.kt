@@ -1,15 +1,14 @@
 package com.widucorp.widu.data.source
 
-import android.util.Log
 import com.widucorp.widu.data.model.HeartRateBatch
 import com.widucorp.widu.data.model.HeartRateStatus
 import com.widucorp.widu.data.model.toJson
 import com.widucorp.widu.data.util.putBatch
 import com.widucorp.widu.data.util.putDrop
+import com.widucorp.widu.data.util.runSafely
 import com.widucorp.widu.data.util.trimOldest
 import com.google.android.gms.wearable.DataClient
 import com.google.android.gms.wearable.MessageClient
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -54,20 +53,6 @@ class HeartRateRemoteDataSourceImpl @Inject constructor(
             messageClient.addListener(listener)
 
             awaitClose { messageClient.removeListener(listener) }
-        }
-
-    /** 전송 실패가 수집 흐름을 끊지 않게 한다. 취소만 그대로 올려 보낸다. */
-    private inline fun <T> runSafely(
-        what: String,
-        block: () -> T,
-    ): T? =
-        try {
-            block()
-        } catch (exception: CancellationException) {
-            throw exception
-        } catch (exception: Exception) {
-            Log.w("Widyu", "Failed to $what", exception)
-            null
         }
 
     companion object {

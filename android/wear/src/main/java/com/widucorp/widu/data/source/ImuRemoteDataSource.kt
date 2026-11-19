@@ -8,16 +8,12 @@ import com.widucorp.widu.data.model.ImuBatch
  * 자체 큐는 두지 않는다. Data Layer 의 DataItem 은 폰과 끊겨도 워치에 남아 있다가
  * 재연결 시 동기화되므로, 배치마다 고유 경로(`/imu/batch/<sessionId>/<seq>`)를 주어
  * 항목이 각각 보존되게 하고 그것을 큐로 쓴다.
+ *
+ * 실패는 예외로 던지지 않고 로그만 남긴다(취소는 전파). 수집이 전송 실패로 멈추지 않는다.
  */
 interface ImuRemoteDataSource {
-    /**
-     * [urgent] 면 동기화를 미루지 않는다 — 충격·보강 배치는 즉시 보낸다. (A 1.6.4)
-     * @return Data Layer 대기열에 넣었으면 true.
-     */
-    suspend fun sendBatch(
-        batch: ImuBatch,
-        urgent: Boolean = false,
-    ): Boolean
+    /** @return Data Layer 대기열에 넣었으면 true. */
+    suspend fun sendBatch(batch: ImuBatch): Boolean
 
     /**
      * 쌓인 배치가 [maxItems] 를 넘으면 오래된 것부터 지운다.

@@ -142,6 +142,20 @@ internal fun List<Long>.toRanges(): List<LongRange> =
         ranges
     }
 
+/** Data Layer 호출 실패가 수집 흐름을 끊지 않게 로그만 남기고 null 을 돌려준다. 취소만 그대로 올려 보낸다. */
+internal inline fun <T> runSafely(
+    what: String,
+    block: () -> T,
+): T? =
+    try {
+        block()
+    } catch (exception: CancellationException) {
+        throw exception
+    } catch (exception: Exception) {
+        Log.w("Widyu", "Failed to $what", exception)
+        null
+    }
+
 /** kotlinx-coroutines-play-services 를 더 들이지 않으려고 직접 감싼다. */
 internal suspend fun <T> Task<T>.awaitResult(): T =
     suspendCancellableCoroutine { continuation ->
