@@ -348,14 +348,15 @@ class HeartRateRepositoryImplTest {
     @DisplayName("착용 판정용 정확도는 전송을 기다리지 않고 받은 즉시 반영한다")
     fun accuracyIsAppliedOnReceipt() =
         testScope.runTest {
-            // given
-            onBodyStateHolder.update(true)
+            // given — 믿을 만한 심박을 보낸 직후
+            emit(70, reading(70, 1_000, HIGH))
+            onBodyStateHolder.wearState(true) shouldBe "WORN_VALID"
 
-            // when — 게이트가 열리지 않은 상태
-            emitWithoutAdvancing(null, reading(25, 1_000, LOW))
+            // when — 게이트가 다시 열리기 전에 LOW 가 온다
+            emitWithoutAdvancing(null, reading(25, 2_000, LOW))
 
-            // then
-            remote.sentBatches shouldBe emptyList()
+            // then — 아직 보내지 않았지만 판정은 이미 바뀌었다
+            remote.sentBatches.size shouldBe 1
             onBodyStateHolder.wearState(true) shouldBe "WORN_INVALID"
         }
 

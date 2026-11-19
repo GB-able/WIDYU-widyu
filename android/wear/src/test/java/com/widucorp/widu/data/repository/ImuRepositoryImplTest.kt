@@ -183,24 +183,31 @@ class ImuRepositoryImplTest {
         }
 
     @Test
-    @DisplayName("전송이 실패해도 다음 배치를 계속 내보낸다")
+    @DisplayName("전송이 실패해도 수집을 멈추지 않고 다음 배치를 보낸다")
     fun aFailedSendDoesNotStopTheStream() =
         testScope.runTest {
             // given
             remote.failSend = true
             start()
 
-            // when
-            emitSamplesUpTo(seconds = 3)
+            // when — 게이트가 열려 seq 0·1 을 보내다 실패한다
+            emitSampleAt(seconds = 0)
+            emitSampleAt(seconds = 1)
+            nowMs += 5_000
+            emitSampleAt(seconds = 2)
 
-            stop()
-
-            // then
-            collected.map { it.seq } shouldBe listOf(0L, 1L, 2L)
-            remote.sentBatches shouldBe emptyList()
-            // 대기열에 못 넣은 배치는 하나씩 enqueue_failed 로 기록한다
+            // then — 대기열에 못 넣은 배치는 하나씩 enqueue_failed 로 기록한다
             val sessionId = collected.first().sessionId
-            remote.droppedRanges shouldBe (0L..3L).map { Dropped(sessionId, it, it, "enqueue_failed") }
+            remote.droppedRanges shouldBe (0L..1L).map { Dropped(sessionId, it, it, "enqueue_failed") }
+
+            // when — 연결이 돌아온 뒤 다음 배치가 닫히고 게이트가 열린다
+            remote.failSend = false
+            nowMs += 5_000
+            emitSampleAt(seconds = 3)
+
+            // then — 같은 세션에서 수집이 이어져 seq 2 를 보낸다
+            collected.map { it.seq } shouldBe listOf(0L, 1L, 2L)
+            remote.sentBatches.map { it.seq to it.sessionId } shouldBe listOf(2L to sessionId)
         }
 
     @Test
@@ -281,6 +288,11 @@ class ImuRepositoryImplTest {
     /** 수집을 끝내 모아 둔 배치를 내보낸다. 전송 게이트는 실제 경과 시간으로 열려 단위 테스트에서는 열리지 않는다. */
     private fun stop() {
         collector.cancel()
+        scheduler.runCurrent()
+    }
+
+    private suspend fun emitSampleAt(seconds: Int) {
+        local.samples.emit(ImuSample(seconds * ONE_SECOND_NS, 0f, 0f, 9.80665f))
         scheduler.runCurrent()
     }
 

@@ -29,8 +29,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import java.util.UUID
 import java.util.concurrent.TimeUnit
@@ -61,15 +59,15 @@ class ImuRepositoryImpl @Inject constructor(
             /** 수집이 취소될 때 센서 FIFO 에서 비운 샘플. */
             var drained: List<ImuSample> = emptyList()
             // 모아 두었다가 [SendGate] 신호에 심박과 같은 순간에 보낸다.
+            // 잠금 안에서는 suspend 하지 않는다. synchronized 는 대기 중 취소되지 않아 닫힌 배치를 놓치지 않는다.
             val pending = mutableListOf<ImuBatch>()
-            val lock = Mutex()
 
             /** 보낸 뒤에 목록에서 뺀다. 도중에 취소돼도 남은 배치는 종료 처리가 보낸다(같은 seq 경로라 다시 넣어도 덮어쓴다). */
             suspend fun flushPending() {
                 while (true) {
-                    val batch = lock.withLock { pending.firstOrNull() } ?: return
+                    val batch = synchronized(pending) { pending.firstOrNull() } ?: return
                     withContext(ioDispatcher) { transmit(batch, config) }
-                    lock.withLock { pending.remove(batch) }
+                    synchronized(pending) { pending.remove(batch) }
                 }
             }
 
@@ -100,7 +98,7 @@ class ImuRepositoryImpl @Inject constructor(
                         wearState = wearState,
                         watchBatteryPct = deviceInfoLocalDataSource.batteryPercent(),
                     )
-                lock.withLock { pending += batch }
+                synchronized(pending) { pending += batch }
                 return batch
             }
 

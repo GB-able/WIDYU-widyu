@@ -11,12 +11,10 @@ import com.widucorp.widu.data.model.ImuConfig
 import com.widucorp.widu.data.model.ImuSample
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.NonCancellable
-import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.trySendBlocking
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.buffer
-import kotlinx.coroutines.flow.channelFlow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import javax.inject.Inject
@@ -28,12 +26,12 @@ class ImuLocalDataSourceImpl @Inject constructor(
         config: ImuConfig,
         onDrained: (List<ImuSample>) -> Unit,
     ): Flow<ImuSample> =
-        channelFlow {
+        flow {
             // 중력이 포함된 원래 가속도. TYPE_LINEAR_ACCELERATION 이 아니다. (A 1.6.2)
             val sensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
             if (sensor == null) {
                 Log.w(TAG, "Accelerometer not available")
-                return@channelFlow
+                return@flow
             }
             // 배치 한 개치(accHz × batchSec)가 FIFO 에 안 들어가면 FIFO 가 찰 때마다 AP 를 깨운다.
             Log.i(
@@ -42,8 +40,10 @@ class ImuLocalDataSourceImpl @Inject constructor(
             )
 
             val thread = HandlerThread("widyu-imu").apply { start() }
-            /** 흐름이 취소된 뒤 도착한 샘플(FIFO 를 비운 것 포함). 센서 스레드가 쓴다. */
+            /** 수집기가 받지 못한 샘플(FIFO 를 비운 것, 취소로 전달되지 못한 것). */
             val drained = mutableListOf<ImuSample>()
+            // 버퍼를 두지 않고, 넘겼지만 취소로 처리되지 못한 샘플도 drained 로 돌린다.
+            val channel = Channel<ImuSample>(Channel.RENDEZVOUS) { synchronized(drained) { drained += it } }
             val flushCompleted = CompletableDeferred<Unit>()
             val listener =
                 object : SensorEventListener2 {
@@ -55,7 +55,7 @@ class ImuLocalDataSourceImpl @Inject constructor(
                                 y = event.values[1],
                                 z = event.values[2],
                             )
-                        if (trySendBlocking(sample).isFailure) synchronized(drained) { drained += sample }
+                        if (channel.trySendBlocking(sample).isFailure) synchronized(drained) { drained += sample }
                     }
 
                     override fun onFlushCompleted(sensor: Sensor?) {
@@ -80,23 +80,25 @@ class ImuLocalDataSourceImpl @Inject constructor(
             if (!registered) {
                 Log.w(TAG, "Failed to register accelerometer listener")
                 thread.quitSafely()
-                return@channelFlow
+                return@flow
             }
 
             try {
-                awaitCancellation()
+                for (sample in channel) emit(sample)
             } finally {
                 // 그냥 해제하면 FIFO 에 남은 최대 배치 한 개치가 버려진다. 비우고 나서 해제한다.
+                // 채널을 먼저 닫아 이후 도착하는 샘플이 drained 로 가게 한다.
+                channel.cancel()
                 withContext(NonCancellable) {
                     if (sensorManager.flush(listener)) withTimeoutOrNull(DRAIN_TIMEOUT_MS) { flushCompleted.await() }
                     sensorManager.unregisterListener(listener)
                     thread.quitSafely()
-                    onDrained(synchronized(drained) { drained.toList() })
+                    // 닫힌 채널에 보내면 onUndeliveredElement 와 실패 처리가 같은 샘플을 두 번 넣을 수 있어 거른다.
+                    // 취소로 돌아온 샘플과 FIFO 샘플이 섞여 들어올 수 있어 시각 순으로 넘긴다.
+                    onDrained(synchronized(drained) { drained.distinct().sortedBy { it.timestampNs } })
                 }
             }
         }
-            // 버퍼를 두지 않는다. 취소 때 채널에 남아 있던 샘플은 버려지므로, 넘기지 못한 샘플은 전부 drained 로 가게 한다.
-            .buffer(Channel.RENDEZVOUS)
 
     private companion object {
         const val TAG = "Widyu"

@@ -29,8 +29,6 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import java.util.UUID
 import javax.inject.Inject
@@ -57,21 +55,23 @@ class HeartRateRepositoryImpl @Inject constructor(
             var seq = 0L
             // 모아 두었다가 [SendGate] 신호에 가속도와 같은 순간에 보낸다.
             // 착용 상태는 받은 시점의 값을 함께 둔다. 보낼 때 읽으면 기다리는 사이 벗거나 찬 것이 앞 샘플에 잘못 붙는다.
+            // 잠금 안에서는 suspend 하지 않는다. synchronized 는 대기 중 취소되지 않는다.
             val pending = mutableListOf<PendingReadings>()
-            val lock = Mutex()
 
             suspend fun flush() {
                 val batches =
-                    lock.withLock {
+                    synchronized(pending) {
+                        // 앵커 갱신과 겹쳐도 샘플 환산과 배치 clock 이 같은 앵커를 쓰도록 한 번만 읽는다.
+                        val batchClock = clock
                         val groups = pending.toList().also { pending.clear() }
                         groups.flatMap { group ->
-                            group.readings.toBatchSamples(clock).map { samples ->
+                            group.readings.toBatchSamples(batchClock).map { samples ->
                                 HeartRateBatch(
                                     batchId = newUlid(),
                                     deviceId = deviceInfoLocalDataSource.deviceId(),
                                     sessionId = sessionId,
                                     seq = seq++,
-                                    clock = clock,
+                                    clock = batchClock,
                                     samples = samples,
                                     onBody = group.onBody,
                                     wearState = group.wearState,
@@ -111,7 +111,7 @@ class HeartRateRepositoryImpl @Inject constructor(
                             val observedOnBody = onBodyStateHolder.state.value
                             // 서버는 boolean 필수다. 미관측이면 false 로 떨구지 않고 true 로 둔다(IMU 와 같은 절충).
                             val received = PendingReadings(observedOnBody ?: true, onBodyStateHolder.wearState(observedOnBody), measureResult.readings)
-                            lock.withLock {
+                            synchronized(pending) {
                                 val last = pending.lastOrNull()
                                 if (last != null && last.onBody == received.onBody && last.wearState == received.wearState) {
                                     pending[pending.lastIndex] = last.copy(readings = last.readings + received.readings)
