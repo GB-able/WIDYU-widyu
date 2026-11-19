@@ -56,27 +56,28 @@ class HeartRateRepositoryImpl @Inject constructor(
             var clock = takeClock(clockMapper)
             var seq = 0L
             // 모아 두었다가 [SendGate] 신호에 가속도와 같은 순간에 보낸다.
-            val pending = mutableListOf<HeartRateReading>()
+            // 착용 상태는 받은 시점의 값을 함께 둔다. 보낼 때 읽으면 기다리는 사이 벗거나 찬 것이 앞 샘플에 잘못 붙는다.
+            val pending = mutableListOf<PendingReadings>()
             val lock = Mutex()
 
             suspend fun flush() {
                 val batches =
                     lock.withLock {
-                        val sampleBatches = pending.toBatchSamples(clock).also { pending.clear() }
-                        val observedOnBody = onBodyStateHolder.state.value
-                        sampleBatches.map { samples ->
-                            HeartRateBatch(
-                                batchId = newUlid(),
-                                deviceId = deviceInfoLocalDataSource.deviceId(),
-                                sessionId = sessionId,
-                                seq = seq++,
-                                clock = clock,
-                                samples = samples,
-                                // 서버는 boolean 필수다. 미관측이면 false 로 떨구지 않고 true 로 둔다(IMU 와 같은 절충).
-                                onBody = observedOnBody ?: true,
-                                wearState = onBodyStateHolder.wearState(observedOnBody),
-                                watchBatteryPct = deviceInfoLocalDataSource.batteryPercent(),
-                            )
+                        val groups = pending.toList().also { pending.clear() }
+                        groups.flatMap { group ->
+                            group.readings.toBatchSamples(clock).map { samples ->
+                                HeartRateBatch(
+                                    batchId = newUlid(),
+                                    deviceId = deviceInfoLocalDataSource.deviceId(),
+                                    sessionId = sessionId,
+                                    seq = seq++,
+                                    clock = clock,
+                                    samples = samples,
+                                    onBody = group.onBody,
+                                    wearState = group.wearState,
+                                    watchBatteryPct = deviceInfoLocalDataSource.batteryPercent(),
+                                )
+                            }
                         }
                     }
                 withContext(ioDispatcher) { batches.forEach { transmit(it) } }
@@ -107,7 +108,17 @@ class HeartRateRepositoryImpl @Inject constructor(
                                 .lastOrNull()
                                 ?.lastOrNull()
                                 ?.let { onBodyStateHolder.updateHeartRateAccuracy(it.accuracy) }
-                            lock.withLock { pending += measureResult.readings }
+                            val observedOnBody = onBodyStateHolder.state.value
+                            // 서버는 boolean 필수다. 미관측이면 false 로 떨구지 않고 true 로 둔다(IMU 와 같은 절충).
+                            val received = PendingReadings(observedOnBody ?: true, onBodyStateHolder.wearState(observedOnBody), measureResult.readings)
+                            lock.withLock {
+                                val last = pending.lastOrNull()
+                                if (last != null && last.onBody == received.onBody && last.wearState == received.wearState) {
+                                    pending[pending.lastIndex] = last.copy(readings = last.readings + received.readings)
+                                } else {
+                                    pending += received
+                                }
+                            }
                             sendGate.onData()
                         }
 
@@ -154,6 +165,13 @@ class HeartRateRepositoryImpl @Inject constructor(
             Log.w(TAG, "Failed to transmit heart rate batch seq=${batch.seq}", exception)
         }
     }
+
+    /** 같은 착용 상태로 받은 심박. 상태가 바뀌면 배치를 나눈다. */
+    private data class PendingReadings(
+        val onBody: Boolean,
+        val wearState: String,
+        val readings: List<HeartRateReading>,
+    )
 
     private fun takeClock(mapper: ClockMapper): ClockInfo {
         val anchor = clockLocalDataSource.takeAnchor()

@@ -323,6 +323,28 @@ class HeartRateRepositoryImplTest {
         }
 
     @Test
+    @DisplayName("기다리는 사이 벗어도 앞서 받은 심박은 받을 때의 착용 상태로 나뉘어 나간다")
+    fun pendingReadingsKeepTheWearStateOfTheirArrival() =
+        testScope.runTest {
+            // given — 게이트가 막 열린 뒤 차고 있는 상태로 받는다
+            emit(70, reading(70, 1_000, HIGH))
+            nowMs += 1_000
+            emitWithoutAdvancing(71, reading(71, 2_000, HIGH))
+
+            // when — 보내기 전에 벗고, 그 뒤 심박이 와서 게이트가 열린다
+            local.events.emit(MeasureResult.Availability(isAvailable = false, isOnBody = false))
+            runCurrent()
+            emit(null, reading(0, 3_000, UNRELIABLE))
+
+            // then — 착용 상태가 다른 두 배치로 나뉜다
+            remote.sentBatches.drop(1).map { Triple(it.samples.map { s -> s.bpm }, it.onBody, it.wearState) } shouldBe
+                listOf(
+                    Triple(listOf(71), true, "WORN_VALID"),
+                    Triple(listOf(0), false, "ACTUAL_NOT_WORN"),
+                )
+        }
+
+    @Test
     @DisplayName("착용 판정용 정확도는 전송을 기다리지 않고 받은 즉시 반영한다")
     fun accuracyIsAppliedOnReceipt() =
         testScope.runTest {
