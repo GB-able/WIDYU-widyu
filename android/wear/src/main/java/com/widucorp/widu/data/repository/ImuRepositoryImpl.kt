@@ -1,6 +1,5 @@
 package com.widucorp.widu.data.repository
 
-import android.util.Log
 import com.widucorp.widu.data.model.AxisSeries
 import com.widucorp.widu.data.model.ClockInfo
 import com.widucorp.widu.data.model.ImuBatch
@@ -19,7 +18,6 @@ import com.widucorp.widu.data.util.SendGate
 import com.widucorp.widu.data.util.newUlid
 import com.widucorp.widu.data.util.toRanges
 import com.widucorp.widu.di.IoDispatcher
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.NonCancellable
@@ -139,21 +137,8 @@ class ImuRepositoryImpl @Inject constructor(
         return (observed ?: true) to onBodyStateHolder.wearState(observed)
     }
 
-    /** 전송·정리 실패는 삼킨다. 배치 수집을 멈출 이유가 되지 않는다. */
+    /** 원격 호출은 실패를 삼키고(runSafely) 결과로만 알려 주므로 여기서는 잡지 않는다. */
     private suspend fun transmit(
-        batch: ImuBatch,
-        config: ImuConfig,
-    ) {
-        try {
-            transmitOrThrow(batch, config)
-        } catch (exception: CancellationException) {
-            throw exception
-        } catch (exception: Exception) {
-            Log.w(TAG, "Failed to transmit batch seq=${batch.seq}", exception)
-        }
-    }
-
-    private suspend fun transmitOrThrow(
         batch: ImuBatch,
         config: ImuConfig,
     ) {
@@ -169,10 +154,6 @@ class ImuRepositoryImpl @Inject constructor(
         dropped.toRanges().forEach { range ->
             imuRemoteDataSource.recordDrop(batch.sessionId, range.first, range.last, DropReason.QUEUE_OVERFLOW)
         }
-    }
-
-    private companion object {
-        const val TAG = "Widyu"
     }
 
     private fun takeClock(mapper: ClockMapper): ClockInfo {

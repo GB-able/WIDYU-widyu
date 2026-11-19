@@ -1,14 +1,13 @@
 package com.widucorp.widu.data.source
 
-import android.util.Log
 import com.google.android.gms.wearable.DataClient
 import com.google.android.gms.wearable.PutDataMapRequest
 import com.widucorp.widu.data.model.ImuBatch
 import com.widucorp.widu.data.model.toJson
 import com.widucorp.widu.data.util.putBatch
 import com.widucorp.widu.data.util.putDrop
+import com.widucorp.widu.data.util.runSafely
 import com.widucorp.widu.data.util.trimOldest
-import kotlinx.coroutines.CancellationException
 import javax.inject.Inject
 
 class ImuRemoteDataSourceImpl @Inject constructor(
@@ -36,22 +35,7 @@ class ImuRemoteDataSourceImpl @Inject constructor(
         }
     }
 
-    /** 전송 실패가 수집 흐름을 끊지 않게 한다. 취소만 그대로 올려 보낸다. */
-    private inline fun <T> runSafely(
-        what: String,
-        block: () -> T,
-    ): T? =
-        try {
-            block()
-        } catch (exception: CancellationException) {
-            throw exception
-        } catch (exception: Exception) {
-            Log.w(TAG, "Failed to $what", exception)
-            null
-        }
-
     private companion object {
-        const val TAG = "Widyu"
         const val BATCH_PREFIX = "/imu/batch"
         const val DROPPED_PREFIX = "/imu/dropped"
         const val DROPPED_STREAM = "imu_watch"

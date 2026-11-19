@@ -19,7 +19,6 @@ import com.widucorp.widu.data.util.toBatchSamples
 import com.widucorp.widu.data.util.toRanges
 import com.widucorp.widu.di.ApplicationScope
 import com.widucorp.widu.di.IoDispatcher
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
@@ -147,22 +146,17 @@ class HeartRateRepositoryImpl @Inject constructor(
     override suspend fun restartSession() = heartRateLocalDataSource.restartSession()
 
     /** 전송·정리 실패는 삼킨다. 측정을 멈출 이유가 되지 않는다. */
+    /** 원격 호출은 실패를 삼키고(runSafely) 결과로만 알려 주므로 여기서는 잡지 않는다. */
     private suspend fun transmit(batch: HeartRateBatch) {
-        try {
-            if (!heartRateRemoteDataSource.sendBatch(batch)) {
-                heartRateRemoteDataSource.recordDrop(batch.sessionId, batch.seq, batch.seq, DropReason.ENQUEUE_FAILED)
-            }
-            if (batch.seq % TRIM_EVERY_SEQ != 0L) return
-            val dropped = heartRateRemoteDataSource.trimQueue(batch.sessionId, QUEUE_MAX)
-            if (dropped.isEmpty()) return
-            Log.w(TAG, "Heart rate queue full; dropped seq=${dropped.min()}..${dropped.max()}")
-            dropped.toRanges().forEach { range ->
-                heartRateRemoteDataSource.recordDrop(batch.sessionId, range.first, range.last, DropReason.QUEUE_OVERFLOW)
-            }
-        } catch (exception: CancellationException) {
-            throw exception
-        } catch (exception: Exception) {
-            Log.w(TAG, "Failed to transmit heart rate batch seq=${batch.seq}", exception)
+        if (!heartRateRemoteDataSource.sendBatch(batch)) {
+            heartRateRemoteDataSource.recordDrop(batch.sessionId, batch.seq, batch.seq, DropReason.ENQUEUE_FAILED)
+        }
+        if (batch.seq % TRIM_EVERY_SEQ != 0L) return
+        val dropped = heartRateRemoteDataSource.trimQueue(batch.sessionId, QUEUE_MAX)
+        if (dropped.isEmpty()) return
+        Log.w(TAG, "Heart rate queue full; dropped seq=${dropped.min()}..${dropped.max()}")
+        dropped.toRanges().forEach { range ->
+            heartRateRemoteDataSource.recordDrop(batch.sessionId, range.first, range.last, DropReason.QUEUE_OVERFLOW)
         }
     }
 
