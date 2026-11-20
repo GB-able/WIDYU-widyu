@@ -1,14 +1,14 @@
-import 'dart:math' as math;
+import 'dart:async';
 
-import 'package:flutter/foundation.dart';
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
 import 'package:widyu/app/routes/app_route.dart';
 import 'package:widyu/core/di/providers.dart';
+import 'package:widyu/core/model/goal/hospital/daily_health_schedule.dart';
+import 'package:widyu/core/model/goal/medication/medication.dart';
 import 'package:widyu/core/model/goal/medication/medication_point_result.dart';
-import 'package:widyu/core/model/goal/weekly_goal_status_response.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
 import 'package:widyu/core/ui/widgets/custom_loading_widget.dart';
@@ -16,12 +16,11 @@ import 'package:widyu/core/ui/widgets/medication_reward_dialog.dart';
 import 'package:widyu/core/ui/widgets/ui_event_listener.dart';
 import 'package:widyu/core/ui/widgets/widu_icon.dart';
 import 'package:widyu/core/ui/widgets/widyu_text_button.dart';
-import 'package:widyu/core/utils/extensions/date_extension.dart';
-import 'package:widyu/core/utils/show_toast.dart';
-import 'package:widyu/feature/goal/_widget/goal_empty_card.dart';
-import 'package:widyu/feature/goal/_widget/hospital_card.dart';
-import 'package:widyu/feature/goal/_widget/medication_card.dart';
-import 'package:widyu/feature/goal/_widget/walk_card.dart';
+import 'package:widyu/core/utils/medication_verification_launcher.dart';
+import 'package:widyu/feature/goal/_widget/goal_timeline.dart';
+import 'package:widyu/feature/goal/_widget/icon_tile.dart';
+import 'package:widyu/feature/goal/_widget/walk_donut_card.dart';
+import 'package:widyu/feature/goal/main/goal_schedule.dart';
 import 'package:widyu/feature/goal/main/goal_ui_event.dart';
 import 'package:widyu/feature/goal/main/goal_ui_state.dart';
 import 'package:widyu/feature/goal/main/goal_view_model.dart';
@@ -31,30 +30,15 @@ part 'widgets/goal_app_bar.dart';
 part 'widgets/goal_content.dart';
 part 'widgets/goal_error_widget.dart';
 part 'widgets/goal_header.dart';
-part 'widgets/weekly_card.dart';
+part 'widgets/schedule_timeline.dart';
 
 enum GoalType { medicine, walk, hospital }
 
-class GoalScreen extends ConsumerStatefulWidget {
+class GoalScreen extends ConsumerWidget {
   const GoalScreen({super.key});
-
-  @override
-  ConsumerState<GoalScreen> createState() => _GoalScreenState();
-}
-
-class _GoalScreenState extends ConsumerState<GoalScreen> {
-  static const _headerBottomGap = 24.0;
-  static const _appBarFadeDistance = 52.0;
-
-  final GlobalKey _headerKey = GlobalKey();
-  final ValueNotifier<double> _appBarFade = ValueNotifier(0);
 
   void _handleEvent(BuildContext context, GoalUiEvent event) {
     switch (event) {
-      case FetchWeeklyStatusFailure():
-        showToast('이번 주 달성 현황을 불러오지 못했어요.');
-      case VerifyMedicationFailure(:final message):
-        showToast(message);
       case VerifyMedicationSuccess(:final earnedPoint, :final currentPoint):
         showDialog<void>(
           context: context,
@@ -66,27 +50,8 @@ class _GoalScreenState extends ConsumerState<GoalScreen> {
     }
   }
 
-  bool _onScroll(ScrollNotification notification) {
-    if (notification.depth != 0) return false;
-
-    final headerBox =
-        _headerKey.currentContext?.findRenderObject() as RenderBox?;
-    if (headerBox == null) return false;
-
-    final remaining =
-        headerBox.size.height + _headerBottomGap - notification.metrics.pixels;
-    _appBarFade.value = (1 - remaining / _appBarFadeDistance).clamp(0.0, 1.0);
-    return false;
-  }
-
   @override
-  void dispose() {
-    _appBarFade.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final viewModel = ref.watch(goalViewModelProvider.notifier);
     final uiState = ref.watch(goalViewModelProvider);
 
@@ -94,49 +59,23 @@ class _GoalScreenState extends ConsumerState<GoalScreen> {
       stream: viewModel.uiEvent,
       onEvent: (event) => _handleEvent(context, event),
       child: Scaffold(
-        backgroundColor: MyColor.orange300,
-        appBar: _GoalAppBar(fade: _appBarFade),
+        backgroundColor: MyColor.white,
+        appBar: const _GoalAppBar(),
         body: Stack(
           children: [
-            NotificationListener<ScrollNotification>(
-              onNotification: _onScroll,
-              child: CustomScrollView(
-                physics: const ClampingScrollPhysics(),
-                slivers: [
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.only(
-                        bottom: _headerBottomGap,
-                      ),
-                      child: _GoalHeader(
-                        key: _headerKey,
-                        summary: uiState.weeklyStatuses,
-                        point: uiState.point,
-                      ),
-                    ),
-                  ),
-                  SliverLayoutBuilder(
-                    builder: (context, sliverConstraints) {
-                      final minHeight = math.max(
-                        0.0,
-                        sliverConstraints.viewportMainAxisExtent -
-                            sliverConstraints.precedingScrollExtent,
-                      );
-                      return SliverToBoxAdapter(
-                        child: ConstrainedBox(
-                          constraints: BoxConstraints(
-                            minHeight: minHeight,
-                          ),
-                          child: _GoalContent(
-                            state: uiState.cards,
-                            onRetry: viewModel.refresh,
-                            onMedicationVerified:
-                                viewModel.onMedicationVerified,
-                            findRoute: viewModel.findRoute,
-                          ),
-                        ),
-                      );
-                    },
+            SingleChildScrollView(
+              padding: EdgeInsets.only(
+                bottom: 100 + MediaQuery.of(context).padding.bottom,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _GoalHeader(point: uiState.point),
+                  _GoalContent(
+                    state: uiState,
+                    onRetry: viewModel.refresh,
+                    onMedicationVerified: viewModel.onMedicationVerified,
+                    findRoute: viewModel.findRoute,
                   ),
                 ],
               ),

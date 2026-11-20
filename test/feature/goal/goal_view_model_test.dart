@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:fake_async/fake_async.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:widyu/core/data/repository/goal/goal_repository.dart';
@@ -12,7 +13,6 @@ import 'package:widyu/core/model/goal/goal_home_response.dart';
 import 'package:widyu/core/model/goal/medication/medication.dart';
 import 'package:widyu/core/model/goal/medication/medication_point_result.dart';
 import 'package:widyu/core/model/goal/walk/walk.dart';
-import 'package:widyu/core/model/goal/weekly_goal_status_response.dart';
 import 'package:widyu/core/utils/extensions/walk_extension.dart';
 import 'package:widyu/core/utils/walk_tracker.dart';
 import 'package:widyu/feature/goal/main/goal_ui_event.dart';
@@ -27,7 +27,6 @@ class _Goal extends Fake implements GoalRepository {
       hospital: null,
     ),
   );
-  ApiResult<List<GoalRateStatus>> weekly = const ApiResult.success([]);
   Completer<void>? pending;
   int calls = 0;
 
@@ -36,12 +35,6 @@ class _Goal extends Fake implements GoalRepository {
     calls++;
     await pending?.future;
     return home;
-  }
-
-  @override
-  Future<ApiResult<List<GoalRateStatus>>> fetchWeeklyStatus() async {
-    await pending?.future;
-    return weekly;
   }
 }
 
@@ -151,11 +144,11 @@ void main() {
     expect(tracker.starts, 0);
   });
 
-  test('조회에 성공하면 카드와 주간 현황을 보여 주고 포인트·걸음 수를 갱신한다', () async {
+  test('조회에 성공하면 카드를 보여 주고 포인트·걸음 수를 갱신한다', () async {
     listen();
     await pumpEventQueue();
 
-    expect(state().cards, isA<GoalCardsData>());
+    expect(state().hasError, isFalse);
     expect(state().isLoading, isFalse);
     expect(tracker.starts, 1);
     expect(point.refreshes, 1);
@@ -163,19 +156,47 @@ void main() {
     expect(events, isEmpty);
   });
 
-  test('주간 현황만 실패하면 안내 이벤트를 보낸다', () async {
-    goal.weekly = const ApiResult.failure('error');
+  test('조회에 실패하면 오류 상태를 보여 준다', () async {
+    goal.home = const ApiResult.failure('error');
     listen();
     await pumpEventQueue();
 
-    expect(state().cards, isA<GoalCardsData>());
-    expect(events.single, isA<FetchWeeklyStatusFailure>());
+    expect(state().hasError, isTrue);
+    expect(state().isLoading, isFalse);
+  });
+
+  test('날짜가 바뀐 뒤 조회에 실패하면 오류로 바꾸고, 다음 타이머에 다시 조회한다', () {
+    // 한국 시각 23:59:50. 30초 타이머가 처음 돌 때 날짜가 바뀐다.
+    fakeAsync((async) {
+      listen();
+      async.flushMicrotasks();
+      expect(state().hasError, isFalse);
+
+      goal.home = const ApiResult.failure('error');
+      async.elapse(const Duration(seconds: 30));
+      expect(goal.calls, 2);
+      // 어제 약 일정으로 인증하지 않도록 이전 데이터를 보여 주지 않는다.
+      expect(state().hasError, isTrue);
+
+      async.elapse(const Duration(seconds: 30));
+      expect(goal.calls, 3);
+
+      goal.home = const ApiResult.success(
+        GoalHomeResponse(medicine: null, walk: null, hospital: null),
+      );
+      async.elapse(const Duration(seconds: 30));
+      expect(goal.calls, 4);
+      expect(state().hasError, isFalse);
+
+      // 성공한 날짜는 다시 조회하지 않는다.
+      async.elapse(const Duration(seconds: 30));
+      expect(goal.calls, 4);
+      container.dispose();
+    }, initialTime: DateTime.utc(2026, 11, 19, 14, 59, 50));
   });
 
   test('조회 중 폐기되면 상태·이벤트를 쓰지 않고 포인트·걸음 수도 갱신하지 않는다', () async {
-    goal
-      ..weekly = const ApiResult.failure('error')
-      ..pending = Completer();
+    goal.pending = Completer();
     listen();
     await pumpEventQueue();
     expect(goal.calls, 1);
@@ -206,7 +227,6 @@ void main() {
   });
 
   test('다시 빌드돼도 같은 이벤트 stream을 유지하고 다시 구독한다', () async {
-    goal.weekly = const ApiResult.failure('error');
     listen();
     await pumpEventQueue();
 
@@ -214,10 +234,12 @@ void main() {
     container.read(goalViewModelProvider);
     await pumpEventQueue();
     expect(goal.calls, 2);
-    expect(events, [
-      isA<FetchWeeklyStatusFailure>(),
-      isA<FetchWeeklyStatusFailure>(),
-    ]);
+
+    container.read(goalViewModelProvider.notifier).onMedicationVerified(
+          const MedicationPointResult(earnedPoints: 10, currentPoints: 20),
+        );
+    await pumpEventQueue();
+    expect(events.single, isA<VerifyMedicationSuccess>());
 
     point.emit(30);
     await pumpEventQueue();
@@ -237,7 +259,6 @@ void main() {
   });
 
   testWidgets('폐기되면 타이머와 구독을 정리한다', (tester) async {
-    // 복용 시간이 없으면 만료로 보지 않아 남은 시간 타이머가 1초마다 돈다.
     goal.home = const ApiResult.success(
       GoalHomeResponse(
         medicine: Medication(
@@ -256,10 +277,10 @@ void main() {
     listen();
     await tester.pump();
     expect(goal.calls, 1);
-    expect(state().cards, isA<GoalCardsData>());
+    expect(state().hasError, isFalse);
 
     container.dispose();
-    // 구독이나 남은 시간 타이머가 남아 있으면 폐기된 state를 쓰다가 예외가 난다.
+    // 구독이 남아 있으면 폐기된 state를 쓰다가 예외가 난다.
     point.emit(30);
     walk.emit(100);
     medication.changes.add(null);

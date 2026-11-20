@@ -17,6 +17,11 @@ _GoalHomeResponse _$GoalHomeResponseFromJson(Map<String, dynamic> json) =>
       hospital: json['hospital'] == null
           ? null
           : Hospital.fromJson(json['hospital'] as Map<String, dynamic>),
+      todaySchedules: (json['todaySchedules'] as List<dynamic>?)
+              ?.map((e) =>
+                  DailyHealthSchedule.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          const [],
     );
 
 Map<String, dynamic> _$GoalHomeResponseToJson(_GoalHomeResponse instance) =>
@@ -24,4 +29,5 @@ Map<String, dynamic> _$GoalHomeResponseToJson(_GoalHomeResponse instance) =>
       'medicine': instance.medicine,
       'steps': instance.walk,
       'hospital': instance.hospital,
+      'todaySchedules': instance.todaySchedules,
     };

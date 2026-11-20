@@ -1,7 +1,7 @@
 import 'dart:async';
 
+import 'package:clock/clock.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:widyu/core/data/repository/goal/goal_repository.dart';
 import 'package:widyu/core/data/repository/goal/walk_repository.dart';
 import 'package:widyu/core/data/repository/location/location_repository.dart';
@@ -9,12 +9,10 @@ import 'package:widyu/core/data/repository/point/point_repository.dart';
 import 'package:widyu/core/di/providers.dart';
 import 'package:widyu/core/model/api/api_result.dart';
 import 'package:widyu/core/model/goal/goal_home_response.dart';
+import 'package:widyu/core/model/goal/hospital/daily_health_schedule.dart';
 import 'package:widyu/core/model/goal/medication/medication_point_result.dart';
-import 'package:widyu/core/model/goal/weekly_goal_status_response.dart';
-import 'package:widyu/core/model/location/user_location.dart';
 import 'package:widyu/core/utils/extensions/walk_extension.dart';
-import 'package:widyu/core/utils/kakao_map_launcher.dart';
-import 'package:widyu/core/utils/show_toast.dart';
+import 'package:widyu/core/utils/find_route.dart';
 import 'package:widyu/feature/goal/main/goal_ui_event.dart';
 import 'package:widyu/feature/goal/main/goal_ui_state.dart';
 
@@ -62,7 +60,7 @@ class GoalViewModel extends _$GoalViewModel {
         .listen((_) => unawaited(refresh(showLoading: false)));
     ref.onDispose(medicationChanges.cancel);
     final dayTimer = Timer.periodic(const Duration(seconds: 30), (_) {
-      if (_loadedDay != DateTime.now().walkDate) {
+      if (_loadedDay != clock.now().walkDate) {
         unawaited(refresh(showLoading: false));
       }
     });
@@ -74,29 +72,18 @@ class GoalViewModel extends _$GoalViewModel {
   }
 
   Future<void> refresh({bool showLoading = true}) async {
-    final requestedDay = DateTime.now().walkDate;
-    _loadedDay = requestedDay;
+    final requestedDay = clock.now().walkDate;
     if (showLoading) {
-      state = state.copyWith(
-        cards: const GoalCardsState.loading(),
-        isWeeklyLoading: true,
-      );
+      state = state.copyWith(isLoading: true);
     }
 
-    final results = await Future.wait<Object>([
-      _repository.fetchGoalHome(),
-      _repository.fetchWeeklyStatus(),
-    ]);
+    final home = await _repository.fetchGoalHome();
     if (!ref.mounted) return;
     unawaited(_pointRepository.refresh());
-    final home = results[0] as ApiResult<GoalHomeResponse>;
-    final weekly = results[1] as ApiResult<List<GoalRateStatus>>;
 
     switch (home) {
-      case Success<GoalHomeResponse>():
-        final medicine = home.data.medicine;
-
-        final walk = home.data.walk;
+      case Success<GoalHomeResponse>(:final data):
+        final walk = data.walk;
         if (walk != null) {
           _walkRepository.applyServerSteps(
             walk.actual,
@@ -105,78 +92,32 @@ class GoalViewModel extends _$GoalViewModel {
           );
         }
 
+        // 성공한 뒤에만 기록해, 날짜가 바뀐 뒤 실패하면 날짜 타이머가 다시 조회한다.
+        _loadedDay = requestedDay;
         state = state.copyWith(
-          cards: GoalCardsState.data(
-            medicine: medicine,
-            walk: home.data.walk,
-            hospital: home.data.hospital,
-          ),
+          isLoading: false,
+          hasError: false,
+          medicine: data.medicine,
+          stepGoal: walk?.goal ?? 0,
+          visits: data.todaySchedules,
         );
       case Failure<GoalHomeResponse>():
-        if (showLoading || state.cards is GoalCardsLoading) {
-          state = state.copyWith(cards: const GoalCardsState.error());
+        // 같은 날짜 데이터가 있으면 조용한 갱신 실패는 기존 화면을 둔다.
+        // 날짜가 바뀐 뒤 실패하면 어제 일정으로 인증하지 않도록 오류 화면으로 바꾼다.
+        if (showLoading || state.isLoading || _loadedDay != requestedDay) {
+          state = state.copyWith(isLoading: false, hasError: true);
         }
     }
-
-    switch (weekly) {
-      case Success<List<GoalRateStatus>>():
-        state = state.copyWith(
-          isWeeklyLoading: false,
-          weeklyStatuses: weekly.data,
-        );
-      case Failure<List<GoalRateStatus>>():
-        state = state.copyWith(
-          isWeeklyLoading: false,
-          weeklyStatuses: showLoading ? const [] : state.weeklyStatuses,
-        );
-        if (showLoading && state.cards is! GoalCardsError) {
-          _emit(const FetchWeeklyStatusFailure());
-        }
-    }
-  }
-
-  GoalCardsData? get _cards {
-    final cards = state.cards;
-    return cards is GoalCardsData ? cards : null;
   }
 
   void onMedicationVerified(MedicationPointResult result) {
     _emit(VerifyMedicationSuccess(result.earnedPoints, result.currentPoints));
   }
 
-  Future<void> findRoute() async {
-    final hospital = _cards?.hospital;
-    if (hospital == null) return;
-
-    final latitude = hospital.latitude;
-    final longitude = hospital.longitude;
-    final address = hospital.address;
-
-    try {
-      var isOpened = false;
-      if (latitude != null && longitude != null) {
-        final current = await _locationRepository.getCurrentLocation();
-        isOpened = await KakaoMapLauncher.openRoute(
-          destination: UserLocation(latitude: latitude, longitude: longitude),
-          start: current,
-          destinationName: address,
-        );
-      }
-      if (!isOpened) {
-        final uri = Uri.https('www.google.com', '/maps/search/', {
-          'api': '1',
-          'query': address,
-        });
-        final launched = await launchUrl(
-          uri,
-          mode: LaunchMode.externalApplication,
-        );
-        if (!launched) {
-          throw Exception('다른 지도 맵 열기 실패');
-        }
-      }
-    } catch (e) {
-      showToast('길을 안내할 수 없습니다.');
-    }
-  }
+  Future<void> findRoute(DailyHealthSchedule visit) => findRouteTo(
+        locationRepository: _locationRepository,
+        address: visit.placeAddress ?? visit.scheduleName,
+        latitude: visit.latitude,
+        longitude: visit.longitude,
+      );
 }

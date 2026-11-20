@@ -8,69 +8,65 @@ class _GoalContent extends StatelessWidget {
     required this.findRoute,
   });
 
-  final GoalCardsState state;
+  final GoalUiState state;
   final VoidCallback onRetry;
   final ValueChanged<MedicationPointResult> onMedicationVerified;
-  final VoidCallback findRoute;
+  final ValueChanged<DailyHealthSchedule> findRoute;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.fromLTRB(
-        16,
-        24,
-        16,
-        100 + MediaQuery.of(context).padding.bottom,
-      ),
-      decoration: const BoxDecoration(
-        color: MyColor.grey100,
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(20),
-          topRight: Radius.circular(20),
+    if (state.isLoading) return const SizedBox.shrink();
+    if (state.hasError) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 48),
+        child: _GoalErrorWidget(onRetry: onRetry),
+      );
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const _SectionTitle('오늘의 스케줄'),
+        Padding(
+          padding: const EdgeInsets.all(16),
+          child: _ScheduleTimeline(
+            medicine: state.medicine,
+            visits: state.visits,
+            onMedicationVerified: onMedicationVerified,
+            findRoute: findRoute,
+          ),
         ),
+        if (state.hasStepGoal) ...[
+          const SizedBox(height: 16),
+          const _SectionTitle('오늘의 걸음 수'),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+            child: Consumer(
+              builder: (context, ref, _) => WalkDonutCard(
+                actual: ref.watch(todayStepsProvider),
+                goal: state.stepGoal,
+                color: MyColor.grey50,
+              ),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+class _SectionTitle extends StatelessWidget {
+  const _SectionTitle(this.text);
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Text(
+        text,
+        style: MyTypo.title4.copyWith(color: MyColor.grey700),
       ),
-      child: switch (state) {
-        GoalCardsLoading() => const SizedBox.shrink(),
-        GoalCardsError() => Padding(
-            padding: const EdgeInsets.symmetric(vertical: 48),
-            child: _GoalErrorWidget(onRetry: onRetry),
-          ),
-        GoalCardsData(
-          :final medicine,
-          :final walk,
-          :final hospital,
-          :final proofPhoto,
-        ) =>
-          Column(
-            spacing: 16,
-            children: [
-              medicine != null
-                  ? MedicationCard(
-                      medicine: medicine,
-                      proofPhoto: proofPhoto,
-                      onVerified: onMedicationVerified,
-                    )
-                  : const GoalEmptyCard(type: GoalType.medicine),
-              walk != null && walk.goal > 0
-                  ? Consumer(
-                      builder: (context, ref, _) => WalkCard(
-                        walk: walk.copyWith(
-                          actual: ref.watch(todayStepsProvider),
-                        ),
-                      ),
-                    )
-                  : const GoalEmptyCard(type: GoalType.walk),
-              hospital != null
-                  ? HospitalCard(
-                      hospital: hospital,
-                      onTap: () {},
-                      findRoute: findRoute,
-                    )
-                  : const GoalEmptyCard(type: GoalType.hospital),
-            ],
-          ),
-      },
     );
   }
 }
