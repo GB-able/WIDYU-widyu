@@ -25,8 +25,12 @@ Future<bool> initializeMedicationPush() async {
   }
 }
 
-bool isMedicationChange(RemoteMessage message) =>
-    NotificationType.medicationScheduleSync.matches(message.data);
+bool isMedicationChange(RemoteMessage message) => [
+      NotificationType.medicationScheduleSync,
+      NotificationType.medicationScheduleCreated,
+      NotificationType.medicationScheduleChanged,
+      NotificationType.medicationScheduleDeleted,
+    ].any((type) => type.matches(message.data));
 
 Future<String?> authenticatedMedicationMember() async {
   if (!await TokenManager().hasToken()) return null;

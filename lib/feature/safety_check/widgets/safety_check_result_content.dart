@@ -3,11 +3,11 @@ part of '../safety_check_screen.dart';
 class _SafetyCheckResultContent extends StatelessWidget {
   const _SafetyCheckResultContent({
     required this.title,
-    required this.description,
+    this.description,
   });
 
   final String title;
-  final String description;
+  final String? description;
 
   @override
   Widget build(BuildContext context) {
@@ -26,11 +26,12 @@ class _SafetyCheckResultContent extends StatelessWidget {
             color: MyColor.white,
           ),
         ),
-        Text(
-          description,
-          textAlign: TextAlign.center,
-          style: MyTypo.body1.copyWith(color: MyColor.white),
-        ),
+        if (description != null)
+          Text(
+            description!,
+            textAlign: TextAlign.center,
+            style: MyTypo.body1.copyWith(color: MyColor.white),
+          ),
       ],
     );
   }

@@ -1,9 +1,16 @@
+import AppIntents
 import BackgroundTasks
 import Flutter
 import HealthKit
 import UIKit
 import firebase_messaging
 import flutter_background_service_ios
+import medication_alarm
+
+@available(iOS 17.0, *)
+struct RunnerIntents: AppIntentsPackage {
+  static var includedPackages: [any AppIntentsPackage.Type] { [MedicationAlarmIntents.self] }
+}
 
 @main
 @objc class AppDelegate: FlutterAppDelegate {

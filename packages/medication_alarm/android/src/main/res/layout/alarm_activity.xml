@@ -49,7 +49,7 @@
         android:layout_height="56dp"
         android:layout_marginTop="12dp"
         android:background="@drawable/alarm_verify_button"
-        android:text="인증 하러 가기"
+        android:text="인증하러 가기"
         android:textAppearance="@style/Typo.Title3" />
 
     <Space

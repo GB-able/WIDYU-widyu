@@ -257,13 +257,13 @@ class _CarouselEmptyView extends StatelessWidget {
             style: MyTypo.body2.copyWith(color: MyColor.grey500),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 20),
-          WidyuTextButton(
-            onTap: () => context.go(AppRoute.goal.path),
-            text: '+   목표 추가하기',
-            backgroundColor: MyColor.white,
-            textColor: MyColor.primary,
-          ),
+          // const SizedBox(height: 20),
+          // WidyuTextButton(
+          //   onTap: () => context.go(AppRoute.goal.path),
+          //   text: '+   목표 추가하기',
+          //   backgroundColor: MyColor.white,
+          //   textColor: MyColor.primary,
+          // ),
         ],
       ),
     );

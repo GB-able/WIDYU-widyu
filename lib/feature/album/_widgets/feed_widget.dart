@@ -198,6 +198,10 @@ class _FeedWidgetState extends State<FeedWidget> {
                               )
                             : CustomNetworkImage(
                                 url: url,
+                                placeholderUrl:
+                                    feed.thumbnailUrls.elementAtOrNull(index),
+                                placeholderDecodeWidth:
+                                    albumGridDecodeWidth(context),
                                 width: thumbnailWidth,
                                 height: thumbnailHeight,
                               );
@@ -288,7 +292,22 @@ class _FeedWidgetState extends State<FeedWidget> {
         Text(_formatDate(feed.createdAt), style: MyTypo.subTitle3),
         const SizedBox(height: 4),
         if (isLocked && feed.content.trim().isNotEmpty)
-          Text(_lockedPreview(feed.content), style: MyTypo.body2),
+          GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: _confirmUnlock,
+            child: Text.rich(
+              TextSpan(
+                text: '${_lockedPreview(feed.content)} ',
+                style: MyTypo.body2,
+                children: [
+                  TextSpan(
+                    text: '더보기',
+                    style: MyTypo.body2.copyWith(color: MyColor.grey500),
+                  ),
+                ],
+              ),
+            ),
+          ),
         if (!isLocked)
           ExpandableText(
             text: feed.content,

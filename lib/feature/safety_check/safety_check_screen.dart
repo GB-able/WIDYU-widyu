@@ -100,7 +100,6 @@ class _SafetyCheckView extends ConsumerWidget {
                         SafetyCheckPhase.okay =>
                           const _SafetyCheckResultContent(
                             title: '괜찮다고 보호자에게\n전해드렸어요.',
-                            description: '괜찮으시면 시간 안에 누르지 않으면\n보호자에게 알려드려요.',
                           ),
                         SafetyCheckPhase.notOkay =>
                           const _SafetyCheckResultContent(
