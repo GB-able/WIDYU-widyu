@@ -4,33 +4,32 @@ import 'package:widyu/feature/goal/main/goal_screen.dart';
 import 'package:widyu/gen/assets.gen.dart';
 
 class IconTile extends StatelessWidget {
-  const IconTile({super.key, required this.type, this.isFailed = false});
+  const IconTile({super.key, required this.type, this.size = 40});
 
   final GoalType type;
-  final bool isFailed;
+  final double size;
 
-  AssetGenImage get _image => switch ((type, isFailed)) {
-        (GoalType.medicine, false) => Assets.images.img40Medicine,
-        (GoalType.medicine, true) => Assets.images.img40MedicineDisabled,
-        (GoalType.walk, false) => Assets.images.img40Walk,
-        (GoalType.walk, true) => Assets.images.img40WalkDisabled,
-        (GoalType.hospital, false) => Assets.images.img40Hospital,
-        (GoalType.hospital, true) => Assets.images.img40HospitalDisabled,
+  AssetGenImage get _image => switch (type) {
+        GoalType.medicine => Assets.images.img40Medicine,
+        GoalType.walk => Assets.images.img40Walk,
+        GoalType.hospital => Assets.images.img40Hospital,
       };
 
   @override
   Widget build(BuildContext context) {
+    // 디자인의 그림자는 40 크기에서 blur 5, 24 크기에서 blur 3이다.
+    final scale = size / 40;
     return Container(
-      width: 40,
-      height: 40,
+      width: size,
+      height: size,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         color: MyColor.white,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.25),
-            blurRadius: 5,
-            offset: const Offset(1, 1),
+            blurRadius: 5 * scale,
+            offset: Offset(scale, scale),
           ),
         ],
       ),

@@ -41,7 +41,7 @@ final class GoalViewModelProvider
   }
 }
 
-String _$goalViewModelHash() => r'1fe7ac15ca626a6faacc698fa69c802c78a9d937';
+String _$goalViewModelHash() => r'3824348036126d684202ea8bfbfb39aff2d9c804';
 
 abstract class _$GoalViewModel extends $Notifier<GoalUiState> {
   GoalUiState build();
