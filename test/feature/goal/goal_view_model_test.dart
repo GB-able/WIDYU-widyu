@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:fake_async/fake_async.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:widyu/core/data/repository/goal/goal_repository.dart';
@@ -162,6 +163,36 @@ void main() {
 
     expect(state().hasError, isTrue);
     expect(state().isLoading, isFalse);
+  });
+
+  test('날짜가 바뀐 뒤 조회에 실패하면 오류로 바꾸고, 다음 타이머에 다시 조회한다', () {
+    // 한국 시각 23:59:50. 30초 타이머가 처음 돌 때 날짜가 바뀐다.
+    fakeAsync((async) {
+      listen();
+      async.flushMicrotasks();
+      expect(state().hasError, isFalse);
+
+      goal.home = const ApiResult.failure('error');
+      async.elapse(const Duration(seconds: 30));
+      expect(goal.calls, 2);
+      // 어제 약 일정으로 인증하지 않도록 이전 데이터를 보여 주지 않는다.
+      expect(state().hasError, isTrue);
+
+      async.elapse(const Duration(seconds: 30));
+      expect(goal.calls, 3);
+
+      goal.home = const ApiResult.success(
+        GoalHomeResponse(medicine: null, walk: null, hospital: null),
+      );
+      async.elapse(const Duration(seconds: 30));
+      expect(goal.calls, 4);
+      expect(state().hasError, isFalse);
+
+      // 성공한 날짜는 다시 조회하지 않는다.
+      async.elapse(const Duration(seconds: 30));
+      expect(goal.calls, 4);
+      container.dispose();
+    }, initialTime: DateTime.utc(2026, 11, 19, 14, 59, 50));
   });
 
   test('조회 중 폐기되면 상태·이벤트를 쓰지 않고 포인트·걸음 수도 갱신하지 않는다', () async {

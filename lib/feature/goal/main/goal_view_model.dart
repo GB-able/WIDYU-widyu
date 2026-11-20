@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:clock/clock.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:widyu/core/data/repository/goal/goal_repository.dart';
 import 'package:widyu/core/data/repository/goal/walk_repository.dart';
@@ -59,7 +60,7 @@ class GoalViewModel extends _$GoalViewModel {
         .listen((_) => unawaited(refresh(showLoading: false)));
     ref.onDispose(medicationChanges.cancel);
     final dayTimer = Timer.periodic(const Duration(seconds: 30), (_) {
-      if (_loadedDay != DateTime.now().walkDate) {
+      if (_loadedDay != clock.now().walkDate) {
         unawaited(refresh(showLoading: false));
       }
     });
@@ -71,8 +72,7 @@ class GoalViewModel extends _$GoalViewModel {
   }
 
   Future<void> refresh({bool showLoading = true}) async {
-    final requestedDay = DateTime.now().walkDate;
-    _loadedDay = requestedDay;
+    final requestedDay = clock.now().walkDate;
     if (showLoading) {
       state = state.copyWith(isLoading: true);
     }
@@ -92,6 +92,8 @@ class GoalViewModel extends _$GoalViewModel {
           );
         }
 
+        // 성공한 뒤에만 기록해, 날짜가 바뀐 뒤 실패하면 날짜 타이머가 다시 조회한다.
+        _loadedDay = requestedDay;
         state = state.copyWith(
           isLoading: false,
           hasError: false,
@@ -100,8 +102,9 @@ class GoalViewModel extends _$GoalViewModel {
           visits: data.todaySchedules,
         );
       case Failure<GoalHomeResponse>():
-        // 화면에 데이터가 있는 상태의 조용한 갱신 실패는 기존 화면을 둔다.
-        if (showLoading || state.isLoading) {
+        // 같은 날짜 데이터가 있으면 조용한 갱신 실패는 기존 화면을 둔다.
+        // 날짜가 바뀐 뒤 실패하면 어제 일정으로 인증하지 않도록 오류 화면으로 바꾼다.
+        if (showLoading || state.isLoading || _loadedDay != requestedDay) {
           state = state.copyWith(isLoading: false, hasError: true);
         }
     }
