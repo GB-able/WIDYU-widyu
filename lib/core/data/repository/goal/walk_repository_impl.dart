@@ -247,6 +247,10 @@ class WalkRepositoryImpl implements WalkRepository {
       if (state.remove('goalPending') == true) {
         state['goalSince'] = now().millisecondsSinceEpoch;
         await save();
+      } else if (!state.containsKey('days') &&
+          !state.containsKey('goalSince')) {
+        state['goalSince'] = serverDate.walkStartOf.millisecondsSinceEpoch;
+        await save();
       }
       final since = state['goalSince'] as int?;
       _goalSince = since == null
