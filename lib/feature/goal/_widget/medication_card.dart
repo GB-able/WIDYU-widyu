@@ -10,6 +10,7 @@ import 'package:widyu/core/ui/widgets/custom_network_image.dart';
 import 'package:widyu/core/ui/widgets/dash_border.dart';
 import 'package:widyu/core/ui/widgets/widu_icon.dart';
 import 'package:widyu/core/utils/extensions/duration_extension.dart';
+import 'package:widyu/core/utils/extensions/medication_extension.dart';
 import 'package:widyu/core/utils/extensions/string_extension.dart';
 import 'package:widyu/core/utils/medication_verification_launcher.dart';
 import 'package:widyu/feature/goal/_widget/icon_tile.dart';
@@ -132,7 +133,7 @@ class _VerifyCard extends StatelessWidget {
 
   final _VerifyState state;
   final String alarmTime;
-  final int doseCount;
+  final double doseCount;
   final String? proofImage;
   final File? proofPhoto;
   final Duration verifyRemaining;
@@ -174,7 +175,7 @@ class _VerifyPhotoBox extends StatelessWidget {
     required this.onTap,
   });
 
-  final int doseCount;
+  final double doseCount;
   final Duration verifyRemaining;
   final VoidCallback? onTap;
 
@@ -214,7 +215,7 @@ class _VerifyPhotoBox extends StatelessWidget {
               ),
               const SizedBox(height: 4),
               Text(
-                '$doseCount정 복용예정',
+                '${doseCount.doseLabel}정 복용예정',
                 style: MyTypo.body2.copyWith(color: MyColor.orange500),
               ),
               Row(
@@ -250,7 +251,7 @@ class _VerifyDoneBox extends StatelessWidget {
 
   final String? proofImage;
   final File? proofPhoto;
-  final int doseCount;
+  final double doseCount;
 
   @override
   Widget build(BuildContext context) {
@@ -279,7 +280,7 @@ class _VerifyDoneBox extends StatelessWidget {
             alignment: Alignment.center,
             color: MyColor.black.withValues(alpha: 0.5),
             child: Text(
-              '$doseCount정 복용완료',
+              '${doseCount.doseLabel}정 복용완료',
               style: MyTypo.title3.copyWith(color: MyColor.white),
             ),
           ),

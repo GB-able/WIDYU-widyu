@@ -17,3 +17,8 @@ extension MedicationExtension on DateTime {
     return !now.isBefore(windowOpensAt) && !now.isAfter(windowClosesAt);
   }
 }
+
+extension DoseCountExtension on double {
+  String get doseLabel =>
+      toStringAsFixed(2).replaceFirst(RegExp(r'\.?0+$'), '');
+}

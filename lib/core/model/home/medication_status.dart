@@ -13,7 +13,7 @@ sealed class MedicationStatus with _$MedicationStatus {
     required DateTime closesAt,
     required int takenCount,
     required int totalCount,
-    int? doseCount,
+    double? doseCount,
     int? scheduleId,
   }) = MedicationAvailable;
 

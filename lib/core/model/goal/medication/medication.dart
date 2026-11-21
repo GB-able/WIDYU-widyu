@@ -14,7 +14,7 @@ abstract class Medication with _$Medication {
     required int medicineScheduleId,
     required int takenCount,
     required int totalCount,
-    required int nextDoseCount,
+    required double nextDoseCount,
     required String nextAlarmTime,
     @JsonKey(name: 'proofImageUrl') required String? proofImage,
     @JsonKey(defaultValue: [])
@@ -52,7 +52,8 @@ abstract class Medication with _$Medication {
   String alarmTimeAt(DateTime now) =>
       currentDose(now)?.doseTime ?? nextAlarmTime;
 
-  int doseCountAt(DateTime now) => currentDose(now)?.doseCount ?? nextDoseCount;
+  double doseCountAt(DateTime now) =>
+      currentDose(now)?.doseCount ?? nextDoseCount;
 
   String? proofImageAt(DateTime now) =>
       currentDose(now)?.proofImageUrl ?? proofImage;

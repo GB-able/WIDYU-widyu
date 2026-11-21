@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
+import 'package:widyu/core/utils/extensions/medication_extension.dart';
 import 'package:widyu/gen/assets.gen.dart';
 
 class MedicationRingingScreen extends StatefulWidget {
@@ -45,9 +46,7 @@ class _MedicationRingingScreenState extends State<MedicationRingingScreen> {
             return sum + (item['doseCount'] as num).toDouble();
           })
         : 0.0;
-    final doseLabel = dose == dose.truncateToDouble()
-        ? dose.toInt().toString()
-        : dose.toStringAsFixed(1);
+    final doseLabel = dose.doseLabel;
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light,

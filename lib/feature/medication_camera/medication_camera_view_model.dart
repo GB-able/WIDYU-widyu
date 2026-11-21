@@ -8,6 +8,7 @@ import 'package:widyu/core/data/repository/point/point_repository.dart';
 import 'package:widyu/core/di/providers.dart';
 import 'package:widyu/core/log/log.dart';
 import 'package:widyu/core/model/goal/medication/medication_point_result.dart';
+import 'package:widyu/core/utils/extensions/medication_extension.dart';
 import 'package:widyu/feature/medication_camera/medication_camera_ui_event.dart';
 import 'package:widyu/feature/medication_camera/medication_camera_ui_state.dart';
 
@@ -48,9 +49,7 @@ class MedicationCameraViewModel extends _$MedicationCameraViewModel {
       return sum + (item['doseCount'] as num).toDouble();
     });
     if (dose == 0) return null;
-    return dose == dose.truncateToDouble()
-        ? dose.toInt().toString()
-        : dose.toStringAsFixed(1);
+    return dose.doseLabel;
   }
 
   Future<void> _load() async {

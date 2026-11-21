@@ -36,7 +36,7 @@ abstract class MedicationSummary with _$MedicationSummary {
     required int? medicineScheduleId,
     required int? todayTakenCount,
     required int? todayTotalCount,
-    required int? nextDoseCount,
+    required double? nextDoseCount,
     required String? nextAlarmTime,
     @JsonKey(defaultValue: [])
     required List<MedicationDoseStatus> scheduleStatuses,
@@ -52,7 +52,7 @@ abstract class MedicationDoseStatus with _$MedicationDoseStatus {
     int? scheduleId,
     required String? doseTime,
     @JsonKey(defaultValue: false) required bool taken,
-    int? doseCount,
+    double? doseCount,
     String? proofImageUrl,
   }) = _MedicationDoseStatus;
 

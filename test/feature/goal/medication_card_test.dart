@@ -3,11 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:widyu/core/model/goal/medication/medication.dart';
 import 'package:widyu/core/model/home/senior_card.dart';
+import 'package:widyu/core/utils/extensions/medication_extension.dart';
 import 'package:widyu/feature/goal/_widget/medication_card.dart';
 
 final now = DateTime(2026, 10, 30, 10, 43);
 
-MedicationDoseStatus dose(String time, int count, {bool taken = false}) =>
+MedicationDoseStatus dose(String time, double count, {bool taken = false}) =>
     MedicationDoseStatus(
       scheduleId: int.parse(time.replaceAll(':', '')),
       doseTime: time,
@@ -21,7 +22,7 @@ Future<void> pumpCard(
   required int taken,
   required int total,
   required String next,
-  int nextDoseCount = 1,
+  double nextDoseCount = 1,
   String? proofImage,
   List<MedicationDoseStatus> doses = const [],
 }) async {
@@ -53,6 +54,17 @@ final waitingNext = find.text('다음 인증까지');
 final missed = find.text('미복용');
 
 void main() {
+  test('소수 복용량은 잘리지 않고 표시된다', () {
+    expect(2.5.doseLabel, '2.5');
+    expect(0.25.doseLabel, '0.25');
+    expect(2.0.doseLabel, '2');
+    expect(10.0.doseLabel, '10');
+    expect(
+        MedicationDoseStatus.fromJson(
+            {'doseTime': '10:40', 'doseCount': 2.5, 'taken': false}).doseCount,
+        2.5);
+  });
+
   group('scheduleStatuses 기준 (A 10:40 1정, B 10:45 2정, C 23:00 3정)', () {
     final a = dose('10:40', 1, taken: true);
     final b = dose('10:45', 2);

@@ -8,7 +8,7 @@ import 'package:widyu/core/model/goal/medication/medication_point_result.dart';
 
 Future<MedicationPointResult?> openMedicationForSchedule(
     BuildContext context, int scheduleId, DateTime date,
-    {int? doseCount}) async {
+    {double? doseCount}) async {
   final repository = ProviderScope.containerOf(context, listen: false)
       .read(medicationRepositoryProvider);
   Object? memberId;

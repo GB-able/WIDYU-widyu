@@ -65,7 +65,7 @@ class HomeScreen extends ConsumerWidget {
   }
 
   Future<void> _openMedicationCamera(BuildContext context,
-      HomeViewModel viewModel, int scheduleId, int? doseCount) async {
+      HomeViewModel viewModel, int scheduleId, double? doseCount) async {
     final result = await openMedicationForSchedule(
         context, scheduleId, DateTime.now(),
         doseCount: doseCount);

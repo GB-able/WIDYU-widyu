@@ -66,7 +66,7 @@ final class MedicationCameraViewModelProvider extends $NotifierProvider<
 }
 
 String _$medicationCameraViewModelHash() =>
-    r'1e9fe527408652085bb9f6ece9cd82ffe70c0ada';
+    r'b8e2b2a732c8b316a7d6529fe4b230e23e7085c1';
 
 /// [group]은 라우트로 받은 복용 회차 묶음이다. Map은 객체 동일성으로 비교되므로
 /// 화면이 처음 받은 Map을 고정해 넘겨야 화면마다 ViewModel 하나가 유지된다.
