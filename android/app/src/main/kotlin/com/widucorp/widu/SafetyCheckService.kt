@@ -178,7 +178,7 @@ class SafetyCheckService : Service() {
         private const val FCM_RECHECK_INTERVAL_MS = 500L
         private const val SCREEN_WAKE_MS = 5_000L
         private const val TITLE = "평소와 다른 심박이 감지됐어요."
-        private const val BODY = "괜찮으시면 취소를 눌러주세요. 시간 안에 누르지 않으면 보호자에게 알려드려요."
+        private const val BODY = "괜찮으시면 밀어서 취소해주세요. 시간 안에 취소하지 않으면 보호자에게 알려드려요."
 
         private var current: SafetyCheckService? = null
 

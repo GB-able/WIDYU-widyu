@@ -1,8 +1,9 @@
 part of '../safety_check_screen.dart';
 
 class _SafetyCheckContent extends StatelessWidget {
-  const _SafetyCheckContent({required this.onCancel});
+  const _SafetyCheckContent({required this.deadline, required this.onCancel});
 
+  final DateTime? deadline;
   final Future<bool> Function() onCancel;
 
   @override
@@ -32,10 +33,12 @@ class _SafetyCheckContent extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  '괜찮으시면 시간 안에 누르지 않으면\n보호자에게 알려드려요.',
+                  '괜찮으시면 밀어서 취소해주세요.\n시간 안에 취소하지 않으면\n보호자에게 알려드려요.',
                   textAlign: TextAlign.center,
                   style: MyTypo.body1.copyWith(color: MyColor.white),
                 ),
+                if (deadline case final deadline?)
+                  _RemainingSeconds(deadline: deadline),
               ],
             ),
             _SlideButton(onCompleted: onCancel),

@@ -17,6 +17,7 @@ mixin _$SafetyCheckUiState {
   SafetyCheckPhase get phase;
   bool get isSubmitting;
   bool get closed;
+  DateTime? get deadline;
 
   /// Create a copy of SafetyCheckUiState
   /// with the given fields replaced by the non-null parameter values.
@@ -34,15 +35,18 @@ mixin _$SafetyCheckUiState {
             (identical(other.phase, phase) || other.phase == phase) &&
             (identical(other.isSubmitting, isSubmitting) ||
                 other.isSubmitting == isSubmitting) &&
-            (identical(other.closed, closed) || other.closed == closed));
+            (identical(other.closed, closed) || other.closed == closed) &&
+            (identical(other.deadline, deadline) ||
+                other.deadline == deadline));
   }
 
   @override
-  int get hashCode => Object.hash(runtimeType, phase, isSubmitting, closed);
+  int get hashCode =>
+      Object.hash(runtimeType, phase, isSubmitting, closed, deadline);
 
   @override
   String toString() {
-    return 'SafetyCheckUiState(phase: $phase, isSubmitting: $isSubmitting, closed: $closed)';
+    return 'SafetyCheckUiState(phase: $phase, isSubmitting: $isSubmitting, closed: $closed, deadline: $deadline)';
   }
 }
 
@@ -52,7 +56,11 @@ abstract mixin class $SafetyCheckUiStateCopyWith<$Res> {
           SafetyCheckUiState value, $Res Function(SafetyCheckUiState) _then) =
       _$SafetyCheckUiStateCopyWithImpl;
   @useResult
-  $Res call({SafetyCheckPhase phase, bool isSubmitting, bool closed});
+  $Res call(
+      {SafetyCheckPhase phase,
+      bool isSubmitting,
+      bool closed,
+      DateTime? deadline});
 }
 
 /// @nodoc
@@ -71,6 +79,7 @@ class _$SafetyCheckUiStateCopyWithImpl<$Res>
     Object? phase = null,
     Object? isSubmitting = null,
     Object? closed = null,
+    Object? deadline = freezed,
   }) {
     return _then(_self.copyWith(
       phase: null == phase
@@ -85,6 +94,10 @@ class _$SafetyCheckUiStateCopyWithImpl<$Res>
           ? _self.closed
           : closed // ignore: cast_nullable_to_non_nullable
               as bool,
+      deadline: freezed == deadline
+          ? _self.deadline
+          : deadline // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
     ));
   }
 }
@@ -182,14 +195,16 @@ extension SafetyCheckUiStatePatterns on SafetyCheckUiState {
 
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>(
-    TResult Function(SafetyCheckPhase phase, bool isSubmitting, bool closed)?
+    TResult Function(SafetyCheckPhase phase, bool isSubmitting, bool closed,
+            DateTime? deadline)?
         $default, {
     required TResult orElse(),
   }) {
     final _that = this;
     switch (_that) {
       case _SafetyCheckUiState() when $default != null:
-        return $default(_that.phase, _that.isSubmitting, _that.closed);
+        return $default(
+            _that.phase, _that.isSubmitting, _that.closed, _that.deadline);
       case _:
         return orElse();
     }
@@ -210,13 +225,15 @@ extension SafetyCheckUiStatePatterns on SafetyCheckUiState {
 
   @optionalTypeArgs
   TResult when<TResult extends Object?>(
-    TResult Function(SafetyCheckPhase phase, bool isSubmitting, bool closed)
+    TResult Function(SafetyCheckPhase phase, bool isSubmitting, bool closed,
+            DateTime? deadline)
         $default,
   ) {
     final _that = this;
     switch (_that) {
       case _SafetyCheckUiState():
-        return $default(_that.phase, _that.isSubmitting, _that.closed);
+        return $default(
+            _that.phase, _that.isSubmitting, _that.closed, _that.deadline);
       case _:
         throw StateError('Unexpected subclass');
     }
@@ -236,13 +253,15 @@ extension SafetyCheckUiStatePatterns on SafetyCheckUiState {
 
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>(
-    TResult? Function(SafetyCheckPhase phase, bool isSubmitting, bool closed)?
+    TResult? Function(SafetyCheckPhase phase, bool isSubmitting, bool closed,
+            DateTime? deadline)?
         $default,
   ) {
     final _that = this;
     switch (_that) {
       case _SafetyCheckUiState() when $default != null:
-        return $default(_that.phase, _that.isSubmitting, _that.closed);
+        return $default(
+            _that.phase, _that.isSubmitting, _that.closed, _that.deadline);
       case _:
         return null;
     }
@@ -255,7 +274,8 @@ class _SafetyCheckUiState implements SafetyCheckUiState {
   const _SafetyCheckUiState(
       {this.phase = SafetyCheckPhase.confirm,
       this.isSubmitting = false,
-      this.closed = false});
+      this.closed = false,
+      this.deadline});
 
   @override
   @JsonKey()
@@ -266,6 +286,8 @@ class _SafetyCheckUiState implements SafetyCheckUiState {
   @override
   @JsonKey()
   final bool closed;
+  @override
+  final DateTime? deadline;
 
   /// Create a copy of SafetyCheckUiState
   /// with the given fields replaced by the non-null parameter values.
@@ -283,15 +305,18 @@ class _SafetyCheckUiState implements SafetyCheckUiState {
             (identical(other.phase, phase) || other.phase == phase) &&
             (identical(other.isSubmitting, isSubmitting) ||
                 other.isSubmitting == isSubmitting) &&
-            (identical(other.closed, closed) || other.closed == closed));
+            (identical(other.closed, closed) || other.closed == closed) &&
+            (identical(other.deadline, deadline) ||
+                other.deadline == deadline));
   }
 
   @override
-  int get hashCode => Object.hash(runtimeType, phase, isSubmitting, closed);
+  int get hashCode =>
+      Object.hash(runtimeType, phase, isSubmitting, closed, deadline);
 
   @override
   String toString() {
-    return 'SafetyCheckUiState(phase: $phase, isSubmitting: $isSubmitting, closed: $closed)';
+    return 'SafetyCheckUiState(phase: $phase, isSubmitting: $isSubmitting, closed: $closed, deadline: $deadline)';
   }
 }
 
@@ -303,7 +328,11 @@ abstract mixin class _$SafetyCheckUiStateCopyWith<$Res>
       __$SafetyCheckUiStateCopyWithImpl;
   @override
   @useResult
-  $Res call({SafetyCheckPhase phase, bool isSubmitting, bool closed});
+  $Res call(
+      {SafetyCheckPhase phase,
+      bool isSubmitting,
+      bool closed,
+      DateTime? deadline});
 }
 
 /// @nodoc
@@ -322,6 +351,7 @@ class __$SafetyCheckUiStateCopyWithImpl<$Res>
     Object? phase = null,
     Object? isSubmitting = null,
     Object? closed = null,
+    Object? deadline = freezed,
   }) {
     return _then(_SafetyCheckUiState(
       phase: null == phase
@@ -336,6 +366,10 @@ class __$SafetyCheckUiStateCopyWithImpl<$Res>
           ? _self.closed
           : closed // ignore: cast_nullable_to_non_nullable
               as bool,
+      deadline: freezed == deadline
+          ? _self.deadline
+          : deadline // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
     ));
   }
 }

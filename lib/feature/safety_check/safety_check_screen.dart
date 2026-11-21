@@ -13,6 +13,7 @@ import 'package:widyu/feature/safety_check/safety_check_ui_state.dart';
 import 'package:widyu/feature/safety_check/safety_check_view_model.dart';
 import 'package:widyu/gen/assets.gen.dart';
 
+part 'widgets/remaining_seconds.dart';
 part 'widgets/safety_check_content.dart';
 part 'widgets/safety_check_result_content.dart';
 part 'widgets/slide_button.dart';
@@ -65,6 +66,7 @@ class _SafetyCheckView extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final provider = safetyCheckViewModelProvider(incidentId);
     final phase = ref.watch(provider.select((state) => state.phase));
+    final deadline = ref.watch(provider.select((state) => state.deadline));
     final viewModel = ref.read(provider.notifier);
     ref.listen(provider.select((state) => state.closed), (_, closed) {
       if (!closed) return;
@@ -96,6 +98,7 @@ class _SafetyCheckView extends ConsumerWidget {
                     child: SingleChildScrollView(
                       child: switch (phase) {
                         SafetyCheckPhase.confirm => _SafetyCheckContent(
+                            deadline: deadline,
                             onCancel: () => _respondOk(viewModel)),
                         SafetyCheckPhase.okay =>
                           const _SafetyCheckResultContent(
