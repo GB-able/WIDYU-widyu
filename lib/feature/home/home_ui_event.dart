@@ -72,8 +72,10 @@ class CameraPermissionSettingsLaunchFailure extends HomeUiEvent {
 class NavigateToMedicationCamera extends HomeUiEvent {
   final int scheduleId;
   final double? doseCount;
+  final DateTime? scheduledAt;
 
-  const NavigateToMedicationCamera(this.scheduleId, {this.doseCount});
+  const NavigateToMedicationCamera(this.scheduleId,
+      {this.doseCount, this.scheduledAt});
 }
 
 class MedicationScheduleUnavailable extends HomeUiEvent {

@@ -87,6 +87,12 @@ class MedicationCameraViewModel extends _$MedicationCameraViewModel {
 
   Future<void> submit(File photo) async {
     if (state.isBusy) return;
+    final now = DateTime.now();
+    _pending.removeWhere((occurrence) => !occurrence.canVerify(now));
+    if (_pending.isEmpty) {
+      _uiEvent.add(const VerifyWindowClosed());
+      return;
+    }
     state = state.copyWith(isBusy: true);
     // 화면이 먼저 닫혀도 인증과 포인트 갱신은 끝까지 한다(기존 동작).
     final medicationRepository = _medicationRepository;

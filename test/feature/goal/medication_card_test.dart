@@ -164,6 +164,20 @@ void main() {
           medicine.copyWith(scheduleStatuses: const []).scheduleIdAt(now), 1);
     });
 
+    test('고른 회차에 scheduleId가 없으면 다른 시각의 medicineScheduleId로 대체하지 않는다', () {
+      final medicine = Medication(
+        medicineScheduleId: 1,
+        takenCount: 1,
+        totalCount: 3,
+        nextDoseCount: 1,
+        nextAlarmTime: '10:40',
+        proofImage: null,
+        scheduleStatuses: [a, b.copyWith(scheduleId: null), c],
+      );
+      expect(medicine.scheduleIdAt(now), isNull);
+      expect(medicine.copyWith(nextAlarmTime: '10:45').scheduleIdAt(now), 1);
+    });
+
     testWidgets('순서 섞여 와도 시간순으로 고름', (tester) async {
       await pumpCard(tester,
           taken: 1, total: 3, next: '10:40', doses: [c, b, a]);

@@ -82,7 +82,10 @@ MedicationStatus resolveMedicationStatus({
         takenCount: taken,
         totalCount: total,
         doseCount: dose?.doseCount ?? medicine.nextDoseCount,
-        scheduleId: dose?.scheduleId,
+        scheduleId: dose?.scheduleId ??
+            (medicine.nextAlarmTime?.toAlarmAt(now) == doseAt
+                ? medicine.medicineScheduleId
+                : null),
       );
     }
   }

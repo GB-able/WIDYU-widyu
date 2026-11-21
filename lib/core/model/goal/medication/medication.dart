@@ -46,8 +46,14 @@ abstract class Medication with _$Medication {
     return opened.isNotEmpty ? opened.last : doses.first;
   }
 
-  int scheduleIdAt(DateTime now) =>
-      currentDose(now)?.scheduleId ?? medicineScheduleId;
+  int? scheduleIdAt(DateTime now) {
+    final dose = currentDose(now);
+    if (dose == null) return medicineScheduleId;
+    if (dose.scheduleId != null) return dose.scheduleId;
+    return nextAlarmTime.toAlarmAt(now) == dose.doseTime!.toAlarmAt(now)
+        ? medicineScheduleId
+        : null;
+  }
 
   String alarmTimeAt(DateTime now) =>
       currentDose(now)?.doseTime ?? nextAlarmTime;

@@ -13,6 +13,7 @@ import 'package:widyu/core/utils/extensions/duration_extension.dart';
 import 'package:widyu/core/utils/extensions/medication_extension.dart';
 import 'package:widyu/core/utils/extensions/string_extension.dart';
 import 'package:widyu/core/utils/medication_verification_launcher.dart';
+import 'package:widyu/core/utils/show_toast.dart';
 import 'package:widyu/feature/goal/_widget/icon_tile.dart';
 import 'package:widyu/feature/goal/main/goal_screen.dart';
 import 'package:widyu/gen/assets.gen.dart';
@@ -103,9 +104,15 @@ class MedicationCard extends StatelessWidget {
               verifyRemaining: verifyRemaining,
               onOpenVerification: () async {
                 final tapped = clock.now();
+                final scheduleId = medicine.scheduleIdAt(tapped);
+                if (scheduleId == null) {
+                  showToast('복용 일정 정보를 불러오지 못했어요.');
+                  return;
+                }
                 final result = await openMedicationForSchedule(
-                    context, medicine.scheduleIdAt(tapped), tapped,
-                    doseCount: medicine.doseCountAt(tapped));
+                    context, scheduleId, tapped,
+                    doseCount: medicine.doseCountAt(tapped),
+                    scheduledAt: medicine.alarmAt(tapped));
                 if (result != null) onVerified(result);
               },
             ),
