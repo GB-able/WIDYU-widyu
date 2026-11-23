@@ -40,13 +40,7 @@ class _GoalContent extends StatelessWidget {
           const _SectionTitle('오늘의 걸음 수'),
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-            child: Consumer(
-              builder: (context, ref, _) => WalkDonutCard(
-                actual: ref.watch(todayStepsProvider),
-                goal: state.stepGoal,
-                color: MyColor.grey50,
-              ),
-            ),
+            child: _StepSummary(goal: state.stepGoal),
           ),
         ],
       ],
@@ -66,6 +60,43 @@ class _SectionTitle extends StatelessWidget {
       child: Text(
         text,
         style: MyTypo.title4.copyWith(color: MyColor.grey700),
+      ),
+    );
+  }
+}
+
+class _StepSummary extends StatelessWidget {
+  const _StepSummary({required this.goal});
+
+  final int goal;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: MyColor.grey50,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        children: [
+          const IconTile(type: GoalType.walk, size: 24),
+          const SizedBox(width: 16),
+          Text('걷기', style: MyTypo.subTitle5.copyWith(color: MyColor.grey700)),
+          const Spacer(),
+          // 걸음 수는 자주 바뀌므로 숫자만 다시 그린다.
+          Consumer(
+            builder: (context, ref, _) => Text(
+              ref.watch(todayStepsProvider).toComma,
+              style: MyTypo.subTitle1.copyWith(color: MyColor.primary),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Text(
+            '/ ${goal.toComma}',
+            style: MyTypo.subTitle1.copyWith(color: MyColor.grey500),
+          ),
+        ],
       ),
     );
   }

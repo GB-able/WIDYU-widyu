@@ -80,7 +80,7 @@ class _ScheduleTimelineState extends State<_ScheduleTimeline> {
       status: dose.status,
       leading: IconTile(type: GoalType.medicine, size: isActive ? 40 : 24),
       title: Row(
-        spacing: isActive ? 8 : 12,
+        spacing: 12,
         children: [
           _TimeText(_timeLabel(dose.at)),
           Text(
@@ -108,7 +108,7 @@ class _ScheduleTimelineState extends State<_ScheduleTimeline> {
       status: schedule.status,
       leading: IconTile(type: GoalType.hospital, size: isActive ? 40 : 24),
       title: Row(
-        spacing: isActive ? 8 : 12,
+        spacing: 12,
         children: [
           _TimeText(_timeLabel(schedule.at)),
           Flexible(
