@@ -13,6 +13,8 @@ import 'package:widyu/core/model/goal/medication/medication_point_result.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
 import 'package:widyu/core/ui/widgets/medication_reward_dialog.dart';
+import 'package:widyu/core/ui/widgets/point_banner.dart';
+import 'package:widyu/core/ui/widgets/skeleton_box.dart';
 import 'package:widyu/core/ui/widgets/ui_event_listener.dart';
 import 'package:widyu/core/ui/widgets/wave_pulse_effect.dart';
 import 'package:widyu/core/ui/widgets/widu_icon.dart';

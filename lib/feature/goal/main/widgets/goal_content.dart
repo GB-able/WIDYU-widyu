@@ -59,7 +59,7 @@ class _SectionTitle extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Align(
         alignment: Alignment.centerLeft,
-        child: _SkeletonBox(
+        child: SkeletonBox(
           width: 110,
           height: 18,
           lineHeight: 27,
@@ -90,7 +90,7 @@ class _StepSummary extends StatelessWidget {
         children: [
           const IconTile(type: GoalType.walk, size: 24),
           const SizedBox(width: 16),
-          _SkeletonBox(
+          SkeletonBox(
             width: 36,
             height: 16,
             lineHeight: 24,
@@ -100,7 +100,7 @@ class _StepSummary extends StatelessWidget {
             ),
           ),
           const Spacer(),
-          _SkeletonBox(
+          SkeletonBox(
             width: 116,
             height: 18,
             lineHeight: 24,

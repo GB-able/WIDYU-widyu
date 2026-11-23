@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
+import 'package:widyu/core/ui/widgets/point_banner.dart';
 import 'package:widyu/core/ui/widgets/ui_event_listener.dart';
 import 'package:widyu/core/ui/widgets/widu_icon.dart';
 import 'package:widyu/core/utils/show_toast.dart';
@@ -14,7 +15,6 @@ import 'package:widyu/gen/assets.gen.dart';
 
 part 'widget/point_app_bar.dart';
 part 'widget/point_history_view.dart';
-part 'widget/total_point_view.dart';
 
 class PointScreen extends ConsumerWidget {
   const PointScreen({super.key});
@@ -43,11 +43,10 @@ class PointScreen extends ConsumerWidget {
                 child: Column(
                   children: [
                     const SizedBox(height: 16),
-                    _TotalPointView(point: uiState.point),
+                    PointBanner(point: uiState.point),
                     const SizedBox(height: 16),
                     Expanded(
-                      child:
-                          _PointHistoryView(histories: uiState.histories),
+                      child: _PointHistoryView(histories: uiState.histories),
                     ),
                   ],
                 ),
