@@ -87,17 +87,18 @@ class _SkeletonBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Skeleton.replace(
+    // Skeleton.replace는 스켈레톤이 꺼져 있어도 크기를 고정하므로 직접 나눈다.
+    if (Skeletonizer.maybeOf(context)?.enabled != true) return child;
+    return SizedBox(
       width: width,
       height: lineHeight,
-      replacement: Center(
+      child: Center(
         child: Bone(
           width: width,
           height: height,
           borderRadius: BorderRadius.circular(pill ? height / 2 : 6),
         ),
       ),
-      child: child,
     );
   }
 }
