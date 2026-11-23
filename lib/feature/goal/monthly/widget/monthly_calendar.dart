@@ -164,93 +164,107 @@ class _CalendarGrid extends StatefulWidget {
 }
 
 class _CalendarGridState extends State<_CalendarGrid> {
-  /// 달을 넘기는 중에는 선택 원이 따라 움직이지 않으므로 숨긴다.
-  bool _paging = false;
+  /// 달력 페이지의 스크롤 위치. 선택 원을 페이지와 함께 옮기는 데 쓴다.
+  PageController? _pages;
 
-  bool _onScroll(ScrollNotification notification) {
-    if (notification.metrics.axis != Axis.horizontal) return false;
-    // 끝난 뒤에도 UserScrollNotification(idle)이 오므로 시작과 끝만 본다.
-    // 화살표·오늘로 돌아가기로 달이 바뀔 때는 table_calendar가 빌드 중에 페이지를 옮겨
-    // 여기서 setState하면 안 된다. 그때는 선택한 날이 그 달에 없어 원이 어차피 숨는다.
-    final paging = switch (notification) {
-      ScrollStartNotification(dragDetails: _?) => true,
-      ScrollEndNotification() => false,
-      _ => _paging,
-    };
-    if (paging != _paging) setState(() => _paging = paging);
-    return false;
+  void _onCalendarCreated(PageController pages) {
+    // table_calendar가 빌드 중에 넘겨주므로 다음 프레임에 반영한다.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) setState(() => _pages = pages);
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     final isMonth = widget.format == CalendarFormat.month;
     final weekdayStyle = MyTypo.body2.copyWith(color: MyColor.grey500);
+    final selected = widget.selectedDay;
+    final pages = _pages;
 
     return Stack(
       children: [
         // 선택 원은 날짜 칸 아래에 따로 두고, 고른 칸으로 미끄러지듯 옮긴다.
         Positioned.fill(
           child: LayoutBuilder(
-            builder: (context, constraints) => _SelectionDot(
-              // 다른 달·주로 바뀌면 새로 만들어 움직이지 않고 그 자리에 놓는다.
-              key: ValueKey(
-                isMonth
-                    ? DateTime(widget.focusedDay.year, widget.focusedDay.month)
-                    : widget.selectedDay.onlyDateTime.subtract(
-                        Duration(days: widget.selectedDay.weekday % 7),
-                      ),
-              ),
-              offset: _offsetOf(constraints.maxWidth, isMonth),
-              // 오늘은 연한 주황 원만 보여 준다.
-              visible: !_paging &&
-                  !widget.selectedDay.isSameDay(widget.today) &&
-                  (!isMonth ||
-                      widget.selectedDay.isSameMonth(widget.focusedDay)),
-            ),
+            builder: (context, constraints) {
+              final dot = _SelectionDot(
+                // 다른 달·주의 날을 고르면 새로 만들어 움직이지 않고 그 자리에 놓는다.
+                key: ValueKey(
+                  isMonth
+                      ? DateTime(selected.year, selected.month)
+                      : selected.onlyDateTime
+                          .subtract(Duration(days: selected.weekday % 7)),
+                ),
+                offset: _offsetOf(constraints.maxWidth, isMonth),
+                // 오늘은 연한 주황 원만 보여 준다.
+                visible: !selected.isSameDay(widget.today),
+              );
+              // 접힌 주 달력은 넘기지 않으므로 페이지를 따라갈 필요가 없다.
+              if (!isMonth || pages == null) return dot;
+              // 선택한 날이 있는 달 페이지에 붙여, 달을 넘기면 페이지와 함께 밀려 나간다.
+              final selectedPage = (selected.year - widget.firstDay.year) * 12 +
+                  selected.month -
+                  widget.firstDay.month;
+              return AnimatedBuilder(
+                animation: pages,
+                builder: (context, child) {
+                  final page =
+                      pages.hasClients && pages.position.hasContentDimensions
+                          ? pages.page ?? selectedPage.toDouble()
+                          : selectedPage.toDouble();
+                  return Transform.translate(
+                    offset: Offset(
+                      (selectedPage - page) * constraints.maxWidth,
+                      0,
+                    ),
+                    child: child,
+                  );
+                },
+                child: dot,
+              );
+            },
           ),
         ),
-        NotificationListener<ScrollNotification>(
-          onNotification: _onScroll,
-          child: TableCalendar<void>(
-            locale: 'ko_KR',
-            headerVisible: false,
-            focusedDay: widget.focusedDay,
-            firstDay: widget.firstDay,
-            lastDay: widget.lastDay,
-            calendarFormat: widget.format,
-            formatAnimationDuration: Duration.zero,
-            // 접힌 주 달력은 선택한 날을 따라가므로 넘기지 않는다. 달은 화살표로 바꾼다.
-            availableGestures: isMonth
-                ? AvailableGestures.horizontalSwipe
-                : AvailableGestures.none,
-            rowHeight: isMonth
-                ? _CalendarMetrics.rowHeight
-                : _CalendarMetrics.cellHeight,
-            daysOfWeekHeight: _CalendarMetrics.daysOfWeekHeight,
-            daysOfWeekStyle: DaysOfWeekStyle(
-              weekdayStyle: weekdayStyle,
-              weekendStyle: weekdayStyle,
-            ),
-            calendarStyle: const CalendarStyle(
-              outsideDaysVisible: false,
-              markersMaxCount: 0,
-            ),
-            onPageChanged: widget.onPageChanged,
-            calendarBuilders: CalendarBuilders<void>(
-              prioritizedBuilder: (context, date, _) {
-                // table_calendar는 날짜를 UTC로 넘기므로 날짜만 떼어 비교한다.
-                final day = date.onlyDateTime;
-                final isEnabled = !day.isBefore(widget.firstDay) &&
-                    !day.isAfter(widget.lastDay);
-                return _CalendarDayCell(
-                  date: date,
-                  isToday: date.isSameDay(widget.today),
-                  isSelected: date.isSameDay(widget.selectedDay),
-                  hasHealth: widget.hasHealth(date),
-                  onTap: isEnabled ? () => widget.onSelectDay(date) : null,
-                );
-              },
-            ),
+        TableCalendar<void>(
+          locale: 'ko_KR',
+          headerVisible: false,
+          focusedDay: widget.focusedDay,
+          firstDay: widget.firstDay,
+          lastDay: widget.lastDay,
+          calendarFormat: widget.format,
+          formatAnimationDuration: Duration.zero,
+          // 접힌 주 달력은 선택한 날을 따라가므로 넘기지 않는다. 달은 화살표로 바꾼다.
+          availableGestures: isMonth
+              ? AvailableGestures.horizontalSwipe
+              : AvailableGestures.none,
+          rowHeight: isMonth
+              ? _CalendarMetrics.rowHeight
+              : _CalendarMetrics.cellHeight,
+          daysOfWeekHeight: _CalendarMetrics.daysOfWeekHeight,
+          daysOfWeekStyle: DaysOfWeekStyle(
+            weekdayStyle: weekdayStyle,
+            weekendStyle: weekdayStyle,
+          ),
+          calendarStyle: const CalendarStyle(
+            outsideDaysVisible: false,
+            markersMaxCount: 0,
+          ),
+          onPageChanged: widget.onPageChanged,
+          onCalendarCreated: _onCalendarCreated,
+          calendarBuilders: CalendarBuilders<void>(
+            prioritizedBuilder: (context, date, _) {
+              // table_calendar는 날짜를 UTC로 넘기므로 날짜만 떼어 비교한다.
+              final day = date.onlyDateTime;
+              final isEnabled = !day.isBefore(widget.firstDay) &&
+                  !day.isAfter(widget.lastDay);
+              return _CalendarDayCell(
+                date: date,
+                isToday: date.isSameDay(widget.today),
+                isSelected: date.isSameDay(widget.selectedDay),
+                hasHealth: widget.hasHealth(date),
+                onTap: isEnabled ? () => widget.onSelectDay(date) : null,
+              );
+            },
           ),
         ),
       ],
