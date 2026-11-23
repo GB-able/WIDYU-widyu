@@ -34,8 +34,10 @@ class ProfileViewModel extends _$ProfileViewModel {
     return const ProfileUiState(isLoading: true);
   }
 
-  Future<void> updateName(String newName) async {
+  Future<void> updateName(String input) async {
+    final newName = input.trim();
     final oldName = state.name;
+    if (newName.isEmpty) return _uiEvent.add(const EmptyName());
     if (newName == oldName) return;
 
     state = state.copyWith(name: newName);

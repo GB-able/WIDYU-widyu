@@ -31,6 +31,8 @@ class ProfileScreen extends ConsumerWidget {
         showToast('이름 변경에 실패했습니다.');
       case UpdateProfileImageFailure():
         showToast('프로필 사진 변경에 실패했습니다.');
+      case EmptyName():
+        showToast('이름을 입력해 주세요.');
     }
   }
 

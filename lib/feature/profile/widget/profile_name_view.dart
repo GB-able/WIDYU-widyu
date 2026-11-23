@@ -42,9 +42,11 @@ class _ProfileNameViewState extends State<_ProfileNameView> {
             readOnly: !_isEditing,
             showCursor: _isEditing,
             cursorColor: MyColor.black,
+            maxLength: 50,
             textAlign: TextAlign.center,
             style: MyTypo.title3.copyWith(color: MyColor.black),
             decoration: const InputDecoration(
+              counterText: '',
               isDense: true,
               contentPadding: EdgeInsets.symmetric(vertical: 4),
               enabledBorder: InputBorder.none,
