@@ -200,8 +200,6 @@ class _CalendarGridState extends State<_CalendarGrid> {
                           .subtract(Duration(days: selected.weekday % 7)),
                 ),
                 offset: _offsetOf(constraints.maxWidth, isMonth),
-                // 오늘은 연한 주황 원만 보여 준다.
-                visible: !selected.isSameDay(widget.today),
               );
               // 접힌 주 달력은 넘기지 않으므로 페이지를 따라갈 필요가 없다.
               if (!isMonth || pages == null) return dot;
@@ -295,7 +293,6 @@ class _SelectionDot extends StatelessWidget {
   const _SelectionDot({
     super.key,
     required this.offset,
-    required this.visible,
   });
 
   static const size = 28.0;
@@ -303,7 +300,6 @@ class _SelectionDot extends StatelessWidget {
   static const _curve = Cubic(0.2, 0.8, 0.3, 1);
 
   final Offset offset;
-  final bool visible;
 
   @override
   Widget build(BuildContext context) {
@@ -316,16 +312,12 @@ class _SelectionDot extends StatelessWidget {
           curve: _curve,
           left: offset.dx,
           top: offset.dy,
-          child: AnimatedOpacity(
-            duration: duration,
-            opacity: visible ? 1 : 0,
-            child: const DecoratedBox(
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: MyColor.primary,
-              ),
-              child: SizedBox.square(dimension: size),
+          child: const DecoratedBox(
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: MyColor.primary,
             ),
+            child: SizedBox.square(dimension: size),
           ),
         ),
       ],
@@ -350,8 +342,7 @@ class _CalendarDayCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 오늘은 늘 연한 주황으로 칠한다. 오늘이 아닌 선택한 날의 진한 주황 원은 [_SelectionDot]이 그린다.
-    final isPicked = isSelected && !isToday;
+    // 선택한 날의 진한 주황 원은 [_SelectionDot]이 그린다. 오늘은 선택되지 않았을 때만 연한 주황으로 칠한다.
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
@@ -369,12 +360,14 @@ class _CalendarDayCell extends StatelessWidget {
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: isToday ? MyColor.orange200 : Colors.transparent,
+                  color: isToday && !isSelected
+                      ? MyColor.orange200
+                      : Colors.transparent,
                 ),
                 child: AnimatedDefaultTextStyle(
                   duration: const Duration(milliseconds: 200),
                   style: MyTypo.body1.copyWith(
-                    color: isPicked ? MyColor.white : MyColor.grey800,
+                    color: isSelected ? MyColor.white : MyColor.grey800,
                   ),
                   child: Text('${date.day}'),
                 ),
