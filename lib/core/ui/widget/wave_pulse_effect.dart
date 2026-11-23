@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:skeletonizer/skeletonizer.dart';
+import 'package:widyu/core/ui/theme/colors.dart';
 
 /// 스켈레톤 블록이 흐려졌다 진해지기를 반복하되, 왼쪽부터 늦게 시작해
 /// 페이드가 왼쪽에서 오른쪽으로 물결처럼 지나가는 효과.
@@ -8,8 +9,8 @@ import 'package:skeletonizer/skeletonizer.dart';
 /// 그 시점의 색을 계산한 그라데이션으로 블록별 지연을 흉내 낸다.
 class WavePulseEffect extends PaintingEffect {
   const WavePulseEffect({
-    this.color = const Color(0xFFDFE2E6),
-    this.background = const Color(0xFFF6F7F8),
+    this.color = MyColor.grey200,
+    this.background = MyColor.grey50,
   }) : super(duration: _cycle);
 
   /// 가장 진할 때의 블록 색.
