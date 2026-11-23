@@ -67,6 +67,9 @@ class _MonthlyGoalScreenState extends ConsumerState<MonthlyGoalScreen>
       return;
     }
     if (_shrink.isAnimating) _shrink.stop();
+    if (_shrink.value == 0 && delta > 0) {
+      ref.read(monthlyGoalViewModelProvider.notifier).showSelectedMonth();
+    }
     final range = _range(ref.read(monthlyGoalViewModelProvider).focusedMonth);
     _shrink.value = (_shrink.value + delta / range).clamp(0.0, 1.0);
   }

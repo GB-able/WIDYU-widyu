@@ -16,8 +16,7 @@ T _$identity<T>(T value) => value;
 mixin _$MonthlyGoalDay {
   DateTime get date;
   List<DailyMedicineSchedule> get medicines;
-  List<DailyHealthSchedule>
-      get healthSchedules; // 걷기 조회에 실패했거나 목표가 없던 날은 null이다.
+  List<DailyHealthSchedule> get healthSchedules; // 걷기 목표가 없던 날은 null이다.
   WalkDaily? get walk;
 
   /// Create a copy of MonthlyGoalDay
@@ -319,7 +318,7 @@ class _MonthlyGoalDay implements MonthlyGoalDay {
     return EqualUnmodifiableListView(_healthSchedules);
   }
 
-// 걷기 조회에 실패했거나 목표가 없던 날은 null이다.
+// 걷기 목표가 없던 날은 null이다.
   @override
   final WalkDaily? walk;
 
@@ -433,8 +432,8 @@ class __$MonthlyGoalDayCopyWithImpl<$Res>
 mixin _$MonthlyGoalUiState {
   DateTime get today;
   DateTime get focusedMonth;
-  DateTime get selectedDay;
-  Set<int> get healthDays; // 새 날짜를 불러오는 동안에는 이전 날짜를 그대로 보여 준다.
+  DateTime get selectedDay; // 건강 일정이 있는 날. 지금까지 받은 달을 모두 담는다.
+  Set<DateTime> get healthDays; // 새 날짜를 불러오는 동안에는 이전 날짜를 그대로 보여 준다.
   MonthlyGoalDay? get day;
   bool get isDayLoading;
   bool get hasDayError;
@@ -493,7 +492,7 @@ abstract mixin class $MonthlyGoalUiStateCopyWith<$Res> {
       {DateTime today,
       DateTime focusedMonth,
       DateTime selectedDay,
-      Set<int> healthDays,
+      Set<DateTime> healthDays,
       MonthlyGoalDay? day,
       bool isDayLoading,
       bool hasDayError});
@@ -538,7 +537,7 @@ class _$MonthlyGoalUiStateCopyWithImpl<$Res>
       healthDays: null == healthDays
           ? _self.healthDays
           : healthDays // ignore: cast_nullable_to_non_nullable
-              as Set<int>,
+              as Set<DateTime>,
       day: freezed == day
           ? _self.day
           : day // ignore: cast_nullable_to_non_nullable
@@ -666,7 +665,7 @@ extension MonthlyGoalUiStatePatterns on MonthlyGoalUiState {
             DateTime today,
             DateTime focusedMonth,
             DateTime selectedDay,
-            Set<int> healthDays,
+            Set<DateTime> healthDays,
             MonthlyGoalDay? day,
             bool isDayLoading,
             bool hasDayError)?
@@ -702,7 +701,7 @@ extension MonthlyGoalUiStatePatterns on MonthlyGoalUiState {
             DateTime today,
             DateTime focusedMonth,
             DateTime selectedDay,
-            Set<int> healthDays,
+            Set<DateTime> healthDays,
             MonthlyGoalDay? day,
             bool isDayLoading,
             bool hasDayError)
@@ -736,7 +735,7 @@ extension MonthlyGoalUiStatePatterns on MonthlyGoalUiState {
             DateTime today,
             DateTime focusedMonth,
             DateTime selectedDay,
-            Set<int> healthDays,
+            Set<DateTime> healthDays,
             MonthlyGoalDay? day,
             bool isDayLoading,
             bool hasDayError)?
@@ -760,7 +759,7 @@ class _MonthlyGoalUiState extends MonthlyGoalUiState {
       {required this.today,
       required this.focusedMonth,
       required this.selectedDay,
-      final Set<int> healthDays = const {},
+      final Set<DateTime> healthDays = const {},
       this.day,
       this.isDayLoading = true,
       this.hasDayError = false})
@@ -773,10 +772,12 @@ class _MonthlyGoalUiState extends MonthlyGoalUiState {
   final DateTime focusedMonth;
   @override
   final DateTime selectedDay;
-  final Set<int> _healthDays;
+// 건강 일정이 있는 날. 지금까지 받은 달을 모두 담는다.
+  final Set<DateTime> _healthDays;
+// 건강 일정이 있는 날. 지금까지 받은 달을 모두 담는다.
   @override
   @JsonKey()
-  Set<int> get healthDays {
+  Set<DateTime> get healthDays {
     if (_healthDays is EqualUnmodifiableSetView) return _healthDays;
     // ignore: implicit_dynamic_type
     return EqualUnmodifiableSetView(_healthDays);
@@ -848,7 +849,7 @@ abstract mixin class _$MonthlyGoalUiStateCopyWith<$Res>
       {DateTime today,
       DateTime focusedMonth,
       DateTime selectedDay,
-      Set<int> healthDays,
+      Set<DateTime> healthDays,
       MonthlyGoalDay? day,
       bool isDayLoading,
       bool hasDayError});
@@ -894,7 +895,7 @@ class __$MonthlyGoalUiStateCopyWithImpl<$Res>
       healthDays: null == healthDays
           ? _self._healthDays
           : healthDays // ignore: cast_nullable_to_non_nullable
-              as Set<int>,
+              as Set<DateTime>,
       day: freezed == day
           ? _self.day
           : day // ignore: cast_nullable_to_non_nullable

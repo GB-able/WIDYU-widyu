@@ -19,9 +19,9 @@ class _MonthlyGoalDayView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final (day, isLoading, hasError) = ref.watch(
+    final (day, isLoading, hasError, selectedDay) = ref.watch(
       monthlyGoalViewModelProvider.select(
-        (s) => (s.day, s.isDayLoading, s.hasDayError),
+        (s) => (s.day, s.isDayLoading, s.hasDayError, s.selectedDay),
       ),
     );
 
@@ -41,12 +41,16 @@ class _MonthlyGoalDayView extends ConsumerWidget {
     } else {
       // 새 날짜를 다 불러온 뒤에 바꿔 끼워야 빈 화면이 밀려 들어오지 않는다.
       key = ValueKey(day.date);
-      content = _TodayTicker(
-        enabled: day.date.isSameDay(clock.now()),
-        builder: (_) => _DayCards(
-          day: day,
-          onVerify: onVerify,
-          onFindRoute: onFindRoute,
+      // 다른 날을 고른 뒤 새 카드를 불러오는 동안 이전 카드의 버튼은 누르지 못하게 한다.
+      content = IgnorePointer(
+        ignoring: !day.date.isSameDay(selectedDay),
+        child: _TodayTicker(
+          enabled: day.date.isSameDay(clock.now()),
+          builder: (_) => _DayCards(
+            day: day,
+            onVerify: onVerify,
+            onFindRoute: onFindRoute,
+          ),
         ),
       );
     }
@@ -74,12 +78,16 @@ class _MonthlyGoalDayView extends ConsumerWidget {
               children: [...previous, if (current != null) current],
             ),
             // 들어오는 날은 오른쪽에서, 나가는 날은 왼쪽으로 민다.
-            transitionBuilder: (child, animation) => SlideTransition(
-              position: Tween(
-                begin: Offset(child.key == key ? 1 : -1, 0),
-                end: Offset.zero,
-              ).animate(animation),
-              child: child,
+            // 나가는 카드는 버튼을 누르지 못하게 한다.
+            transitionBuilder: (child, animation) => IgnorePointer(
+              ignoring: child.key != key,
+              child: SlideTransition(
+                position: Tween(
+                  begin: Offset(child.key == key ? 1 : -1, 0),
+                  end: Offset.zero,
+                ).animate(animation),
+                child: child,
+              ),
             ),
             child: KeyedSubtree(key: key, child: content),
           ),

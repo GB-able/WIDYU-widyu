@@ -12,7 +12,7 @@ abstract class MonthlyGoalDay with _$MonthlyGoalDay {
     required DateTime date,
     @Default([]) List<DailyMedicineSchedule> medicines,
     @Default([]) List<DailyHealthSchedule> healthSchedules,
-    // 걷기 조회에 실패했거나 목표가 없던 날은 null이다.
+    // 걷기 목표가 없던 날은 null이다.
     WalkDaily? walk,
   }) = _MonthlyGoalDay;
 }
@@ -25,7 +25,8 @@ abstract class MonthlyGoalUiState with _$MonthlyGoalUiState {
     required DateTime today,
     required DateTime focusedMonth,
     required DateTime selectedDay,
-    @Default({}) Set<int> healthDays,
+    // 건강 일정이 있는 날. 지금까지 받은 달을 모두 담는다.
+    @Default({}) Set<DateTime> healthDays,
     // 새 날짜를 불러오는 동안에는 이전 날짜를 그대로 보여 준다.
     MonthlyGoalDay? day,
     @Default(true) bool isDayLoading,

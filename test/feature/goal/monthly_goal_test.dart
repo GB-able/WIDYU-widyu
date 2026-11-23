@@ -17,13 +17,18 @@ import 'package:widyu/feature/goal/monthly/monthly_goal_view_model.dart';
 
 class _Goal extends Fake implements GoalRepository {
   final medicineCalls = <DateTime>[];
+  final healthMonths = <(int, int)>[];
+  Map<(int, int), Set<int>> healthDays = {};
+  bool walksFail = false;
 
   @override
   Future<ApiResult<Set<int>>> fetchHealthScheduleDays({
     required int year,
     required int month,
-  }) async =>
-      const ApiResult.success({});
+  }) async {
+    healthMonths.add((year, month));
+    return ApiResult.success(healthDays[(year, month)] ?? {});
+  }
 
   @override
   Future<ApiResult<List<DailyMedicineSchedule>>> fetchDailyMedicines(
@@ -44,7 +49,7 @@ class _Goal extends Fake implements GoalRepository {
     required int year,
     required int month,
   }) async =>
-      const ApiResult.success([]);
+      walksFail ? const ApiResult.failure('실패') : const ApiResult.success([]);
 }
 
 class _Medication extends Fake implements MedicationRepository {
@@ -115,6 +120,63 @@ void main() {
       await tester.tap(find.text('오늘로 돌아가기'));
       await tester.pumpAndSettle();
       expect(find.text('2026년 11월'), findsOneWidget);
+    });
+  });
+
+  test('걷기를 못 받으면 오류로 보이고, 캐시하지 않아 다시 고르면 다시 조회한다', () async {
+    final goal = _Goal()..walksFail = true;
+    final container = ProviderContainer.test(overrides: [
+      goalRepositoryProvider.overrideWithValue(goal),
+      medicationRepositoryProvider.overrideWithValue(_Medication()),
+    ]);
+    final today = DateTime(2026, 11, 23);
+    final past = DateTime(2026, 11, 10);
+
+    await withClock(Clock.fixed(today.add(const Duration(hours: 9))), () async {
+      container.listen(monthlyGoalViewModelProvider, (_, __) {});
+      final viewModel = container.read(monthlyGoalViewModelProvider.notifier);
+      await pumpEventQueue();
+
+      viewModel.selectDay(past);
+      await pumpEventQueue();
+      expect(container.read(monthlyGoalViewModelProvider).hasDayError, isTrue);
+
+      goal.walksFail = false;
+      viewModel.selectDay(today);
+      await pumpEventQueue();
+      viewModel.selectDay(past);
+      await pumpEventQueue();
+      expect(container.read(monthlyGoalViewModelProvider).hasDayError, isFalse);
+      expect(goal.medicineCalls.where((d) => d == past), hasLength(2));
+    });
+  });
+
+  test('두 달에 걸친 주를 고르면 두 달의 건강 일정을 날짜로 모은다', () async {
+    final goal = _Goal()
+      ..healthDays = {
+        (2026, 4): {30},
+        (2026, 5): {1},
+      };
+    final container = ProviderContainer.test(overrides: [
+      goalRepositoryProvider.overrideWithValue(goal),
+      medicationRepositoryProvider.overrideWithValue(_Medication()),
+    ]);
+
+    await withClock(Clock.fixed(DateTime(2026, 5, 20, 9)), () async {
+      container.listen(monthlyGoalViewModelProvider, (_, __) {});
+      final viewModel = container.read(monthlyGoalViewModelProvider.notifier);
+      await pumpEventQueue();
+
+      // 2026년 5월 1일(금)의 주는 4월 26일 ~ 5월 2일이다.
+      viewModel.selectDay(DateTime(2026, 5));
+      await pumpEventQueue();
+
+      expect(
+        container.read(monthlyGoalViewModelProvider).healthDays,
+        {DateTime(2026, 4, 30), DateTime(2026, 5)},
+      );
+      // 이미 받은 달은 다시 받지 않는다.
+      expect(goal.healthMonths, [(2026, 5), (2026, 4)]);
     });
   });
 }

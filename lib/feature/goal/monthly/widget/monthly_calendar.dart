@@ -19,6 +19,9 @@ abstract class _CalendarMetrics {
       daysOfWeekHeight + rowHeight * weeksOf(month) - rowGap;
 
   static const weekGridHeight = daysOfWeekHeight + cellHeight;
+
+  /// table_calendar는 마지막 줄 아래 간격까지 그린다.
+  static const sixWeekGridHeight = daysOfWeekHeight + rowHeight * 6;
 }
 
 class _MonthlyCalendar extends StatelessWidget {
@@ -37,7 +40,7 @@ class _MonthlyCalendar extends StatelessWidget {
   final DateTime today;
   final DateTime focusedMonth;
   final DateTime selectedDay;
-  final Set<int> healthDays;
+  final Set<DateTime> healthDays;
   final DateTime firstMonth;
   final DateTime lastMonth;
 
@@ -54,8 +57,8 @@ class _MonthlyCalendar extends StatelessWidget {
     final canGoBack = focusedMonth.isAfter(firstMonth);
     final canGoForward = focusedMonth.isBefore(lastMonth);
 
-    bool hasHealth(DateTime day) =>
-        day.isSameMonth(focusedMonth) && healthDays.contains(day.day);
+    // 접힌 주에는 이웃 달의 날짜도 보이므로 달과 상관없이 날짜로 찾는다.
+    bool hasHealth(DateTime day) => healthDays.contains(day.onlyDateTime);
 
     Widget grid(CalendarFormat format, DateTime focusedDay) => _CalendarGrid(
           format: format,
@@ -106,8 +109,9 @@ class _MonthlyCalendar extends StatelessWidget {
               height: gridHeight,
               child: OverflowBox(
                 alignment: Alignment.topCenter,
-                // table_calendar는 마지막 줄 아래 간격까지 그린다.
-                maxHeight: monthHeight + _CalendarMetrics.rowGap,
+                // 모든 달을 6주로 그려, 줄 수가 다른 달로 넘기는 동안에도 줄 높이를 유지한다.
+                // 높이가 제한되면 table_calendar가 그 높이를 페이지의 줄 수로 나누기 때문이다.
+                maxHeight: _CalendarMetrics.sixWeekGridHeight,
                 child: Stack(
                   children: [
                     IgnorePointer(
@@ -237,6 +241,7 @@ class _CalendarGridState extends State<_CalendarGrid> {
           availableGestures: isMonth
               ? AvailableGestures.horizontalSwipe
               : AvailableGestures.none,
+          sixWeekMonthsEnforced: isMonth,
           rowHeight: isMonth
               ? _CalendarMetrics.rowHeight
               : _CalendarMetrics.cellHeight,
