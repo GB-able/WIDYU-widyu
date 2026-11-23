@@ -20,6 +20,7 @@ import 'package:widyu/feature/auth/onboarding_screen.dart';
 import 'package:widyu/feature/contact/contact_screen.dart';
 import 'package:widyu/feature/goal/main/goal_screen.dart';
 import 'package:widyu/feature/goal/medication/medication_session_scope.dart';
+import 'package:widyu/feature/goal/monthly/monthly_goal_screen.dart';
 import 'package:widyu/feature/home/home_screen.dart';
 import 'package:widyu/feature/management/management_screen.dart';
 import 'package:widyu/feature/medication_camera/medication_camera_screen.dart';
@@ -128,6 +129,11 @@ class CustomRouter {
                   CustomGoRoute.staticRoute(
                     route: AppRoute.goal,
                     builder: (context, state) => const GoalScreen(),
+                  ),
+                  // 하단 내비게이션을 유지하려고 목표 탭 안에 쌓는다.
+                  CustomGoRoute.slideRoute(
+                    route: AppRoute.monthlyGoal,
+                    builder: (context, state) => const MonthlyGoalScreen(),
                   ),
                 ],
               ),
