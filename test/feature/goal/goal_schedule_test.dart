@@ -72,7 +72,7 @@ void main() {
     );
   });
 
-  test('병원은 방문 전 일정 중 가장 이른 것만 길 찾기 카드가 된다', () {
+  test('병원 일정은 시각순으로 놓고, 인증 가능한 오늘 일정은 모두 길 찾기 카드가 된다', () {
     final schedules = buildGoalSchedules(
       medicine: null,
       visits: [
@@ -91,7 +91,7 @@ void main() {
       TimelineStatus.done,
       TimelineStatus.missed,
       TimelineStatus.active,
-      TimelineStatus.upcoming,
+      TimelineStatus.active,
     ]);
   });
 

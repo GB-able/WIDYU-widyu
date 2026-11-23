@@ -46,11 +46,12 @@ void main() {
   });
 
   group('healthTimelineStatuses', () {
-    test('오늘 남은 일정 중 가장 이른 하나만 강조한다', () {
+    test('오늘 인증 가능한 일정은 여러 개여도 모두 강조한다', () {
       final statuses = healthTimelineStatuses(
         [
           health(9, HealthScheduleState.incomplete),
           health(10, HealthScheduleState.completed),
+          health(12, HealthScheduleState.upcoming), // 12:30까지 인증 가능
           health(15, HealthScheduleState.upcoming),
           health(16, HealthScheduleState.upcoming),
         ],
@@ -61,7 +62,8 @@ void main() {
         TimelineStatus.missed,
         TimelineStatus.done,
         TimelineStatus.active,
-        TimelineStatus.upcoming,
+        TimelineStatus.active,
+        TimelineStatus.active,
       ]);
     });
 
@@ -77,16 +79,21 @@ void main() {
       expect(statuses, [TimelineStatus.missed, TimelineStatus.active]);
     });
 
-    test('다른 날의 예정 일정은 모두 예정으로 둔다', () {
+    test('다른 날은 완료·놓침·예정을 그대로 둔다', () {
       final statuses = healthTimelineStatuses(
         [
+          health(9, HealthScheduleState.completed),
+          health(10, HealthScheduleState.incomplete),
           health(15, HealthScheduleState.upcoming),
-          health(16, HealthScheduleState.upcoming),
         ],
         date: DateTime(2026, 11, 20),
         now: now,
       );
-      expect(statuses, [TimelineStatus.scheduled, TimelineStatus.scheduled]);
+      expect(statuses, [
+        TimelineStatus.done,
+        TimelineStatus.missed,
+        TimelineStatus.scheduled,
+      ]);
     });
   });
 }

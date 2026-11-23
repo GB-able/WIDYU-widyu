@@ -57,34 +57,30 @@ TimelineStatus medicineTimelineStatus(
   return TimelineStatus.upcoming;
 }
 
-/// 병원 방문 인증은 예정 시각 30분 뒤까지 받는다(서버 HealthSchedule.COMPLETION_GRACE_MINUTES).
+/// 건강 일정 인증은 그 날 0시부터 예정 시각 30분 뒤까지 받는다(서버 HealthSchedule.canCompleteAt).
 const healthCompletionGrace = Duration(minutes: 30);
 
-/// 건강 일정들의 상태. [schedules]는 시각순이어야 한다. 오늘 남은 일정 중 가장 이른 하나를 강조한다.
-/// 오늘은 서버 값이 '예정'이어도 인증 마감이 지났으면 놓침으로 본다(응답 뒤 시간이 흐른 경우).
+/// 건강 일정들의 상태.
+/// 약 복용이 아닌 건강 일정(병원 방문·약 처방 등)은 인증할 수 있는 동안 모두 강조하고,
+/// 예정 시각 30분이 지나면 서버 값이 '예정'이어도 놓침으로 본다(응답 뒤 시간이 흐른 경우).
 List<TimelineStatus> healthTimelineStatuses(
   List<DailyHealthSchedule> schedules, {
   required DateTime date,
   required DateTime now,
 }) {
   final isToday = date.isSameDay(now);
-  var hasActive = false;
-  final statuses = <TimelineStatus>[];
-  for (final schedule in schedules) {
-    // 지난 일정이 강조되지 않게 놓침을 먼저 거른다.
-    statuses.add(switch (schedule.progressStatus) {
-      HealthScheduleState.completed => TimelineStatus.done,
-      HealthScheduleState.incomplete => TimelineStatus.missed,
-      HealthScheduleState.upcoming when !isToday => TimelineStatus.scheduled,
-      HealthScheduleState.upcoming
-          when now.isAfter(schedule.scheduledAt.add(healthCompletionGrace)) =>
-        TimelineStatus.missed,
-      HealthScheduleState.upcoming when hasActive => TimelineStatus.upcoming,
-      HealthScheduleState.upcoming => TimelineStatus.active,
-    });
-    if (statuses.last == TimelineStatus.active) hasActive = true;
-  }
-  return statuses;
+  return [
+    for (final schedule in schedules)
+      switch (schedule.progressStatus) {
+        HealthScheduleState.completed => TimelineStatus.done,
+        HealthScheduleState.incomplete => TimelineStatus.missed,
+        HealthScheduleState.upcoming when !isToday => TimelineStatus.scheduled,
+        HealthScheduleState.upcoming
+            when now.isAfter(schedule.scheduledAt.add(healthCompletionGrace)) =>
+          TimelineStatus.missed,
+        HealthScheduleState.upcoming => TimelineStatus.active,
+      },
+  ];
 }
 
 /// 약 복용·건강일정 카드의 공통 틀. 머리말 아래에 타임라인을 그린다.
