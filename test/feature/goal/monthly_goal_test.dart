@@ -96,7 +96,7 @@ void main() {
 
   // table_calendar가 빌드 중에 페이지를 옮기며 보내는 스크롤 알림에 setState하면
   // 예외가 나고 이어서 LateInitializationError로 달력이 깨졌다.
-  testWidgets('화살표로 달을 넘기고 오늘로 돌아와도 예외가 없다', (tester) async {
+  testWidgets('화살표로 두 달 넘기고 오늘로 돌아와도 예외가 없다', (tester) async {
     await initializeDateFormatting('ko_KR');
     await withClock(Clock.fixed(DateTime(2026, 11, 23, 9)), () async {
       await tester.pumpWidget(ProviderScope(
@@ -116,6 +116,10 @@ void main() {
       await tester.tapAt(nextArrow);
       await tester.pumpAndSettle();
       expect(find.text('2026년 12월'), findsOneWidget);
+      // 두 달 이상 떨어진 달에서 돌아오면 table_calendar가 빌드 중에 페이지를 건너뛴다.
+      await tester.tapAt(nextArrow);
+      await tester.pumpAndSettle();
+      expect(find.text('2027년 1월'), findsOneWidget);
 
       await tester.tap(find.text('오늘로 돌아가기'));
       await tester.pumpAndSettle();
@@ -227,4 +231,41 @@ void main() {
       expect(container.read(monthlyGoalViewModelProvider).hasDayError, isTrue);
     });
   });
+
+  testWidgets('5월 1일에 열고 달력을 접으면 4월 30일에도 건강 일정 아이콘이 보인다', (tester) async {
+    await initializeDateFormatting('ko_KR');
+    final goal = _Goal()
+      ..healthDays = {
+        (2026, 4): {30},
+      };
+    await withClock(Clock.fixed(DateTime(2026, 5, 1, 9)), () async {
+      await tester.pumpWidget(ProviderScope(
+        overrides: [
+          goalRepositoryProvider.overrideWithValue(goal),
+          medicationRepositoryProvider.overrideWithValue(_Medication()),
+        ],
+        child: const MaterialApp(home: MonthlyGoalScreen()),
+      ));
+      await tester.pumpAndSettle();
+      // 펼친 5월 달력에서는 4월 날짜를 그리지 않는다.
+      expect(find.byWidgetPredicate(_isHealthIcon), findsNothing);
+
+      // 일정 목록을 위로 밀어 달력을 접는다.
+      await tester.drag(find.text('5월 1일'), const Offset(0, -500));
+      await tester.pumpAndSettle();
+
+      final icon = find.byWidgetPredicate(_isHealthIcon);
+      expect(icon, findsOneWidget);
+      // 아이콘은 4월 30일(목) 칸, 5월 1일(금) 왼쪽에 있다.
+      expect(
+        tester.getCenter(icon).dx,
+        closeTo(tester.getCenter(find.text('30').last).dx, 1),
+      );
+    });
+  });
 }
+
+bool _isHealthIcon(Widget widget) =>
+    widget is Image &&
+    widget.image is AssetImage &&
+    (widget.image as AssetImage).assetName.contains('img_24_health');

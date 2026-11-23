@@ -204,25 +204,13 @@ class _CalendarGridState extends State<_CalendarGrid> {
               // 접힌 주 달력은 넘기지 않으므로 페이지를 따라갈 필요가 없다.
               if (!isMonth || pages == null) return dot;
               // 선택한 날이 있는 달 페이지에 붙여, 달을 넘기면 페이지와 함께 밀려 나간다.
+              // table_calendar는 빌드 중에 페이지를 옮기므로 다시 빌드하지 않고 그리는 위치만 바꾼다.
               final selectedPage = (selected.year - widget.firstDay.year) * 12 +
                   selected.month -
                   widget.firstDay.month;
-              return AnimatedBuilder(
-                animation: pages,
-                builder: (context, child) {
-                  final page =
-                      pages.hasClients && pages.position.hasContentDimensions
-                          ? pages.page ?? selectedPage.toDouble()
-                          : selectedPage.toDouble();
-                  return Transform.translate(
-                    offset: Offset(
-                      (selectedPage - page) * constraints.maxWidth,
-                      0,
-                    ),
-                    child: child,
-                  );
-                },
-                child: dot,
+              return Flow(
+                delegate: _FollowPageDelegate(pages, selectedPage),
+                children: [dot],
               );
             },
           ),
@@ -287,6 +275,33 @@ class _CalendarGridState extends State<_CalendarGrid> {
           _CalendarMetrics.rowHeight * (index ~/ 7),
     );
   }
+}
+
+/// 선택 원을 [selectedPage] 페이지가 밀린 만큼 옆으로 옮겨 그린다.
+class _FollowPageDelegate extends FlowDelegate {
+  _FollowPageDelegate(this.pages, this.selectedPage) : super(repaint: pages);
+
+  final PageController pages;
+  final int selectedPage;
+
+  @override
+  void paintChildren(FlowPaintingContext context) {
+    final page = pages.hasClients && pages.position.hasContentDimensions
+        ? pages.page ?? selectedPage.toDouble()
+        : selectedPage.toDouble();
+    context.paintChild(
+      0,
+      transform: Matrix4.translationValues(
+        (selectedPage - page) * context.size.width,
+        0,
+        0,
+      ),
+    );
+  }
+
+  @override
+  bool shouldRepaint(_FollowPageDelegate oldDelegate) =>
+      oldDelegate.pages != pages || oldDelegate.selectedPage != selectedPage;
 }
 
 class _SelectionDot extends StatelessWidget {
