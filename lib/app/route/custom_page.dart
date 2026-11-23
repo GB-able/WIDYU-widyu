@@ -166,16 +166,27 @@ class _SlideRoute<T> extends PageRoute<T> {
   ) =>
       _page.child;
 
+  // buildTransitions는 프레임마다 불리므로 곡선 애니메이션은 한 번만 만들어 둔다.
+  CurvedAnimation? _curvedIn;
+  CurvedAnimation? _curvedBack;
+
   // 뒤로 갈 때도 처음엔 빠르고 끝에서 느려지게 곡선을 뒤집어 쓴다.
   // 스와이프로 뒤로 가는 중에는 손가락을 그대로 따라가도록 곡선을 쓰지 않는다.
-  Animation<double> _curved(Animation<double> parent) =>
-      navigator?.userGestureInProgress ?? false
-          ? parent
-          : CurvedAnimation(
-              parent: parent,
-              curve: _curve,
-              reverseCurve: _curve.flipped,
-            );
+  Animation<double> _curved(Animation<double> parent, CurvedAnimation curved) =>
+      navigator?.userGestureInProgress ?? false ? parent : curved;
+
+  static CurvedAnimation _curveOf(Animation<double> parent) => CurvedAnimation(
+        parent: parent,
+        curve: _curve,
+        reverseCurve: _curve.flipped,
+      );
+
+  @override
+  void dispose() {
+    _curvedIn?.dispose();
+    _curvedBack?.dispose();
+    super.dispose();
+  }
 
   @override
   Widget buildTransitions(
@@ -184,7 +195,10 @@ class _SlideRoute<T> extends PageRoute<T> {
     Animation<double> secondaryAnimation,
     Widget child,
   ) {
-    final pushedBack = _curved(secondaryAnimation);
+    final pushedBack = _curved(
+      secondaryAnimation,
+      _curvedBack ??= _curveOf(secondaryAnimation),
+    );
     // 위 화면이 덮는 만큼 왼쪽으로 밀리고 어두워진다.
     final page = SlideTransition(
       position: pushedBack.drive(
@@ -206,7 +220,7 @@ class _SlideRoute<T> extends PageRoute<T> {
     // 탭 첫 화면처럼 밀려 들어오지 않는 화면은 스와이프로 뒤로 가지 않는다.
     if (!_page.slideIn) return page;
     return SlideTransition(
-      position: _curved(animation).drive(
+      position: _curved(animation, _curvedIn ??= _curveOf(animation)).drive(
         Tween(begin: const Offset(1, 0), end: Offset.zero),
       ),
       child: _BackSwipe(route: this, child: page),
@@ -217,11 +231,21 @@ class _SlideRoute<T> extends PageRoute<T> {
   void _dragBack(double fraction) => controller!.value -= fraction;
 
   /// 스와이프를 놓은 뒤 남은 거리를 마저 움직인다. 뒤로 가기로 했으면 pop한다.
-  void _finishBackSwipe(double velocity) {
+  /// [cancelled]면(전화·시스템 제스처 등으로 포인터가 취소되면) 제자리로 돌린다.
+  void _finishBackSwipe(double velocity, {bool cancelled = false}) {
     final controller = this.controller!;
     final navigator = this.navigator!;
-    // 화면 너비 기준 초당 1배 이상으로 튕기면 방향을 따르고, 아니면 절반을 기준으로 정한다.
-    final stay = velocity.abs() >= 1 ? velocity <= 0 : controller.value > 0.5;
+    final bool stay;
+    if (!isCurrent) {
+      // 끄는 중에 다른 화면이 위에 쌓였으면 제자리로, 이미 닫히는 중이면 마저 닫는다.
+      stay = isActive;
+    } else if (cancelled || popDisposition == RoutePopDisposition.doNotPop) {
+      // 끄는 중에 PopScope가 막았으면 닫지 않는다.
+      stay = true;
+    } else {
+      // 화면 너비 기준 초당 1배 이상으로 튕기면 방향을 따르고, 아니면 절반을 기준으로 정한다.
+      stay = velocity.abs() >= 1 ? velocity <= 0 : controller.value > 0.5;
+    }
     final remaining = stay ? 1 - controller.value : controller.value;
     final duration = _duration * remaining.clamp(0.3, 1.0);
 
@@ -263,6 +287,10 @@ class _BackSwipeState extends State<_BackSwipe> {
   late final HorizontalDragGestureRecognizer _recognizer;
   bool _dragging = false;
 
+  // 포인터가 취소돼도 recognizer는 onEnd를 부르므로 취소 여부를 따로 기록한다.
+  // Listener가 recognizer보다 먼저 이벤트를 받는다.
+  bool _pointerCancelled = false;
+
   @override
   void initState() {
     super.initState();
@@ -282,6 +310,7 @@ class _BackSwipeState extends State<_BackSwipe> {
   }
 
   void _onPointerDown(PointerDownEvent event) {
+    _pointerCancelled = false;
     // 첫 화면, PopScope로 막힌 화면, 전환 중인 화면에서는 시작하지 않는다.
     if (widget.route.popGestureEnabled) _recognizer.addPointer(event);
   }
@@ -299,19 +328,21 @@ class _BackSwipeState extends State<_BackSwipe> {
     _dragging = false;
     widget.route._finishBackSwipe(
       details.velocity.pixelsPerSecond.dx / context.size!.width,
+      cancelled: _pointerCancelled,
     );
   }
 
   void _onCancel() {
     if (!_dragging) return;
     _dragging = false;
-    widget.route._finishBackSwipe(0);
+    widget.route._finishBackSwipe(0, cancelled: true);
   }
 
   @override
   Widget build(BuildContext context) {
     return Listener(
       onPointerDown: _onPointerDown,
+      onPointerCancel: (_) => _pointerCancelled = true,
       behavior: HitTestBehavior.translucent,
       child: widget.child,
     );

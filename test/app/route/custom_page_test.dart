@@ -65,6 +65,19 @@ void main() {
     expect(tester.getTopLeft(find.text('쌓인 화면')).dx, 0);
   });
 
+  testWidgets('절반 넘게 끈 뒤 포인터가 취소되면 제자리로 돌아온다', (tester) async {
+    await pumpAndPush(tester);
+    final gesture = await tester.startGesture(const Offset(300, 300));
+    for (var moved = 0; moved < 460; moved += 20) {
+      await gesture.moveBy(const Offset(20, 0));
+      await tester.pump(const Duration(milliseconds: 100));
+    }
+    await gesture.cancel();
+    await tester.pumpAndSettle();
+    expect(find.text('쌓인 화면'), findsOneWidget);
+    expect(tester.getTopLeft(find.text('쌓인 화면')).dx, 0);
+  });
+
   testWidgets('PopScope로 막힌 화면은 끌어도 뒤로 가지 않는다', (tester) async {
     await pumpAndPush(tester, canPop: false);
     await dragFromCenter(tester, 460);
