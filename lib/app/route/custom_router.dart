@@ -154,12 +154,17 @@ class CustomRouter {
                 ],
               ),
             ],
-            builder: (context, state, navigationShell) => Stack(
-              alignment: Alignment.bottomCenter,
-              children: [
-                navigationShell,
-                BotNav(navigationShell: navigationShell),
-              ],
+            // 프로필·포인트처럼 탭 위에 쌓이는 화면이 들어오면 탭 화면이 함께 밀려난다.
+            pageBuilder: (context, state, navigationShell) => SlidePage(
+              key: state.pageKey,
+              slideIn: false,
+              child: Stack(
+                alignment: Alignment.bottomCenter,
+                children: [
+                  navigationShell,
+                  BotNav(navigationShell: navigationShell),
+                ],
+              ),
             ),
           ),
           CustomGoRoute.slideRoute(
