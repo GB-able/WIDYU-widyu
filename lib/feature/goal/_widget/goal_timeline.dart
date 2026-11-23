@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import 'package:widyu/core/model/goal/hospital/daily_health_schedule.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
@@ -181,11 +182,13 @@ class _TimelineEntry extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 스켈레톤일 때 선과 점도 블록으로 그린다.
     Widget line(bool visible) => Expanded(
-          child: Container(
-            width: 1,
-            color: visible ? MyColor.grey600 : Colors.transparent,
-          ),
+          child: visible
+              ? Skeleton.leaf(
+                  child: Container(width: 1, color: MyColor.grey600),
+                )
+              : const SizedBox(width: 1),
         );
 
     return IntrinsicHeight(
@@ -199,7 +202,7 @@ class _TimelineEntry extends StatelessWidget {
               alignment: Alignment.center,
               children: [
                 Column(children: [line(!isFirst), line(!isLast)]),
-                _TimelineDot(status: item.status),
+                Skeleton.leaf(child: _TimelineDot(status: item.status)),
               ],
             ),
           ),

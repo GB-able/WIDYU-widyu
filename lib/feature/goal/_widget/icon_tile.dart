@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/feature/goal/main/goal_screen.dart';
 import 'package:widyu/gen/assets.gen.dart';
@@ -19,22 +20,27 @@ class IconTile extends StatelessWidget {
   Widget build(BuildContext context) {
     // 디자인의 그림자는 40 크기에서 blur 5, 24 크기에서 blur 3이다.
     final scale = size / 40;
-    return Container(
+    return Skeleton.replace(
       width: size,
       height: size,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: MyColor.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.25),
-            blurRadius: 5 * scale,
-            offset: Offset(scale, scale),
-          ),
-        ],
-      ),
-      child: ClipOval(
-        child: _image.image(fit: BoxFit.cover),
+      replacement: Bone.circle(size: size),
+      child: Container(
+        width: size,
+        height: size,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: MyColor.white,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.25),
+              blurRadius: 5 * scale,
+              offset: Offset(scale, scale),
+            ),
+          ],
+        ),
+        child: ClipOval(
+          child: _image.image(fit: BoxFit.cover),
+        ),
       ),
     );
   }

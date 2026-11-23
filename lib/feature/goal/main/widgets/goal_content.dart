@@ -15,7 +15,7 @@ class _GoalContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (state.isLoading) return const SizedBox.shrink();
+    if (state.isLoading) return const _GoalSkeleton();
     if (state.hasError) {
       return Padding(
         padding: const EdgeInsets.symmetric(vertical: 48),
@@ -57,9 +57,17 @@ class _SectionTitle extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Text(
-        text,
-        style: MyTypo.title4.copyWith(color: MyColor.grey700),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: _SkeletonBox(
+          width: 110,
+          height: 18,
+          lineHeight: 27,
+          child: Text(
+            text,
+            style: MyTypo.title4.copyWith(color: MyColor.grey700),
+          ),
+        ),
       ),
     );
   }
@@ -82,19 +90,36 @@ class _StepSummary extends StatelessWidget {
         children: [
           const IconTile(type: GoalType.walk, size: 24),
           const SizedBox(width: 16),
-          Text('걷기', style: MyTypo.subTitle5.copyWith(color: MyColor.grey700)),
-          const Spacer(),
-          // 걸음 수는 자주 바뀌므로 숫자만 다시 그린다.
-          Consumer(
-            builder: (context, ref, _) => Text(
-              ref.watch(todayStepsProvider).toComma,
-              style: MyTypo.subTitle1.copyWith(color: MyColor.primary),
+          _SkeletonBox(
+            width: 36,
+            height: 16,
+            lineHeight: 24,
+            child: Text(
+              '걷기',
+              style: MyTypo.subTitle5.copyWith(color: MyColor.grey700),
             ),
           ),
-          const SizedBox(width: 10),
-          Text(
-            '/ ${goal.toComma}',
-            style: MyTypo.subTitle1.copyWith(color: MyColor.grey500),
+          const Spacer(),
+          _SkeletonBox(
+            width: 116,
+            height: 18,
+            lineHeight: 24,
+            child: Row(
+              spacing: 10,
+              children: [
+                // 걸음 수는 자주 바뀌므로 숫자만 다시 그린다.
+                Consumer(
+                  builder: (context, ref, _) => Text(
+                    ref.watch(todayStepsProvider).toComma,
+                    style: MyTypo.subTitle1.copyWith(color: MyColor.primary),
+                  ),
+                ),
+                Text(
+                  '/ ${goal.toComma}',
+                  style: MyTypo.subTitle1.copyWith(color: MyColor.grey500),
+                ),
+              ],
+            ),
           ),
         ],
       ),

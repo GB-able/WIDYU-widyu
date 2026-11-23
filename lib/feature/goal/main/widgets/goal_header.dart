@@ -17,11 +17,22 @@ class _GoalHeader extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                '${today.month}월 ${today.day}일',
-                style: MyTypo.title1.copyWith(color: MyColor.grey700),
+              _SkeletonBox(
+                width: 104,
+                height: 26,
+                lineHeight: 36,
+                child: Text(
+                  '${today.month}월 ${today.day}일',
+                  style: MyTypo.title1.copyWith(color: MyColor.grey700),
+                ),
               ),
-              const _MonthlyGoalButton(onTap: null),
+              const _SkeletonBox(
+                width: 96,
+                height: 36,
+                lineHeight: 36,
+                pill: true,
+                child: _MonthlyGoalButton(onTap: null),
+              ),
             ],
           ),
         ],
@@ -46,16 +57,31 @@ class _PointBanner extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16),
         child: Row(
           children: [
-            Assets.images.img28Point.image(width: 28, height: 28),
+            Skeleton.replace(
+              width: 28,
+              height: 28,
+              replacement: const Center(child: Bone.circle(size: 26)),
+              child: Assets.images.img28Point.image(width: 28, height: 28),
+            ),
             const SizedBox(width: 4),
-            Text(
-              '포인트',
-              style: MyTypo.subTitle5.copyWith(color: MyColor.grey800),
+            _SkeletonBox(
+              width: 52,
+              height: 16,
+              lineHeight: 24,
+              child: Text(
+                '포인트',
+                style: MyTypo.subTitle5.copyWith(color: MyColor.grey800),
+              ),
             ),
             const Spacer(),
-            Text(
-              '${point ?? "-"}P',
-              style: MyTypo.title4.copyWith(color: MyColor.primary),
+            _SkeletonBox(
+              width: 56,
+              height: 20,
+              lineHeight: 27,
+              child: Text(
+                '${point ?? "-"}P',
+                style: MyTypo.title4.copyWith(color: MyColor.primary),
+              ),
             ),
           ],
         ),

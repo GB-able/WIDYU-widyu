@@ -4,6 +4,7 @@ import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import 'package:widyu/app/routes/app_route.dart';
 import 'package:widyu/core/di/providers.dart';
 import 'package:widyu/core/model/goal/hospital/daily_health_schedule.dart';
@@ -11,9 +12,9 @@ import 'package:widyu/core/model/goal/medication/medication.dart';
 import 'package:widyu/core/model/goal/medication/medication_point_result.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
-import 'package:widyu/core/ui/widgets/custom_loading_widget.dart';
 import 'package:widyu/core/ui/widgets/medication_reward_dialog.dart';
 import 'package:widyu/core/ui/widgets/ui_event_listener.dart';
+import 'package:widyu/core/ui/widgets/wave_pulse_effect.dart';
 import 'package:widyu/core/ui/widgets/widu_icon.dart';
 import 'package:widyu/core/ui/widgets/widyu_text_button.dart';
 import 'package:widyu/core/utils/extensions/int_extension.dart';
@@ -30,6 +31,7 @@ part 'widgets/goal_app_bar.dart';
 part 'widgets/goal_content.dart';
 part 'widgets/goal_error_widget.dart';
 part 'widgets/goal_header.dart';
+part 'widgets/goal_skeleton.dart';
 part 'widgets/schedule_timeline.dart';
 
 enum GoalType { medicine, walk, hospital }
@@ -67,20 +69,30 @@ class GoalScreen extends ConsumerWidget {
               padding: EdgeInsets.only(
                 bottom: 100 + MediaQuery.of(context).padding.bottom,
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  _GoalHeader(point: uiState.point),
-                  _GoalContent(
-                    state: uiState,
-                    onRetry: viewModel.refresh,
-                    onMedicationVerified: viewModel.onMedicationVerified,
-                    findRoute: viewModel.findRoute,
-                  ),
-                ],
+              child: Skeletonizer(
+                enabled: uiState.isLoading,
+                // 기기에서 동작 줄이기를 켜면 움직이지 않는 블록만 보여 준다.
+                effect: MediaQuery.disableAnimationsOf(context)
+                    ? const SolidColorEffect(color: Color(0xFFDFE2E6))
+                    : const WavePulseEffect(),
+                containersColor: const Color(0xFFF6F7F8),
+                // 시안처럼 글자 블록도 모서리를 6으로 둥글린다.
+                textBoneBorderRadius:
+                    TextBoneBorderRadius(BorderRadius.circular(6)),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _GoalHeader(point: uiState.point),
+                    _GoalContent(
+                      state: uiState,
+                      onRetry: viewModel.refresh,
+                      onMedicationVerified: viewModel.onMedicationVerified,
+                      findRoute: viewModel.findRoute,
+                    ),
+                  ],
+                ),
               ),
             ),
-            if (uiState.isLoading) const CustomLoadingWidget(),
           ],
         ),
       ),
