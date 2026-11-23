@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:math' as math;
 
-import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -67,7 +66,8 @@ class _MonthlyGoalScreenState extends ConsumerState<MonthlyGoalScreen>
       return;
     }
     if (_shrink.isAnimating) _shrink.stop();
-    if (_shrink.value == 0 && delta > 0) {
+    // 접는 방향이면 매번 맞춘다. 펼치는 애니메이션을 끊고 접어도 어긋나지 않게 한다.
+    if (delta > 0) {
       ref.read(monthlyGoalViewModelProvider.notifier).showSelectedMonth();
     }
     final range = _range(ref.read(monthlyGoalViewModelProvider).focusedMonth);

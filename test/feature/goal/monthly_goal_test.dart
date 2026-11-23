@@ -179,4 +179,52 @@ void main() {
       expect(goal.healthMonths, [(2026, 5), (2026, 4)]);
     });
   });
+
+  test('처음 연 날의 주가 이웃 달에 걸치면 그 달의 건강 일정도 받는다', () async {
+    final goal = _Goal()
+      ..healthDays = {
+        (2026, 4): {30},
+      };
+    final container = ProviderContainer.test(overrides: [
+      goalRepositoryProvider.overrideWithValue(goal),
+      medicationRepositoryProvider.overrideWithValue(_Medication()),
+    ]);
+
+    // 2026년 5월 1일(금)에 열면 접힌 주에 4월 30일이 보인다.
+    await withClock(Clock.fixed(DateTime(2026, 5, 1, 9)), () async {
+      container.listen(monthlyGoalViewModelProvider, (_, __) {});
+      await pumpEventQueue();
+
+      expect(
+        container.read(monthlyGoalViewModelProvider).healthDays,
+        {DateTime(2026, 4, 30)},
+      );
+    });
+  });
+
+  test('오늘 걷기 재조회에 실패하면 이전에 받은 달 데이터가 있어도 오류로 보인다', () async {
+    final goal = _Goal();
+    final container = ProviderContainer.test(overrides: [
+      goalRepositoryProvider.overrideWithValue(goal),
+      medicationRepositoryProvider.overrideWithValue(_Medication()),
+    ]);
+    final today = DateTime(2026, 11, 23);
+
+    await withClock(Clock.fixed(today.add(const Duration(hours: 9))), () async {
+      container.listen(monthlyGoalViewModelProvider, (_, __) {});
+      final viewModel = container.read(monthlyGoalViewModelProvider.notifier);
+      await pumpEventQueue();
+      expect(container.read(monthlyGoalViewModelProvider).hasDayError, isFalse);
+
+      goal.walksFail = true;
+      viewModel.selectDay(DateTime(2026, 11, 10));
+      await pumpEventQueue();
+      // 같은 달 지난 날은 받아 둔 걷기 데이터를 쓴다.
+      expect(container.read(monthlyGoalViewModelProvider).hasDayError, isFalse);
+
+      viewModel.selectDay(today);
+      await pumpEventQueue();
+      expect(container.read(monthlyGoalViewModelProvider).hasDayError, isTrue);
+    });
+  });
 }

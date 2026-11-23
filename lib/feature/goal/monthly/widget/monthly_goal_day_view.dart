@@ -19,9 +19,10 @@ class _MonthlyGoalDayView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final (day, isLoading, hasError, selectedDay) = ref.watch(
+    // 자정이 지나 today가 바뀌면 오늘 카드 여부도 다시 정한다.
+    final (day, isLoading, hasError, selectedDay, today) = ref.watch(
       monthlyGoalViewModelProvider.select(
-        (s) => (s.day, s.isDayLoading, s.hasDayError, s.selectedDay),
+        (s) => (s.day, s.isDayLoading, s.hasDayError, s.selectedDay, s.today),
       ),
     );
 
@@ -45,9 +46,10 @@ class _MonthlyGoalDayView extends ConsumerWidget {
       content = IgnorePointer(
         ignoring: !day.date.isSameDay(selectedDay),
         child: _TodayTicker(
-          enabled: day.date.isSameDay(clock.now()),
+          enabled: day.date.isSameDay(today),
           builder: (_) => _DayCards(
             day: day,
+            isToday: day.date.isSameDay(today),
             onVerify: onVerify,
             onFindRoute: onFindRoute,
           ),
@@ -137,18 +139,19 @@ class _TodayTickerState extends State<_TodayTicker> {
 class _DayCards extends StatelessWidget {
   const _DayCards({
     required this.day,
+    required this.isToday,
     required this.onVerify,
     required this.onFindRoute,
   });
 
   final MonthlyGoalDay day;
+  final bool isToday;
   final void Function(DateTime date, DailyMedicineSchedule schedule) onVerify;
   final ValueChanged<DailyHealthSchedule> onFindRoute;
 
   @override
   Widget build(BuildContext context) {
     final date = day.date;
-    final isToday = date.isSameDay(clock.now());
     final walkGoal = day.walk?.goal ?? 0;
     final isEmpty =
         day.medicines.isEmpty && day.healthSchedules.isEmpty && walkGoal <= 0;

@@ -53,7 +53,15 @@ class MonthlyGoalViewModel extends _$MonthlyGoalViewModel {
     });
     ref.onDispose(dayTimer.cancel);
     unawaited(loadMonth(state.focusedMonth));
+    _loadWeekHealthDays(state.selectedDay);
     unawaited(_loadDay(state.selectedDay));
+  }
+
+  // 접힌 주가 이웃 달로 넘어가면 그 달의 건강 일정도 받아 둔다.
+  void _loadWeekHealthDays(DateTime day) {
+    final weekStart = day.subtract(Duration(days: day.weekday % 7));
+    unawaited(_loadHealthDays(weekStart));
+    unawaited(_loadHealthDays(weekStart.add(const Duration(days: 6))));
   }
 
   Future<void> loadMonth(DateTime month) async {
@@ -108,11 +116,7 @@ class MonthlyGoalViewModel extends _$MonthlyGoalViewModel {
     if (!normalized.isSameMonth(state.focusedMonth)) {
       unawaited(loadMonth(normalized));
     }
-    // 접힌 주가 다음 달로 넘어가면 그 달의 건강 일정도 받아 둔다.
-    final weekStart =
-        normalized.subtract(Duration(days: normalized.weekday % 7));
-    unawaited(_loadHealthDays(weekStart));
-    unawaited(_loadHealthDays(weekStart.add(const Duration(days: 6))));
+    _loadWeekHealthDays(normalized);
     unawaited(_loadDay(normalized));
   }
 
@@ -136,17 +140,23 @@ class MonthlyGoalViewModel extends _$MonthlyGoalViewModel {
     state = state.copyWith(isDayLoading: true, hasDayError: false);
 
     final month = DateTime(date.year, date.month);
+    final fetchWalks =
+        !_walksByMonth.containsKey(month) || date.isSameDay(state.today);
     final results = await Future.wait<Object>([
       _repository.fetchDailyMedicines(date),
       _repository.fetchDailyHealthSchedules(date),
-      if (!_walksByMonth.containsKey(month) || date.isSameDay(state.today))
+      if (fetchWalks)
         _repository.fetchMonthlyWalks(year: date.year, month: date.month),
     ]);
     if (!ref.mounted || request != _dayRequest) return;
 
-    if (results.length > 2) {
+    // 오늘은 걸음 목표가 바뀌었을 수 있어 예전에 받은 달 데이터로 대신하지 않는다.
+    var walkFailed = false;
+    if (fetchWalks) {
       if (results[2] case Success<List<WalkDaily>>(:final data)) {
         _walksByMonth[month] = data;
+      } else {
+        walkFailed = true;
       }
     }
     final medicines = results[0] as ApiResult<List<DailyMedicineSchedule>>;
@@ -154,7 +164,7 @@ class MonthlyGoalViewModel extends _$MonthlyGoalViewModel {
     // 걷기를 못 받았으면 목표 없음과 구분되지 않으므로 실패로 보여 다시 시도하게 한다.
     if (medicines is! Success<List<DailyMedicineSchedule>> ||
         health is! Success<List<DailyHealthSchedule>> ||
-        !_walksByMonth.containsKey(month)) {
+        walkFailed) {
       state = state.copyWith(isDayLoading: false, hasDayError: true);
       return;
     }
