@@ -9,7 +9,7 @@ import 'package:widyu/core/model/myPage/point/point_history.dart';
 import 'package:widyu/core/model/myPage/profile/user_profile.dart';
 import 'package:widyu/core/model/myPage/user/user.dart';
 import 'package:widyu/core/network/api_client.dart';
-import 'package:widyu/core/utils/extensions/api_response_extension.dart';
+import 'package:widyu/core/util/extension/api_response_extension.dart';
 
 class MyPageRemoteDataSourceImpl extends MyPageRemoteDataSource {
   final ApiClient _apiClient;

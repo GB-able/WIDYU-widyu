@@ -8,8 +8,8 @@ import 'package:widyu/core/model/album/album_cache.dart';
 import 'package:widyu/core/model/album/feed.dart';
 import 'package:widyu/core/model/api/api_result.dart';
 import 'package:widyu/core/model/api/infinite_page_result.dart';
-import 'package:widyu/core/utils/extensions/date_extension.dart';
-import 'package:widyu/core/utils/infinite_scroll.dart';
+import 'package:widyu/core/util/extension/date_extension.dart';
+import 'package:widyu/core/util/infinite_scroll.dart';
 import 'package:widyu/feature/album/calendar/calendar_tab_ui_state.dart';
 
 part 'calendar_tab_view_model.g.dart';

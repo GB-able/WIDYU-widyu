@@ -5,7 +5,7 @@ import 'package:widyu/core/data/repository/album/album_repository.dart';
 import 'package:widyu/core/data/repository/album/album_repository_impl.dart';
 import 'package:widyu/core/di/providers.dart';
 import 'package:widyu/core/model/album/feed.dart';
-import 'package:widyu/core/ui/widgets/widu_icon.dart';
+import 'package:widyu/core/ui/widget/widu_icon.dart';
 import 'package:widyu/feature/album/feed/feed_tab_view.dart';
 import 'package:widyu/gen/assets.gen.dart';
 

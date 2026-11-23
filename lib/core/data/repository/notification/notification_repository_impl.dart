@@ -4,7 +4,7 @@ import 'package:widyu/core/model/api/api_result.dart';
 import 'package:widyu/core/model/notification/notification_category.dart';
 import 'package:widyu/core/model/notification/notification_page.dart';
 import 'package:widyu/core/model/notification/notification_setting.dart';
-import 'package:widyu/core/utils/extensions/api_result_extension.dart';
+import 'package:widyu/core/util/extension/api_result_extension.dart';
 
 class NotificationRepositoryImpl implements NotificationRepository {
   final NotificationRemoteDataSource _remoteDataSource;

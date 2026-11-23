@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:go_router/go_router.dart';
-import 'package:widyu/app/routes/app_route.dart';
-import 'package:widyu/app/routes/custom_router.dart';
+import 'package:widyu/app/route/app_route.dart';
+import 'package:widyu/app/route/custom_router.dart';
 import 'package:widyu/core/log/log.dart';
 import 'package:widyu/core/storage/app_preference.dart';
 import 'package:widyu/core/storage/preference_key.dart';

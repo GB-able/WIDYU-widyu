@@ -38,8 +38,8 @@ import 'package:widyu/core/model/permission/permission_type.dart';
 import 'package:widyu/core/network/api_client.dart';
 import 'package:widyu/core/network/socket_client.dart';
 import 'package:widyu/core/network/token_manager.dart';
-import 'package:widyu/core/utils/location_service_manager.dart';
-import 'package:widyu/core/utils/permission_manager.dart';
+import 'package:widyu/core/util/location_service_manager.dart';
+import 'package:widyu/core/util/permission_manager.dart';
 
 Future<void> initializeService({bool autoStartOnBoot = false}) async {
   final service = FlutterBackgroundService();

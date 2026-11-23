@@ -7,7 +7,7 @@ import 'package:widyu/core/model/api/api_result.dart';
 import 'package:widyu/core/model/api/infinite_page_result.dart';
 import 'package:widyu/core/model/notification/notification_category.dart';
 import 'package:widyu/core/model/notification/notification_page.dart';
-import 'package:widyu/core/utils/infinite_scroll.dart';
+import 'package:widyu/core/util/infinite_scroll.dart';
 import 'package:widyu/feature/notification/notification_ui_model.dart';
 import 'package:widyu/feature/notification/notification_ui_state.dart';
 

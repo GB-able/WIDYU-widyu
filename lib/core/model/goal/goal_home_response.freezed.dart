@@ -18,6 +18,7 @@ mixin _$GoalHomeResponse {
   @JsonKey(name: 'steps')
   Walk? get walk;
   Hospital? get hospital;
+  List<DailyHealthSchedule> get todaySchedules;
 
   /// Create a copy of GoalHomeResponse
   /// with the given fields replaced by the non-null parameter values.
@@ -39,16 +40,19 @@ mixin _$GoalHomeResponse {
                 other.medicine == medicine) &&
             (identical(other.walk, walk) || other.walk == walk) &&
             (identical(other.hospital, hospital) ||
-                other.hospital == hospital));
+                other.hospital == hospital) &&
+            const DeepCollectionEquality()
+                .equals(other.todaySchedules, todaySchedules));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, medicine, walk, hospital);
+  int get hashCode => Object.hash(runtimeType, medicine, walk, hospital,
+      const DeepCollectionEquality().hash(todaySchedules));
 
   @override
   String toString() {
-    return 'GoalHomeResponse(medicine: $medicine, walk: $walk, hospital: $hospital)';
+    return 'GoalHomeResponse(medicine: $medicine, walk: $walk, hospital: $hospital, todaySchedules: $todaySchedules)';
   }
 }
 
@@ -61,7 +65,8 @@ abstract mixin class $GoalHomeResponseCopyWith<$Res> {
   $Res call(
       {Medication? medicine,
       @JsonKey(name: 'steps') Walk? walk,
-      Hospital? hospital});
+      Hospital? hospital,
+      List<DailyHealthSchedule> todaySchedules});
 
   $MedicationCopyWith<$Res>? get medicine;
   $WalkCopyWith<$Res>? get walk;
@@ -84,6 +89,7 @@ class _$GoalHomeResponseCopyWithImpl<$Res>
     Object? medicine = freezed,
     Object? walk = freezed,
     Object? hospital = freezed,
+    Object? todaySchedules = null,
   }) {
     return _then(_self.copyWith(
       medicine: freezed == medicine
@@ -98,6 +104,10 @@ class _$GoalHomeResponseCopyWithImpl<$Res>
           ? _self.hospital
           : hospital // ignore: cast_nullable_to_non_nullable
               as Hospital?,
+      todaySchedules: null == todaySchedules
+          ? _self.todaySchedules
+          : todaySchedules // ignore: cast_nullable_to_non_nullable
+              as List<DailyHealthSchedule>,
     ));
   }
 
@@ -238,14 +248,15 @@ extension GoalHomeResponsePatterns on GoalHomeResponse {
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>(
     TResult Function(Medication? medicine, @JsonKey(name: 'steps') Walk? walk,
-            Hospital? hospital)?
+            Hospital? hospital, List<DailyHealthSchedule> todaySchedules)?
         $default, {
     required TResult orElse(),
   }) {
     final _that = this;
     switch (_that) {
       case _GoalHomeResponse() when $default != null:
-        return $default(_that.medicine, _that.walk, _that.hospital);
+        return $default(
+            _that.medicine, _that.walk, _that.hospital, _that.todaySchedules);
       case _:
         return orElse();
     }
@@ -267,13 +278,14 @@ extension GoalHomeResponsePatterns on GoalHomeResponse {
   @optionalTypeArgs
   TResult when<TResult extends Object?>(
     TResult Function(Medication? medicine, @JsonKey(name: 'steps') Walk? walk,
-            Hospital? hospital)
+            Hospital? hospital, List<DailyHealthSchedule> todaySchedules)
         $default,
   ) {
     final _that = this;
     switch (_that) {
       case _GoalHomeResponse():
-        return $default(_that.medicine, _that.walk, _that.hospital);
+        return $default(
+            _that.medicine, _that.walk, _that.hospital, _that.todaySchedules);
       case _:
         throw StateError('Unexpected subclass');
     }
@@ -294,13 +306,14 @@ extension GoalHomeResponsePatterns on GoalHomeResponse {
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>(
     TResult? Function(Medication? medicine, @JsonKey(name: 'steps') Walk? walk,
-            Hospital? hospital)?
+            Hospital? hospital, List<DailyHealthSchedule> todaySchedules)?
         $default,
   ) {
     final _that = this;
     switch (_that) {
       case _GoalHomeResponse() when $default != null:
-        return $default(_that.medicine, _that.walk, _that.hospital);
+        return $default(
+            _that.medicine, _that.walk, _that.hospital, _that.todaySchedules);
       case _:
         return null;
     }
@@ -313,7 +326,9 @@ class _GoalHomeResponse implements GoalHomeResponse {
   const _GoalHomeResponse(
       {required this.medicine,
       @JsonKey(name: 'steps') required this.walk,
-      required this.hospital});
+      required this.hospital,
+      final List<DailyHealthSchedule> todaySchedules = const []})
+      : _todaySchedules = todaySchedules;
   factory _GoalHomeResponse.fromJson(Map<String, dynamic> json) =>
       _$GoalHomeResponseFromJson(json);
 
@@ -324,6 +339,14 @@ class _GoalHomeResponse implements GoalHomeResponse {
   final Walk? walk;
   @override
   final Hospital? hospital;
+  final List<DailyHealthSchedule> _todaySchedules;
+  @override
+  @JsonKey()
+  List<DailyHealthSchedule> get todaySchedules {
+    if (_todaySchedules is EqualUnmodifiableListView) return _todaySchedules;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_todaySchedules);
+  }
 
   /// Create a copy of GoalHomeResponse
   /// with the given fields replaced by the non-null parameter values.
@@ -349,16 +372,19 @@ class _GoalHomeResponse implements GoalHomeResponse {
                 other.medicine == medicine) &&
             (identical(other.walk, walk) || other.walk == walk) &&
             (identical(other.hospital, hospital) ||
-                other.hospital == hospital));
+                other.hospital == hospital) &&
+            const DeepCollectionEquality()
+                .equals(other._todaySchedules, _todaySchedules));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, medicine, walk, hospital);
+  int get hashCode => Object.hash(runtimeType, medicine, walk, hospital,
+      const DeepCollectionEquality().hash(_todaySchedules));
 
   @override
   String toString() {
-    return 'GoalHomeResponse(medicine: $medicine, walk: $walk, hospital: $hospital)';
+    return 'GoalHomeResponse(medicine: $medicine, walk: $walk, hospital: $hospital, todaySchedules: $todaySchedules)';
   }
 }
 
@@ -373,7 +399,8 @@ abstract mixin class _$GoalHomeResponseCopyWith<$Res>
   $Res call(
       {Medication? medicine,
       @JsonKey(name: 'steps') Walk? walk,
-      Hospital? hospital});
+      Hospital? hospital,
+      List<DailyHealthSchedule> todaySchedules});
 
   @override
   $MedicationCopyWith<$Res>? get medicine;
@@ -399,6 +426,7 @@ class __$GoalHomeResponseCopyWithImpl<$Res>
     Object? medicine = freezed,
     Object? walk = freezed,
     Object? hospital = freezed,
+    Object? todaySchedules = null,
   }) {
     return _then(_GoalHomeResponse(
       medicine: freezed == medicine
@@ -413,6 +441,10 @@ class __$GoalHomeResponseCopyWithImpl<$Res>
           ? _self.hospital
           : hospital // ignore: cast_nullable_to_non_nullable
               as Hospital?,
+      todaySchedules: null == todaySchedules
+          ? _self._todaySchedules
+          : todaySchedules // ignore: cast_nullable_to_non_nullable
+              as List<DailyHealthSchedule>,
     ));
   }
 
