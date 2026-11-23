@@ -2,7 +2,7 @@ import 'package:widyu/core/data/source/goal/goal_remote_data_source.dart';
 import 'package:widyu/core/model/api/api_response.dart';
 import 'package:widyu/core/model/goal/goal_home_response.dart';
 import 'package:widyu/core/network/api_client.dart';
-import 'package:widyu/core/utils/extensions/api_response_extension.dart';
+import 'package:widyu/core/util/extension/api_response_extension.dart';
 
 class GoalRemoteDataSourceImpl extends GoalRemoteDataSource {
   final ApiClient _apiClient;

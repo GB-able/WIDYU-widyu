@@ -10,7 +10,7 @@ import 'package:widyu/core/log/log.dart';
 import 'package:widyu/core/model/location/location_service_state.dart';
 import 'package:widyu/core/model/sensor/sensor_config.dart';
 import 'package:widyu/core/model/sensor/sensor_message.dart';
-import 'package:widyu/core/utils/random_uuid.dart';
+import 'package:widyu/core/util/random_uuid.dart';
 
 class DeviceEventRepositoryImpl implements DeviceEventRepository {
   DeviceEventRepositoryImpl({

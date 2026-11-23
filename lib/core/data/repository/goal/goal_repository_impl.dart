@@ -2,7 +2,7 @@ import 'package:widyu/core/data/repository/goal/goal_repository.dart';
 import 'package:widyu/core/data/source/goal/goal_remote_data_source.dart';
 import 'package:widyu/core/model/api/api_result.dart';
 import 'package:widyu/core/model/goal/goal_home_response.dart';
-import 'package:widyu/core/utils/extensions/api_result_extension.dart';
+import 'package:widyu/core/util/extension/api_result_extension.dart';
 
 class GoalRepositoryImpl extends GoalRepository {
   final GoalRemoteDataSource _goalRemoteDataSource;

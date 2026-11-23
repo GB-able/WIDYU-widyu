@@ -10,7 +10,7 @@ import 'package:widyu/core/log/log.dart';
 import 'package:widyu/core/model/location/location_config.dart';
 import 'package:widyu/core/model/location/location_update_request.dart';
 import 'package:widyu/core/model/location/user_location.dart';
-import 'package:widyu/core/utils/random_uuid.dart';
+import 'package:widyu/core/util/random_uuid.dart';
 
 class LocationRepositoryImpl implements LocationRepository {
   LocationRepositoryImpl({

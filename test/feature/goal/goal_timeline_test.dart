@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:widyu/core/model/goal/hospital/daily_health_schedule.dart';
-import 'package:widyu/feature/goal/_widget/goal_timeline.dart';
+import 'package:widyu/feature/goal/widget/goal_timeline.dart';
 
 final today = DateTime(2026, 11, 19);
 final now = DateTime(2026, 11, 19, 12);

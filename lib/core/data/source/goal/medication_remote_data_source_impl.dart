@@ -6,7 +6,7 @@ import 'package:widyu/core/data/source/goal/medication_remote_data_source.dart';
 import 'package:widyu/core/model/api/api_response.dart';
 import 'package:widyu/core/model/goal/medication/medication_point_result.dart';
 import 'package:widyu/core/network/api_client.dart';
-import 'package:widyu/core/utils/extensions/api_response_extension.dart';
+import 'package:widyu/core/util/extension/api_response_extension.dart';
 
 class MedicationRemoteDataSourceImpl extends MedicationRemoteDataSource {
   final ApiClient _apiClient;

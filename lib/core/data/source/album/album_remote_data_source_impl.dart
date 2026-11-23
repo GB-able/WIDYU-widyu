@@ -12,9 +12,9 @@ import 'package:widyu/core/model/album/media.dart';
 import 'package:widyu/core/model/api/api_response.dart';
 import 'package:widyu/core/model/api/infinite_page_result.dart';
 import 'package:widyu/core/network/api_client.dart';
-import 'package:widyu/core/utils/extensions/api_response_extension.dart';
-import 'package:widyu/core/utils/extensions/date_extension.dart';
-import 'package:widyu/core/utils/extensions/map_extension.dart';
+import 'package:widyu/core/util/extension/api_response_extension.dart';
+import 'package:widyu/core/util/extension/date_extension.dart';
+import 'package:widyu/core/util/extension/map_extension.dart';
 
 class AlbumRemoteDataSourceImpl extends AlbumRemoteDataSource {
   final ApiClient _apiClient;

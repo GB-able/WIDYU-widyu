@@ -1,8 +1,8 @@
 import 'package:widyu/core/model/goal/hospital/daily_health_schedule.dart';
 import 'package:widyu/core/model/goal/medication/medication.dart';
 import 'package:widyu/core/model/home/senior_card.dart';
-import 'package:widyu/core/utils/extensions/string_extension.dart';
-import 'package:widyu/feature/goal/_widget/goal_timeline.dart';
+import 'package:widyu/core/util/extension/string_extension.dart';
+import 'package:widyu/feature/goal/widget/goal_timeline.dart';
 
 sealed class GoalSchedule {
   const GoalSchedule({required this.at, required this.status});

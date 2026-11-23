@@ -50,12 +50,12 @@ import 'package:widyu/core/network/api_client.dart';
 import 'package:widyu/core/network/socket_client.dart';
 import 'package:widyu/core/notification/fcm_token_service.dart';
 import 'package:widyu/core/notification/medication_push_manager.dart';
-import 'package:widyu/core/utils/app_service_controller.dart';
-import 'package:widyu/core/utils/background_location_notice_controller.dart';
-import 'package:widyu/core/utils/kakao_map_launcher.dart';
-import 'package:widyu/core/utils/permission_manager.dart';
-import 'package:widyu/core/utils/permission_recovery_controller.dart';
-import 'package:widyu/core/utils/walk_tracker.dart';
+import 'package:widyu/core/util/app_service_controller.dart';
+import 'package:widyu/core/util/background_location_notice_controller.dart';
+import 'package:widyu/core/util/kakao_map_launcher.dart';
+import 'package:widyu/core/util/permission_manager.dart';
+import 'package:widyu/core/util/permission_recovery_controller.dart';
+import 'package:widyu/core/util/walk_tracker.dart';
 
 part 'providers.g.dart';
 

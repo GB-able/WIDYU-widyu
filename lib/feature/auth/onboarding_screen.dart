@@ -1,10 +1,10 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:widyu/app/routes/app_route.dart';
+import 'package:widyu/app/route/app_route.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
-import 'package:widyu/core/ui/widgets/widyu_text_button.dart';
+import 'package:widyu/core/ui/widget/widyu_text_button.dart';
 import 'package:widyu/gen/assets.gen.dart';
 
 class OnboardingScreen extends StatefulWidget {

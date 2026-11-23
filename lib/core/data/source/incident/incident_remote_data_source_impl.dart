@@ -3,7 +3,7 @@ import 'package:widyu/core/model/api/api_response.dart';
 import 'package:widyu/core/model/incident/incident_respond_result.dart';
 import 'package:widyu/core/model/incident/prompt_displayed_result.dart';
 import 'package:widyu/core/network/api_client.dart';
-import 'package:widyu/core/utils/extensions/api_response_extension.dart';
+import 'package:widyu/core/util/extension/api_response_extension.dart';
 
 class IncidentRemoteDataSourceImpl implements IncidentRemoteDataSource {
   final ApiClient _apiClient;

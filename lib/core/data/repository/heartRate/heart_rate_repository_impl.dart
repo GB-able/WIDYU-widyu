@@ -8,7 +8,7 @@ import 'package:widyu/core/log/log.dart';
 import 'package:widyu/core/model/api/api_result.dart';
 import 'package:widyu/core/model/heartRate/heart_rate.dart';
 import 'package:widyu/core/model/heartRate/heart_rate_response.dart';
-import 'package:widyu/core/utils/extensions/api_result_extension.dart';
+import 'package:widyu/core/util/extension/api_result_extension.dart';
 
 class HeartRateRepositoryImpl implements HeartRateRepository {
   final HeartRateLocalDataSource _localDataSource;

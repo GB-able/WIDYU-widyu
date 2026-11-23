@@ -3,8 +3,8 @@ import 'package:widyu/core/model/goal/goal_home_response.dart';
 import 'package:widyu/core/model/goal/hospital/daily_health_schedule.dart';
 import 'package:widyu/core/model/goal/medication/medication.dart';
 import 'package:widyu/core/model/home/senior_card.dart';
-import 'package:widyu/feature/goal/_widget/goal_timeline.dart';
 import 'package:widyu/feature/goal/main/goal_schedule.dart';
+import 'package:widyu/feature/goal/widget/goal_timeline.dart';
 
 final now = DateTime(2026, 11, 19, 16, 27);
 

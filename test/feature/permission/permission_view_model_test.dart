@@ -7,9 +7,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:widyu/core/di/providers.dart';
 import 'package:widyu/core/model/permission/permission_recovery_prompt.dart';
 import 'package:widyu/core/model/permission/permission_type.dart';
-import 'package:widyu/core/utils/permission_manager.dart';
-import 'package:widyu/core/utils/permission_recovery_controller.dart';
-import 'package:widyu/core/utils/settings_return_controller.dart';
+import 'package:widyu/core/util/permission_manager.dart';
+import 'package:widyu/core/util/permission_recovery_controller.dart';
+import 'package:widyu/core/util/settings_return_controller.dart';
 import 'package:widyu/feature/permission/permission_ui_event.dart';
 import 'package:widyu/feature/permission/permission_view_model.dart';
 

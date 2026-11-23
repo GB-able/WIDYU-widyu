@@ -2,7 +2,7 @@ import 'package:widyu/core/data/source/auth/auth_remote_data_source.dart';
 import 'package:widyu/core/model/api/api_response.dart';
 import 'package:widyu/core/model/auth/auth_response.dart';
 import 'package:widyu/core/network/api_client.dart';
-import 'package:widyu/core/utils/extensions/api_response_extension.dart';
+import 'package:widyu/core/util/extension/api_response_extension.dart';
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   final ApiClient _apiClient;

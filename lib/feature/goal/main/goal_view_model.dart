@@ -11,8 +11,8 @@ import 'package:widyu/core/model/api/api_result.dart';
 import 'package:widyu/core/model/goal/goal_home_response.dart';
 import 'package:widyu/core/model/goal/hospital/daily_health_schedule.dart';
 import 'package:widyu/core/model/goal/medication/medication_point_result.dart';
-import 'package:widyu/core/utils/extensions/walk_extension.dart';
-import 'package:widyu/core/utils/find_route.dart';
+import 'package:widyu/core/util/extension/walk_extension.dart';
+import 'package:widyu/core/util/find_route.dart';
 import 'package:widyu/feature/goal/main/goal_ui_event.dart';
 import 'package:widyu/feature/goal/main/goal_ui_state.dart';
 

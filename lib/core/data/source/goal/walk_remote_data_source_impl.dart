@@ -3,7 +3,7 @@ import 'package:widyu/core/model/api/api_response.dart';
 import 'package:widyu/core/model/goal/walk/walk_detail.dart';
 import 'package:widyu/core/model/goal/walk/walk_sync_response.dart';
 import 'package:widyu/core/network/api_client.dart';
-import 'package:widyu/core/utils/extensions/api_response_extension.dart';
+import 'package:widyu/core/util/extension/api_response_extension.dart';
 
 class WalkRemoteDataSourceImpl extends WalkRemoteDataSource {
   WalkRemoteDataSourceImpl({
