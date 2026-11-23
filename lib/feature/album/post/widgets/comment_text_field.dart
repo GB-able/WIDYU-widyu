@@ -47,7 +47,9 @@ class _CommentTextField extends StatelessWidget {
                   controller: controller,
                   focusNode: focusNode,
                   onFieldSubmitted: (_) => onSend(),
+                  maxLength: 500,
                   decoration: InputDecoration(
+                    counterText: '',
                     contentPadding: EdgeInsets.fromLTRB(
                       20,
                       15.5,
