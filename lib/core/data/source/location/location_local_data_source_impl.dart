@@ -19,7 +19,6 @@ class LocationLocalDataSourceImpl extends LocationLocalDataSource {
         ? AppleSettings(
             activityType: ActivityType.fitness,
             distanceFilter: 1,
-            pauseLocationUpdatesAutomatically: false,
             showBackgroundLocationIndicator: true,
           )
         : AndroidSettings(
