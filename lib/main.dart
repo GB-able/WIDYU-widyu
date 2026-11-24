@@ -13,7 +13,7 @@ import 'package:widyu/background_service.dart';
 import 'package:widyu/core/di/providers.dart';
 import 'package:widyu/core/log/log.dart';
 import 'package:widyu/core/notification/local_notification_manager.dart';
-import 'package:widyu/core/notification/medication_push_manager.dart';
+import 'package:widyu/core/notification/push_background_handler.dart';
 import 'package:widyu/core/notification/safety_push_manager.dart';
 import 'package:widyu/core/ui/theme/theme.dart';
 import 'package:widyu/core/util/app_service_controller.dart';
@@ -71,7 +71,7 @@ Future<void> _bootstrap() async {
   }
 
   try {
-    await initializeMedicationPush();
+    await initializeBackgroundPush();
     await LocalNotificationManager.initialize();
     SafetyPushManager.initialize();
   } catch (e, stack) {

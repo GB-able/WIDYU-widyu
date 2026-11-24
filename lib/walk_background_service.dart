@@ -48,6 +48,16 @@ Future<void> onIosWalkBackground() async {
   }
 }
 
+Future<void> syncWalkFromPush() async {
+  WiduLog.bg.i('걸음수 동기화 푸시 수신');
+  WidgetsFlutterBinding.ensureInitialized();
+  try {
+    await syncWalkBackground();
+  } catch (error, stack) {
+    WiduLog.bg.w('걸음수 푸시 동기화 보류', error: error, stackTrace: stack);
+  }
+}
+
 Future<void> syncWalkBackground() async {
   final tokenManager = TokenManager();
   final memberId = await tokenManager.memberId;
