@@ -64,7 +64,10 @@ class _FeedListState extends ConsumerState<_FeedList> {
           onRetry: viewModel.retry,
         );
       }
-      return const AlbumEmptyWidget();
+      return RefreshableEmpty(
+        onRefresh: viewModel.refresh,
+        child: const AlbumEmptyWidget(),
+      );
     }
 
     final hasFooter = isLoadingMore || hasError;
@@ -75,6 +78,7 @@ class _FeedListState extends ConsumerState<_FeedList> {
       onRefresh: viewModel.refresh,
       child: ListView.separated(
         controller: _scrollController,
+        physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         itemCount: feeds.length + (hasFooter ? 1 : 0),
         separatorBuilder: (context, index) => const SizedBox(height: 12),

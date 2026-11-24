@@ -12,6 +12,7 @@ import 'package:widyu/core/ui/theme/typos.dart';
 import 'package:widyu/core/ui/widgets/custom_error_widget.dart';
 import 'package:widyu/core/ui/widgets/custom_loading_widget.dart';
 import 'package:widyu/core/ui/widgets/custom_network_image.dart';
+import 'package:widyu/core/ui/widgets/refreshable_empty.dart';
 import 'package:widyu/core/ui/widgets/widu_icon.dart';
 import 'package:widyu/core/utils/extensions/int_extension.dart';
 import 'package:widyu/core/utils/infinite_scroll.dart';
@@ -118,7 +119,10 @@ class _PhotoGridState extends ConsumerState<_PhotoGrid> {
           onRetry: viewModel.retry,
         );
       }
-      return const AlbumEmptyWidget();
+      return RefreshableEmpty(
+        onRefresh: viewModel.refresh,
+        child: const AlbumEmptyWidget(),
+      );
     }
 
     final sections = _groupByMonth(items);
@@ -129,6 +133,7 @@ class _PhotoGridState extends ConsumerState<_PhotoGrid> {
       onRefresh: viewModel.refresh,
       child: CustomScrollView(
         controller: _scrollController,
+        physics: const AlwaysScrollableScrollPhysics(),
         slivers: [
           SliverPadding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
