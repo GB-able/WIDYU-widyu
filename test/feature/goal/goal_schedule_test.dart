@@ -60,17 +60,16 @@ void main() {
     ]);
   });
 
-  test('회차 ID가 있으면 그 ID로, 없으면 다음 일정 ID로 인증한다', () {
-    final schedules = buildGoalSchedules(
-      medicine: medicine([dose('16:30', id: 7), dose('16:40')]),
-      visits: const [],
-      now: now,
-    );
+  test('회차 ID가 없으면 다음 알람 시각과 같은 회차만 다음 일정 ID로 인증한다', () {
+    List<int?> ids(String nextAlarmTime) => buildGoalSchedules(
+          medicine: medicine([dose('16:30', id: 7), dose('16:40')])
+              .copyWith(nextAlarmTime: nextAlarmTime),
+          visits: const [],
+          now: now,
+        ).cast<DoseSchedule>().map((s) => s.scheduleId).toList();
 
-    expect(
-      schedules.cast<DoseSchedule>().map((s) => s.scheduleId),
-      [7, 99],
-    );
+    expect(ids('16:40'), [7, 99]);
+    expect(ids('16:30'), [7, null]);
   });
 
   test('소수 복용량은 잘리지 않고 표시된다', () {

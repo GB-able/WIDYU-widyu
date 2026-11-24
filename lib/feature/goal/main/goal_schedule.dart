@@ -19,7 +19,7 @@ class DoseSchedule extends GoalSchedule {
     required this.doseCount,
   });
 
-  final int scheduleId;
+  final int? scheduleId;
   final double doseCount;
 }
 
@@ -51,8 +51,10 @@ List<GoalSchedule> buildGoalSchedules({
               date: now,
               now: now,
             ),
-            // 회차 ID가 없는 예전 응답이면 다음 일정 ID로 인증한다.
-            scheduleId: dose.scheduleId ?? medicine!.medicineScheduleId,
+            scheduleId: dose.scheduleId ??
+                (medicine!.nextAlarmTime.toAlarmAt(now) == at
+                    ? medicine.medicineScheduleId
+                    : null),
             doseCount: dose.doseCount ?? medicine!.nextDoseCount,
           ),
   ];

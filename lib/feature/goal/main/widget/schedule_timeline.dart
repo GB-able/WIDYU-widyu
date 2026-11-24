@@ -38,11 +38,17 @@ class _ScheduleTimelineState extends State<_ScheduleTimeline> {
   }
 
   Future<void> _verify(DoseSchedule dose) async {
+    final scheduleId = dose.scheduleId;
+    if (scheduleId == null) {
+      showToast('복용 일정 정보를 불러오지 못했어요.');
+      return;
+    }
     final result = await openMedicationForSchedule(
       context,
-      dose.scheduleId,
+      scheduleId,
       clock.now(),
       doseCount: dose.doseCount,
+      scheduledAt: dose.at,
     );
     if (result != null) widget.onMedicationVerified(result);
   }
