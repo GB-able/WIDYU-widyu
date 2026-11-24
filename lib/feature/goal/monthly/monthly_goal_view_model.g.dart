@@ -42,7 +42,7 @@ final class MonthlyGoalViewModelProvider
 }
 
 String _$monthlyGoalViewModelHash() =>
-    r'6fa2d3d7eae67f195effc30e5e8de6a1b94a45fa';
+    r'01ec301b1789529817e0c17562929ac0448c5d4c';
 
 abstract class _$MonthlyGoalViewModel extends $Notifier<MonthlyGoalUiState> {
   MonthlyGoalUiState build();
