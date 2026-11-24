@@ -26,33 +26,70 @@ class _MonthlyGoalDayView extends ConsumerWidget {
       ),
     );
 
-    final Widget content;
-    final Key key;
-    if (hasError) {
-      key = const ValueKey('error');
-      content = _DayError(onRetry: onRetry);
-    } else if (day == null) {
-      key = const ValueKey('loading');
-      content = isLoading
-          ? const Padding(
-              padding: EdgeInsets.symmetric(vertical: 48),
-              child: Center(child: CircularProgressIndicator()),
-            )
-          : const SizedBox.shrink();
-    } else {
-      // 새 날짜를 다 불러온 뒤에 바꿔 끼워야 빈 화면이 밀려 들어오지 않는다.
-      key = ValueKey(day.date);
-      // 다른 날을 고른 뒤 새 카드를 불러오는 동안 이전 카드의 버튼은 누르지 못하게 한다.
-      content = IgnorePointer(
-        ignoring: !day.date.isSameDay(selectedDay),
-        child: _TodayTicker(
-          enabled: day.date.isSameDay(today),
-          builder: (_) => _DayCards(
-            day: day,
-            isToday: day.date.isSameDay(today),
-            onVerify: onVerify,
-            onFindRoute: onFindRoute,
+    // 로딩 중이면 보이는 높이(위아래 여백 제외)를 채워 인디케이터를 세로 가운데에 둔다.
+    Widget scrollView(double viewport) {
+      final Widget content;
+      final Key key;
+      if (hasError) {
+        key = const ValueKey('error');
+        content = _DayError(onRetry: onRetry);
+      } else if (day == null) {
+        key = const ValueKey('loading');
+        content = isLoading
+            ? SizedBox(
+                height: math.max(0, viewport - 48 - bottomInset),
+                child: const Center(child: CircularProgressIndicator()),
+              )
+            : const SizedBox.shrink();
+      } else {
+        // 새 날짜를 다 불러온 뒤에 바꿔 끼워야 빈 화면이 밀려 들어오지 않는다.
+        key = ValueKey(day.date);
+        // 다른 날을 고른 뒤 새 카드를 불러오는 동안 이전 카드의 버튼은 누르지 못하게 한다.
+        content = IgnorePointer(
+          ignoring: !day.date.isSameDay(selectedDay),
+          child: _TodayTicker(
+            enabled: day.date.isSameDay(today),
+            builder: (_) => _DayCards(
+              day: day,
+              isToday: day.date.isSameDay(today),
+              onVerify: onVerify,
+              onFindRoute: onFindRoute,
+            ),
           ),
+        );
+      }
+
+      return SingleChildScrollView(
+        physics: physics.applyTo(
+          const AlwaysScrollableScrollPhysics(
+            parent: ClampingScrollPhysics(),
+          ),
+        ),
+        padding: EdgeInsets.fromLTRB(16, 24, 16, bottomInset + 24),
+        child: AnimatedSwitcher(
+          duration: _swapDuration,
+          switchInCurve: Curves.easeOutCubic,
+          switchOutCurve: Curves.easeOutCubic,
+          layoutBuilder: (current, previous) => Stack(
+            alignment: Alignment.topCenter,
+            children: [...previous, if (current != null) current],
+          ),
+          // 들어오는 날은 오른쪽에서, 나가는 날은 왼쪽으로 민다.
+          // 로딩·오류 화면은 밀지 않고 제자리에서 나타나고 사라진다.
+          // 나가는 카드는 버튼을 누르지 못하게 한다.
+          transitionBuilder: (child, animation) => IgnorePointer(
+            ignoring: child.key != key,
+            child: child.key is ValueKey<DateTime>
+                ? SlideTransition(
+                    position: Tween(
+                      begin: Offset(child.key == key ? 1 : -1, 0),
+                      end: Offset.zero,
+                    ).animate(animation),
+                    child: child,
+                  )
+                : FadeTransition(opacity: animation, child: child),
+          ),
+          child: KeyedSubtree(key: key, child: content),
         ),
       );
     }
@@ -64,35 +101,8 @@ class _MonthlyGoalDayView extends ConsumerWidget {
       ),
       child: ClipRRect(
         borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-        child: SingleChildScrollView(
-          physics: physics.applyTo(
-            const AlwaysScrollableScrollPhysics(
-              parent: ClampingScrollPhysics(),
-            ),
-          ),
-          padding: EdgeInsets.fromLTRB(16, 24, 16, bottomInset + 24),
-          child: AnimatedSwitcher(
-            duration: _swapDuration,
-            switchInCurve: Curves.easeOutCubic,
-            switchOutCurve: Curves.easeOutCubic,
-            layoutBuilder: (current, previous) => Stack(
-              alignment: Alignment.topCenter,
-              children: [...previous, if (current != null) current],
-            ),
-            // 들어오는 날은 오른쪽에서, 나가는 날은 왼쪽으로 민다.
-            // 나가는 카드는 버튼을 누르지 못하게 한다.
-            transitionBuilder: (child, animation) => IgnorePointer(
-              ignoring: child.key != key,
-              child: SlideTransition(
-                position: Tween(
-                  begin: Offset(child.key == key ? 1 : -1, 0),
-                  end: Offset.zero,
-                ).animate(animation),
-                child: child,
-              ),
-            ),
-            child: KeyedSubtree(key: key, child: content),
-          ),
+        child: LayoutBuilder(
+          builder: (context, constraints) => scrollView(constraints.maxHeight),
         ),
       ),
     );
