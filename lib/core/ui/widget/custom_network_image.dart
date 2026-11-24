@@ -13,6 +13,8 @@ class CustomNetworkImage extends StatelessWidget {
     this.fit = BoxFit.cover,
     this.errorIconSize = 48,
     this.decodeWidth,
+    this.placeholderUrl,
+    this.placeholderDecodeWidth,
   });
 
   final String? url;
@@ -21,6 +23,8 @@ class CustomNetworkImage extends StatelessWidget {
   final BoxFit fit;
   final double errorIconSize;
   final int? decodeWidth;
+  final String? placeholderUrl;
+  final int? placeholderDecodeWidth;
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +39,7 @@ class CustomNetworkImage extends StatelessWidget {
         memCacheWidth: decodeWidth ?? _decodeWidth(context, constraints),
         fadeInDuration: Duration.zero,
         fadeOutDuration: Duration.zero,
-        placeholder: (context, url) => _placeholder(),
+        placeholder: (context, url) => _thumbnailOrPlaceholder(),
         errorWidget: (context, url, error) => _error(),
       ),
     );
@@ -49,6 +53,23 @@ class CustomNetworkImage extends StatelessWidget {
     if (sides.isEmpty) return null;
     final pixelRatio = MediaQuery.devicePixelRatioOf(context);
     return (sides.reduce(math.max) * pixelRatio).round();
+  }
+
+  Widget _thumbnailOrPlaceholder() {
+    final thumbnail = placeholderUrl;
+    if (thumbnail == null || thumbnail.isEmpty) return _placeholder();
+
+    return CachedNetworkImage(
+      imageUrl: thumbnail,
+      width: width,
+      height: height,
+      fit: fit,
+      memCacheWidth: placeholderDecodeWidth,
+      fadeInDuration: Duration.zero,
+      fadeOutDuration: Duration.zero,
+      placeholder: (context, url) => _placeholder(),
+      errorWidget: (context, url, error) => _placeholder(),
+    );
   }
 
   Widget _placeholder() =>

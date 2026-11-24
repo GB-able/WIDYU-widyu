@@ -194,10 +194,13 @@ class CustomRouter {
           CustomGoRoute.slideRoute(
             route: AppRoute.post,
             builder: (_, state) {
-              final postId =
-                  int.tryParse(state.uri.queryParameters['postId'] ?? '');
+              final query = state.uri.queryParameters;
+              final postId = int.tryParse(query['postId'] ?? '');
               return postId != null
-                  ? PostScreen(postId: postId)
+                  ? PostScreen(
+                      postId: postId,
+                      commentId: int.tryParse(query['commentId'] ?? ''),
+                    )
                   : const Scaffold(body: Center(child: Text('게시물을 찾을 수 없어요.')));
             },
           ),

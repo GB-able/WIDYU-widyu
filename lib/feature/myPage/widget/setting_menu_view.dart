@@ -1,5 +1,6 @@
 part of '../my_page_screen.dart';
 
+// ignore: unused_element
 class _SettingMenuView extends StatelessWidget {
   const _SettingMenuView();
 

@@ -96,7 +96,7 @@ GoalRepository goalRepository(Ref ref) => GoalRepositoryImpl(
 MedicationRepository medicationRepository(Ref ref) => MedicationRepositoryImpl(
       localDataSource: MedicationAlarmLocalDataSourceImpl(),
       remoteDataSource: MedicationRemoteDataSourceImpl(apiClient: ApiClient()),
-      currentMember: authenticatedMedicationMember,
+      currentMember: MedicationPushManager.authenticatedMember,
     );
 
 @Riverpod(keepAlive: true)

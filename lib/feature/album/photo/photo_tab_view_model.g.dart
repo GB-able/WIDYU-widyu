@@ -41,7 +41,7 @@ final class PhotoTabViewModelProvider
   }
 }
 
-String _$photoTabViewModelHash() => r'942e0c4d0a8d59e372e99c1fba594f6a9189cf7a';
+String _$photoTabViewModelHash() => r'3e1f2507ea14961d4b0fa36c44fd7fb4c2e83708';
 
 abstract class _$PhotoTabViewModel extends $Notifier<PhotoTabUiState> {
   PhotoTabUiState build();

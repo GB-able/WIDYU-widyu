@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/widgets.dart';
@@ -12,58 +10,43 @@ import 'package:widyu/core/model/notification/notification_type.dart';
 import 'package:widyu/core/network/api_client.dart';
 import 'package:widyu/core/network/token_manager.dart';
 import 'package:widyu/firebase_options.dart';
-import 'package:widyu/walk_background_service.dart';
 
-Future<bool> initializeMedicationPush() async {
-  try {
-    if (Firebase.apps.isEmpty) return false;
-    FirebaseMessaging.onBackgroundMessage(pushBackgroundMessage);
-    return true;
-  } catch (e, stack) {
-    WiduLog.data.w('약 복용 푸시 초기화 실패', error: e, stackTrace: stack);
-    return false;
+class MedicationPushManager {
+  MedicationPushManager._();
+
+  static bool isMedicationChange(RemoteMessage message) => [
+        NotificationType.medicationScheduleSync,
+        NotificationType.medicationScheduleCreated,
+        NotificationType.medicationScheduleChanged,
+        NotificationType.medicationScheduleDeleted,
+      ].any((type) => type.matches(message.data));
+
+  static Future<String?> authenticatedMember() async {
+    if (!await TokenManager().hasToken()) return null;
+    return TokenManager().memberId;
   }
-}
 
-bool isMedicationChange(RemoteMessage message) =>
-    NotificationType.medicationScheduleSync.matches(message.data);
+  static MedicationRepositoryImpl createRepository() =>
+      MedicationRepositoryImpl(
+        remoteDataSource:
+            MedicationRemoteDataSourceImpl(apiClient: ApiClient()),
+        localDataSource: MedicationAlarmLocalDataSourceImpl(),
+        currentMember: authenticatedMember,
+      );
 
-Future<String?> authenticatedMedicationMember() async {
-  if (!await TokenManager().hasToken()) return null;
-  return TokenManager().memberId;
-}
-
-MedicationRepositoryImpl createMedicationRepository() =>
-    MedicationRepositoryImpl(
-      remoteDataSource: MedicationRemoteDataSourceImpl(apiClient: ApiClient()),
-      localDataSource: MedicationAlarmLocalDataSourceImpl(),
-      currentMember: authenticatedMedicationMember,
-    );
-
-@pragma('vm:entry-point')
-Future<void> pushBackgroundMessage(RemoteMessage message) async {
-  if (NotificationType.walkDataSync.matches(message.data)) {
-    WiduLog.bg.i('걸음수 동기화 푸시 수신');
+  static Future<void> handleBackgroundMessage(RemoteMessage message) async {
+    WiduLog.bg.i('약 복용 일정 변경 푸시 수신');
+    WiduLog.bg.t(() => '약 복용 푸시 data: ${message.data}');
     WidgetsFlutterBinding.ensureInitialized();
+    await dotenv.load();
     try {
-      await syncWalkBackground();
-    } catch (error, stack) {
-      WiduLog.bg.w('걸음수 푸시 동기화 보류', error: error, stackTrace: stack);
+      if (Firebase.apps.isEmpty) {
+        await Firebase.initializeApp(
+            options: DefaultFirebaseOptions.currentPlatform);
+      }
+    } catch (e, stack) {
+      WiduLog.bg.w('Firebase 초기화 실패', error: e, stackTrace: stack);
     }
-    return;
+    await createRepository().syncAlarmSchedule();
   }
-  if (!isMedicationChange(message)) return;
-  WiduLog.bg.i('약 복용 일정 변경 푸시 수신');
-  WiduLog.bg.t(() => '약 복용 푸시 data: ${message.data}');
-  WidgetsFlutterBinding.ensureInitialized();
-  await dotenv.load();
-  try {
-    if (Firebase.apps.isEmpty) {
-      await Firebase.initializeApp(
-          options: DefaultFirebaseOptions.currentPlatform);
-    }
-  } catch (e, stack) {
-    WiduLog.bg.w('Firebase 초기화 실패', error: e, stackTrace: stack);
-  }
-  await createMedicationRepository().syncAlarmSchedule();
 }

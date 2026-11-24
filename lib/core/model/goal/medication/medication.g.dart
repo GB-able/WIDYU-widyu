@@ -10,7 +10,7 @@ _Medication _$MedicationFromJson(Map<String, dynamic> json) => _Medication(
       medicineScheduleId: (json['medicineScheduleId'] as num).toInt(),
       takenCount: (json['takenCount'] as num).toInt(),
       totalCount: (json['totalCount'] as num).toInt(),
-      nextDoseCount: (json['nextDoseCount'] as num).toInt(),
+      nextDoseCount: (json['nextDoseCount'] as num).toDouble(),
       nextAlarmTime: json['nextAlarmTime'] as String,
       proofImage: json['proofImageUrl'] as String?,
       scheduleStatuses: (json['scheduleStatuses'] as List<dynamic>?)

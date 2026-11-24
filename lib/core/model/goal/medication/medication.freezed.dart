@@ -17,7 +17,7 @@ mixin _$Medication {
   int get medicineScheduleId;
   int get takenCount;
   int get totalCount;
-  int get nextDoseCount;
+  double get nextDoseCount;
   String get nextAlarmTime;
   @JsonKey(name: 'proofImageUrl')
   String? get proofImage;
@@ -87,7 +87,7 @@ abstract mixin class $MedicationCopyWith<$Res> {
       {int medicineScheduleId,
       int takenCount,
       int totalCount,
-      int nextDoseCount,
+      double nextDoseCount,
       String nextAlarmTime,
       @JsonKey(name: 'proofImageUrl') String? proofImage,
       @JsonKey(defaultValue: []) List<MedicationDoseStatus> scheduleStatuses,
@@ -131,7 +131,7 @@ class _$MedicationCopyWithImpl<$Res> implements $MedicationCopyWith<$Res> {
       nextDoseCount: null == nextDoseCount
           ? _self.nextDoseCount
           : nextDoseCount // ignore: cast_nullable_to_non_nullable
-              as int,
+              as double,
       nextAlarmTime: null == nextAlarmTime
           ? _self.nextAlarmTime
           : nextAlarmTime // ignore: cast_nullable_to_non_nullable
@@ -249,7 +249,7 @@ extension MedicationPatterns on Medication {
             int medicineScheduleId,
             int takenCount,
             int totalCount,
-            int nextDoseCount,
+            double nextDoseCount,
             String nextAlarmTime,
             @JsonKey(name: 'proofImageUrl') String? proofImage,
             @JsonKey(defaultValue: [])
@@ -294,7 +294,7 @@ extension MedicationPatterns on Medication {
             int medicineScheduleId,
             int takenCount,
             int totalCount,
-            int nextDoseCount,
+            double nextDoseCount,
             String nextAlarmTime,
             @JsonKey(name: 'proofImageUrl') String? proofImage,
             @JsonKey(defaultValue: [])
@@ -337,7 +337,7 @@ extension MedicationPatterns on Medication {
             int medicineScheduleId,
             int takenCount,
             int totalCount,
-            int nextDoseCount,
+            double nextDoseCount,
             String nextAlarmTime,
             @JsonKey(name: 'proofImageUrl') String? proofImage,
             @JsonKey(defaultValue: [])
@@ -387,7 +387,7 @@ class _Medication implements Medication {
   @override
   final int totalCount;
   @override
-  final int nextDoseCount;
+  final double nextDoseCount;
   @override
   final String nextAlarmTime;
   @override
@@ -475,7 +475,7 @@ abstract mixin class _$MedicationCopyWith<$Res>
       {int medicineScheduleId,
       int takenCount,
       int totalCount,
-      int nextDoseCount,
+      double nextDoseCount,
       String nextAlarmTime,
       @JsonKey(name: 'proofImageUrl') String? proofImage,
       @JsonKey(defaultValue: []) List<MedicationDoseStatus> scheduleStatuses,
@@ -519,7 +519,7 @@ class __$MedicationCopyWithImpl<$Res> implements _$MedicationCopyWith<$Res> {
       nextDoseCount: null == nextDoseCount
           ? _self.nextDoseCount
           : nextDoseCount // ignore: cast_nullable_to_non_nullable
-              as int,
+              as double,
       nextAlarmTime: null == nextAlarmTime
           ? _self.nextAlarmTime
           : nextAlarmTime // ignore: cast_nullable_to_non_nullable

@@ -33,11 +33,13 @@ class CommentEditField extends StatelessWidget {
               focusNode: focusNode,
               groupId: CommentEditField,
               autofocus: true,
+              maxLength: 500,
               textInputAction: TextInputAction.done,
               onFieldSubmitted: (_) => onSubmitted?.call(),
               style: MyTypo.body2.copyWith(color: MyColor.black),
               onTapOutside: (_) => FocusScope.of(context).unfocus(),
               decoration: InputDecoration(
+                counterText: '',
                 hintText: hintText,
                 hintStyle: MyTypo.body2.copyWith(color: MyColor.grey600),
                 contentPadding: EdgeInsets.zero,

@@ -19,11 +19,7 @@ dependencies:
   dio: ^5.9.0
   flutter_secure_storage: ^10.3.1
   flutter_dotenv: ^6.0.0
-  step_progress: ^2.6.1
-  daum_postcode_search: ^0.0.4
-  flutter_inappwebview: ^6.1.5
   collection: ^1.19.1
-  haptic_feedback: ^0.5.1+1
   fluttertoast: ^8.2.12
   flutter_native_splash: ^2.4.6
   table_calendar: ^3.2.0

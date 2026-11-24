@@ -27,9 +27,10 @@ import 'package:widyu/gen/assets.gen.dart';
 part 'widget/comment_text_field.dart';
 
 class PostScreen extends ConsumerStatefulWidget {
-  const PostScreen({super.key, required this.postId});
+  const PostScreen({super.key, required this.postId, this.commentId});
 
   final int postId;
+  final int? commentId;
 
   @override
   ConsumerState<PostScreen> createState() => _PostScreenState();
@@ -41,6 +42,9 @@ class _PostScreenState extends ConsumerState<PostScreen> {
   final _commentFocusNode = FocusNode();
   final _editController = TextEditingController();
   final _editFocusNode = FocusNode();
+  final _scrollController = ScrollController();
+  final _targetCommentKey = GlobalKey();
+  late bool _needsScrollToComment = widget.commentId != null;
 
   @override
   void initState() {
@@ -51,6 +55,7 @@ class _PostScreenState extends ConsumerState<PostScreen> {
   @override
   void dispose() {
     _editFocusNode.removeListener(_cancelEditOnBlur);
+    _scrollController.dispose();
     _commentController.dispose();
     _commentFocusNode.dispose();
     _editController.dispose();
@@ -86,9 +91,16 @@ class _PostScreenState extends ConsumerState<PostScreen> {
   Future<void> _sendComment() async {
     final text = _commentController.text;
     final sent = await _viewModel.sendComment(text);
-    if (sent && mounted && _commentController.text == text) {
-      _commentController.clear();
-    }
+    if (!sent || !mounted) return;
+    if (_commentController.text == text) _commentController.clear();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!_scrollController.hasClients) return;
+      _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+    });
   }
 
   // 탭(이벤트) 시점의 캐시와 포인트로 판단한다.
@@ -135,6 +147,19 @@ class _PostScreenState extends ConsumerState<PostScreen> {
     }
   }
 
+  void _scrollToComment() {
+    _needsScrollToComment = false;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final targetContext = _targetCommentKey.currentContext;
+      if (targetContext == null || !targetContext.mounted) return;
+      Scrollable.ensureVisible(
+        targetContext,
+        alignment: 1,
+        duration: const Duration(milliseconds: 300),
+      );
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final postId = widget.postId;
@@ -158,6 +183,9 @@ class _PostScreenState extends ConsumerState<PostScreen> {
     final visibleComments = replyParentId == null
         ? comments
         : comments.where((e) => e.commentId == replyParentId).toList();
+    if (_needsScrollToComment && status == PostStatus.success && !isLocked) {
+      _scrollToComment();
+    }
 
     return UiEventListener(
       stream: viewModel.uiEvent,
@@ -179,6 +207,7 @@ class _PostScreenState extends ConsumerState<PostScreen> {
                       onRetry: viewModel.retry,
                     ),
                   PostStatus.success => SingleChildScrollView(
+                      controller: _scrollController,
                       child: Column(
                         children: [
                           Padding(
@@ -253,6 +282,8 @@ class _PostScreenState extends ConsumerState<PostScreen> {
                                               onReply: _startReply,
                                               onEdit: _startEdit,
                                               onDelete: viewModel.deleteComment,
+                                              targetCommentId: widget.commentId,
+                                              targetKey: _targetCommentKey,
                                             ),
                                           )
                                           .toList(),

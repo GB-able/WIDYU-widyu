@@ -101,9 +101,8 @@ class _CalendarTabContentState extends ConsumerState<_CalendarTabContent>
         SchedulerPhase.persistentCallbacks) {
       return;
     }
-    if (_shrinkController.isAnimating) _shrinkController.stop();
-
     final next = (_shrink + delta).clamp(0.0, _HeaderMetrics.shrinkRange);
+    if (next == _shrink && !_shrinkController.isAnimating) return;
     _shrinkController.value = next / _HeaderMetrics.shrinkRange;
   }
 
@@ -150,6 +149,19 @@ class _CalendarTabContentState extends ConsumerState<_CalendarTabContent>
       final delta = notification.scrollDelta;
       if (delta == null || delta <= 0) return false;
       _applyShrinkDelta(delta);
+    } else if (notification is ScrollEndNotification) {
+      _snap(velocity: -(notification.dragDetails?.primaryVelocity ?? 0));
+    }
+    return false;
+  }
+
+  bool _handleHeaderScrollNotification(ScrollNotification notification) {
+    if (notification.depth != 0) return false;
+
+    if (notification is OverscrollNotification) {
+      if (notification.dragDetails != null) {
+        _applyShrinkDelta(notification.overscroll);
+      }
     } else if (notification is ScrollEndNotification) {
       _snap(velocity: -(notification.dragDetails?.primaryVelocity ?? 0));
     }
@@ -222,53 +234,67 @@ class _CalendarTabContentState extends ConsumerState<_CalendarTabContent>
       ),
     );
 
-    return Column(
-      children: [
-        GestureDetector(
-          behavior: HitTestBehavior.translucent,
-          onVerticalDragUpdate: (details) =>
-              _applyShrinkDelta(-details.delta.dy),
-          onVerticalDragEnd: (details) =>
-              _snap(velocity: -(details.primaryVelocity ?? 0)),
-          child: AnimatedBuilder(
-            animation: _shrinkController,
-            builder: (context, _) => _CalendarHeaderView(
-              focusedMonth: focusedMonth,
-              selectedDay: selectedDay,
-              hasEvent: (day) =>
-                  day.isSameMonth(focusedMonth) &&
-                  daysWithEvents.contains(day.day),
-              onPageChanged: viewModel.onPageChanged,
-              onSelectDay: viewModel.selectDay,
-              shrink: _shrink,
-              onHandleTap: _toggleHeader,
+    return RefreshIndicator(
+      color: MyColor.primary,
+      backgroundColor: MyColor.white,
+      notificationPredicate: (notification) =>
+          notification.depth == 0 &&
+          notification.metrics.axis == Axis.vertical &&
+          (notification is! ScrollStartNotification || _shrink == 0),
+      onRefresh: viewModel.refresh,
+      child: Column(
+        children: [
+          NotificationListener<ScrollNotification>(
+            onNotification: _handleHeaderScrollNotification,
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(
+                parent: ClampingScrollPhysics(),
+              ),
+              child: AnimatedBuilder(
+                animation: _shrinkController,
+                builder: (context, _) => _CalendarHeaderView(
+                  focusedMonth: focusedMonth,
+                  selectedDay: selectedDay,
+                  hasEvent: (day) =>
+                      day.isSameMonth(focusedMonth) &&
+                      daysWithEvents.contains(day.day),
+                  onPageChanged: viewModel.onPageChanged,
+                  onSelectDay: viewModel.selectDay,
+                  shrink: _shrink,
+                  onHandleTap: _toggleHeader,
+                  onHandleDragUpdate: (details) =>
+                      _applyShrinkDelta(-details.delta.dy),
+                  onHandleDragEnd: (details) =>
+                      _snap(velocity: -(details.primaryVelocity ?? 0)),
+                ),
+              ),
             ),
           ),
-        ),
-        Expanded(
-          child: NotificationListener<ScrollNotification>(
-            onNotification: _handleScrollNotification,
-            child: Consumer(
-              builder: (context, ref, _) {
-                final feedState = ref.watch(
-                  calendarTabViewModelProvider.select(
-                    (s) => s.selectedDayState,
-                  ),
-                );
-                return _CalendarFeedList(
-                  albumIds: feedState.items,
-                  isLoading: feedState.isLoading,
-                  isLoadingMore: feedState.isLoadingMore,
-                  hasError: feedState.hasError,
-                  controller: _scrollController,
-                  onRetry: viewModel.retry,
-                  itemBuilder: _buildFeed,
-                );
-              },
+          Expanded(
+            child: NotificationListener<ScrollNotification>(
+              onNotification: _handleScrollNotification,
+              child: Consumer(
+                builder: (context, ref, _) {
+                  final feedState = ref.watch(
+                    calendarTabViewModelProvider.select(
+                      (s) => s.selectedDayState,
+                    ),
+                  );
+                  return _CalendarFeedList(
+                    albumIds: feedState.items,
+                    isLoading: feedState.isLoading,
+                    isLoadingMore: feedState.isLoadingMore,
+                    hasError: feedState.hasError,
+                    controller: _scrollController,
+                    onRetry: viewModel.retry,
+                    itemBuilder: _buildFeed,
+                  );
+                },
+              ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

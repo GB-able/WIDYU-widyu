@@ -128,13 +128,13 @@ class HomeViewModel extends _$HomeViewModel {
         case _CameraPermissionOutcome.ready:
           final status = state.medicationStatus;
           final available = status is MedicationAvailable ? status : null;
-          final scheduleId =
-              available?.scheduleId ?? _medicine?.medicineScheduleId;
+          final scheduleId = available?.scheduleId;
           _emit(scheduleId == null
               ? const MedicationScheduleUnavailable()
               : NavigateToMedicationCamera(
                   scheduleId,
                   doseCount: available?.doseCount ?? _medicine?.nextDoseCount,
+                  scheduledAt: available?.doseAt,
                 ));
         case _CameraPermissionOutcome.settingsGranted:
           _emit(const CameraPermissionSettingsGranted());

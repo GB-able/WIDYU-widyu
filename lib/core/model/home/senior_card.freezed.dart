@@ -906,7 +906,7 @@ mixin _$MedicationSummary {
   int? get medicineScheduleId;
   int? get todayTakenCount;
   int? get todayTotalCount;
-  int? get nextDoseCount;
+  double? get nextDoseCount;
   String? get nextAlarmTime;
   @JsonKey(defaultValue: [])
   List<MedicationDoseStatus> get scheduleStatuses;
@@ -968,7 +968,7 @@ abstract mixin class $MedicationSummaryCopyWith<$Res> {
       {int? medicineScheduleId,
       int? todayTakenCount,
       int? todayTotalCount,
-      int? nextDoseCount,
+      double? nextDoseCount,
       String? nextAlarmTime,
       @JsonKey(defaultValue: []) List<MedicationDoseStatus> scheduleStatuses});
 }
@@ -1009,7 +1009,7 @@ class _$MedicationSummaryCopyWithImpl<$Res>
       nextDoseCount: freezed == nextDoseCount
           ? _self.nextDoseCount
           : nextDoseCount // ignore: cast_nullable_to_non_nullable
-              as int?,
+              as double?,
       nextAlarmTime: freezed == nextAlarmTime
           ? _self.nextAlarmTime
           : nextAlarmTime // ignore: cast_nullable_to_non_nullable
@@ -1119,7 +1119,7 @@ extension MedicationSummaryPatterns on MedicationSummary {
             int? medicineScheduleId,
             int? todayTakenCount,
             int? todayTotalCount,
-            int? nextDoseCount,
+            double? nextDoseCount,
             String? nextAlarmTime,
             @JsonKey(defaultValue: [])
             List<MedicationDoseStatus> scheduleStatuses)?
@@ -1160,7 +1160,7 @@ extension MedicationSummaryPatterns on MedicationSummary {
             int? medicineScheduleId,
             int? todayTakenCount,
             int? todayTotalCount,
-            int? nextDoseCount,
+            double? nextDoseCount,
             String? nextAlarmTime,
             @JsonKey(defaultValue: [])
             List<MedicationDoseStatus> scheduleStatuses)
@@ -1199,7 +1199,7 @@ extension MedicationSummaryPatterns on MedicationSummary {
             int? medicineScheduleId,
             int? todayTakenCount,
             int? todayTotalCount,
-            int? nextDoseCount,
+            double? nextDoseCount,
             String? nextAlarmTime,
             @JsonKey(defaultValue: [])
             List<MedicationDoseStatus> scheduleStatuses)?
@@ -1243,7 +1243,7 @@ class _MedicationSummary implements MedicationSummary {
   @override
   final int? todayTotalCount;
   @override
-  final int? nextDoseCount;
+  final double? nextDoseCount;
   @override
   final String? nextAlarmTime;
   final List<MedicationDoseStatus> _scheduleStatuses;
@@ -1319,7 +1319,7 @@ abstract mixin class _$MedicationSummaryCopyWith<$Res>
       {int? medicineScheduleId,
       int? todayTakenCount,
       int? todayTotalCount,
-      int? nextDoseCount,
+      double? nextDoseCount,
       String? nextAlarmTime,
       @JsonKey(defaultValue: []) List<MedicationDoseStatus> scheduleStatuses});
 }
@@ -1360,7 +1360,7 @@ class __$MedicationSummaryCopyWithImpl<$Res>
       nextDoseCount: freezed == nextDoseCount
           ? _self.nextDoseCount
           : nextDoseCount // ignore: cast_nullable_to_non_nullable
-              as int?,
+              as double?,
       nextAlarmTime: freezed == nextAlarmTime
           ? _self.nextAlarmTime
           : nextAlarmTime // ignore: cast_nullable_to_non_nullable
@@ -1381,7 +1381,7 @@ mixin _$MedicationDoseStatus {
   String? get doseTime;
   @JsonKey(defaultValue: false)
   bool get taken;
-  int? get doseCount;
+  double? get doseCount;
   String? get proofImageUrl;
 
   /// Create a copy of MedicationDoseStatus
@@ -1432,7 +1432,7 @@ abstract mixin class $MedicationDoseStatusCopyWith<$Res> {
       {@JsonKey(name: 'medicineScheduleId') int? scheduleId,
       String? doseTime,
       @JsonKey(defaultValue: false) bool taken,
-      int? doseCount,
+      double? doseCount,
       String? proofImageUrl});
 }
 
@@ -1471,7 +1471,7 @@ class _$MedicationDoseStatusCopyWithImpl<$Res>
       doseCount: freezed == doseCount
           ? _self.doseCount
           : doseCount // ignore: cast_nullable_to_non_nullable
-              as int?,
+              as double?,
       proofImageUrl: freezed == proofImageUrl
           ? _self.proofImageUrl
           : proofImageUrl // ignore: cast_nullable_to_non_nullable
@@ -1577,7 +1577,7 @@ extension MedicationDoseStatusPatterns on MedicationDoseStatus {
             @JsonKey(name: 'medicineScheduleId') int? scheduleId,
             String? doseTime,
             @JsonKey(defaultValue: false) bool taken,
-            int? doseCount,
+            double? doseCount,
             String? proofImageUrl)?
         $default, {
     required TResult orElse(),
@@ -1611,7 +1611,7 @@ extension MedicationDoseStatusPatterns on MedicationDoseStatus {
             @JsonKey(name: 'medicineScheduleId') int? scheduleId,
             String? doseTime,
             @JsonKey(defaultValue: false) bool taken,
-            int? doseCount,
+            double? doseCount,
             String? proofImageUrl)
         $default,
   ) {
@@ -1643,7 +1643,7 @@ extension MedicationDoseStatusPatterns on MedicationDoseStatus {
             @JsonKey(name: 'medicineScheduleId') int? scheduleId,
             String? doseTime,
             @JsonKey(defaultValue: false) bool taken,
-            int? doseCount,
+            double? doseCount,
             String? proofImageUrl)?
         $default,
   ) {
@@ -1680,7 +1680,7 @@ class _MedicationDoseStatus implements MedicationDoseStatus {
   @JsonKey(defaultValue: false)
   final bool taken;
   @override
-  final int? doseCount;
+  final double? doseCount;
   @override
   final String? proofImageUrl;
 
@@ -1739,7 +1739,7 @@ abstract mixin class _$MedicationDoseStatusCopyWith<$Res>
       {@JsonKey(name: 'medicineScheduleId') int? scheduleId,
       String? doseTime,
       @JsonKey(defaultValue: false) bool taken,
-      int? doseCount,
+      double? doseCount,
       String? proofImageUrl});
 }
 
@@ -1778,7 +1778,7 @@ class __$MedicationDoseStatusCopyWithImpl<$Res>
       doseCount: freezed == doseCount
           ? _self.doseCount
           : doseCount // ignore: cast_nullable_to_non_nullable
-              as int?,
+              as double?,
       proofImageUrl: freezed == proofImageUrl
           ? _self.proofImageUrl
           : proofImageUrl // ignore: cast_nullable_to_non_nullable

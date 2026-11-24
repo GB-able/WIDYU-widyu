@@ -8,6 +8,11 @@ import 'package:widyu/gen/assets.gen.dart';
 
 const lockedImageDecodeWidth = 200;
 
+int albumGridDecodeWidth(BuildContext context) {
+  final cellWidth = (MediaQuery.sizeOf(context).width - 32 - 2) / 3;
+  return (cellWidth * 4 / 3 * MediaQuery.devicePixelRatioOf(context)).round();
+}
+
 class FeedLockOverlay extends StatelessWidget {
   const FeedLockOverlay({super.key, required this.price, required this.child});
 

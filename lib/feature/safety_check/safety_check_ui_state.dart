@@ -12,5 +12,6 @@ abstract class SafetyCheckUiState with _$SafetyCheckUiState {
     @Default(SafetyCheckPhase.confirm) SafetyCheckPhase phase,
     @Default(false) bool isSubmitting,
     @Default(false) bool closed,
+    DateTime? deadline,
   }) = _SafetyCheckUiState;
 }

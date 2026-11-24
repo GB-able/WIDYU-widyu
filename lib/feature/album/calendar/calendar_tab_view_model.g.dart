@@ -42,7 +42,7 @@ final class CalendarTabViewModelProvider
 }
 
 String _$calendarTabViewModelHash() =>
-    r'0d7319462ff39786613b9b4a8fed27ad57499d2e';
+    r'959cd9b6d7a7427c0a7bc3c7a1225fdd7c40b571';
 
 abstract class _$CalendarTabViewModel extends $Notifier<CalendarTabUiState> {
   CalendarTabUiState build();
