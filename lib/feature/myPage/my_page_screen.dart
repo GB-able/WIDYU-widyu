@@ -70,7 +70,7 @@ class MyPageScreen extends ConsumerWidget {
                   children: [
                     const _ManagementMenuView(),
                     const WidyuDivider(),
-                    const _SettingMenuView(),
+                    // const _SettingMenuView(),
                     _InformationMenuView(
                       appVersion: uiState.appVersion,
                       onLogout: viewModel.logout,
