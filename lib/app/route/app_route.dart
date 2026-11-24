@@ -8,6 +8,7 @@ enum AppRoute {
 
   home('/home'),
   goal('/goal'),
+  monthlyGoal('/goal/monthly'),
   album('/album'),
   my('/my'),
 

@@ -75,9 +75,9 @@ class GoalScreen extends ConsumerWidget {
                 enabled: uiState.isLoading,
                 // 기기에서 동작 줄이기를 켜면 움직이지 않는 블록만 보여 준다.
                 effect: MediaQuery.disableAnimationsOf(context)
-                    ? const SolidColorEffect(color: Color(0xFFDFE2E6))
+                    ? const SolidColorEffect(color: MyColor.grey200)
                     : const WavePulseEffect(),
-                containersColor: const Color(0xFFF6F7F8),
+                containersColor: MyColor.grey50,
                 // 시안처럼 글자 블록도 모서리를 6으로 둥글린다.
                 textBoneBorderRadius:
                     TextBoneBorderRadius(BorderRadius.circular(6)),

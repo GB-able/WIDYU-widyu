@@ -29,12 +29,14 @@ class _GoalHeader extends StatelessWidget {
                   style: MyTypo.title1.copyWith(color: MyColor.grey700),
                 ),
               ),
-              const SkeletonBox(
+              SkeletonBox(
                 width: 96,
                 height: 36,
                 lineHeight: 36,
                 pill: true,
-                child: _MonthlyGoalButton(onTap: null),
+                child: _MonthlyGoalButton(
+                  onTap: () => context.push(AppRoute.monthlyGoal.path),
+                ),
               ),
             ],
           ),
@@ -47,7 +49,6 @@ class _GoalHeader extends StatelessWidget {
 class _MonthlyGoalButton extends StatelessWidget {
   const _MonthlyGoalButton({required this.onTap});
 
-  // TODO: 월간 목표 화면(#142)이 생기면 이동을 연결한다.
   final VoidCallback? onTap;
 
   @override
