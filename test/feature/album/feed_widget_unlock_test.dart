@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
-import 'package:widyu/app/routes/app_route.dart';
+import 'package:widyu/app/route/app_route.dart';
 import 'package:widyu/core/model/album/album_post.dart';
 import 'package:widyu/core/model/album/album_stat.dart';
-import 'package:widyu/feature/album/_widgets/feed_widget.dart';
+import 'package:widyu/feature/album/widget/feed_widget.dart';
 
 import 'album_fakes.dart';
 

@@ -3,24 +3,24 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:table_calendar/table_calendar.dart';
-import 'package:widyu/app/routes/app_route.dart';
+import 'package:widyu/app/route/app_route.dart';
 import 'package:widyu/core/di/providers.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
-import 'package:widyu/core/ui/widgets/custom_error_widget.dart';
-import 'package:widyu/core/ui/widgets/custom_loading_widget.dart';
-import 'package:widyu/core/ui/widgets/widu_icon.dart';
-import 'package:widyu/core/utils/calendar_config.dart';
-import 'package:widyu/core/utils/extensions/date_extension.dart';
-import 'package:widyu/feature/album/_widgets/feed_widget.dart';
-import 'package:widyu/feature/album/_widgets/retry_widget.dart';
-import 'package:widyu/feature/album/_widgets/unlock_dialog.dart';
+import 'package:widyu/core/ui/widget/custom_error_widget.dart';
+import 'package:widyu/core/ui/widget/custom_loading_widget.dart';
+import 'package:widyu/core/ui/widget/widu_icon.dart';
+import 'package:widyu/core/util/calendar_config.dart';
+import 'package:widyu/core/util/extension/date_extension.dart';
 import 'package:widyu/feature/album/calendar/calendar_tab_view_model.dart';
+import 'package:widyu/feature/album/widget/feed_widget.dart';
+import 'package:widyu/feature/album/widget/retry_widget.dart';
+import 'package:widyu/feature/album/widget/unlock_dialog.dart';
 import 'package:widyu/gen/assets.gen.dart';
 
-part 'widgets/calendar_feed_list.dart';
-part 'widgets/calendar_grid.dart';
-part 'widgets/calendar_header_view.dart';
+part 'widget/calendar_feed_list.dart';
+part 'widget/calendar_grid.dart';
+part 'widget/calendar_header_view.dart';
 
 abstract class _HeaderMetrics {
   static const topPadding = 8.0;

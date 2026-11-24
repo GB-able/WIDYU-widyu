@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:widyu/core/model/permission/permission_recovery_prompt.dart';
 import 'package:widyu/core/model/permission/permission_type.dart';
-import 'package:widyu/core/ui/widgets/permission_recovery_dialog.dart';
+import 'package:widyu/core/ui/widget/permission_recovery_dialog.dart';
 import 'package:widyu/gen/assets.gen.dart';
 
 extension PermissionTypeDisplay on PermissionType {

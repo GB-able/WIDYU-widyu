@@ -49,7 +49,8 @@ abstract class MedicationSummary with _$MedicationSummary {
 @freezed
 abstract class MedicationDoseStatus with _$MedicationDoseStatus {
   const factory MedicationDoseStatus({
-    int? scheduleId,
+    // 목표 홈은 회차별 일정 ID를 이 이름으로 준다. 홈 카드 응답에는 없다.
+    @JsonKey(name: 'medicineScheduleId') int? scheduleId,
     required String? doseTime,
     @JsonKey(defaultValue: false) required bool taken,
     int? doseCount,

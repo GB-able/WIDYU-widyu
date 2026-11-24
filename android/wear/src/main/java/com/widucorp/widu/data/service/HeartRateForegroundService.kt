@@ -10,6 +10,7 @@ import android.util.Log
 import androidx.core.app.ServiceCompat
 import com.widucorp.widu.BuildConfig
 import com.widucorp.widu.data.model.MeasureResult
+import com.widucorp.widu.data.repository.DeviceEventRepository
 import com.widucorp.widu.data.repository.HeartRateRepository
 import com.widucorp.widu.data.repository.ImuRepository
 import com.widucorp.widu.presentation.util.WidyuNotificationManager
@@ -33,12 +34,16 @@ class HeartRateForegroundService : Service() {
     lateinit var imuRepository: ImuRepository
 
     @Inject
+    lateinit var deviceEventRepository: DeviceEventRepository
+
+    @Inject
     lateinit var notificationManager: WidyuNotificationManager
 
     private val serviceScope: CoroutineScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
     private var isRunning: Boolean = false
     private var job: Job? = null
     private var imuJob: Job? = null
+    private var eventJob: Job? = null
 
     override fun onStartCommand(
         intent: Intent?,
@@ -48,7 +53,12 @@ class HeartRateForegroundService : Service() {
         super.onStartCommand(intent, flags, startId)
 
         if (intent?.action == ACTION_RESTART_SESSION) {
-            if (!isRunning) startService()
+            if (!isRunning) {
+                startService()
+                startMeasurement()
+            }
+            // 심박 스트림은 프로세스당 한 번만 세션을 연다. 서비스만 죽고 프로세스가 살아 있었다면 재구독으로는 세션이 다시 열리지 않으므로 항상 연다.
+            // 새 프로세스라면 세션이 두 번 열리지만, 자기 세션에 밀린 종료는 소유 여부를 보고 알리지 않는다(HeartRateLocalDataSourceImpl).
             serviceScope.launch { repository.restartSession() }
             return START_STICKY
         }
@@ -102,8 +112,15 @@ class HeartRateForegroundService : Service() {
                 .batches()
                 .catch { Log.e("Widyu", "IMU collection error", it) }
                 .onEach { batch ->
-                    if (BuildConfig.DEBUG) Log.d("Widyu", "IMU batch seq=${batch.seq} n=${batch.acc?.values?.size}")
+                    if (BuildConfig.DEBUG) Log.d("Widyu", "IMU batch seq=${batch.seq} n=${batch.acc.n}")
                 }.launchIn(serviceScope)
+
+        eventJob =
+            deviceEventRepository
+                .events()
+                .catch { Log.e("Widyu", "Device event error", it) }
+                .onEach { event -> if (BuildConfig.DEBUG) Log.d("Widyu", "Device event ${event.kind}") }
+                .launchIn(serviceScope)
     }
 
     override fun onDestroy() {
@@ -111,6 +128,8 @@ class HeartRateForegroundService : Service() {
         job = null
         imuJob?.cancel()
         imuJob = null
+        eventJob?.cancel()
+        eventJob = null
         isRunning = false
         super.onDestroy()
     }

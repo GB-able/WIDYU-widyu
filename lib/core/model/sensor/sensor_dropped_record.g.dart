@@ -8,7 +8,8 @@ part of 'sensor_dropped_record.dart';
 
 _SensorDroppedRecord _$SensorDroppedRecordFromJson(Map<String, dynamic> json) =>
     _SensorDroppedRecord(
-      stream: json['stream'] as String? ?? 'imu_dropped',
+      stream: json['stream'] as String? ?? 'dropped',
+      droppedStream: json['dropped_stream'] as String,
       sessionId: json['session_id'] as String,
       fromSeq: (json['from_seq'] as num).toInt(),
       toSeq: (json['to_seq'] as num).toInt(),
@@ -20,6 +21,7 @@ Map<String, dynamic> _$SensorDroppedRecordToJson(
         _SensorDroppedRecord instance) =>
     <String, dynamic>{
       'stream': instance.stream,
+      'dropped_stream': instance.droppedStream,
       'session_id': instance.sessionId,
       'from_seq': instance.fromSeq,
       'to_seq': instance.toSeq,

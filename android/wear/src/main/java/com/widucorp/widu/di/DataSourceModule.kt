@@ -2,8 +2,12 @@ package com.widucorp.widu.di
 
 import com.widucorp.widu.data.source.ClockLocalDataSource
 import com.widucorp.widu.data.source.ClockLocalDataSourceImpl
+import com.widucorp.widu.data.source.DeviceEventRemoteDataSource
+import com.widucorp.widu.data.source.DeviceEventRemoteDataSourceImpl
 import com.widucorp.widu.data.source.DeviceInfoLocalDataSource
 import com.widucorp.widu.data.source.DeviceInfoLocalDataSourceImpl
+import com.widucorp.widu.data.source.DeviceStateLocalDataSource
+import com.widucorp.widu.data.source.DeviceStateLocalDataSourceImpl
 import com.widucorp.widu.data.source.HeartRateLocalDataSource
 import com.widucorp.widu.data.source.HeartRateLocalDataSourceImpl
 import com.widucorp.widu.data.source.HeartRateRemoteDataSource
@@ -56,4 +60,12 @@ abstract class DataSourceModule {
     @Binds
     @Singleton
     abstract fun bindOnboardingLocalDataSource(impl: OnboardingLocalDataSourceImpl): OnboardingLocalDataSource
+
+    @Binds
+    @Singleton
+    abstract fun bindDeviceStateLocalDataSource(impl: DeviceStateLocalDataSourceImpl): DeviceStateLocalDataSource
+
+    @Binds
+    @Singleton
+    abstract fun bindDeviceEventRemoteDataSource(impl: DeviceEventRemoteDataSourceImpl): DeviceEventRemoteDataSource
 }

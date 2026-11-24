@@ -23,27 +23,17 @@ class ImuConfigLocalDataSourceImpl @Inject constructor(
             .edit()
             .putString(KEY_COLLECTION_MODE, config.collectionMode)
             .putString(KEY_GYRO_MODE, config.gyroMode)
-            .putInt(KEY_ACC_HZ, config.accHz)
-            .putInt(KEY_BATCH_SEC, config.batchSec)
-            .putFloat(KEY_IMPACT_G, config.impactG)
-            .putInt(KEY_BACKFILL_PRE_SEC, config.backfillPreSec)
-            .putInt(KEY_BACKFILL_POST_SEC, config.backfillPostSec)
             .apply()
         state.value = config
     }
 
-    /** 서버가 주지 않는 필드(앵커 주기·큐 길이 등)는 기본값을 그대로 쓴다. */
+    /** 서버가 주지 않거나 고정인 필드(측정 주기·배치 길이·앵커 주기 등)는 기본값을 그대로 쓴다. */
     private fun restore(): ImuConfig {
         val default = ImuConfig()
-        if (!preferences.contains(KEY_ACC_HZ)) return default
+        if (!preferences.contains(KEY_COLLECTION_MODE)) return default
         return default.copy(
             collectionMode = preferences.getString(KEY_COLLECTION_MODE, default.collectionMode) ?: default.collectionMode,
             gyroMode = preferences.getString(KEY_GYRO_MODE, default.gyroMode) ?: default.gyroMode,
-            accHz = preferences.getInt(KEY_ACC_HZ, default.accHz),
-            batchSec = preferences.getInt(KEY_BATCH_SEC, default.batchSec),
-            impactG = preferences.getFloat(KEY_IMPACT_G, default.impactG),
-            backfillPreSec = preferences.getInt(KEY_BACKFILL_PRE_SEC, default.backfillPreSec),
-            backfillPostSec = preferences.getInt(KEY_BACKFILL_POST_SEC, default.backfillPostSec),
         )
     }
 
@@ -51,10 +41,5 @@ class ImuConfigLocalDataSourceImpl @Inject constructor(
         const val PREF_NAME = "widyu_imu_config"
         const val KEY_COLLECTION_MODE = "collection_mode"
         const val KEY_GYRO_MODE = "gyro_mode"
-        const val KEY_ACC_HZ = "acc_hz"
-        const val KEY_BATCH_SEC = "batch_sec"
-        const val KEY_IMPACT_G = "impact_g"
-        const val KEY_BACKFILL_PRE_SEC = "backfill_pre_sec"
-        const val KEY_BACKFILL_POST_SEC = "backfill_post_sec"
     }
 }

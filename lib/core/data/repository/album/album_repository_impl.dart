@@ -19,7 +19,7 @@ import 'package:widyu/core/model/album/media.dart';
 import 'package:widyu/core/model/album/member.dart';
 import 'package:widyu/core/model/api/api_result.dart';
 import 'package:widyu/core/model/api/infinite_page_result.dart';
-import 'package:widyu/core/utils/extensions/api_result_extension.dart';
+import 'package:widyu/core/util/extension/api_result_extension.dart';
 
 class AlbumRepositoryImpl extends AlbumRepository {
   final AlbumRemoteDataSource _remoteDataSource;

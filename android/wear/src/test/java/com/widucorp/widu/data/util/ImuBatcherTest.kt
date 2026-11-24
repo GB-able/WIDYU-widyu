@@ -14,7 +14,7 @@ class ImuBatcherTest {
         x: Float = 0f,
         y: Float = 0f,
         z: Float = 0f,
-    ) = ImuSample(ImuSample.Type.ACC, ts, x, y, z)
+    ) = ImuSample(ts, x, y, z)
 
     @Test
     @DisplayName("1초 경계를 넘는 샘플은 다음 배치의 첫 샘플이 되고 샘플을 버리지 않는다")

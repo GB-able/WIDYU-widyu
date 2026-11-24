@@ -340,7 +340,7 @@ void main() {
   test('폐기 레코드는 보내지면 지우고, 못 보내면 남겨 둔다', () async {
     local.addDropped(_dropped());
     await _settle();
-    expect(local.consumed, ['imu_dropped/session-1/10']);
+    expect(local.consumed, ['dropped/session-1/10/hr']);
 
     remote.sendSucceeds = false;
     local.addDropped(_dropped());
@@ -404,10 +404,11 @@ SensorBatch _batch(int seq, {String? runId}) => SensorBatch(
     );
 
 SensorDroppedRecord _dropped() => const SensorDroppedRecord(
+      droppedStream: 'hr',
       sessionId: 'session-1',
       fromSeq: 10,
       toSeq: 15,
-      reason: 'queue_full',
+      reason: 'queue_overflow',
       tsMs: 1758000000200,
     );
 
@@ -432,8 +433,12 @@ class _LocalDataSource implements SensorBatchLocalDataSource {
     required String stream,
     required String sessionId,
     required int seq,
+    String? droppedStream,
   }) =>
-      consumed.add('$stream/$sessionId/$seq');
+      consumed.add([stream, sessionId, seq, if (droppedStream != null) droppedStream].join('/'));
+
+  @override
+  void consumeEvent(String eventId) {}
 
   void dispose() => _controller.close();
 }

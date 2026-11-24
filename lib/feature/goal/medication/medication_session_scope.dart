@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:widyu/app/routes/app_route.dart';
+import 'package:widyu/app/route/app_route.dart';
 import 'package:widyu/core/data/repository/goal/medication_repository.dart';
 import 'package:widyu/core/di/providers.dart';
 import 'package:widyu/core/log/log.dart';
@@ -16,9 +16,9 @@ import 'package:widyu/core/model/permission/permission_recovery_prompt.dart';
 import 'package:widyu/core/model/permission/permission_type.dart';
 import 'package:widyu/core/notification/local_notification_manager.dart';
 import 'package:widyu/core/notification/medication_push_manager.dart';
-import 'package:widyu/core/ui/widgets/medication_reward_dialog.dart';
-import 'package:widyu/core/ui/widgets/permission_recovery_dialog.dart';
-import 'package:widyu/core/utils/permission_manager.dart';
+import 'package:widyu/core/ui/widget/medication_reward_dialog.dart';
+import 'package:widyu/core/ui/widget/permission_recovery_dialog.dart';
+import 'package:widyu/core/util/permission_manager.dart';
 import 'package:widyu/feature/goal/medication/medication_ringing_screen.dart';
 
 class MedicationSessionScope extends ConsumerStatefulWidget {

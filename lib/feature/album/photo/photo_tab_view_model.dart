@@ -7,7 +7,7 @@ import 'package:widyu/core/model/album/album_cache.dart';
 import 'package:widyu/core/model/album/media.dart';
 import 'package:widyu/core/model/api/api_result.dart';
 import 'package:widyu/core/model/api/infinite_page_result.dart';
-import 'package:widyu/core/utils/infinite_scroll.dart';
+import 'package:widyu/core/util/infinite_scroll.dart';
 import 'package:widyu/feature/album/photo/photo_tab_ui_state.dart';
 
 part 'photo_tab_view_model.g.dart';

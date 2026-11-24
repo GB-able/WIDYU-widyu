@@ -5,20 +5,20 @@ import 'package:go_router/go_router.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:photo_manager_image_provider/photo_manager_image_provider.dart';
 import 'package:video_player/video_player.dart';
-import 'package:widyu/app/routes/extra/edit_post_extra.dart';
+import 'package:widyu/app/route/extra/edit_post_extra.dart';
 import 'package:widyu/core/di/providers.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/effects.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
-import 'package:widyu/core/ui/widgets/custom_app_bar.dart';
-import 'package:widyu/core/ui/widgets/custom_network_image.dart';
-import 'package:widyu/core/ui/widgets/widu_icon.dart';
-import 'package:widyu/core/ui/widgets/widyu_text_button.dart';
+import 'package:widyu/core/ui/widget/custom_app_bar.dart';
+import 'package:widyu/core/ui/widget/custom_network_image.dart';
+import 'package:widyu/core/ui/widget/widu_icon.dart';
+import 'package:widyu/core/ui/widget/widyu_text_button.dart';
 import 'package:widyu/feature/album/manage_post/manage_post_view_model.dart';
 import 'package:widyu/gen/assets.gen.dart';
 
-part 'widgets/asset_video_preview.dart';
-part 'widgets/media_carousel.dart';
+part 'widget/asset_video_preview.dart';
+part 'widget/media_carousel.dart';
 
 enum ManageMode { add, edit }
 

@@ -18,8 +18,12 @@ class SensorConfigRepositoryImpl implements SensorConfigRepository {
   /// 조회 실패 시 다음 재조회까지의 간격.
   static const _fallbackRefresh = SensorConfig();
 
+  final _configs = StreamController<SensorConfig>.broadcast();
   Timer? _timer;
   bool _active = false;
+
+  @override
+  Stream<SensorConfig> get configs => _configs.stream;
 
   @override
   void start() {
@@ -32,7 +36,10 @@ class SensorConfigRepositoryImpl implements SensorConfigRepository {
     final config = await _remoteDataSource.fetch();
     if (!_active) return;
     // 조회가 실패하면 워치 설정은 그대로 두고 다음 주기에 다시 시도한다.
-    if (config != null) await _localDataSource.sendToWatch(config);
+    if (config != null) {
+      _configs.add(config);
+      await _localDataSource.sendToWatch(config);
+    }
     if (!_active) return;
     _timer?.cancel();
     _timer = Timer(

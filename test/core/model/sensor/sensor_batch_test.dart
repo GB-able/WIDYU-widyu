@@ -107,14 +107,15 @@ Map<String, dynamic> _impactBatch() => {
       'phone_received_at_ms': 1760000000123,
     };
 
-/// 폰 네이티브 HeartRateListenerService 가 넘기는 폐기 레코드.
+/// 서버 "버린 묶음" 기록 예시 그대로. 폰 네이티브 `HeartRatePlugin.sensorItemToJson` 이 이 형태로 넘긴다.
 Map<String, dynamic> _droppedRecord() => {
-      'stream': 'imu_dropped',
-      'session_id': 'session-1',
-      'from_seq': 10,
-      'to_seq': 15,
-      'reason': 'queue_full',
-      'ts_ms': 1758000000200,
+      'stream': 'dropped',
+      'dropped_stream': 'hr',
+      'session_id': 'bf8cd09a-1c2d-4e5f-8a9b-0c1d2e3f4a5b',
+      'from_seq': 120,
+      'to_seq': 131,
+      'reason': 'queue_overflow',
+      'ts_ms': 1762000000200,
     };
 
 /// 서버 심박 스펙 예시 그대로 + 폰이 채우는 phone_received_at_ms. 워치 `HeartRateBatch.toMap()` 이 정본이다.
@@ -249,14 +250,15 @@ void main() {
           batch.samples.map((sample) => sample.accuracy), ['UNKNOWN', 'HIGH']);
     });
 
-    test('imu_dropped 는 dropped 로 간다', () {
+    test('stream: dropped 는 dropped 로 간다', () {
       final message = SensorMessage.fromJson(_droppedRecord());
 
       expect(message, isA<SensorMessageDropped>());
       final record = (message as SensorMessageDropped).record;
-      expect(record.fromSeq, 10);
-      expect(record.toSeq, 15);
-      expect(record.reason, 'queue_full');
+      expect(record.droppedStream, 'hr');
+      expect(record.fromSeq, 120);
+      expect(record.toSeq, 131);
+      expect(record.reason, 'queue_overflow');
     });
   });
 }

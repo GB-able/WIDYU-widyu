@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:widyu/core/data/repository/album/album_repository_impl.dart';
 import 'package:widyu/core/di/providers.dart';
-import 'package:widyu/core/utils/extensions/date_extension.dart';
+import 'package:widyu/core/util/extension/date_extension.dart';
 import 'package:widyu/feature/album/calendar/calendar_tab_ui_state.dart';
 import 'package:widyu/feature/album/calendar/calendar_tab_view_model.dart';
 

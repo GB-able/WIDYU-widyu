@@ -6,17 +6,17 @@ import 'package:go_router/go_router.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:photo_manager_image_provider/photo_manager_image_provider.dart';
 import 'package:video_player/video_player.dart';
-import 'package:widyu/app/routes/app_route.dart';
+import 'package:widyu/app/route/app_route.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
-import 'package:widyu/core/ui/widgets/custom_app_bar.dart';
-import 'package:widyu/core/ui/widgets/widu_icon.dart';
-import 'package:widyu/core/ui/widgets/widyu_text_button.dart';
+import 'package:widyu/core/ui/widget/custom_app_bar.dart';
+import 'package:widyu/core/ui/widget/widu_icon.dart';
+import 'package:widyu/core/ui/widget/widyu_text_button.dart';
 import 'package:widyu/feature/album/select_photo/select_photo_view_model.dart';
 import 'package:widyu/gen/assets.gen.dart';
 
-part 'widgets/image_preview.dart';
-part 'widgets/video_preview.dart';
+part 'widget/image_preview.dart';
+part 'widget/video_preview.dart';
 
 class PhotoPreviewScreen extends ConsumerStatefulWidget {
   const PhotoPreviewScreen({super.key, required this.initialIndex});

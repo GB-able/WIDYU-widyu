@@ -1,7 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:widyu/core/model/album/album_cache.dart';
 import 'package:widyu/core/model/album/media.dart';
-import 'package:widyu/core/utils/infinite_scroll.dart';
+import 'package:widyu/core/util/infinite_scroll.dart';
 
 part 'photo_tab_ui_state.freezed.dart';
 

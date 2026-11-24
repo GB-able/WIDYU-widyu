@@ -5,6 +5,10 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:widyu/core/data/repository/auth/auth_repository_impl.dart';
+import 'package:widyu/core/data/repository/device/device_event_repository.dart';
+import 'package:widyu/core/data/repository/device/device_event_repository_impl.dart';
+import 'package:widyu/core/data/repository/device/heartbeat_repository.dart';
+import 'package:widyu/core/data/repository/device/heartbeat_repository_impl.dart';
 import 'package:widyu/core/data/repository/heartRate/heart_rate_repository.dart';
 import 'package:widyu/core/data/repository/heartRate/heart_rate_repository_impl.dart';
 import 'package:widyu/core/data/repository/location/location_repository.dart';
@@ -15,7 +19,10 @@ import 'package:widyu/core/data/repository/sensor/sensor_config_repository.dart'
 import 'package:widyu/core/data/repository/sensor/sensor_config_repository_impl.dart';
 import 'package:widyu/core/data/source/auth/auth_local_data_source_impl.dart';
 import 'package:widyu/core/data/source/auth/auth_remote_data_source_impl.dart';
+import 'package:widyu/core/data/source/device/device_event_remote_data_source_impl.dart';
 import 'package:widyu/core/data/source/device/device_local_data_source_impl.dart';
+import 'package:widyu/core/data/source/device/device_status_local_data_source_impl.dart';
+import 'package:widyu/core/data/source/device/heartbeat_remote_data_source_impl.dart';
 import 'package:widyu/core/data/source/heartRate/heart_rate_local_data_source_impl.dart';
 import 'package:widyu/core/data/source/heartRate/heart_rate_remote_data_source_impl.dart';
 import 'package:widyu/core/data/source/location/location_local_data_source_impl.dart';
@@ -31,8 +38,8 @@ import 'package:widyu/core/model/permission/permission_type.dart';
 import 'package:widyu/core/network/api_client.dart';
 import 'package:widyu/core/network/socket_client.dart';
 import 'package:widyu/core/network/token_manager.dart';
-import 'package:widyu/core/utils/location_service_manager.dart';
-import 'package:widyu/core/utils/permission_manager.dart';
+import 'package:widyu/core/util/location_service_manager.dart';
+import 'package:widyu/core/util/permission_manager.dart';
 
 Future<void> initializeService({bool autoStartOnBoot = false}) async {
   final service = FlutterBackgroundService();
@@ -74,9 +81,24 @@ Future<bool> onIosBackground(ServiceInstance service) async {
   LocationRepository locationRepository,
   SensorBatchRepository sensorBatchRepository,
   SensorConfigRepository sensorConfigRepository,
+  DeviceEventRepository deviceEventRepository,
+  HeartbeatRepository heartbeatRepository,
 }) createDependencies() {
   final apiClient = ApiClient();
   final socketClient = SocketClient();
+  // 워치 항목(센서 배치·기기 이벤트)이 한 EventChannel 로 오므로 저장소들이 같은 인스턴스를 나눠 쓴다.
+  final sensorBatchLocalDataSource = SensorBatchLocalDataSourceImpl();
+  final sensorBatchRepository = SensorBatchRepositoryImpl(
+    localDataSource: sensorBatchLocalDataSource,
+    remoteDataSource: SensorBatchRemoteDataSourceImpl(
+      socketClient: socketClient,
+      apiClient: apiClient,
+    ),
+  );
+  final sensorConfigRepository = SensorConfigRepositoryImpl(
+    remoteDataSource: SensorConfigRemoteDataSourceImpl(apiClient: apiClient),
+    localDataSource: SensorConfigLocalDataSourceImpl(),
+  );
 
   return (
     socketClient: socketClient,
@@ -91,16 +113,24 @@ Future<bool> onIosBackground(ServiceInstance service) async {
       authLocalDataSource: AuthLocalDataSourceImpl(),
       deviceLocalDataSource: DeviceLocalDataSourceImpl(),
     ),
-    sensorBatchRepository: SensorBatchRepositoryImpl(
-      localDataSource: SensorBatchLocalDataSourceImpl(),
-      remoteDataSource: SensorBatchRemoteDataSourceImpl(
-        socketClient: socketClient,
-        apiClient: apiClient,
-      ),
+    sensorBatchRepository: sensorBatchRepository,
+    sensorConfigRepository: sensorConfigRepository,
+    deviceEventRepository: DeviceEventRepositoryImpl(
+      localDataSource: sensorBatchLocalDataSource,
+      remoteDataSource: DeviceEventRemoteDataSourceImpl(apiClient: apiClient),
+      configs: sensorConfigRepository.configs,
+      deviceLocalDataSource: DeviceLocalDataSourceImpl(),
+      deviceStatusLocalDataSource: DeviceStatusLocalDataSourceImpl(),
+      locationStates: () => LocationServiceManager.locationServiceState,
     ),
-    sensorConfigRepository: SensorConfigRepositoryImpl(
-      remoteDataSource: SensorConfigRemoteDataSourceImpl(apiClient: apiClient),
-      localDataSource: SensorConfigLocalDataSourceImpl(),
+    heartbeatRepository: HeartbeatRepositoryImpl(
+      configs: sensorConfigRepository.configs,
+      sensorBatchLocalDataSource: sensorBatchLocalDataSource,
+      deviceLocalDataSource: DeviceLocalDataSourceImpl(),
+      deviceStatusLocalDataSource: DeviceStatusLocalDataSourceImpl(),
+      remoteDataSource: HeartbeatRemoteDataSourceImpl(apiClient: apiClient),
+      socketConnected: () => socketClient.isConnected,
+      queueDepth: () => sensorBatchRepository.queueDepth,
     ),
   );
 }
@@ -172,6 +202,8 @@ Future<void> _onStart(ServiceInstance service) async {
     locationRepository: locationRepository,
     sensorBatchRepository: sensorBatchRepository,
     sensorConfigRepository: sensorConfigRepository,
+    deviceEventRepository: deviceEventRepository,
+    heartbeatRepository: heartbeatRepository,
   ) = createDependencies();
 
   unawaited(connectSocket(socketClient));
@@ -195,6 +227,8 @@ Future<void> _onStart(ServiceInstance service) async {
       heartRateRepository.stopObserveHeartRate();
       sensorBatchRepository.stopObserveSensorBatches();
       sensorConfigRepository.stop();
+      deviceEventRepository.stop();
+      heartbeatRepository.stop();
       locationRepository.stopLocationUpload();
       socketClient.disconnect();
       await service.stopSelf();
@@ -218,6 +252,9 @@ Future<void> _onStart(ServiceInstance service) async {
 
   heartRateRepository.observeHeartRate();
   sensorBatchRepository.observeSensorBatches();
+  // 첫 설정 조회 결과를 놓치지 않도록 설정 저장소보다 먼저 구독한다.
+  deviceEventRepository.start();
+  heartbeatRepository.start();
   sensorConfigRepository.start();
   WiduLog.bg.i('서비스 시작');
 

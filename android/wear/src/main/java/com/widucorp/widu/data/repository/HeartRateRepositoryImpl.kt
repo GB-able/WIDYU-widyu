@@ -3,6 +3,7 @@ package com.widucorp.widu.data.repository
 import android.util.Log
 import com.widucorp.widu.data.model.ClockInfo
 import com.widucorp.widu.data.model.HeartRateBatch
+import com.widucorp.widu.data.model.HeartRateReading
 import com.widucorp.widu.data.model.HeartRateStatus
 import com.widucorp.widu.data.model.MeasureResult
 import com.widucorp.widu.data.source.ClockLocalDataSource
@@ -10,12 +11,14 @@ import com.widucorp.widu.data.source.DeviceInfoLocalDataSource
 import com.widucorp.widu.data.source.HeartRateLocalDataSource
 import com.widucorp.widu.data.source.HeartRateRemoteDataSource
 import com.widucorp.widu.data.util.ClockMapper
+import com.widucorp.widu.data.util.DropReason
 import com.widucorp.widu.data.util.OnBodyStateHolder
+import com.widucorp.widu.data.util.SendGate
 import com.widucorp.widu.data.util.newUlid
 import com.widucorp.widu.data.util.toBatchSamples
+import com.widucorp.widu.data.util.toRanges
 import com.widucorp.widu.di.ApplicationScope
 import com.widucorp.widu.di.IoDispatcher
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
@@ -35,11 +38,12 @@ class HeartRateRepositoryImpl @Inject constructor(
     private val clockLocalDataSource: ClockLocalDataSource,
     private val deviceInfoLocalDataSource: DeviceInfoLocalDataSource,
     private val onBodyStateHolder: OnBodyStateHolder,
+    private val sendGate: SendGate,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
     @ApplicationScope applicationScope: CoroutineScope,
 ) : HeartRateRepository {
     /**
-     * 센서가 준 묶음을 그 샘플 전부와 각자의 잰 시각으로 바로 보낸다.
+     * 센서가 준 묶음을 그 샘플 전부와 각자의 잰 시각으로 모아 [SendGate] 주기에 보낸다.
      * 최근 값을 주기적으로 다시 보내지 않는다 — 같은 값이 새 시각으로 복제되면 연구 자료가 오염된다. (지시서 F6)
      */
     private val heartRates: SharedFlow<MeasureResult> =
@@ -48,6 +52,37 @@ class HeartRateRepositoryImpl @Inject constructor(
             val clockMapper = ClockMapper(CLOCK_JUMP_TOLERANCE_MS)
             var clock = takeClock(clockMapper)
             var seq = 0L
+            // 모아 두었다가 [SendGate] 신호에 가속도와 같은 순간에 보낸다.
+            // 착용 상태는 받은 시점의 값을 함께 둔다. 보낼 때 읽으면 기다리는 사이 벗거나 찬 것이 앞 샘플에 잘못 붙는다.
+            // 잠금 안에서는 suspend 하지 않는다. synchronized 는 대기 중 취소되지 않는다.
+            val pending = mutableListOf<PendingReadings>()
+
+            suspend fun flush() {
+                val batches =
+                    synchronized(pending) {
+                        // 앵커 갱신과 겹쳐도 샘플 환산과 배치 clock 이 같은 앵커를 쓰도록 한 번만 읽는다.
+                        val batchClock = clock
+                        val groups = pending.toList().also { pending.clear() }
+                        groups.flatMap { group ->
+                            group.readings.toBatchSamples(batchClock).map { samples ->
+                                HeartRateBatch(
+                                    batchId = newUlid(),
+                                    deviceId = deviceInfoLocalDataSource.deviceId(),
+                                    sessionId = sessionId,
+                                    seq = seq++,
+                                    clock = batchClock,
+                                    samples = samples,
+                                    onBody = group.onBody,
+                                    wearState = group.wearState,
+                                    watchBatteryPct = deviceInfoLocalDataSource.batteryPercent(),
+                                )
+                            }
+                        }
+                    }
+                withContext(ioDispatcher) { batches.forEach { transmit(it) } }
+            }
+
+            val gateJob = launch { sendGate.ticks.collect { flush() } }
 
             val anchorJob =
                 launch {
@@ -65,26 +100,25 @@ class HeartRateRepositoryImpl @Inject constructor(
                             // 다시 찰 때 Health Services 가 AVAILABLE 가용성 콜백 없이 심박만 다시 보내는 경우가 있어
                             // 착용이 false 로 굳는다(10/27·10/31·11/1 실측). 믿을 만한 심박(HIGH·MEDIUM)이 왔으면 몸에 찬 것으로 본다.
                             if (measureResult.value != null) onBodyStateHolder.update(true)
-                            val sampleBatches = measureResult.readings.toBatchSamples(clock)
+                            // 착용 판정은 전송을 기다리지 않고 받은 즉시 갱신한다. IMU 배치의 wear_state 도 이 값을 쓴다.
                             // 정규화한 샘플 기준이다 — 범위 밖 bpm 은 원래 정확도와 상관없이 UNRELIABLE 로 나간다.
-                            sampleBatches.lastOrNull()?.lastOrNull()?.let { onBodyStateHolder.updateHeartRateAccuracy(it.accuracy) }
+                            measureResult.readings
+                                .toBatchSamples(clock)
+                                .lastOrNull()
+                                ?.lastOrNull()
+                                ?.let { onBodyStateHolder.updateHeartRateAccuracy(it.accuracy) }
                             val observedOnBody = onBodyStateHolder.state.value
-                            val batches =
-                                sampleBatches.map { samples ->
-                                    HeartRateBatch(
-                                        batchId = newUlid(),
-                                        deviceId = deviceInfoLocalDataSource.deviceId(),
-                                        sessionId = sessionId,
-                                        seq = seq++,
-                                        clock = clock,
-                                        samples = samples,
-                                        // 서버는 boolean 필수다. 미관측이면 false 로 떨구지 않고 true 로 둔다(IMU 와 같은 절충).
-                                        onBody = observedOnBody ?: true,
-                                        wearState = onBodyStateHolder.wearState(observedOnBody),
-                                        watchBatteryPct = deviceInfoLocalDataSource.batteryPercent(),
-                                    )
+                            // 서버는 boolean 필수다. 미관측이면 false 로 떨구지 않고 true 로 둔다(IMU 와 같은 절충).
+                            val received = PendingReadings(observedOnBody ?: true, onBodyStateHolder.wearState(observedOnBody), measureResult.readings)
+                            synchronized(pending) {
+                                val last = pending.lastOrNull()
+                                if (last != null && last.onBody == received.onBody && last.wearState == received.wearState) {
+                                    pending[pending.lastIndex] = last.copy(readings = last.readings + received.readings)
+                                } else {
+                                    pending += received
                                 }
-                            withContext(ioDispatcher) { batches.forEach { transmit(it) } }
+                            }
+                            sendGate.onData()
                         }
 
                         MeasureResult.SessionSuperseded -> Unit
@@ -95,6 +129,7 @@ class HeartRateRepositoryImpl @Inject constructor(
                 }
             } finally {
                 anchorJob.cancel()
+                gateJob.cancel()
             }
         }.shareIn(
             scope = applicationScope,
@@ -111,18 +146,26 @@ class HeartRateRepositoryImpl @Inject constructor(
     override suspend fun restartSession() = heartRateLocalDataSource.restartSession()
 
     /** 전송·정리 실패는 삼킨다. 측정을 멈출 이유가 되지 않는다. */
+    /** 원격 호출은 실패를 삼키고(runSafely) 결과로만 알려 주므로 여기서는 잡지 않는다. */
     private suspend fun transmit(batch: HeartRateBatch) {
-        try {
-            heartRateRemoteDataSource.sendBatch(batch)
-            if (batch.seq % TRIM_EVERY_SEQ != 0L) return
-            val dropped = heartRateRemoteDataSource.trimQueue(batch.sessionId, QUEUE_MAX)
-            if (dropped.isNotEmpty()) Log.w(TAG, "Heart rate queue full; dropped seq=${dropped.min()}..${dropped.max()}")
-        } catch (exception: CancellationException) {
-            throw exception
-        } catch (exception: Exception) {
-            Log.w(TAG, "Failed to transmit heart rate batch seq=${batch.seq}", exception)
+        if (!heartRateRemoteDataSource.sendBatch(batch)) {
+            heartRateRemoteDataSource.recordDrop(batch.sessionId, batch.seq, batch.seq, DropReason.ENQUEUE_FAILED)
+        }
+        if (batch.seq % TRIM_EVERY_SEQ != 0L) return
+        val dropped = heartRateRemoteDataSource.trimQueue(batch.sessionId, QUEUE_MAX)
+        if (dropped.isEmpty()) return
+        Log.w(TAG, "Heart rate queue full; dropped seq=${dropped.min()}..${dropped.max()}")
+        dropped.toRanges().forEach { range ->
+            heartRateRemoteDataSource.recordDrop(batch.sessionId, range.first, range.last, DropReason.QUEUE_OVERFLOW)
         }
     }
+
+    /** 같은 착용 상태로 받은 심박. 상태가 바뀌면 배치를 나눈다. */
+    private data class PendingReadings(
+        val onBody: Boolean,
+        val wearState: String,
+        val readings: List<HeartRateReading>,
+    )
 
     private fun takeClock(mapper: ClockMapper): ClockInfo {
         val anchor = clockLocalDataSource.takeAnchor()

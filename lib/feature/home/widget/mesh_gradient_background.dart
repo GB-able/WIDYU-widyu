@@ -46,37 +46,59 @@ class MeshGradientBackground extends StatefulWidget {
 }
 
 class _MeshGradientBackgroundState extends State<MeshGradientBackground>
-    with SingleTickerProviderStateMixin {
+    with WidgetsBindingObserver {
   /// 배경을 다시 그리는 빈도.
   /// blob 은 한 주기(기본 12초) 동안 카드 크기의 4~10% 만 움직이므로
   /// 디스플레이 주사율(60~120Hz)로 다시 그릴 이유가 없다.
   static const _repaintFps = 12;
 
-  /// 양자화된 애니메이션 진행도. 이 값이 바뀔 때만 페인터가 다시 그린다.
+  /// 애니메이션 진행도(0~1). 이 값이 바뀔 때만 페인터가 다시 그린다.
   final ValueNotifier<double> _progress = ValueNotifier(0);
 
-  late final AnimationController _controller;
+  /// 다음 눈금에 깨우는 타이머. 화면에 보이고 앱이 앞에 있는 동안만 있다.
+  Timer? _timer;
+  bool _visible = false;
 
   late _MeshGradientPainter _painter = _createPainter();
 
   @override
   void initState() {
     super.initState();
-    // 반드시 여기서 만들어야 한다. 지연 초기화로 두면 build() 가 [_progress] 만 참조하는 탓에
-    // dispose() 의 `_controller.dispose()` 가 최초 접근이 되고, 그 시점에 Ticker 가 생성되면서
-    // 이미 비활성화된 element 에서 TickerMode 를 조회해 예외가 난다.
-    _controller = AnimationController(vsync: this, duration: widget.duration)
-      ..addListener(_onTick)
-      ..repeat();
+    WidgetsBinding.instance.addObserver(this);
   }
 
-  /// 한 주기를 나누는 단계 수. 단계가 바뀔 때만 리페인트가 발생한다.
-  int get _steps =>
-      max(1, (widget.duration.inMilliseconds * _repaintFps / 1000).round());
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _visible = TickerMode.of(context);
+    _syncTimer();
+  }
 
-  void _onTick() {
-    final quantized = (_controller.value * _steps).floor() / _steps;
-    if (quantized != _progress.value) _progress.value = quantized;
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) => _syncTimer();
+
+  /// AnimationController(Ticker)는 그림이 그대로여도 vsync마다 프레임을 요청하고,
+  /// raster는 그때마다 화면 전체를 다시 그린다. 그래서 초당 [_repaintFps]번만 깨어나는 타이머로 움직인다.
+  /// 타이머는 Ticker와 달리 화면 밖(TickerMode 꺼짐)이나 백그라운드에서도 돌므로 직접 멈춘다.
+  void _syncTimer() {
+    final run = _visible && WidgetsBinding.instance.framesEnabled;
+    if (run == (_timer != null)) return;
+    _timer?.cancel();
+    _timer = null;
+    if (run) _tick();
+  }
+
+  /// 진행도는 현재 시각에서 구하고, 다음 눈금(초당 [_repaintFps]번)에 맞춰 깨어난다.
+  /// 모든 메시가 같은 시계의 같은 눈금에 깨어나므로 여러 개가 보여도 한 프레임에 함께 그려진다.
+  void _tick() {
+    final now = clock.now().microsecondsSinceEpoch;
+    final cycle = widget.duration.inMicroseconds;
+    _progress.value = now % cycle / cycle;
+    const step = Duration.microsecondsPerSecond ~/ _repaintFps;
+    _timer = Timer(
+      Duration(milliseconds: ((step - now % step) / 1000).ceil()),
+      _tick,
+    );
   }
 
   _MeshGradientPainter _createPainter() => _MeshGradientPainter(
@@ -90,10 +112,6 @@ class _MeshGradientBackgroundState extends State<MeshGradientBackground>
   @override
   void didUpdateWidget(MeshGradientBackground oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.duration != widget.duration) {
-      _controller.duration = widget.duration;
-      _controller.repeat();
-    }
     // 페인터는 입력이 바뀔 때만 새로 만든다. 캐시해 둔 셰이더를 매 리빌드마다
     // 버리지 않기 위한 것으로, 애니메이션에 의한 리페인트는 [_progress] 가 담당한다.
     if (oldWidget.baseColor != widget.baseColor ||
@@ -106,7 +124,8 @@ class _MeshGradientBackgroundState extends State<MeshGradientBackground>
 
   @override
   void dispose() {
-    _controller.dispose();
+    WidgetsBinding.instance.removeObserver(this);
+    _timer?.cancel();
     _progress.dispose();
     super.dispose();
   }

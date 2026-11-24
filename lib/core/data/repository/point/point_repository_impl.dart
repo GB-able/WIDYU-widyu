@@ -4,7 +4,7 @@ import 'package:rxdart/rxdart.dart';
 import 'package:widyu/core/data/repository/point/point_repository.dart';
 import 'package:widyu/core/data/source/point/point_remote_data_source.dart';
 import 'package:widyu/core/model/api/api_result.dart';
-import 'package:widyu/core/utils/extensions/api_result_extension.dart';
+import 'package:widyu/core/util/extension/api_result_extension.dart';
 
 class PointRepositoryImpl extends PointRepository {
   final PointRemoteDataSource _remoteDataSource;
