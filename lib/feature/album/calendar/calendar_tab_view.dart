@@ -101,9 +101,8 @@ class _CalendarTabContentState extends ConsumerState<_CalendarTabContent>
         SchedulerPhase.persistentCallbacks) {
       return;
     }
-    if (_shrinkController.isAnimating) _shrinkController.stop();
-
     final next = (_shrink + delta).clamp(0.0, _HeaderMetrics.shrinkRange);
+    if (next == _shrink && !_shrinkController.isAnimating) return;
     _shrinkController.value = next / _HeaderMetrics.shrinkRange;
   }
 
