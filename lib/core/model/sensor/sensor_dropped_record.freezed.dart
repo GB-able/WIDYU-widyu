@@ -15,12 +15,18 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$SensorDroppedRecord {
   String get stream;
+
+  /// 버린 배치의 stream 값(`imu_watch`·`hr`).
+  @JsonKey(name: 'dropped_stream')
+  String get droppedStream;
   @JsonKey(name: 'session_id')
   String get sessionId;
   @JsonKey(name: 'from_seq')
   int get fromSeq;
   @JsonKey(name: 'to_seq')
   int get toSeq;
+
+  /// `queue_overflow`·`enqueue_failed`.
   String get reason;
   @JsonKey(name: 'ts_ms')
   int get tsMs;
@@ -42,6 +48,8 @@ mixin _$SensorDroppedRecord {
         (other.runtimeType == runtimeType &&
             other is SensorDroppedRecord &&
             (identical(other.stream, stream) || other.stream == stream) &&
+            (identical(other.droppedStream, droppedStream) ||
+                other.droppedStream == droppedStream) &&
             (identical(other.sessionId, sessionId) ||
                 other.sessionId == sessionId) &&
             (identical(other.fromSeq, fromSeq) || other.fromSeq == fromSeq) &&
@@ -52,12 +60,12 @@ mixin _$SensorDroppedRecord {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, stream, sessionId, fromSeq, toSeq, reason, tsMs);
+  int get hashCode => Object.hash(runtimeType, stream, droppedStream, sessionId,
+      fromSeq, toSeq, reason, tsMs);
 
   @override
   String toString() {
-    return 'SensorDroppedRecord(stream: $stream, sessionId: $sessionId, fromSeq: $fromSeq, toSeq: $toSeq, reason: $reason, tsMs: $tsMs)';
+    return 'SensorDroppedRecord(stream: $stream, droppedStream: $droppedStream, sessionId: $sessionId, fromSeq: $fromSeq, toSeq: $toSeq, reason: $reason, tsMs: $tsMs)';
   }
 }
 
@@ -69,6 +77,7 @@ abstract mixin class $SensorDroppedRecordCopyWith<$Res> {
   @useResult
   $Res call(
       {String stream,
+      @JsonKey(name: 'dropped_stream') String droppedStream,
       @JsonKey(name: 'session_id') String sessionId,
       @JsonKey(name: 'from_seq') int fromSeq,
       @JsonKey(name: 'to_seq') int toSeq,
@@ -90,6 +99,7 @@ class _$SensorDroppedRecordCopyWithImpl<$Res>
   @override
   $Res call({
     Object? stream = null,
+    Object? droppedStream = null,
     Object? sessionId = null,
     Object? fromSeq = null,
     Object? toSeq = null,
@@ -100,6 +110,10 @@ class _$SensorDroppedRecordCopyWithImpl<$Res>
       stream: null == stream
           ? _self.stream
           : stream // ignore: cast_nullable_to_non_nullable
+              as String,
+      droppedStream: null == droppedStream
+          ? _self.droppedStream
+          : droppedStream // ignore: cast_nullable_to_non_nullable
               as String,
       sessionId: null == sessionId
           ? _self.sessionId
@@ -220,6 +234,7 @@ extension SensorDroppedRecordPatterns on SensorDroppedRecord {
   TResult maybeWhen<TResult extends Object?>(
     TResult Function(
             String stream,
+            @JsonKey(name: 'dropped_stream') String droppedStream,
             @JsonKey(name: 'session_id') String sessionId,
             @JsonKey(name: 'from_seq') int fromSeq,
             @JsonKey(name: 'to_seq') int toSeq,
@@ -231,8 +246,8 @@ extension SensorDroppedRecordPatterns on SensorDroppedRecord {
     final _that = this;
     switch (_that) {
       case _SensorDroppedRecord() when $default != null:
-        return $default(_that.stream, _that.sessionId, _that.fromSeq,
-            _that.toSeq, _that.reason, _that.tsMs);
+        return $default(_that.stream, _that.droppedStream, _that.sessionId,
+            _that.fromSeq, _that.toSeq, _that.reason, _that.tsMs);
       case _:
         return orElse();
     }
@@ -255,6 +270,7 @@ extension SensorDroppedRecordPatterns on SensorDroppedRecord {
   TResult when<TResult extends Object?>(
     TResult Function(
             String stream,
+            @JsonKey(name: 'dropped_stream') String droppedStream,
             @JsonKey(name: 'session_id') String sessionId,
             @JsonKey(name: 'from_seq') int fromSeq,
             @JsonKey(name: 'to_seq') int toSeq,
@@ -265,8 +281,8 @@ extension SensorDroppedRecordPatterns on SensorDroppedRecord {
     final _that = this;
     switch (_that) {
       case _SensorDroppedRecord():
-        return $default(_that.stream, _that.sessionId, _that.fromSeq,
-            _that.toSeq, _that.reason, _that.tsMs);
+        return $default(_that.stream, _that.droppedStream, _that.sessionId,
+            _that.fromSeq, _that.toSeq, _that.reason, _that.tsMs);
       case _:
         throw StateError('Unexpected subclass');
     }
@@ -288,6 +304,7 @@ extension SensorDroppedRecordPatterns on SensorDroppedRecord {
   TResult? whenOrNull<TResult extends Object?>(
     TResult? Function(
             String stream,
+            @JsonKey(name: 'dropped_stream') String droppedStream,
             @JsonKey(name: 'session_id') String sessionId,
             @JsonKey(name: 'from_seq') int fromSeq,
             @JsonKey(name: 'to_seq') int toSeq,
@@ -298,8 +315,8 @@ extension SensorDroppedRecordPatterns on SensorDroppedRecord {
     final _that = this;
     switch (_that) {
       case _SensorDroppedRecord() when $default != null:
-        return $default(_that.stream, _that.sessionId, _that.fromSeq,
-            _that.toSeq, _that.reason, _that.tsMs);
+        return $default(_that.stream, _that.droppedStream, _that.sessionId,
+            _that.fromSeq, _that.toSeq, _that.reason, _that.tsMs);
       case _:
         return null;
     }
@@ -310,7 +327,8 @@ extension SensorDroppedRecordPatterns on SensorDroppedRecord {
 @JsonSerializable()
 class _SensorDroppedRecord implements SensorDroppedRecord {
   const _SensorDroppedRecord(
-      {this.stream = 'imu_dropped',
+      {this.stream = 'dropped',
+      @JsonKey(name: 'dropped_stream') required this.droppedStream,
       @JsonKey(name: 'session_id') required this.sessionId,
       @JsonKey(name: 'from_seq') required this.fromSeq,
       @JsonKey(name: 'to_seq') required this.toSeq,
@@ -322,6 +340,11 @@ class _SensorDroppedRecord implements SensorDroppedRecord {
   @override
   @JsonKey()
   final String stream;
+
+  /// 버린 배치의 stream 값(`imu_watch`·`hr`).
+  @override
+  @JsonKey(name: 'dropped_stream')
+  final String droppedStream;
   @override
   @JsonKey(name: 'session_id')
   final String sessionId;
@@ -331,6 +354,8 @@ class _SensorDroppedRecord implements SensorDroppedRecord {
   @override
   @JsonKey(name: 'to_seq')
   final int toSeq;
+
+  /// `queue_overflow`·`enqueue_failed`.
   @override
   final String reason;
   @override
@@ -359,6 +384,8 @@ class _SensorDroppedRecord implements SensorDroppedRecord {
         (other.runtimeType == runtimeType &&
             other is _SensorDroppedRecord &&
             (identical(other.stream, stream) || other.stream == stream) &&
+            (identical(other.droppedStream, droppedStream) ||
+                other.droppedStream == droppedStream) &&
             (identical(other.sessionId, sessionId) ||
                 other.sessionId == sessionId) &&
             (identical(other.fromSeq, fromSeq) || other.fromSeq == fromSeq) &&
@@ -369,12 +396,12 @@ class _SensorDroppedRecord implements SensorDroppedRecord {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, stream, sessionId, fromSeq, toSeq, reason, tsMs);
+  int get hashCode => Object.hash(runtimeType, stream, droppedStream, sessionId,
+      fromSeq, toSeq, reason, tsMs);
 
   @override
   String toString() {
-    return 'SensorDroppedRecord(stream: $stream, sessionId: $sessionId, fromSeq: $fromSeq, toSeq: $toSeq, reason: $reason, tsMs: $tsMs)';
+    return 'SensorDroppedRecord(stream: $stream, droppedStream: $droppedStream, sessionId: $sessionId, fromSeq: $fromSeq, toSeq: $toSeq, reason: $reason, tsMs: $tsMs)';
   }
 }
 
@@ -388,6 +415,7 @@ abstract mixin class _$SensorDroppedRecordCopyWith<$Res>
   @useResult
   $Res call(
       {String stream,
+      @JsonKey(name: 'dropped_stream') String droppedStream,
       @JsonKey(name: 'session_id') String sessionId,
       @JsonKey(name: 'from_seq') int fromSeq,
       @JsonKey(name: 'to_seq') int toSeq,
@@ -409,6 +437,7 @@ class __$SensorDroppedRecordCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   $Res call({
     Object? stream = null,
+    Object? droppedStream = null,
     Object? sessionId = null,
     Object? fromSeq = null,
     Object? toSeq = null,
@@ -419,6 +448,10 @@ class __$SensorDroppedRecordCopyWithImpl<$Res>
       stream: null == stream
           ? _self.stream
           : stream // ignore: cast_nullable_to_non_nullable
+              as String,
+      droppedStream: null == droppedStream
+          ? _self.droppedStream
+          : droppedStream // ignore: cast_nullable_to_non_nullable
               as String,
       sessionId: null == sessionId
           ? _self.sessionId

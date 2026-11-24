@@ -7,16 +7,16 @@ import 'package:go_router/go_router.dart';
 import 'package:widyu/core/notification/safety_push_manager.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
-import 'package:widyu/core/ui/widgets/widu_icon.dart';
-import 'package:widyu/core/utils/show_toast.dart';
+import 'package:widyu/core/ui/widget/widu_icon.dart';
+import 'package:widyu/core/util/show_toast.dart';
 import 'package:widyu/feature/safety_check/safety_check_ui_state.dart';
 import 'package:widyu/feature/safety_check/safety_check_view_model.dart';
 import 'package:widyu/gen/assets.gen.dart';
 
-part 'widgets/remaining_seconds.dart';
-part 'widgets/safety_check_content.dart';
-part 'widgets/safety_check_result_content.dart';
-part 'widgets/slide_button.dart';
+part 'widget/remaining_seconds.dart';
+part 'widget/safety_check_content.dart';
+part 'widget/safety_check_result_content.dart';
+part 'widget/slide_button.dart';
 
 const _logoTop = 24.0;
 const _logoSize = 64.0;

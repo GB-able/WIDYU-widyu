@@ -8,7 +8,7 @@ import 'package:widyu/core/data/source/goal/medication_remote_data_source.dart';
 import 'package:widyu/core/log/log.dart';
 import 'package:widyu/core/model/api/api_result.dart';
 import 'package:widyu/core/model/goal/medication/medication_point_result.dart';
-import 'package:widyu/core/utils/extensions/api_result_extension.dart';
+import 'package:widyu/core/util/extension/api_result_extension.dart';
 
 typedef _Session = ({
   String member,

@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:widyu/core/model/goal/hospital/daily_health_schedule.dart';
 import 'package:widyu/core/model/goal/hospital/hospital.dart';
 import 'package:widyu/core/model/goal/medication/medication.dart';
 import 'package:widyu/core/model/goal/walk/walk.dart';
@@ -12,6 +13,7 @@ abstract class GoalHomeResponse with _$GoalHomeResponse {
     required Medication? medicine,
     @JsonKey(name: 'steps') required Walk? walk,
     required Hospital? hospital,
+    @Default([]) List<DailyHealthSchedule> todaySchedules,
   }) = _GoalHomeResponse;
 
   factory GoalHomeResponse.fromJson(Map<String, dynamic> json) =>

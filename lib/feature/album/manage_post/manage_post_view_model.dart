@@ -7,7 +7,7 @@ import 'package:widyu/core/data/repository/point/point_repository.dart';
 import 'package:widyu/core/di/providers.dart';
 import 'package:widyu/core/log/log.dart';
 import 'package:widyu/core/model/api/api_result.dart';
-import 'package:widyu/core/utils/show_toast.dart';
+import 'package:widyu/core/util/show_toast.dart';
 
 part 'manage_post_view_model.g.dart';
 

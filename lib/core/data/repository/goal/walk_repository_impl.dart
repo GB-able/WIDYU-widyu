@@ -10,7 +10,7 @@ import 'package:widyu/core/data/source/goal/walk_remote_data_source.dart';
 import 'package:widyu/core/model/goal/walk/walk_detail.dart';
 import 'package:widyu/core/model/goal/walk/walk_sync_result.dart';
 import 'package:widyu/core/network/token_manager.dart';
-import 'package:widyu/core/utils/extensions/walk_extension.dart';
+import 'package:widyu/core/util/extension/walk_extension.dart';
 
 class WalkRepositoryImpl implements WalkRepository {
   WalkRepositoryImpl({

@@ -365,7 +365,7 @@ extension MedicationPatterns on Medication {
 
 /// @nodoc
 @JsonSerializable()
-class _Medication extends Medication {
+class _Medication implements Medication {
   const _Medication(
       {required this.medicineScheduleId,
       required this.takenCount,
@@ -376,8 +376,7 @@ class _Medication extends Medication {
       @JsonKey(defaultValue: [])
       required final List<MedicationDoseStatus> scheduleStatuses,
       this.isReward})
-      : _scheduleStatuses = scheduleStatuses,
-        super._();
+      : _scheduleStatuses = scheduleStatuses;
   factory _Medication.fromJson(Map<String, dynamic> json) =>
       _$MedicationFromJson(json);
 

@@ -9,17 +9,17 @@ import 'package:go_router/go_router.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
-import 'package:widyu/core/ui/widgets/custom_dialog.dart';
-import 'package:widyu/core/ui/widgets/ui_event_listener.dart';
-import 'package:widyu/core/ui/widgets/widu_icon.dart';
-import 'package:widyu/core/utils/show_toast.dart';
+import 'package:widyu/core/ui/widget/custom_dialog.dart';
+import 'package:widyu/core/ui/widget/ui_event_listener.dart';
+import 'package:widyu/core/ui/widget/widu_icon.dart';
+import 'package:widyu/core/util/show_toast.dart';
 import 'package:widyu/feature/medication_camera/medication_camera_ui_event.dart';
 import 'package:widyu/feature/medication_camera/medication_camera_ui_state.dart';
 import 'package:widyu/feature/medication_camera/medication_camera_view_model.dart';
 import 'package:widyu/gen/assets.gen.dart';
 
-part 'widgets/camera_capture_view.dart';
-part 'widgets/medication_camera_app_bar.dart';
+part 'widget/camera_capture_view.dart';
+part 'widget/medication_camera_app_bar.dart';
 
 /// 앱 바, 시스템 바, 하단 버튼 영역에 깔아 뒤의 카메라 화면이 비쳐 보이게 하는 반투명 배경
 const _scrimColor = Color(0x80000000);

@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:widyu/core/data/repository/point/point_repository.dart';
-import 'package:widyu/core/ui/widgets/widu_icon.dart';
-import 'package:widyu/core/ui/widgets/widyu_text_button.dart';
-import 'package:widyu/feature/album/_widgets/unlock_dialog.dart';
+import 'package:widyu/core/ui/widget/widu_icon.dart';
+import 'package:widyu/core/ui/widget/widyu_text_button.dart';
+import 'package:widyu/feature/album/widget/unlock_dialog.dart';
 
 Future<void> pumpDialog(
   WidgetTester tester,

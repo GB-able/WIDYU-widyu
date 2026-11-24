@@ -29,7 +29,7 @@ class SensorBatchLocalDataSourceImpl implements SensorBatchLocalDataSource {
         SensorMessageHeartRate(:final batch) => SensorMessage.heartRate(
             batch.copyWith(phoneReceivedAtMs: receivedAt),
           ),
-        SensorMessageDropped() => message,
+        SensorMessageDropped() || SensorMessageDeviceEvent() => message,
       };
     } catch (error, stackTrace) {
       // 파싱 예외 메시지는 원문 센서 값을 품을 수 있어 고정 문구로 남긴다.
@@ -47,14 +47,25 @@ class SensorBatchLocalDataSourceImpl implements SensorBatchLocalDataSource {
     required String stream,
     required String sessionId,
     required int seq,
+    String? droppedStream,
   }) {
     _ackChannel.invokeMethod<void>('consume', {
       'stream': stream,
       'session_id': sessionId,
       'seq': seq,
+      'dropped_stream': droppedStream,
     }).catchError((Object error, StackTrace stack) {
       // 못 지우면 다음 기동 때 다시 보내질 뿐이고, 서버가 batch_id 로 중복을 거른다.
       WiduLog.data.w('센서 항목 소비 실패 seq=$seq', error: error, stackTrace: stack);
+    });
+  }
+
+  @override
+  void consumeEvent(String eventId) {
+    _ackChannel.invokeMethod<void>('consumeEvent', {'event_id': eventId}).catchError(
+        (Object error, StackTrace stack) {
+      // 못 지우면 다음 기동 때 다시 보내지고, 서버가 DUPLICATE 로 답한다.
+      WiduLog.data.w('기기 이벤트 소비 실패', error: error, stackTrace: stack);
     });
   }
 }

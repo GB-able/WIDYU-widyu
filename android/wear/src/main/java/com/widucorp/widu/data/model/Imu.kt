@@ -1,15 +1,16 @@
 package com.widucorp.widu.data.model
 
-/** 앞쪽 7개 필드는 서버 `GET /api/v1/sensor/config` 값(폰이 `/imu/config` 로 전달), 나머지는 서버 스펙에 없어 기본값이다. */
+/**
+ * 앞쪽 2개 필드만 서버 `GET /api/v1/sensor/config` 값(폰이 `/imu/config` 로 전달)을 따른다.
+ * 측정 주기·배치 길이는 배터리 시험으로 정한 값이라 서버 값을 받지 않는다.
+ */
 data class ImuConfig(
-    val accHz: Int = 50,
-    val batchSec: Int = 1,
-    /** `continuous` / `trigger` 둘뿐이고 끄는 값은 없다(A 1.6.4). 동작 차이가 미정이라 배치에 에코만 한다. */
+    /** 자이로는 수집하지 않는다. 서버 스펙 필드라 배치에 에코만 한다. */
     val gyroMode: String = "continuous",
     val collectionMode: String = "product",
-    val impactG: Float = 1.8f,
-    val backfillPreSec: Int = 2,
-    val backfillPostSec: Int = 10,
+    val accHz: Int = 50,
+    /** 센서 FIFO 지연(maxReportLatency)도 이 값이다. */
+    val batchSec: Int = 5,
     val anchorIntervalMin: Int = 10,
     /** 폰도 이 항목을 서버 결과 전까지 지우지 않으므로 폰 오프라인 보관 한도(계약 §1, 30분 이상)와 같다. */
     val queueMinutes: Int = 30,
@@ -18,31 +19,13 @@ data class ImuConfig(
     val clockJumpToleranceMs: Double = 50.0,
 )
 
-/** 낙상 판정이 아니라 「이 구간의 자이로를 빠뜨리지 말라」는 신호다. (A 1.6.4) */
-data class ImpactTrigger(
-    val kind: String = "impact",
-    val smvG: Float,
-    val eventElapsedNs: Long,
-    val tsMs: Long,
-)
-
-/** 자이로 결측 사유 (A 1.2.6). 값 목록은 정책서 합의 대기(S2). */
-object MissingReason {
-    const val OMITTED_BY_MODE = "omitted_by_mode"
-    const val SENSOR_UNSUPPORTED = "sensor_unsupported"
-    const val PERMISSION_DENIED = "permission_denied"
-    const val MISSING = "missing"
-}
-
+/** 가속도 샘플(m/s²). */
 data class ImuSample(
-    val type: Type,
     val timestampNs: Long,
     val x: Float,
     val y: Float,
     val z: Float,
-) {
-    enum class Type { ACC, GYRO }
-}
+)
 
 /** 단조 시각(부팅 기준)을 벽시계로 환산하기 위한 기준점. */
 data class ClockInfo(

@@ -1375,6 +1375,8 @@ class __$MedicationSummaryCopyWithImpl<$Res>
 
 /// @nodoc
 mixin _$MedicationDoseStatus {
+// 목표 홈은 회차별 일정 ID를 이 이름으로 준다. 홈 카드 응답에는 없다.
+  @JsonKey(name: 'medicineScheduleId')
   int? get scheduleId;
   String? get doseTime;
   @JsonKey(defaultValue: false)
@@ -1427,7 +1429,7 @@ abstract mixin class $MedicationDoseStatusCopyWith<$Res> {
       _$MedicationDoseStatusCopyWithImpl;
   @useResult
   $Res call(
-      {int? scheduleId,
+      {@JsonKey(name: 'medicineScheduleId') int? scheduleId,
       String? doseTime,
       @JsonKey(defaultValue: false) bool taken,
       double? doseCount,
@@ -1572,7 +1574,7 @@ extension MedicationDoseStatusPatterns on MedicationDoseStatus {
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>(
     TResult Function(
-            int? scheduleId,
+            @JsonKey(name: 'medicineScheduleId') int? scheduleId,
             String? doseTime,
             @JsonKey(defaultValue: false) bool taken,
             double? doseCount,
@@ -1606,7 +1608,7 @@ extension MedicationDoseStatusPatterns on MedicationDoseStatus {
   @optionalTypeArgs
   TResult when<TResult extends Object?>(
     TResult Function(
-            int? scheduleId,
+            @JsonKey(name: 'medicineScheduleId') int? scheduleId,
             String? doseTime,
             @JsonKey(defaultValue: false) bool taken,
             double? doseCount,
@@ -1638,7 +1640,7 @@ extension MedicationDoseStatusPatterns on MedicationDoseStatus {
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>(
     TResult? Function(
-            int? scheduleId,
+            @JsonKey(name: 'medicineScheduleId') int? scheduleId,
             String? doseTime,
             @JsonKey(defaultValue: false) bool taken,
             double? doseCount,
@@ -1660,7 +1662,7 @@ extension MedicationDoseStatusPatterns on MedicationDoseStatus {
 @JsonSerializable()
 class _MedicationDoseStatus implements MedicationDoseStatus {
   const _MedicationDoseStatus(
-      {this.scheduleId,
+      {@JsonKey(name: 'medicineScheduleId') this.scheduleId,
       required this.doseTime,
       @JsonKey(defaultValue: false) required this.taken,
       this.doseCount,
@@ -1668,7 +1670,9 @@ class _MedicationDoseStatus implements MedicationDoseStatus {
   factory _MedicationDoseStatus.fromJson(Map<String, dynamic> json) =>
       _$MedicationDoseStatusFromJson(json);
 
+// 목표 홈은 회차별 일정 ID를 이 이름으로 준다. 홈 카드 응답에는 없다.
   @override
+  @JsonKey(name: 'medicineScheduleId')
   final int? scheduleId;
   @override
   final String? doseTime;
@@ -1732,7 +1736,7 @@ abstract mixin class _$MedicationDoseStatusCopyWith<$Res>
   @override
   @useResult
   $Res call(
-      {int? scheduleId,
+      {@JsonKey(name: 'medicineScheduleId') int? scheduleId,
       String? doseTime,
       @JsonKey(defaultValue: false) bool taken,
       double? doseCount,

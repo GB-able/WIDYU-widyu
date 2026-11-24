@@ -53,6 +53,7 @@ extension SensorMessagePatterns on SensorMessage {
     TResult Function(SensorMessageBatch value)? batch,
     TResult Function(SensorMessageHeartRate value)? heartRate,
     TResult Function(SensorMessageDropped value)? dropped,
+    TResult Function(SensorMessageDeviceEvent value)? deviceEvent,
     required TResult orElse(),
   }) {
     final _that = this;
@@ -63,6 +64,8 @@ extension SensorMessagePatterns on SensorMessage {
         return heartRate(_that);
       case SensorMessageDropped() when dropped != null:
         return dropped(_that);
+      case SensorMessageDeviceEvent() when deviceEvent != null:
+        return deviceEvent(_that);
       case _:
         return orElse();
     }
@@ -86,6 +89,7 @@ extension SensorMessagePatterns on SensorMessage {
     required TResult Function(SensorMessageBatch value) batch,
     required TResult Function(SensorMessageHeartRate value) heartRate,
     required TResult Function(SensorMessageDropped value) dropped,
+    required TResult Function(SensorMessageDeviceEvent value) deviceEvent,
   }) {
     final _that = this;
     switch (_that) {
@@ -95,6 +99,8 @@ extension SensorMessagePatterns on SensorMessage {
         return heartRate(_that);
       case SensorMessageDropped():
         return dropped(_that);
+      case SensorMessageDeviceEvent():
+        return deviceEvent(_that);
     }
   }
 
@@ -115,6 +121,7 @@ extension SensorMessagePatterns on SensorMessage {
     TResult? Function(SensorMessageBatch value)? batch,
     TResult? Function(SensorMessageHeartRate value)? heartRate,
     TResult? Function(SensorMessageDropped value)? dropped,
+    TResult? Function(SensorMessageDeviceEvent value)? deviceEvent,
   }) {
     final _that = this;
     switch (_that) {
@@ -124,6 +131,8 @@ extension SensorMessagePatterns on SensorMessage {
         return heartRate(_that);
       case SensorMessageDropped() when dropped != null:
         return dropped(_that);
+      case SensorMessageDeviceEvent() when deviceEvent != null:
+        return deviceEvent(_that);
       case _:
         return null;
     }
@@ -146,6 +155,7 @@ extension SensorMessagePatterns on SensorMessage {
     TResult Function(SensorBatch batch)? batch,
     TResult Function(HeartRateBatch batch)? heartRate,
     TResult Function(SensorDroppedRecord record)? dropped,
+    TResult Function(Map<String, dynamic> event)? deviceEvent,
     required TResult orElse(),
   }) {
     final _that = this;
@@ -156,6 +166,8 @@ extension SensorMessagePatterns on SensorMessage {
         return heartRate(_that.batch);
       case SensorMessageDropped() when dropped != null:
         return dropped(_that.record);
+      case SensorMessageDeviceEvent() when deviceEvent != null:
+        return deviceEvent(_that.event);
       case _:
         return orElse();
     }
@@ -179,6 +191,7 @@ extension SensorMessagePatterns on SensorMessage {
     required TResult Function(SensorBatch batch) batch,
     required TResult Function(HeartRateBatch batch) heartRate,
     required TResult Function(SensorDroppedRecord record) dropped,
+    required TResult Function(Map<String, dynamic> event) deviceEvent,
   }) {
     final _that = this;
     switch (_that) {
@@ -188,6 +201,8 @@ extension SensorMessagePatterns on SensorMessage {
         return heartRate(_that.batch);
       case SensorMessageDropped():
         return dropped(_that.record);
+      case SensorMessageDeviceEvent():
+        return deviceEvent(_that.event);
     }
   }
 
@@ -208,6 +223,7 @@ extension SensorMessagePatterns on SensorMessage {
     TResult? Function(SensorBatch batch)? batch,
     TResult? Function(HeartRateBatch batch)? heartRate,
     TResult? Function(SensorDroppedRecord record)? dropped,
+    TResult? Function(Map<String, dynamic> event)? deviceEvent,
   }) {
     final _that = this;
     switch (_that) {
@@ -217,6 +233,8 @@ extension SensorMessagePatterns on SensorMessage {
         return heartRate(_that.batch);
       case SensorMessageDropped() when dropped != null:
         return dropped(_that.record);
+      case SensorMessageDeviceEvent() when deviceEvent != null:
+        return deviceEvent(_that.event);
       case _:
         return null;
     }
@@ -450,6 +468,78 @@ class _$SensorMessageDroppedCopyWithImpl<$Res>
     return $SensorDroppedRecordCopyWith<$Res>(_self.record, (value) {
       return _then(_self.copyWith(record: value));
     });
+  }
+}
+
+/// @nodoc
+
+class SensorMessageDeviceEvent implements SensorMessage {
+  const SensorMessageDeviceEvent(final Map<String, dynamic> event)
+      : _event = event;
+
+  final Map<String, dynamic> _event;
+  Map<String, dynamic> get event {
+    if (_event is EqualUnmodifiableMapView) return _event;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableMapView(_event);
+  }
+
+  /// Create a copy of SensorMessage
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
+  $SensorMessageDeviceEventCopyWith<SensorMessageDeviceEvent> get copyWith =>
+      _$SensorMessageDeviceEventCopyWithImpl<SensorMessageDeviceEvent>(
+          this, _$identity);
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is SensorMessageDeviceEvent &&
+            const DeepCollectionEquality().equals(other._event, _event));
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(runtimeType, const DeepCollectionEquality().hash(_event));
+
+  @override
+  String toString() {
+    return 'SensorMessage.deviceEvent(event: $event)';
+  }
+}
+
+/// @nodoc
+abstract mixin class $SensorMessageDeviceEventCopyWith<$Res>
+    implements $SensorMessageCopyWith<$Res> {
+  factory $SensorMessageDeviceEventCopyWith(SensorMessageDeviceEvent value,
+          $Res Function(SensorMessageDeviceEvent) _then) =
+      _$SensorMessageDeviceEventCopyWithImpl;
+  @useResult
+  $Res call({Map<String, dynamic> event});
+}
+
+/// @nodoc
+class _$SensorMessageDeviceEventCopyWithImpl<$Res>
+    implements $SensorMessageDeviceEventCopyWith<$Res> {
+  _$SensorMessageDeviceEventCopyWithImpl(this._self, this._then);
+
+  final SensorMessageDeviceEvent _self;
+  final $Res Function(SensorMessageDeviceEvent) _then;
+
+  /// Create a copy of SensorMessage
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  $Res call({
+    Object? event = null,
+  }) {
+    return _then(SensorMessageDeviceEvent(
+      null == event
+          ? _self._event
+          : event // ignore: cast_nullable_to_non_nullable
+              as Map<String, dynamic>,
+    ));
   }
 }
 

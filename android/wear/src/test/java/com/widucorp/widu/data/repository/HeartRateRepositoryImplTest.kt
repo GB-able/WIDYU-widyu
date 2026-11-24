@@ -15,6 +15,7 @@ import com.widucorp.widu.data.source.DeviceInfoLocalDataSource
 import com.widucorp.widu.data.source.HeartRateLocalDataSource
 import com.widucorp.widu.data.source.HeartRateRemoteDataSource
 import com.widucorp.widu.data.util.OnBodyStateHolder
+import com.widucorp.widu.data.util.SendGate
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -50,6 +51,9 @@ class HeartRateRepositoryImplTest {
     private lateinit var dispatcher: TestDispatcher
     private lateinit var testScope: TestScope
 
+    /** [SendGate] 가 읽는 경과 시간(ms). */
+    private var nowMs = 0L
+
     @BeforeEach
     fun setUp() {
         scheduler = TestCoroutineScheduler()
@@ -59,6 +63,7 @@ class HeartRateRepositoryImplTest {
         remote = FakeRemoteDataSource()
         appScope = testScope.backgroundScope
         onBodyStateHolder = OnBodyStateHolder()
+        nowMs = 0L
         repository =
             HeartRateRepositoryImpl(
                 heartRateLocalDataSource = local,
@@ -66,6 +71,7 @@ class HeartRateRepositoryImplTest {
                 clockLocalDataSource = FakeClockLocalDataSource(),
                 deviceInfoLocalDataSource = FakeDeviceInfoLocalDataSource(),
                 onBodyStateHolder = onBodyStateHolder,
+                sendGate = SendGate { nowMs },
                 ioDispatcher = dispatcher,
                 applicationScope = appScope,
             )
@@ -268,11 +274,102 @@ class HeartRateRepositoryImplTest {
             emit(70, reading(70, 1_000, HIGH))
             emit(71, reading(71, 2_000, HIGH))
 
-            // then
+            // then — 못 넣은 seq 0 은 enqueue_failed 로 남긴다
             remote.sentBatches.map { it.seq } shouldBe listOf(1L)
+            remote.drops.map { it.drop(1) } shouldBe listOf(listOf(0L, 0L, "enqueue_failed"))
         }
 
+    @Test
+    @DisplayName("큐 정리로 버린 seq 를 연속 구간마다 queue_overflow 로 기록한다")
+    fun recordsEachContiguousDroppedRangeOnQueueOverflow() =
+        testScope.runTest {
+            // given — seq 0 전송 뒤 정리가 돈다. 6 은 폰이 먼저 지워 큐에 없었다
+            remote.dropOnTrim = listOf(3L, 4L, 5L, 7L)
+
+            // when
+            emit(70, reading(70, 1_000, HIGH))
+
+            // then
+            val sessionId = remote.sentBatches.single().sessionId
+            remote.drops shouldBe
+                listOf(
+                    listOf(sessionId, 3L, 5L, "queue_overflow"),
+                    listOf(sessionId, 7L, 7L, "queue_overflow"),
+                )
+        }
+
+    @Test
+    @DisplayName("전송 주기가 차기 전에 온 묶음은 모아 두었다가 게이트가 열릴 때 한 배치로 보낸다")
+    fun holdsUpdatesUntilTheGateOpens() =
+        testScope.runTest {
+            // given — 게이트가 열린 직후
+            emit(70, reading(70, 1_000, HIGH))
+
+            // when — 2.5초가 안 된 사이에 두 묶음이 온다
+            nowMs += 1_000
+            emitWithoutAdvancing(71, reading(71, 2_000, HIGH))
+            nowMs += 1_000
+            emitWithoutAdvancing(72, reading(72, 3_000, HIGH))
+
+            // then — 아직 보내지 않는다
+            remote.sentBatches.size shouldBe 1
+
+            // when — 주기가 찬 뒤 다음 묶음이 오면
+            emit(73, reading(73, 4_000, HIGH))
+
+            // then — 모아 둔 것까지 한 배치로 보낸다
+            remote.sentBatches.size shouldBe 2
+            remote.sentBatches[1].samples.map { it.bpm } shouldBe listOf(71, 72, 73)
+        }
+
+    @Test
+    @DisplayName("기다리는 사이 벗어도 앞서 받은 심박은 받을 때의 착용 상태로 나뉘어 나간다")
+    fun pendingReadingsKeepTheWearStateOfTheirArrival() =
+        testScope.runTest {
+            // given — 게이트가 막 열린 뒤 차고 있는 상태로 받는다
+            emit(70, reading(70, 1_000, HIGH))
+            nowMs += 1_000
+            emitWithoutAdvancing(71, reading(71, 2_000, HIGH))
+
+            // when — 보내기 전에 벗고, 그 뒤 심박이 와서 게이트가 열린다
+            local.events.emit(MeasureResult.Availability(isAvailable = false, isOnBody = false))
+            runCurrent()
+            emit(null, reading(0, 3_000, UNRELIABLE))
+
+            // then — 착용 상태가 다른 두 배치로 나뉜다
+            remote.sentBatches.drop(1).map { Triple(it.samples.map { s -> s.bpm }, it.onBody, it.wearState) } shouldBe
+                listOf(
+                    Triple(listOf(71), true, "WORN_VALID"),
+                    Triple(listOf(0), false, "ACTUAL_NOT_WORN"),
+                )
+        }
+
+    @Test
+    @DisplayName("착용 판정용 정확도는 전송을 기다리지 않고 받은 즉시 반영한다")
+    fun accuracyIsAppliedOnReceipt() =
+        testScope.runTest {
+            // given — 믿을 만한 심박을 보낸 직후
+            emit(70, reading(70, 1_000, HIGH))
+            onBodyStateHolder.wearState(true) shouldBe "WORN_VALID"
+
+            // when — 게이트가 다시 열리기 전에 LOW 가 온다
+            emitWithoutAdvancing(null, reading(25, 2_000, LOW))
+
+            // then — 아직 보내지 않았지만 판정은 이미 바뀌었다
+            remote.sentBatches.size shouldBe 1
+            onBodyStateHolder.wearState(true) shouldBe "WORN_INVALID"
+        }
+
+    /** 전송 주기만큼 시간이 지난 뒤 묶음이 온다 — 게이트가 열려 바로 보낸다. */
     private suspend fun emit(
+        value: Int?,
+        vararg readings: HeartRateReading,
+    ) {
+        nowMs += SEND_INTERVAL_MS
+        emitWithoutAdvancing(value, *readings)
+    }
+
+    private suspend fun emitWithoutAdvancing(
         value: Int?,
         vararg readings: HeartRateReading,
     ) {
@@ -299,19 +396,31 @@ class HeartRateRepositoryImplTest {
     private class FakeRemoteDataSource : HeartRateRemoteDataSource {
         var failuresBeforeSuccess = 0
         val sentBatches = mutableListOf<HeartRateBatch>()
+        var dropOnTrim: List<Long> = emptyList()
+        val drops = mutableListOf<List<Any>>()
 
-        override suspend fun sendBatch(batch: HeartRateBatch) {
+        override suspend fun sendBatch(batch: HeartRateBatch): Boolean {
             if (failuresBeforeSuccess > 0) {
                 failuresBeforeSuccess -= 1
-                throw IllegalStateException("Temporary failure")
+                return false
             }
             sentBatches += batch
+            return true
         }
 
         override suspend fun trimQueue(
             sessionId: String,
             maxItems: Int,
-        ): List<Long> = emptyList()
+        ): List<Long> = dropOnTrim
+
+        override suspend fun recordDrop(
+            sessionId: String,
+            fromSeq: Long,
+            toSeq: Long,
+            reason: String,
+        ) {
+            drops += listOf(sessionId, fromSeq, toSeq, reason)
+        }
 
         override fun fetchHeartRateStatus(): Flow<HeartRateStatus> = emptyFlow()
     }
@@ -332,6 +441,7 @@ class HeartRateRepositoryImplTest {
 
     private companion object {
         const val EPOCH_MS = 1_700_000_000_000L
+        const val SEND_INTERVAL_MS = 5_000L
         const val MEDIUM_LABEL = "MEDIUM"
     }
 }

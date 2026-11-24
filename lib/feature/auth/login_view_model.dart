@@ -8,7 +8,7 @@ import 'package:widyu/core/di/providers.dart';
 import 'package:widyu/core/log/log.dart';
 import 'package:widyu/core/model/api/api_result.dart';
 import 'package:widyu/core/model/permission/permission_type.dart';
-import 'package:widyu/core/utils/permission_manager.dart';
+import 'package:widyu/core/util/permission_manager.dart';
 import 'package:widyu/feature/auth/login_ui_state.dart';
 
 part 'login_view_model.g.dart';

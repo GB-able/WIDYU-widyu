@@ -5,9 +5,9 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:widyu/core/log/log.dart';
-import 'package:widyu/core/utils/permission_manager.dart';
-import 'package:widyu/core/utils/settings_return_controller.dart';
-import 'package:widyu/core/utils/show_toast.dart';
+import 'package:widyu/core/util/permission_manager.dart';
+import 'package:widyu/core/util/settings_return_controller.dart';
+import 'package:widyu/core/util/show_toast.dart';
 import 'package:widyu/feature/album/select_photo/select_photo_ui_state.dart';
 
 part 'select_photo_view_model.g.dart';

@@ -7,15 +7,9 @@ data class ImuBatch(
     val sessionId: String,
     val seq: Long,
     val clock: ClockInfo,
-    val acc: AxisSeries?,
-    val gyro: AxisSeries? = null,
-    val trigger: ImpactTrigger? = null,
+    val acc: AxisSeries,
     val gyroMode: String,
     val collectionMode: String,
-    val gyroBackfill: Boolean = false,
-    /** 보강 대상인 충격 배치의 batch_id. */
-    val backfillFor: String? = null,
-    val missingReason: String? = null,
     /** 서버가 boolean 필수로 받는다. */
     val onBody: Boolean,
     /** [com.widucorp.widu.data.util.WearState] 값. */
@@ -43,18 +37,19 @@ data class ImuBatch(
             "participation_id" to participationId,
             "run_id" to runId,
             "clock" to clock.toMap(),
-            "acc" to acc?.toMap("mg"),
-            "gyro" to gyro?.toMap("mrads"),
-            "trigger" to trigger?.toMap(),
-            "gyro_backfill" to gyroBackfill,
-            "backfill_for" to backfillFor,
+            "acc" to acc.toMap("mg"),
+            // 자이로·충격 감지는 하지 않는다. 키는 서버 스펙이라 남긴다.
+            "gyro" to null,
+            "trigger" to null,
+            "gyro_backfill" to false,
+            "backfill_for" to null,
             // 재전송 정보는 폰이 REST 로 다시 올릴 때 붙인다.
             "resend" to null,
             "collection_mode" to collectionMode,
             "gyro_mode" to gyroMode,
             "on_body" to onBody,
             "wear_state" to wearState,
-            "missing_reason" to missingReason,
+            "missing_reason" to MISSING_REASON,
             "watch_battery_pct" to watchBatteryPct,
         )
 
@@ -62,6 +57,9 @@ data class ImuBatch(
         const val VERSION = 2
         const val STREAM = "imu_watch"
         const val SOURCE = "watch"
+
+        /** 자이로 결측 사유 (A 1.2.6). */
+        const val MISSING_REASON = "omitted_by_mode"
     }
 }
 
@@ -73,14 +71,6 @@ internal fun ClockInfo.toMap(): Map<String, Any?> =
         "anchor_elapsed_ns" to anchorElapsedNs.toString(),
         "anchor_epoch_ms" to anchorEpochMs,
         "uncertainty_ms" to uncertaintyMs,
-    )
-
-private fun ImpactTrigger.toMap(): Map<String, Any?> =
-    mapOf(
-        "kind" to kind,
-        "smv_g" to smvG,
-        "event_elapsed_ns" to eventElapsedNs.toString(),
-        "ts_ms" to tsMs,
     )
 
 private fun AxisSeries.toMap(valuesKey: String): Map<String, Any?> =

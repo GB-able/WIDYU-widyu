@@ -3,13 +3,13 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:widyu/app/routes/app_route.dart';
+import 'package:widyu/app/route/app_route.dart';
 import 'package:widyu/core/di/providers.dart';
-import 'package:widyu/core/utils/show_toast.dart';
+import 'package:widyu/core/util/show_toast.dart';
 import 'package:widyu/feature/auth/login_ui_state.dart';
 import 'package:widyu/feature/auth/login_view_model.dart';
-import 'package:widyu/feature/auth/widgets/login_code_view.dart';
-import 'package:widyu/feature/auth/widgets/login_phone_view.dart';
+import 'package:widyu/feature/auth/widget/login_code_view.dart';
+import 'package:widyu/feature/auth/widget/login_phone_view.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});

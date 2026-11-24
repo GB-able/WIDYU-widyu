@@ -8,7 +8,7 @@ import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart'
     show ConsumerState, ConsumerStatefulWidget, ProviderScope;
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:widyu/app/routes/custom_router.dart';
+import 'package:widyu/app/route/custom_router.dart';
 import 'package:widyu/background_service.dart';
 import 'package:widyu/core/di/providers.dart';
 import 'package:widyu/core/log/log.dart';
@@ -16,7 +16,7 @@ import 'package:widyu/core/notification/local_notification_manager.dart';
 import 'package:widyu/core/notification/medication_push_manager.dart';
 import 'package:widyu/core/notification/safety_push_manager.dart';
 import 'package:widyu/core/ui/theme/theme.dart';
-import 'package:widyu/core/utils/app_service_controller.dart';
+import 'package:widyu/core/util/app_service_controller.dart';
 import 'package:widyu/firebase_options.dart';
 import 'package:widyu/walk_background_service.dart';
 
