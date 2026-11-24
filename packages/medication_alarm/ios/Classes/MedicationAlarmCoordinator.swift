@@ -426,23 +426,17 @@ final class MedicationAlarmCoordinator {
         }
         emit()
     }
-    private func watchdog(after delay: TimeInterval?, done: @escaping @Sendable () -> Void = {}) {
+    private func watchdog(after delay: TimeInterval) {
         let content = UNMutableNotificationContent()
         content.title = "위듀 앱을 다시 켜주세요"
         content.body = "앱이 꺼지면 알람 기능이 정상적으로 동작하지 않아요."
         content.sound = .default; content.interruptionLevel = .timeSensitive
-        let trigger = delay.map { UNTimeIntervalNotificationTrigger(timeInterval: $0, repeats: false) }
-        center.add(UNNotificationRequest(identifier: delay == nil ? "\(Self.watchdogID).terminated" : Self.watchdogID, content: content, trigger: trigger)) { _ in done() }
+        center.add(UNNotificationRequest(identifier: Self.watchdogID, content: content,
+            trigger: UNTimeIntervalNotificationTrigger(timeInterval: delay, repeats: false)))
     }
-    private var terminating = false
     func terminated() {
-        guard !terminating, MedicationAlarmPlayer.shared.engaged else { return }
-        terminating = true
         MedicationAlarmPlayer.shared.log("terminated")
         center.removePendingNotificationRequests(withIdentifiers: [Self.watchdogID])
-        let sent = DispatchSemaphore(value: 0)
-        watchdog(after: nil) { sent.signal() }
-        _ = sent.wait(timeout: .now() + 2)
     }
     func stopRinging(id: String) {
         MedicationAlarmPlayer.shared.stop()
