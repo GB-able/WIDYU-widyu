@@ -182,7 +182,7 @@ void main() {
       );
       await tester.tap(find.text('구매하기'));
       await tester.pumpAndSettle();
-      expect(find.text('소식을 여는 데 실패했습니다. 다시 시도해주세요.'), findsOneWidget);
+      expect(find.text('소식을 여는 데 실패했어요. 다시 시도해주세요.'), findsOneWidget);
       expect(find.byType(CircularProgressIndicator), findsNothing);
       expect(tester.widget<PopScope>(find.byType(PopScope)).canPop, isTrue);
 

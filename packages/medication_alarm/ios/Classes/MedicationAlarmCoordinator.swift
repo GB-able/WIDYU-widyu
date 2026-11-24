@@ -24,6 +24,7 @@ final class MedicationAlarmCoordinator {
     private var backgroundRegistered = false
     private static let refreshID = "com.widucorp.widu.medication.refresh"
     private static let watchdogID = "widyu.medication.watchdog"
+    private static let alarmVersion = 1
 
     func registerBackground() {
         guard !backgroundRegistered else { return }
@@ -236,7 +237,7 @@ final class MedicationAlarmCoordinator {
         if #unavailable(iOS 26.0) {
             capacity = max(0, min(48, 64 - pending.filter { !$0.identifier.hasPrefix("widyu.medication.") }.count))
             let categories = await center.notificationCategories()
-            let verify = UNNotificationAction(identifier: "MEDICATION_VERIFY", title: "인증하기", options: [.foreground, .authenticationRequired])
+            let verify = UNNotificationAction(identifier: "MEDICATION_VERIFY", title: "인증하러 가기", options: [.foreground, .authenticationRequired])
             let stop = UNNotificationAction(identifier: "MEDICATION_STOP", title: "중단", options: [.destructive])
             center.setNotificationCategories(categories.filter { $0.identifier != "WIDYU_MEDICATION" }.union([UNNotificationCategory(identifier: "WIDYU_MEDICATION",
                 actions: [verify, stop], intentIdentifiers: [], options: [])]))
@@ -269,10 +270,11 @@ final class MedicationAlarmCoordinator {
         var actual = [[String: Any]]()
         var failures = [[String: Any]]()
         var coverageEnd: Double?
+        let outdated = state["alarmVersion"] as? Int != Self.alarmVersion
         for group in desired {
             let id = alarmID(group["groupId"] as! String)
             do {
-                if !existingIDs.contains(id) || !equal(previousByID[id], group) {
+                if !existingIDs.contains(id) || !equal(previousByID[id], group) || outdated {
                     if existingIDs.contains(id) { try cancel(id) }
                     try await schedule(group, id: id)
                 }
@@ -294,6 +296,7 @@ final class MedicationAlarmCoordinator {
             "status": !authorized ? "permissionRequired" : !failures.isEmpty ? "partialFailure" : needsRefill ? "refillRequired" : "scheduled"
         ]
         state["scheduled"] = actual; state["status"] = status; state.removeValue(forKey: "applying")
+        if failures.isEmpty { state["alarmVersion"] = Self.alarmVersion }
         try save(state)
         if #unavailable(iOS 26.0) { armPlayer(from: actual) }
         emit()
@@ -327,11 +330,12 @@ final class MedicationAlarmCoordinator {
                 metadata: MedicationAlarmMetadata(), tintColor: Color(red: 1, green: 0.47, blue: 0.06))
             let configuration = AlarmManager.AlarmConfiguration<MedicationAlarmMetadata>.alarm(
                 schedule: .fixed(at), attributes: attributes,
+                stopIntent: StopMedicationIntent(alarmID: id.uuidString),
                 secondaryIntent: OpenMedicationIntent(alarmID: id.uuidString), sound: .default)
             _ = try await AlarmManager.shared.schedule(id: id, configuration: configuration)
         } else {
             let content = UNMutableNotificationContent()
-            content.title = title; content.body = "눌러서 복용 사진을 인증해 주세요."
+            content.title = "약 복용하실 시간이에요!"
             content.sound = alertMode("sound") ? .default : nil; content.categoryIdentifier = "WIDYU_MEDICATION"
             content.interruptionLevel = .timeSensitive
             content.userInfo = ["widyuMedication": id.uuidString]
@@ -346,8 +350,16 @@ final class MedicationAlarmCoordinator {
         guard let uuid = UUID(uuidString: id) else { return }
         try recordLaunch(uuid)
         MedicationAlarmPlayer.shared.stop()
-        if #available(iOS 26.0, *) { try? AlarmManager.shared.stop(id: uuid) }
+        if #available(iOS 26.0, *) { try? AlarmManager.shared.stop(id: uuid); stopDue() }
         emit()
+    }
+    @available(iOS 26.0, *)
+    func stopDue() {
+        let now = Date()
+        for alarm in (try? AlarmManager.shared.alarms) ?? [] {
+            if alarm.state == .alerting { try? AlarmManager.shared.stop(id: alarm.id); continue }
+            if case let .fixed(at)? = alarm.schedule, at <= now { try? AlarmManager.shared.cancel(id: alarm.id) }
+        }
     }
     private func group(for id: UUID, in state: [String: Any]) -> [String: Any]? {
         ((state["groups"] as? [[String: Any]] ?? []) + (state["history"] as? [[String: Any]] ?? []))
@@ -406,7 +418,7 @@ final class MedicationAlarmCoordinator {
         guard let state = try? load(), let group = group(for: id, in: state) else { return }
         if UIApplication.shared.applicationState != .active {
             let content = UNMutableNotificationContent()
-            content.title = title(group); content.body = "눌러서 복용 사진을 인증해 주세요."
+            content.title = "약 복용하실 시간이에요!"
             content.categoryIdentifier = "WIDYU_MEDICATION"; content.userInfo = ["widyuMedication": id.uuidString]
             content.interruptionLevel = .timeSensitive
             center.add(UNNotificationRequest(identifier: legacyID(id), content: content, trigger: nil)) { _ in }
@@ -414,23 +426,17 @@ final class MedicationAlarmCoordinator {
         }
         emit()
     }
-    private func watchdog(after delay: TimeInterval?, done: @escaping @Sendable () -> Void = {}) {
+    private func watchdog(after delay: TimeInterval) {
         let content = UNMutableNotificationContent()
         content.title = "위듀 앱을 다시 켜주세요"
         content.body = "앱이 꺼지면 알람 기능이 정상적으로 동작하지 않아요."
         content.sound = .default; content.interruptionLevel = .timeSensitive
-        let trigger = delay.map { UNTimeIntervalNotificationTrigger(timeInterval: $0, repeats: false) }
-        center.add(UNNotificationRequest(identifier: delay == nil ? "\(Self.watchdogID).terminated" : Self.watchdogID, content: content, trigger: trigger)) { _ in done() }
+        center.add(UNNotificationRequest(identifier: Self.watchdogID, content: content,
+            trigger: UNTimeIntervalNotificationTrigger(timeInterval: delay, repeats: false)))
     }
-    private var terminating = false
     func terminated() {
-        guard !terminating, MedicationAlarmPlayer.shared.engaged else { return }
-        terminating = true
         MedicationAlarmPlayer.shared.log("terminated")
         center.removePendingNotificationRequests(withIdentifiers: [Self.watchdogID])
-        let sent = DispatchSemaphore(value: 0)
-        watchdog(after: nil) { sent.signal() }
-        _ = sent.wait(timeout: .now() + 2)
     }
     func stopRinging(id: String) {
         MedicationAlarmPlayer.shared.stop()
@@ -490,6 +496,22 @@ final class MedicationAlarmCoordinator {
 
 @available(iOS 26.0, *)
 private struct MedicationAlarmMetadata: AlarmMetadata {}
+
+@available(iOS 17.0, *)
+public struct MedicationAlarmIntents: AppIntentsPackage {}
+
+@available(iOS 26.0, *)
+struct StopMedicationIntent: LiveActivityIntent {
+    static var title: LocalizedStringResource = "복용 알람 중단"
+    static var openAppWhenRun: Bool = false
+    @Parameter(title: "Alarm ID") var alarmID: String
+    init() { alarmID = "" }
+    init(alarmID: String) { self.alarmID = alarmID }
+    func perform() async throws -> some IntentResult {
+        await MainActor.run { MedicationAlarmCoordinator.shared.stopDue() }
+        return .result()
+    }
+}
 
 @available(iOS 26.0, *)
 struct OpenMedicationIntent: LiveActivityIntent {

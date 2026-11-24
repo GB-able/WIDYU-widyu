@@ -174,31 +174,35 @@ class _ManagePostScreenState extends ConsumerState<ManagePostScreen> {
             ),
             Container(
               padding: const EdgeInsets.all(16),
-              child: WidyuTextButton(
-                onTap: () async {
-                  if (type == ManageMode.add) {
-                    final success = await viewModel.uploadFeed(
-                      photos!,
+              child: ListenableBuilder(
+                listenable: _contentController,
+                builder: (context, _) => WidyuTextButton(
+                  onTap: () async {
+                    if (type == ManageMode.add) {
+                      final success = await viewModel.uploadFeed(
+                        photos!,
+                        _contentController.text,
+                      );
+                      if (success && context.mounted) {
+                        Navigator.of(
+                          context,
+                        ).popUntil((route) => route.isFirst);
+                      }
+                      return;
+                    }
+
+                    final content = await viewModel.updateFeed(
+                      extra!.albumId,
                       _contentController.text,
                     );
-                    if (success && context.mounted) {
-                      Navigator.of(
-                        context,
-                      ).popUntil((route) => route.isFirst);
+                    if (content != null && context.mounted) {
+                      context.pop();
                     }
-                    return;
-                  }
-
-                  final content = await viewModel.updateFeed(
-                    extra!.albumId,
-                    _contentController.text,
-                  );
-                  if (content != null && context.mounted) {
-                    context.pop();
-                  }
-                },
-                text: type == ManageMode.add ? '게시글 올리기' : '수정 완료',
-                enable: !isUploading,
+                  },
+                  text: type == ManageMode.add ? '게시글 올리기' : '수정 완료',
+                  enable:
+                      !isUploading && _contentController.text.trim().isNotEmpty,
+                ),
               ),
             ),
           ],

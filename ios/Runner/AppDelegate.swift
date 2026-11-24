@@ -1,9 +1,16 @@
+import AppIntents
 import BackgroundTasks
 import Flutter
 import HealthKit
 import UIKit
 import firebase_messaging
 import flutter_background_service_ios
+import medication_alarm
+
+@available(iOS 17.0, *)
+struct RunnerIntents: AppIntentsPackage {
+  static var includedPackages: [any AppIntentsPackage.Type] { [MedicationAlarmIntents.self] }
+}
 
 @main
 @objc class AppDelegate: FlutterAppDelegate {
@@ -31,6 +38,20 @@ import flutter_background_service_ios
     }
 
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
+  }
+
+  override func applicationWillTerminate(_ application: UIApplication) {
+    super.applicationWillTerminate(application)
+    let content = UNMutableNotificationContent()
+    content.title = "위듀 앱을 다시 켜주세요"
+    content.body = "앱이 꺼져 있으면 보호자에게 정보가 전달되지 않아요."
+    content.sound = .default
+    content.interruptionLevel = .timeSensitive
+    let sent = DispatchSemaphore(value: 0)
+    UNUserNotificationCenter.current().add(
+      UNNotificationRequest(identifier: "widyu.terminated", content: content, trigger: nil)
+    ) { _ in sent.signal() }
+    _ = sent.wait(timeout: .now() + 2)
   }
 
   override func userNotificationCenter(

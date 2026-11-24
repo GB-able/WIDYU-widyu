@@ -42,7 +42,7 @@ final class SelectPhotoViewModelProvider
 }
 
 String _$selectPhotoViewModelHash() =>
-    r'7abaa7679b4fe0c0910783bb4582fb4b7c63a49e';
+    r'd574790be567bcb47d6153d340c97ef71c9a6de9';
 
 abstract class _$SelectPhotoViewModel extends $Notifier<SelectPhotoUiState> {
   SelectPhotoUiState build();

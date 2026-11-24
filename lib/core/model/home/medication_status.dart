@@ -13,7 +13,7 @@ sealed class MedicationStatus with _$MedicationStatus {
     required DateTime closesAt,
     required int takenCount,
     required int totalCount,
-    int? doseCount,
+    double? doseCount,
     int? scheduleId,
   }) = MedicationAvailable;
 
@@ -82,7 +82,10 @@ MedicationStatus resolveMedicationStatus({
         takenCount: taken,
         totalCount: total,
         doseCount: dose?.doseCount ?? medicine.nextDoseCount,
-        scheduleId: dose?.scheduleId,
+        scheduleId: dose?.scheduleId ??
+            (medicine.nextAlarmTime?.toAlarmAt(now) == doseAt
+                ? medicine.medicineScheduleId
+                : null),
       );
     }
   }

@@ -43,10 +43,10 @@ class _Home extends Fake implements HomeRepository {
       heartRate: null,
       medicine: MedicationSummary(
         medicineScheduleId: scheduleId,
-        todayTakenCount: null,
-        todayTotalCount: null,
+        todayTakenCount: 0,
+        todayTotalCount: 1,
         nextDoseCount: 2,
-        nextAlarmTime: null,
+        nextAlarmTime: '${DateTime.now().hour}:${DateTime.now().minute}',
         scheduleStatuses: const [],
       ),
       albums: [],

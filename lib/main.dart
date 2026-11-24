@@ -13,7 +13,7 @@ import 'package:widyu/background_service.dart';
 import 'package:widyu/core/di/providers.dart';
 import 'package:widyu/core/log/log.dart';
 import 'package:widyu/core/notification/local_notification_manager.dart';
-import 'package:widyu/core/notification/medication_push_manager.dart';
+import 'package:widyu/core/notification/push_background_handler.dart';
 import 'package:widyu/core/notification/safety_push_manager.dart';
 import 'package:widyu/core/ui/theme/theme.dart';
 import 'package:widyu/core/util/app_service_controller.dart';
@@ -35,6 +35,7 @@ Future<void> _bootstrap() async {
   final WidgetsBinding widgetsBinding =
       WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
+  PaintingBinding.instance.imageCache.maximumSizeBytes = 300 << 20;
 
   // 초기화 단계 중 하나가 실패하더라도 나머지 단계와 runApp 은 반드시 수행한다.
   try {
@@ -70,7 +71,7 @@ Future<void> _bootstrap() async {
   }
 
   try {
-    await initializeMedicationPush();
+    await initializeBackgroundPush();
     await LocalNotificationManager.initialize();
     SafetyPushManager.initialize();
   } catch (e, stack) {

@@ -13,3 +13,7 @@ class UpdateNameFailure extends ProfileUiEvent {
 class UpdateProfileImageFailure extends ProfileUiEvent {
   const UpdateProfileImageFailure();
 }
+
+class EmptyName extends ProfileUiEvent {
+  const EmptyName();
+}

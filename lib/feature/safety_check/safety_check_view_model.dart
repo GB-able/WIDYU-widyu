@@ -30,7 +30,8 @@ class SafetyCheckViewModel extends _$SafetyCheckViewModel {
       _closeTimer?.cancel();
     });
     unawaited(_start());
-    return const SafetyCheckUiState();
+    return SafetyCheckUiState(
+        deadline: DateTime.now().add(_defaultResponseWindow));
   }
 
   Future<void> _start() async {
@@ -40,6 +41,7 @@ class SafetyCheckViewModel extends _$SafetyCheckViewModel {
     if (result case Success(:final data) when data.respondByMs != null) {
       final respondBy = DateTime.fromMillisecondsSinceEpoch(data.respondByMs!);
       _scheduleDeadline(respondBy.difference(DateTime.now()));
+      state = state.copyWith(deadline: respondBy);
     }
   }
 

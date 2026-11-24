@@ -172,7 +172,7 @@ extension MedicationStatusPatterns on MedicationStatus {
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function(DateTime doseAt, DateTime closesAt, int takenCount,
-            int totalCount, int? doseCount, int? scheduleId)?
+            int totalCount, double? doseCount, int? scheduleId)?
         available,
     TResult Function(
             DateTime doseAt, DateTime opensAt, int takenCount, int totalCount)?
@@ -220,7 +220,7 @@ extension MedicationStatusPatterns on MedicationStatus {
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
     required TResult Function(DateTime doseAt, DateTime closesAt,
-            int takenCount, int totalCount, int? doseCount, int? scheduleId)
+            int takenCount, int totalCount, double? doseCount, int? scheduleId)
         available,
     required TResult Function(
             DateTime doseAt, DateTime opensAt, int takenCount, int totalCount)
@@ -264,7 +264,7 @@ extension MedicationStatusPatterns on MedicationStatus {
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function(DateTime doseAt, DateTime closesAt, int takenCount,
-            int totalCount, int? doseCount, int? scheduleId)?
+            int totalCount, double? doseCount, int? scheduleId)?
         available,
     TResult? Function(
             DateTime doseAt, DateTime opensAt, int takenCount, int totalCount)?
@@ -311,7 +311,7 @@ class MedicationAvailable implements MedicationStatus {
   final DateTime closesAt;
   final int takenCount;
   final int totalCount;
-  final int? doseCount;
+  final double? doseCount;
   final int? scheduleId;
 
   /// Create a copy of MedicationStatus
@@ -361,7 +361,7 @@ abstract mixin class $MedicationAvailableCopyWith<$Res>
       DateTime closesAt,
       int takenCount,
       int totalCount,
-      int? doseCount,
+      double? doseCount,
       int? scheduleId});
 }
 
@@ -404,7 +404,7 @@ class _$MedicationAvailableCopyWithImpl<$Res>
       doseCount: freezed == doseCount
           ? _self.doseCount
           : doseCount // ignore: cast_nullable_to_non_nullable
-              as int?,
+              as double?,
       scheduleId: freezed == scheduleId
           ? _self.scheduleId
           : scheduleId // ignore: cast_nullable_to_non_nullable

@@ -19,7 +19,9 @@ class _PointHistoryView extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '포인트 ${history.isEarningPoint ? '적립' : '사용'}',
+                    history.description.isNotEmpty
+                        ? history.description
+                        : '포인트 ${history.isEarningPoint ? '적립' : '사용'}',
                     style: MyTypo.body1.copyWith(color: MyColor.grey900),
                   ),
                   const SizedBox(height: 2),

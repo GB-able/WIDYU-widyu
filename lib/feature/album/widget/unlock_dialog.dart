@@ -192,7 +192,7 @@ class _UnlockDialogState extends State<UnlockDialog> {
                     _PointBalance(point: widget.point),
                     const SizedBox(height: 24),
                     if (_failed) ...[
-                      const Text('소식을 여는 데 실패했습니다. 다시 시도해주세요.'),
+                      const Text('소식을 여는 데 실패했어요. 다시 시도해주세요.'),
                       const SizedBox(height: 12),
                     ],
                     WidyuTextButton(

@@ -10,7 +10,7 @@ abstract class Medication with _$Medication {
     required int medicineScheduleId,
     required int takenCount,
     required int totalCount,
-    required int nextDoseCount,
+    required double nextDoseCount,
     required String nextAlarmTime,
     @JsonKey(name: 'proofImageUrl') required String? proofImage,
     @JsonKey(defaultValue: [])

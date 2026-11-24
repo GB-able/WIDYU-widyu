@@ -24,7 +24,10 @@ class _MediaThumbnail extends StatelessWidget {
       child: Stack(
         fit: StackFit.expand,
         children: [
-          if (isLocked) MediaLockOverlay(child: _thumbnail) else _thumbnail,
+          if (isLocked)
+            MediaLockOverlay(child: _thumbnail(context))
+          else
+            _thumbnail(context),
           if (!isLocked && media.type == MediaType.video) ...[
             Center(
               child: ClipOval(
@@ -65,13 +68,14 @@ class _MediaThumbnail extends StatelessWidget {
     }
   }
 
-  Widget get _thumbnail {
+  Widget _thumbnail(BuildContext context) {
     final url = media.thumbnailUrl;
     if (url == null) return Container(color: MyColor.grey100);
 
     return CustomNetworkImage(
       url: url,
-      decodeWidth: isLocked ? lockedImageDecodeWidth : null,
+      decodeWidth:
+          isLocked ? lockedImageDecodeWidth : albumGridDecodeWidth(context),
     );
   }
 }

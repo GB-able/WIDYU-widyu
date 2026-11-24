@@ -127,14 +127,11 @@ class _MonthlyGoalScreenState extends ConsumerState<MonthlyGoalScreen>
   }
 
   Future<void> _verify(DateTime date, DailyMedicineSchedule schedule) async {
-    final count = schedule.totalCount;
     final result = await openMedicationForSchedule(
       context,
       schedule.medicineScheduleId,
       date,
-      doseCount: count != null && count == count.roundToDouble()
-          ? count.toInt()
-          : null,
+      doseCount: schedule.totalCount,
     );
     if (result == null || !mounted) return;
     unawaited(showDialog<void>(

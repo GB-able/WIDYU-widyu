@@ -9,6 +9,8 @@ class _CalendarHeaderView extends StatelessWidget {
     required this.onSelectDay,
     required this.shrink,
     required this.onHandleTap,
+    required this.onHandleDragUpdate,
+    required this.onHandleDragEnd,
   });
 
   final DateTime focusedMonth;
@@ -18,6 +20,8 @@ class _CalendarHeaderView extends StatelessWidget {
   final ValueChanged<DateTime> onSelectDay;
   final double shrink;
   final VoidCallback onHandleTap;
+  final GestureDragUpdateCallback onHandleDragUpdate;
+  final GestureDragEndCallback onHandleDragEnd;
 
   @override
   Widget build(BuildContext context) {
@@ -135,6 +139,8 @@ class _CalendarHeaderView extends StatelessWidget {
                 GestureDetector(
                   behavior: HitTestBehavior.opaque,
                   onTap: onHandleTap,
+                  onVerticalDragUpdate: onHandleDragUpdate,
+                  onVerticalDragEnd: onHandleDragEnd,
                   child: const Padding(
                     padding: EdgeInsets.fromLTRB(0, 21, 0, 8),
                     child: _CalendarHandle(),

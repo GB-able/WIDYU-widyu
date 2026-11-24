@@ -12,8 +12,8 @@ class _SlideButton extends StatefulWidget {
 class _SlideButtonState extends State<_SlideButton>
     with SingleTickerProviderStateMixin {
   static const _height = 56.0;
-  static const _thumbSize = 46.0;
-  static const _thumbInset = 6.0;
+  static const _thumbSize = 48.0;
+  static const _thumbInset = 4.0;
 
   late final _controller = AnimationController(
     vsync: this,

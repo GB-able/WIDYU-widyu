@@ -65,11 +65,15 @@ class HomeScreen extends ConsumerWidget {
     await viewModel.openBackgroundLocationSettings();
   }
 
-  Future<void> _openMedicationCamera(BuildContext context,
-      HomeViewModel viewModel, int scheduleId, int? doseCount) async {
+  Future<void> _openMedicationCamera(
+      BuildContext context,
+      HomeViewModel viewModel,
+      int scheduleId,
+      double? doseCount,
+      DateTime? scheduledAt) async {
     final result = await openMedicationForSchedule(
         context, scheduleId, DateTime.now(),
-        doseCount: doseCount);
+        doseCount: doseCount, scheduledAt: scheduledAt);
     if (result != null) viewModel.onMedicationVerified(result);
   }
 
@@ -101,9 +105,13 @@ class HomeScreen extends ConsumerWidget {
         showToast('사용자 정보를 불러오지 못했어요.');
       case FetchSeniorCardFailure():
         showToast('카드를 불러오지 못했어요.');
-      case NavigateToMedicationCamera(:final scheduleId, :final doseCount):
-        unawaited(
-            _openMedicationCamera(context, viewModel, scheduleId, doseCount));
+      case NavigateToMedicationCamera(
+          :final scheduleId,
+          :final doseCount,
+          :final scheduledAt
+        ):
+        unawaited(_openMedicationCamera(
+            context, viewModel, scheduleId, doseCount, scheduledAt));
       case MedicationScheduleUnavailable():
         showToast('복용 일정 정보를 불러오지 못했어요.');
       case RequestCameraPermissionFailure():

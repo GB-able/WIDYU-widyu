@@ -29,8 +29,7 @@ class MedicationSessionScope extends ConsumerStatefulWidget {
       _MedicationSessionScopeState();
 }
 
-class _MedicationSessionScopeState
-    extends ConsumerState<MedicationSessionScope>
+class _MedicationSessionScopeState extends ConsumerState<MedicationSessionScope>
     with WidgetsBindingObserver {
   late final MedicationRepository repository =
       ref.read(medicationRepositoryProvider);
@@ -60,7 +59,7 @@ class _MedicationSessionScopeState
   Future<void> start() async {
     try {
       // Drain persisted intents before a server refresh can replace old groups.
-      final member = await authenticatedMedicationMember();
+      final member = await MedicationPushManager.authenticatedMember();
       if (member == null || !mounted) return;
       await repository.activateAlarm(member);
       ready = true;
@@ -143,7 +142,8 @@ class _MedicationSessionScopeState
     final caps = await repository.alarmCapabilities();
     if (caps['fullScreen'] != false) return;
     final schedule = (await repository.alarmState())['schedule'];
-    if (schedule is! Map || (schedule['schedules'] as List?)?.isNotEmpty != true) {
+    if (schedule is! Map ||
+        (schedule['schedules'] as List?)?.isNotEmpty != true) {
       return;
     }
     if (!mounted) return;
@@ -163,7 +163,7 @@ class _MedicationSessionScopeState
   }
 
   void onMessage(RemoteMessage message) {
-    if (!isMedicationChange(message)) return;
+    if (!MedicationPushManager.isMedicationChange(message)) return;
     WiduLog.data.i('약 복용 일정 변경 푸시 수신');
     WiduLog.data.t(() => '약 복용 푸시 data: ${message.data}');
     unawaited(repository.syncAlarmSchedule());
@@ -253,7 +253,8 @@ class _MedicationSessionScopeState
     try {
       final launch = await repository.pendingAlarmLaunch();
       if (!mounted || launch.isEmpty) return;
-      if (launch['memberId'] != await authenticatedMedicationMember()) return;
+      final member = await MedicationPushManager.authenticatedMember();
+      if (launch['memberId'] != member) return;
       final eventId = launch['eventId'] as String;
       final group = Map<String, dynamic>.from(launch['group'] as Map);
       unawaited(repository.stopAlarm(group['groupId'] as String));

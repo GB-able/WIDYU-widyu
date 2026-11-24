@@ -86,4 +86,12 @@ void main() {
     expect(state.inviteCode, 'CODE');
     expect(events, isEmpty);
   });
+
+  test('빈 이름은 저장하지 않고 안내한다', () async {
+    listen();
+    await container.read(profileViewModelProvider.notifier).updateName('   ');
+    await pumpEventQueue();
+    expect(container.read(profileViewModelProvider).name, '');
+    expect(events, [isA<EmptyName>()]);
+  });
 }

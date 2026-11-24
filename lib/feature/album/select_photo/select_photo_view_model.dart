@@ -206,12 +206,12 @@ class SelectPhotoViewModel extends _$SelectPhotoViewModel {
       selected.removeAt(index);
     } else {
       if (selected.length >= _maxSelectCount) {
-        showToast('최대 $_maxSelectCount개까지 선택 가능합니다');
+        showToast('최대 $_maxSelectCount개까지 선택할 수 있어요.');
         return false;
       }
       if (asset.type == AssetType.video &&
           asset.duration > _maxVideoDurationSeconds) {
-        showToast('영상은 최대 1분길이만 선택 가능합니다');
+        showToast('영상은 최대 1분 길이만 선택할 수 있어요.');
         return false;
       }
       selected.add(asset);
@@ -223,7 +223,7 @@ class SelectPhotoViewModel extends _$SelectPhotoViewModel {
   Future<void> captureFromCamera() async {
     if (state.isCapturing) return;
     if (state.selected.length >= _maxSelectCount) {
-      showToast('최대 $_maxSelectCount개까지 선택 가능합니다');
+      showToast('최대 $_maxSelectCount개까지 선택할 수 있어요.');
       return;
     }
 

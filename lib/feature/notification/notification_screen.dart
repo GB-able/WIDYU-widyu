@@ -9,6 +9,7 @@ import 'package:widyu/core/ui/widget/custom_app_bar.dart';
 import 'package:widyu/core/ui/widget/custom_error_widget.dart';
 import 'package:widyu/core/ui/widget/custom_loading_widget.dart';
 import 'package:widyu/core/ui/widget/custom_network_image.dart';
+import 'package:widyu/core/ui/widget/refreshable_empty.dart';
 import 'package:widyu/core/util/extension/date_extension.dart';
 import 'package:widyu/core/util/infinite_scroll.dart';
 import 'package:widyu/feature/notification/notification_ui_model.dart';
@@ -44,8 +45,11 @@ class NotificationScreen extends ConsumerWidget {
                   onRetry: () =>
                       ref.read(notificationViewModelProvider.notifier).retry(),
                 ),
-              InfiniteScrollState(isEmpty: true) =>
-                const _NotificationEmptyWidget(),
+              InfiniteScrollState(isEmpty: true) => RefreshableEmpty(
+                  onRefresh:
+                      ref.read(notificationViewModelProvider.notifier).load,
+                  child: const _NotificationEmptyWidget(),
+                ),
               _ => const _NotificationList(),
             },
           ),

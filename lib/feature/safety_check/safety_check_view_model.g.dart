@@ -59,7 +59,7 @@ final class SafetyCheckViewModelProvider
 }
 
 String _$safetyCheckViewModelHash() =>
-    r'effdae068cd96260f655b8317670afc7e93acea2';
+    r'29bb9213bec7650ab1b4dcd877e74c45e7231202';
 
 final class SafetyCheckViewModelFamily extends $Family
     with

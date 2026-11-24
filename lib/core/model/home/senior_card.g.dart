@@ -55,7 +55,7 @@ _MedicationSummary _$MedicationSummaryFromJson(Map<String, dynamic> json) =>
       medicineScheduleId: (json['medicineScheduleId'] as num?)?.toInt(),
       todayTakenCount: (json['todayTakenCount'] as num?)?.toInt(),
       todayTotalCount: (json['todayTotalCount'] as num?)?.toInt(),
-      nextDoseCount: (json['nextDoseCount'] as num?)?.toInt(),
+      nextDoseCount: (json['nextDoseCount'] as num?)?.toDouble(),
       nextAlarmTime: json['nextAlarmTime'] as String?,
       scheduleStatuses: (json['scheduleStatuses'] as List<dynamic>?)
               ?.map((e) =>
@@ -80,7 +80,7 @@ _MedicationDoseStatus _$MedicationDoseStatusFromJson(
       scheduleId: (json['medicineScheduleId'] as num?)?.toInt(),
       doseTime: json['doseTime'] as String?,
       taken: json['taken'] as bool? ?? false,
-      doseCount: (json['doseCount'] as num?)?.toInt(),
+      doseCount: (json['doseCount'] as num?)?.toDouble(),
       proofImageUrl: json['proofImageUrl'] as String?,
     );
 
