@@ -27,6 +27,7 @@ class _CalendarGrid extends StatelessWidget {
       lastDay: CalendarConfig.lastDay,
       calendarFormat: format,
       formatAnimationDuration: Duration.zero,
+      availableGestures: AvailableGestures.horizontalSwipe,
       sixWeekMonthsEnforced: true,
       rowHeight: _HeaderMetrics.rowHeight,
       daysOfWeekHeight: _HeaderMetrics.daysOfWeekHeight,

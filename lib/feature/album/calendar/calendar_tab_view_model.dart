@@ -111,15 +111,20 @@ class CalendarTabViewModel extends _$CalendarTabViewModel {
     }
   }
 
-  InfiniteScroller<int> _scrollerOf(DateTime day) =>
-      _scrollers[day] ??= InfiniteScroller(
-        fetch: (cursor) => _fetch(day, cursor),
-        read: () => state.feedStates[day] ?? const InfiniteScrollState(),
-        write: (list) => state = state.copyWith(
-          feedStates: {...state.feedStates, day: list},
-        ),
-        mounted: () => ref.mounted,
-      );
+  InfiniteScroller<int> _scrollerOf(DateTime day) {
+    final existing = _scrollers[day];
+    if (existing != null) return existing;
+    late final InfiniteScroller<int> scroller;
+    scroller = InfiniteScroller(
+      fetch: (cursor) => _fetch(day, cursor),
+      read: () => state.feedStates[day] ?? const InfiniteScrollState(),
+      write: (list) => state = state.copyWith(
+        feedStates: {...state.feedStates, day: list},
+      ),
+      mounted: () => ref.mounted && identical(_scrollers[day], scroller),
+    );
+    return _scrollers[day] = scroller;
+  }
 
   Future<InfinitePageResult<int>> _fetch(DateTime day, String? cursor) async {
     final repository = _repository;
@@ -154,6 +159,23 @@ class CalendarTabViewModel extends _$CalendarTabViewModel {
   Future<void> loadFeeds(DateTime day) => _scrollerOf(day.onlyDateTime).init();
 
   Future<void> loadMoreFeeds() => _scrollerOf(state.selectedDay).loadMore();
+
+  Future<void> refresh() {
+    final day = state.selectedDay;
+    _scrollers.removeWhere((key, _) => key != day);
+    state = state.copyWith(
+      feedStates: {
+        for (final entry in state.feedStates.entries)
+          if (entry.key == day) entry.key: entry.value,
+      },
+    );
+    return Future.wait([
+      loadCalendar(state.focusedMonth),
+      _scrollerOf(state.selectedDay).init(),
+      _repository.loadLikedAlbumIds(),
+      _repository.loadUnlockedAlbumIds(),
+    ]);
+  }
 
   Future<void> retry() => _scrollerOf(state.selectedDay).retry();
 }

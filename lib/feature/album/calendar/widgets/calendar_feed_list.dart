@@ -32,11 +32,21 @@ class _CalendarFeedList extends StatelessWidget {
           onRetry: onRetry,
         );
       }
-      return Center(
-        child: Text(
-          '게시물이 없어요🥲',
-          style: MyTypo.title2.copyWith(color: MyColor.grey300),
+      return CustomScrollView(
+        physics: const AlwaysScrollableScrollPhysics(
+          parent: ClampingScrollPhysics(),
         ),
+        slivers: [
+          SliverFillRemaining(
+            hasScrollBody: false,
+            child: Center(
+              child: Text(
+                '게시물이 없어요🥲',
+                style: MyTypo.title2.copyWith(color: MyColor.grey300),
+              ),
+            ),
+          ),
+        ],
       );
     }
 
