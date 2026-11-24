@@ -84,7 +84,7 @@ class _ScheduleTimelineState extends State<_ScheduleTimeline> {
         children: [
           _TimeText(_timeLabel(dose.at)),
           Text(
-            '${dose.doseCount}정',
+            '${dose.doseCount.doseLabel}정',
             style: isActive ? null : const TextStyle(color: MyColor.primary),
           ),
         ],

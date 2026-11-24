@@ -3,6 +3,7 @@ import 'package:widyu/core/model/goal/goal_home_response.dart';
 import 'package:widyu/core/model/goal/hospital/daily_health_schedule.dart';
 import 'package:widyu/core/model/goal/medication/medication.dart';
 import 'package:widyu/core/model/home/senior_card.dart';
+import 'package:widyu/core/util/extension/medication_extension.dart';
 import 'package:widyu/feature/goal/main/goal_schedule.dart';
 import 'package:widyu/feature/goal/widget/goal_timeline.dart';
 
@@ -70,6 +71,17 @@ void main() {
       schedules.cast<DoseSchedule>().map((s) => s.scheduleId),
       [7, 99],
     );
+  });
+
+  test('소수 복용량은 잘리지 않고 표시된다', () {
+    expect(2.5.doseLabel, '2.5');
+    expect(0.25.doseLabel, '0.25');
+    expect(2.0.doseLabel, '2');
+    expect(10.0.doseLabel, '10');
+    expect(
+        MedicationDoseStatus.fromJson(
+            {'doseTime': '10:40', 'doseCount': 2.5, 'taken': false}).doseCount,
+        2.5);
   });
 
   test('병원 일정은 시각순으로 놓고, 인증 가능한 오늘 일정은 모두 길 찾기 카드가 된다', () {

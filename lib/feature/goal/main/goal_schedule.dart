@@ -20,7 +20,7 @@ class DoseSchedule extends GoalSchedule {
   });
 
   final int scheduleId;
-  final int doseCount;
+  final double doseCount;
 }
 
 class VisitSchedule extends GoalSchedule {
