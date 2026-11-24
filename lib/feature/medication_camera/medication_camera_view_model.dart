@@ -8,7 +8,7 @@ import 'package:widyu/core/data/repository/point/point_repository.dart';
 import 'package:widyu/core/di/providers.dart';
 import 'package:widyu/core/log/log.dart';
 import 'package:widyu/core/model/goal/medication/medication_point_result.dart';
-import 'package:widyu/core/utils/extensions/medication_extension.dart';
+import 'package:widyu/core/util/extension/medication_extension.dart';
 import 'package:widyu/feature/medication_camera/medication_camera_ui_event.dart';
 import 'package:widyu/feature/medication_camera/medication_camera_ui_state.dart';
 

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:widyu/core/ui/theme/colors.dart';
 import 'package:widyu/core/ui/theme/typos.dart';
-import 'package:widyu/core/utils/extensions/medication_extension.dart';
+import 'package:widyu/core/util/extension/medication_extension.dart';
 import 'package:widyu/gen/assets.gen.dart';
 
 class MedicationRingingScreen extends StatefulWidget {
