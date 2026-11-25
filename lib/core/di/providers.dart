@@ -1,3 +1,8 @@
+import 'dart:async';
+
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/widgets.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:widyu/core/data/repository/album/album_repository.dart';
@@ -55,6 +60,7 @@ import 'package:widyu/core/util/background_location_notice_controller.dart';
 import 'package:widyu/core/util/kakao_map_launcher.dart';
 import 'package:widyu/core/util/permission_manager.dart';
 import 'package:widyu/core/util/permission_recovery_controller.dart';
+import 'package:widyu/core/util/refresh_signals.dart';
 import 'package:widyu/core/util/walk_tracker.dart';
 
 part 'providers.g.dart';
@@ -80,6 +86,22 @@ BackgroundLocationNoticeController backgroundLocationNoticeController(
 
 @Riverpod(keepAlive: true)
 KakaoMapRouteOpener kakaoMapRouteOpener(Ref ref) => KakaoMapLauncher.openRoute;
+
+@Riverpod(keepAlive: true)
+RefreshSignals refreshSignals(Ref ref) {
+  final resumes = StreamController<void>.broadcast();
+  final listener = AppLifecycleListener(onResume: () => resumes.add(null));
+  ref.onDispose(() {
+    listener.dispose();
+    unawaited(resumes.close());
+  });
+  return RefreshSignals(
+    messages: Firebase.apps.isEmpty
+        ? const Stream.empty()
+        : FirebaseMessaging.onMessage,
+    resumes: resumes.stream,
+  );
+}
 
 @Riverpod(keepAlive: true)
 AuthRepository authRepository(Ref ref) => AuthRepositoryImpl(
