@@ -90,7 +90,8 @@ KakaoMapRouteOpener kakaoMapRouteOpener(Ref ref) => KakaoMapLauncher.openRoute;
 @Riverpod(keepAlive: true)
 RefreshSignals refreshSignals(Ref ref) {
   final resumes = StreamController<void>.broadcast();
-  final listener = AppLifecycleListener(onResume: () => resumes.add(null));
+  // onResume은 알림창·권한 팝업에서 돌아와도 불리므로, 백그라운드에서 돌아올 때만 불리는 onShow를 쓴다.
+  final listener = AppLifecycleListener(onShow: () => resumes.add(null));
   ref.onDispose(() {
     listener.dispose();
     unawaited(resumes.close());

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:widyu/core/data/repository/goal/medication_repository.dart';
@@ -23,6 +24,7 @@ import 'package:widyu/core/util/background_location_notice_controller.dart';
 import 'package:widyu/core/util/kakao_map_launcher.dart';
 import 'package:widyu/core/util/permission_manager.dart';
 import 'package:widyu/core/util/permission_recovery_controller.dart';
+import 'package:widyu/core/util/refresh_signals.dart';
 import 'package:widyu/feature/home/home_ui_event.dart';
 import 'package:widyu/feature/home/home_ui_state.dart';
 import 'package:widyu/feature/home/home_view_model.dart';
@@ -67,12 +69,14 @@ class _Notification extends Fake implements NotificationRepository {
   ApiResult<NotificationPage> page = const ApiResult.failure('unused');
   Completer<void>? pending;
   Completer<ApiResult<void>>? read;
+  int fetches = 0;
 
   @override
   Future<ApiResult<NotificationPage>> fetchNotificationPage(
     int? cursor, {
     String? category,
   }) async {
+    fetches++;
     await pending?.future;
     return page;
   }
@@ -148,6 +152,11 @@ class _Harness {
   final medication = _Medication();
   final events = <HomeUiEvent>[];
   final starts = <UserLocation?>[];
+  // 테스트 하나가 끝나면 함께 버려지는 가짜 스트림이라 닫지 않는다.
+  // ignore: close_sinks
+  final messages = StreamController<RemoteMessage>.broadcast();
+  // ignore: close_sinks
+  final resumes = StreamController<void>.broadcast();
   int get photos => events.whereType<NavigateToMedicationCamera>().length;
   late ProviderContainer container;
   late HomeViewModel vm;
@@ -175,6 +184,9 @@ class _Harness {
       locationRepositoryProvider.overrideWithValue(location),
       walkRepositoryProvider.overrideWithValue(walk),
       medicationRepositoryProvider.overrideWithValue(medication),
+      refreshSignalsProvider.overrideWithValue(
+        RefreshSignals(messages: messages.stream, resumes: resumes.stream),
+      ),
       // 폐기 시 대기 중인 권한 요청을 취소하도록 provider 폐기와 연결한다.
       homePermissionRecoveryControllerProvider.overrideWith((ref) {
         ref.onDispose(recovery.dispose);
@@ -225,6 +237,31 @@ class _Harness {
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+
+  test('건강 일정 푸시는 카드를, 화면 표시 푸시는 알림을, 재활성화는 둘 다 조용히 다시 받는다', () async {
+    final h = _Harness();
+    await h.initialize();
+    addTearDown(h.dispose);
+    expect((h.home.fetches, h.notification.fetches), (1, 1));
+
+    h.messages.add(const RemoteMessage(
+        data: {'notificationType': 'HEALTH_SCHEDULE_CREATED'}));
+    await pumpEventQueue();
+    expect((h.home.fetches, h.notification.fetches), (2, 1));
+
+    h.messages.add(const RemoteMessage(
+      data: {'notificationType': 'CHEER_MESSAGE_RECEIVED'},
+      notification: RemoteNotification(title: '응원'),
+    ));
+    await pumpEventQueue();
+    expect((h.home.fetches, h.notification.fetches), (2, 2));
+
+    h.resumes.add(null);
+    await pumpEventQueue();
+    expect((h.home.fetches, h.notification.fetches), (3, 3));
+    // 알림 조회는 가짜에서 실패하지만 조용한 갱신이라 안내하지 않는다.
+    expect(h.events.whereType<FetchNotificationFailure>(), isEmpty);
+  });
 
   test('카메라는 허용 시 일정 ID와 약 개수를 담아 촬영 화면 이동을 알린다', () async {
     final h = _Harness();

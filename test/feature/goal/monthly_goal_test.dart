@@ -15,6 +15,7 @@ import 'package:widyu/core/model/goal/monthly/daily_medicine_schedule.dart';
 import 'package:widyu/core/model/goal/monthly/walk_daily.dart';
 import 'package:widyu/core/util/refresh_signals.dart';
 import 'package:widyu/feature/goal/monthly/monthly_goal_screen.dart';
+import 'package:widyu/feature/goal/monthly/monthly_goal_ui_state.dart';
 import 'package:widyu/feature/goal/monthly/monthly_goal_view_model.dart';
 
 class _Goal extends Fake implements GoalRepository {
@@ -190,6 +191,38 @@ void main() {
           {DateTime(2026, 5, 20)});
       expect(
           goal.medicineCalls, [DateTime(2026, 5, 20), DateTime(2026, 5, 20)]);
+    });
+  });
+
+  test('앱이 다시 열려 조용히 다시 받다 실패하면 로딩·오류 없이 보던 내용을 둔다', () async {
+    final goal = _Goal();
+    final resumes = StreamController<void>.broadcast();
+    addTearDown(resumes.close);
+    final container = ProviderContainer.test(overrides: [
+      goalRepositoryProvider.overrideWithValue(goal),
+      medicationRepositoryProvider.overrideWithValue(_Medication()),
+      refreshSignalsProvider.overrideWithValue(
+        RefreshSignals(messages: const Stream.empty(), resumes: resumes.stream),
+      ),
+    ]);
+
+    await withClock(Clock.fixed(DateTime(2026, 5, 20, 9)), () async {
+      final states = <MonthlyGoalUiState>[];
+      container.listen(
+          monthlyGoalViewModelProvider, (_, next) => states.add(next));
+      await pumpEventQueue();
+      final shown = container.read(monthlyGoalViewModelProvider).day;
+      expect(shown, isNotNull);
+
+      states.clear();
+      goal.walksFail = true;
+      resumes.add(null);
+      await pumpEventQueue();
+
+      expect(goal.medicineCalls, hasLength(2));
+      expect(states.any((state) => state.isDayLoading || state.hasDayError),
+          isFalse);
+      expect(container.read(monthlyGoalViewModelProvider).day, shown);
     });
   });
 

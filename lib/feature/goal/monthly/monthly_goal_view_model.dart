@@ -78,7 +78,7 @@ class MonthlyGoalViewModel extends _$MonthlyGoalViewModel {
     _pastDays.clear();
     unawaited(loadMonth(state.focusedMonth));
     _loadWeekHealthDays(state.selectedDay);
-    unawaited(_loadDay(state.selectedDay));
+    unawaited(_loadDay(state.selectedDay, silent: true));
   }
 
   // 접힌 주가 이웃 달로 넘어가면 그 달의 건강 일정도 받아 둔다.
@@ -155,14 +155,15 @@ class MonthlyGoalViewModel extends _$MonthlyGoalViewModel {
 
   Future<void> retry() => _loadDay(state.selectedDay);
 
-  Future<void> _loadDay(DateTime date) async {
+  /// [silent]이면 로딩 표시 없이 받고, 실패하면 보고 있던 날짜 내용을 그대로 둔다.
+  Future<void> _loadDay(DateTime date, {bool silent = false}) async {
     final request = ++_dayRequest;
     if (_pastDays[date] case final cached?) {
       state =
           state.copyWith(isDayLoading: false, hasDayError: false, day: cached);
       return;
     }
-    state = state.copyWith(isDayLoading: true, hasDayError: false);
+    if (!silent) state = state.copyWith(isDayLoading: true, hasDayError: false);
 
     final month = DateTime(date.year, date.month);
     final fetchWalks =
@@ -190,6 +191,7 @@ class MonthlyGoalViewModel extends _$MonthlyGoalViewModel {
     if (medicines is! Success<List<DailyMedicineSchedule>> ||
         health is! Success<List<DailyHealthSchedule>> ||
         walkFailed) {
+      if (silent && state.day?.date.isSameDay(date) == true) return;
       state = state.copyWith(isDayLoading: false, hasDayError: true);
       return;
     }

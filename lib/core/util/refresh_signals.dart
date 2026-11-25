@@ -9,6 +9,6 @@ class RefreshSignals {
   /// 앱이 켜져 있을 때 받은 FCM.
   final Stream<RemoteMessage> messages;
 
-  /// 앱이 다시 화면에 나올 때마다. 백그라운드에서 놓친 변경을 다시 조회한다.
+  /// 앱이 백그라운드에서 다시 화면에 나올 때마다. 백그라운드에서 놓친 변경을 다시 조회한다.
   final Stream<void> resumes;
 }
