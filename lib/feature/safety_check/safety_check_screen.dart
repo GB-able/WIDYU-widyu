@@ -87,8 +87,8 @@ class _SafetyCheckView extends ConsumerWidget {
                   alignment: Alignment.topCenter,
                   child: Padding(
                     padding: const EdgeInsets.only(top: _logoTop),
-                    child: Image.asset('assets/images/img_64_logo.png',
-                        width: _logoSize, fit: BoxFit.contain),
+                    child: Assets.images.img64Logo
+                        .image(width: _logoSize, fit: BoxFit.contain),
                   ),
                 ),
                 Padding(
