@@ -54,10 +54,25 @@ class _WalkingCard extends ConsumerWidget {
               tween: Tween(begin: 0, end: stepProgress),
               duration: const Duration(milliseconds: 800), // 애니메이션 시간
               curve: Curves.easeOutCubic,
-              // 뒤를 흐리는 BackdropFilter는 매 프레임 화면 전체를 복사해야 해서 뺐다.
-              // 뒤는 그라데이션과 원 하나라 원 테두리만 또렷해진다.
-              child: ColoredBox(
-                color: MyColor.white.withValues(alpha: 0.3),
+              // 시안의 배경 블러 radius 30은 sigma 15(CSS blur 15px)에 해당한다.
+              child: BackdropFilter(
+                filter: ImageFilter.blur(
+                  sigmaX: 15,
+                  sigmaY: 15,
+                ),
+                // 시안: 왼쪽 위 흰색 45%에서 오른쪽 아래로 투명해진다.
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: const Alignment(-0.55, -0.71),
+                      end: const Alignment(0.69, 0.84),
+                      colors: [
+                        MyColor.white.withValues(alpha: 0.45),
+                        MyColor.white.withValues(alpha: 0),
+                      ],
+                    ),
+                  ),
+                ),
               ),
               builder: (context, animatedProgress, child) => CustomPaint(
                 painter: _StepProgressTickPainter(progress: animatedProgress),
@@ -205,13 +220,37 @@ class _StepProgressPieBorderPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
+    final path = _buildStepProgressPiePath(progress, size);
+    if (path.getBounds().isEmpty) return;
+
+    // 시안: 바깥쪽으로 1.5만 보이는 테두리. 중심의 흰색 60%가 반지름의 약 2배
+    // 거리에서 투명해지는 방사형 그라데이션이라 호는 약 30%, 중심 쪽 직선은 더 밝다.
+    final center = size.center(Offset.zero);
     final paint = Paint()
-      ..color = MyColor.white
+      ..shader = RadialGradient(
+        colors: [
+          MyColor.white.withValues(alpha: 0.6),
+          MyColor.white.withValues(alpha: 0),
+        ],
+      ).createShader(
+        Rect.fromCircle(center: center, radius: size.shortestSide * 0.986),
+      )
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 0.5
+      ..strokeWidth = 3
       ..isAntiAlias = true;
 
-    canvas.drawPath(_buildStepProgressPiePath(progress, size), paint);
+    // 시안 SVG와 같은 방식: 두께 3으로 그리고 안쪽 절반을 잘라 바깥 1.5만 남긴다.
+    canvas
+      ..save()
+      ..clipPath(
+        Path.combine(
+          PathOperation.difference,
+          Path()..addRect((Offset.zero & size).inflate(3)),
+          path,
+        ),
+      )
+      ..drawPath(path, paint)
+      ..restore();
   }
 
   @override
