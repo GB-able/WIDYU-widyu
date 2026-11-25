@@ -223,8 +223,8 @@ class _StepProgressPieBorderPainter extends CustomPainter {
     final path = _buildStepProgressPiePath(progress, size);
     if (path.getBounds().isEmpty) return;
 
-    // 시안: 두께 3 바깥쪽 테두리. 중심의 흰색 60%가 반지름의 약 2배 거리에서
-    // 투명해지는 방사형 그라데이션이라 호는 약 30%, 중심 쪽 직선은 더 밝다.
+    // 시안: 바깥쪽으로 1.5만 보이는 테두리. 중심의 흰색 60%가 반지름의 약 2배
+    // 거리에서 투명해지는 방사형 그라데이션이라 호는 약 30%, 중심 쪽 직선은 더 밝다.
     final center = size.center(Offset.zero);
     final paint = Paint()
       ..shader = RadialGradient(
@@ -239,7 +239,7 @@ class _StepProgressPieBorderPainter extends CustomPainter {
       ..strokeWidth = 3
       ..isAntiAlias = true;
 
-    // 안쪽 절반을 잘라 바깥쪽 테두리로 만든다.
+    // 시안 SVG와 같은 방식: 두께 3으로 그리고 안쪽 절반을 잘라 바깥 1.5만 남긴다.
     canvas
       ..save()
       ..clipPath(
