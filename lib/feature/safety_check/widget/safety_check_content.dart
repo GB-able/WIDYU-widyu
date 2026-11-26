@@ -32,16 +32,14 @@ class _SafetyCheckContent extends StatelessWidget {
                     letterSpacing: -0.4,
                   ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Text(
-                    '괜찮으시다면 정해진 시간 안에 버튼을 눌러주세요. 응답이 없을 경우 보호자분께 안부를 전해드려요.'
-                        .split(' ')
-                        .map((word) => word.split('').join('‍'))
-                        .join(' '),
-                    textAlign: TextAlign.center,
-                    style: MyTypo.body1.copyWith(color: MyColor.white),
-                  ),
+                Text(
+                  '괜찮으시다면 정해진 시간 안에 버튼을 눌러주세요. 응답이 없을 경우 보호자분께 안부를 전해드려요.'
+                      .split(' ')
+                      .map((word) => word.split('').join('‍'))
+                      .join(' '),
+                  textAlign: TextAlign.center,
+                  style: MyTypo.body1.copyWith(color: MyColor.white),
+                  overflow: TextOverflow.visible,
                 ),
                 if (kDebugMode && deadline != null)
                   _RemainingSeconds(deadline: deadline!),
