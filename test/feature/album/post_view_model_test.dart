@@ -213,4 +213,18 @@ void main() {
     expect(events.single, isA<SendReplyFailure>());
     expect(state().isBusy, isFalse);
   });
+
+  test('알림으로 다시 열면 새 댓글을 다시 받고 이동할 댓글을 기억한다', () async {
+    final viewModel = await loaded();
+    expect(state().targetCommentId, isNull);
+
+    dataSource.detail =
+        okResponse(feedDetail(_postId, comments: [comment(10), comment(72)]));
+    await viewModel.reopen(commentId: 72);
+    expect(state().feed!.comments.map((e) => e.commentId), contains(72));
+    expect(state().targetCommentId, 72);
+
+    await viewModel.reopen();
+    expect(state().targetCommentId, 72);
+  });
 }

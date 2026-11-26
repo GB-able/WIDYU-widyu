@@ -88,7 +88,10 @@ class _NotificationTapListenerState
     }
     final id = int.tryParse(postId);
     if (id == null) return false;
-    unawaited(ref.read(postViewModelProvider(id).notifier).retry());
+    final commentId = int.tryParse(target?.queryParameters['commentId'] ?? '');
+    unawaited(
+      ref.read(postViewModelProvider(id).notifier).reopen(commentId: commentId),
+    );
     return true;
   }
 
