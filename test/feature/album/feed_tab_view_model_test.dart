@@ -13,13 +13,16 @@ void main() {
   late FakeAlbumDataSource dataSource;
   late AlbumRepositoryImpl repository;
   late ProviderContainer container;
+  late FakeRefreshSignals signals;
 
   setUp(() {
     dataSource = FakeAlbumDataSource();
     repository = fakeAlbumRepository(dataSource);
-    container = ProviderContainer.test(
-      overrides: [albumRepositoryProvider.overrideWithValue(repository)],
-    );
+    signals = FakeRefreshSignals();
+    container = ProviderContainer.test(overrides: [
+      albumRepositoryProvider.overrideWithValue(repository),
+      refreshSignalsProvider.overrideWithValue(signals.value),
+    ]);
   });
 
   // 첫 listen에서 build()가 실행되고 조회는 다음 microtask에 시작한다.
@@ -108,5 +111,42 @@ void main() {
 
     expect(state().list.items, [2]);
     expect(state().list.hasNext, isFalse);
+  });
+
+  test('새 게시물 푸시를 받으면 목록을 다시 불러온다', () async {
+    dataSource.feeds = okResponse(page([feed(1)]));
+    listen();
+    await pumpEventQueue();
+
+    dataSource.feeds = okResponse(page([feed(2), feed(1)]));
+    signals.push('ALBUM_CREATED');
+    await pumpEventQueue();
+    expect(state().list.items, [2, 1]);
+
+    dataSource.feeds = okResponse(page([feed(3), feed(2), feed(1)]));
+    signals.push('ALBUM_UPLOAD_COMPLETE');
+    await pumpEventQueue();
+    expect(state().list.items, [3, 2, 1]);
+  });
+
+  test('앱 복귀 때 목록을 다시 불러온다', () async {
+    dataSource.feeds = okResponse(page([feed(1)]));
+    listen();
+    await pumpEventQueue();
+
+    dataSource.feeds = okResponse(page([feed(2), feed(1)]));
+    signals.resume();
+    await pumpEventQueue();
+    expect(state().list.items, [2, 1]);
+  });
+
+  test('앨범과 무관한 푸시에는 다시 불러오지 않는다', () async {
+    listen();
+    await pumpEventQueue();
+    dataSource.calls.clear();
+
+    signals.push('WALK_GOAL_CHANGED');
+    await pumpEventQueue();
+    expect(dataSource.calls, isEmpty);
   });
 }

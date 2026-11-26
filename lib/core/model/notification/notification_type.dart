@@ -8,6 +8,8 @@ enum NotificationType {
   healthScheduleUpdated('HEALTH_SCHEDULE_UPDATED'),
   healthScheduleDeleted('HEALTH_SCHEDULE_DELETED'),
   walkGoalChanged('WALK_GOAL_CHANGED'),
+  albumUploadComplete('ALBUM_UPLOAD_COMPLETE'),
+  albumCreated('ALBUM_CREATED'),
   walkDataSync('WALK_DATA_SYNC');
 
   const NotificationType(this.value);
@@ -20,6 +22,9 @@ enum NotificationType {
     healthScheduleUpdated,
     healthScheduleDeleted,
   };
+
+  /// 내 게시물 업로드가 끝났거나 다른 가족이 게시물을 올렸을 때 오는 푸시.
+  static const newAlbumPosts = {albumUploadComplete, albumCreated};
 
   bool matches(Map<String, dynamic> data) => data['notificationType'] == value;
 

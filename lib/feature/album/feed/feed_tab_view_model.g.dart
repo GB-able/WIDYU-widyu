@@ -41,7 +41,7 @@ final class FeedTabViewModelProvider
   }
 }
 
-String _$feedTabViewModelHash() => r'dddc8c1995ab5b7abd7cf3703b989ba6bd4e6d62';
+String _$feedTabViewModelHash() => r'56168f449ae38506f0a89e57719c07f12e925489';
 
 abstract class _$FeedTabViewModel extends $Notifier<FeedTabUiState> {
   FeedTabUiState build();

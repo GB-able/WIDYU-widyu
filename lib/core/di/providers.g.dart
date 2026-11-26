@@ -183,7 +183,7 @@ final class RefreshSignalsProvider
   }
 }
 
-String _$refreshSignalsHash() => r'aaf7e7d9d22ed430dd983dd9693ea1674623742c';
+String _$refreshSignalsHash() => r'd90e6c2718c30895bdb7dd84cbb649e9fd37a601';
 
 @ProviderFor(authRepository)
 final authRepositoryProvider = AuthRepositoryProvider._();

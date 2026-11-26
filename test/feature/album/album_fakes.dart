@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:widyu/core/data/repository/album/album_repository_impl.dart';
 import 'package:widyu/core/data/repository/point/point_repository.dart';
@@ -15,6 +16,7 @@ import 'package:widyu/core/model/album/media.dart';
 import 'package:widyu/core/model/album/member.dart';
 import 'package:widyu/core/model/api/api_response.dart';
 import 'package:widyu/core/model/api/infinite_page_result.dart';
+import 'package:widyu/core/util/refresh_signals.dart';
 
 // 앨범 ViewModel 테스트는 실제 AlbumRepositoryImpl(캐시)에 서버 응답만 흉내 낸 data source를 붙여 쓴다.
 
@@ -207,3 +209,19 @@ AlbumRepositoryImpl fakeAlbumRepository(FakeAlbumDataSource dataSource) =>
       remoteDataSource: dataSource,
       pointRepository: FakePointRepository(),
     );
+
+/// 테스트에서 FCM 수신과 앱 복귀를 흉내 낸다. 테스트 하나와 함께 버려지므로 닫지 않는다.
+class FakeRefreshSignals {
+  // ignore: close_sinks
+  final _messages = StreamController<RemoteMessage>.broadcast();
+  // ignore: close_sinks
+  final _resumes = StreamController<void>.broadcast();
+
+  late final value =
+      RefreshSignals(messages: _messages.stream, resumes: _resumes.stream);
+
+  void push(String type) =>
+      _messages.add(RemoteMessage(data: {'notificationType': type}));
+
+  void resume() => _resumes.add(null);
+}

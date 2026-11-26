@@ -8,6 +8,7 @@ import 'package:widyu/core/model/album/album_cache.dart';
 import 'package:widyu/core/model/album/feed.dart';
 import 'package:widyu/core/model/api/api_result.dart';
 import 'package:widyu/core/model/api/infinite_page_result.dart';
+import 'package:widyu/core/model/notification/notification_type.dart';
 import 'package:widyu/core/util/extension/date_extension.dart';
 import 'package:widyu/core/util/infinite_scroll.dart';
 import 'package:widyu/feature/album/calendar/calendar_tab_ui_state.dart';
@@ -38,6 +39,16 @@ class CalendarTabViewModel extends _$CalendarTabViewModel {
     if (!ref.mounted) return;
     final cacheChanges = _repository.cache.listen(_onCache);
     ref.onDispose(cacheChanges.cancel);
+    final signals = ref.read(refreshSignalsProvider);
+    final pushes = signals.messages.listen((message) {
+      if (NotificationType.anyMatches(
+          NotificationType.newAlbumPosts, message.data)) {
+        unawaited(_reloadPosts());
+      }
+    });
+    ref.onDispose(pushes.cancel);
+    final resumes = signals.resumes.listen((_) => unawaited(_reloadPosts()));
+    ref.onDispose(resumes.cancel);
     await Future.wait([
       loadCalendar(state.focusedMonth),
       loadFeeds(state.selectedDay),
@@ -160,7 +171,15 @@ class CalendarTabViewModel extends _$CalendarTabViewModel {
 
   Future<void> loadMoreFeeds() => _scrollerOf(state.selectedDay).loadMore();
 
-  Future<void> refresh() {
+  Future<void> refresh() => Future.wait([
+        _reloadPosts(),
+        _repository.loadLikedAlbumIds(),
+        _repository.loadUnlockedAlbumIds(),
+      ]);
+
+  /// 선택한 날 외의 목록은 버리고 달력 표시와 선택한 날 목록을 다시 받는다.
+  Future<void> _reloadPosts() {
+    if (!ref.mounted) return Future.value();
     final day = state.selectedDay;
     _scrollers.removeWhere((key, _) => key != day);
     state = state.copyWith(
@@ -171,9 +190,7 @@ class CalendarTabViewModel extends _$CalendarTabViewModel {
     );
     return Future.wait([
       loadCalendar(state.focusedMonth),
-      _scrollerOf(state.selectedDay).init(),
-      _repository.loadLikedAlbumIds(),
-      _repository.loadUnlockedAlbumIds(),
+      _scrollerOf(day).init(),
     ]);
   }
 
