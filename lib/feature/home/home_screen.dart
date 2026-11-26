@@ -78,7 +78,7 @@ class HomeScreen extends ConsumerWidget {
   }
 
   bool _isCurrentRoute(BuildContext context) =>
-      ModalRoute.of(context)?.isCurrent ?? true;
+      GoRouter.of(context).state.matchedLocation == AppRoute.home.path;
 
   void _handleEvent(
       BuildContext context, HomeViewModel viewModel, HomeUiEvent event) {
