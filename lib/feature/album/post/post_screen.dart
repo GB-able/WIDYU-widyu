@@ -45,6 +45,8 @@ class _PostScreenState extends ConsumerState<PostScreen> {
   final _scrollController = ScrollController();
   final _targetCommentKey = GlobalKey();
   late bool _needsScrollToComment = widget.commentId != null;
+  // 스크롤 대상은 ScrollController와 함께 화면이 가진다. 알림으로 같은 게시물을 다시 가리키면 바뀐다.
+  late int? _targetCommentId = widget.commentId;
 
   @override
   void initState() {
@@ -144,6 +146,9 @@ class _PostScreenState extends ConsumerState<PostScreen> {
         );
       case FeedLocked():
         _unlockAndRetry();
+      case ScrollToComment(:final commentId):
+        setState(() => _targetCommentId = commentId);
+        _scrollToComment();
     }
   }
 
@@ -165,15 +170,8 @@ class _PostScreenState extends ConsumerState<PostScreen> {
     final postId = widget.postId;
     final viewModel = ref.watch(_provider.notifier);
     // 화면은 캐시를 뺀 상태와 잠금 여부만 구독하고, 피드는 아래 Consumer로 따로 구독한다.
-    final (
-      status,
-      feed,
-      me,
-      replyParentId,
-      editingCommentId,
-      isLocked,
-      newTargetCommentId,
-    ) = ref.watch(
+    final (status, feed, me, replyParentId, editingCommentId, isLocked) =
+        ref.watch(
       _provider.select(
         (s) => (
           s.status,
@@ -182,16 +180,9 @@ class _PostScreenState extends ConsumerState<PostScreen> {
           s.replyParentId,
           s.editingCommentId,
           s.isLocked,
-          s.targetCommentId,
         ),
       ),
     );
-    // 알림으로 다른 댓글을 가리키면 다시 조회가 끝난 뒤 그 댓글로 스크롤한다.
-    ref.listen(
-      _provider.select((s) => s.targetCommentId),
-      (_, __) => _needsScrollToComment = true,
-    );
-    final targetCommentId = newTargetCommentId ?? widget.commentId;
     final myProfileImage = me?.profileImage;
     final comments = feed?.comments ?? const <Comment>[];
     final visibleComments = replyParentId == null
@@ -296,7 +287,7 @@ class _PostScreenState extends ConsumerState<PostScreen> {
                                               onReply: _startReply,
                                               onEdit: _startEdit,
                                               onDelete: viewModel.deleteComment,
-                                              targetCommentId: targetCommentId,
+                                              targetCommentId: _targetCommentId,
                                               targetKey: _targetCommentKey,
                                             ),
                                           )

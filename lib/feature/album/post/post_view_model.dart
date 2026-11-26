@@ -170,9 +170,14 @@ class PostViewModel extends _$PostViewModel {
   Future<void> retry() => init();
 
   /// 보고 있는 게시물의 알림을 누르면 다시 조회하고, 댓글 알림이면 그 댓글로 이동시킨다.
-  Future<void> reopen({int? commentId}) {
-    if (commentId != null) state = state.copyWith(targetCommentId: commentId);
-    return init();
+  Future<void> reopen({int? commentId}) async {
+    // 답글 모드면 부모 댓글만 보여 대상 댓글로 갈 수 없으므로 해제한다.
+    if (commentId != null) state = state.copyWith(replyParentId: null);
+    await init();
+    if (!ref.mounted || commentId == null) return;
+    if (state.status == PostStatus.success && !state.isLocked) {
+      _emit(ScrollToComment(commentId));
+    }
   }
 
   Future<void> toggleLike() => _repository.toggleLike(id);

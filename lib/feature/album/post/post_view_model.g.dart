@@ -57,7 +57,7 @@ final class PostViewModelProvider
   }
 }
 
-String _$postViewModelHash() => r'6b10796083ed3193334b8192196fbbaaf9934409';
+String _$postViewModelHash() => r'cca632ede2fe997a9ceda1ae4dbe6f91fa8ba041';
 
 final class PostViewModelFamily extends $Family
     with

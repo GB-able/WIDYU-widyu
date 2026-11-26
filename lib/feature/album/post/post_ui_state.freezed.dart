@@ -19,8 +19,7 @@ mixin _$PostUiState {
   FeedDetail? get feed;
   User? get me;
   int? get replyParentId;
-  int? get editingCommentId; // 화면을 연 뒤 알림으로 이동할 댓글. 처음 열 때의 댓글은 화면 파라미터로 받는다.
-  int? get targetCommentId;
+  int? get editingCommentId;
   AlbumCache get cache;
 
   /// Create a copy of PostUiState
@@ -43,18 +42,16 @@ mixin _$PostUiState {
                 other.replyParentId == replyParentId) &&
             (identical(other.editingCommentId, editingCommentId) ||
                 other.editingCommentId == editingCommentId) &&
-            (identical(other.targetCommentId, targetCommentId) ||
-                other.targetCommentId == targetCommentId) &&
             (identical(other.cache, cache) || other.cache == cache));
   }
 
   @override
   int get hashCode => Object.hash(runtimeType, status, isBusy, feed, me,
-      replyParentId, editingCommentId, targetCommentId, cache);
+      replyParentId, editingCommentId, cache);
 
   @override
   String toString() {
-    return 'PostUiState(status: $status, isBusy: $isBusy, feed: $feed, me: $me, replyParentId: $replyParentId, editingCommentId: $editingCommentId, targetCommentId: $targetCommentId, cache: $cache)';
+    return 'PostUiState(status: $status, isBusy: $isBusy, feed: $feed, me: $me, replyParentId: $replyParentId, editingCommentId: $editingCommentId, cache: $cache)';
   }
 }
 
@@ -71,7 +68,6 @@ abstract mixin class $PostUiStateCopyWith<$Res> {
       User? me,
       int? replyParentId,
       int? editingCommentId,
-      int? targetCommentId,
       AlbumCache cache});
 
   $FeedDetailCopyWith<$Res>? get feed;
@@ -96,7 +92,6 @@ class _$PostUiStateCopyWithImpl<$Res> implements $PostUiStateCopyWith<$Res> {
     Object? me = freezed,
     Object? replyParentId = freezed,
     Object? editingCommentId = freezed,
-    Object? targetCommentId = freezed,
     Object? cache = null,
   }) {
     return _then(_self.copyWith(
@@ -123,10 +118,6 @@ class _$PostUiStateCopyWithImpl<$Res> implements $PostUiStateCopyWith<$Res> {
       editingCommentId: freezed == editingCommentId
           ? _self.editingCommentId
           : editingCommentId // ignore: cast_nullable_to_non_nullable
-              as int?,
-      targetCommentId: freezed == targetCommentId
-          ? _self.targetCommentId
-          : targetCommentId // ignore: cast_nullable_to_non_nullable
               as int?,
       cache: null == cache
           ? _self.cache
@@ -257,30 +248,16 @@ extension PostUiStatePatterns on PostUiState {
 
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>(
-    TResult Function(
-            PostStatus status,
-            bool isBusy,
-            FeedDetail? feed,
-            User? me,
-            int? replyParentId,
-            int? editingCommentId,
-            int? targetCommentId,
-            AlbumCache cache)?
+    TResult Function(PostStatus status, bool isBusy, FeedDetail? feed, User? me,
+            int? replyParentId, int? editingCommentId, AlbumCache cache)?
         $default, {
     required TResult orElse(),
   }) {
     final _that = this;
     switch (_that) {
       case _PostUiState() when $default != null:
-        return $default(
-            _that.status,
-            _that.isBusy,
-            _that.feed,
-            _that.me,
-            _that.replyParentId,
-            _that.editingCommentId,
-            _that.targetCommentId,
-            _that.cache);
+        return $default(_that.status, _that.isBusy, _that.feed, _that.me,
+            _that.replyParentId, _that.editingCommentId, _that.cache);
       case _:
         return orElse();
     }
@@ -301,29 +278,15 @@ extension PostUiStatePatterns on PostUiState {
 
   @optionalTypeArgs
   TResult when<TResult extends Object?>(
-    TResult Function(
-            PostStatus status,
-            bool isBusy,
-            FeedDetail? feed,
-            User? me,
-            int? replyParentId,
-            int? editingCommentId,
-            int? targetCommentId,
-            AlbumCache cache)
+    TResult Function(PostStatus status, bool isBusy, FeedDetail? feed, User? me,
+            int? replyParentId, int? editingCommentId, AlbumCache cache)
         $default,
   ) {
     final _that = this;
     switch (_that) {
       case _PostUiState():
-        return $default(
-            _that.status,
-            _that.isBusy,
-            _that.feed,
-            _that.me,
-            _that.replyParentId,
-            _that.editingCommentId,
-            _that.targetCommentId,
-            _that.cache);
+        return $default(_that.status, _that.isBusy, _that.feed, _that.me,
+            _that.replyParentId, _that.editingCommentId, _that.cache);
       case _:
         throw StateError('Unexpected subclass');
     }
@@ -350,22 +313,14 @@ extension PostUiStatePatterns on PostUiState {
             User? me,
             int? replyParentId,
             int? editingCommentId,
-            int? targetCommentId,
             AlbumCache cache)?
         $default,
   ) {
     final _that = this;
     switch (_that) {
       case _PostUiState() when $default != null:
-        return $default(
-            _that.status,
-            _that.isBusy,
-            _that.feed,
-            _that.me,
-            _that.replyParentId,
-            _that.editingCommentId,
-            _that.targetCommentId,
-            _that.cache);
+        return $default(_that.status, _that.isBusy, _that.feed, _that.me,
+            _that.replyParentId, _that.editingCommentId, _that.cache);
       case _:
         return null;
     }
@@ -382,7 +337,6 @@ class _PostUiState extends PostUiState {
       this.me,
       this.replyParentId,
       this.editingCommentId,
-      this.targetCommentId,
       this.cache = const AlbumCache()})
       : super._();
 
@@ -400,9 +354,6 @@ class _PostUiState extends PostUiState {
   final int? replyParentId;
   @override
   final int? editingCommentId;
-// 화면을 연 뒤 알림으로 이동할 댓글. 처음 열 때의 댓글은 화면 파라미터로 받는다.
-  @override
-  final int? targetCommentId;
   @override
   @JsonKey()
   final AlbumCache cache;
@@ -428,18 +379,16 @@ class _PostUiState extends PostUiState {
                 other.replyParentId == replyParentId) &&
             (identical(other.editingCommentId, editingCommentId) ||
                 other.editingCommentId == editingCommentId) &&
-            (identical(other.targetCommentId, targetCommentId) ||
-                other.targetCommentId == targetCommentId) &&
             (identical(other.cache, cache) || other.cache == cache));
   }
 
   @override
   int get hashCode => Object.hash(runtimeType, status, isBusy, feed, me,
-      replyParentId, editingCommentId, targetCommentId, cache);
+      replyParentId, editingCommentId, cache);
 
   @override
   String toString() {
-    return 'PostUiState(status: $status, isBusy: $isBusy, feed: $feed, me: $me, replyParentId: $replyParentId, editingCommentId: $editingCommentId, targetCommentId: $targetCommentId, cache: $cache)';
+    return 'PostUiState(status: $status, isBusy: $isBusy, feed: $feed, me: $me, replyParentId: $replyParentId, editingCommentId: $editingCommentId, cache: $cache)';
   }
 }
 
@@ -458,7 +407,6 @@ abstract mixin class _$PostUiStateCopyWith<$Res>
       User? me,
       int? replyParentId,
       int? editingCommentId,
-      int? targetCommentId,
       AlbumCache cache});
 
   @override
@@ -485,7 +433,6 @@ class __$PostUiStateCopyWithImpl<$Res> implements _$PostUiStateCopyWith<$Res> {
     Object? me = freezed,
     Object? replyParentId = freezed,
     Object? editingCommentId = freezed,
-    Object? targetCommentId = freezed,
     Object? cache = null,
   }) {
     return _then(_PostUiState(
@@ -512,10 +459,6 @@ class __$PostUiStateCopyWithImpl<$Res> implements _$PostUiStateCopyWith<$Res> {
       editingCommentId: freezed == editingCommentId
           ? _self.editingCommentId
           : editingCommentId // ignore: cast_nullable_to_non_nullable
-              as int?,
-      targetCommentId: freezed == targetCommentId
-          ? _self.targetCommentId
-          : targetCommentId // ignore: cast_nullable_to_non_nullable
               as int?,
       cache: null == cache
           ? _self.cache
