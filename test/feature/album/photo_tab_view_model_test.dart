@@ -13,13 +13,16 @@ void main() {
   late FakeAlbumDataSource dataSource;
   late AlbumRepositoryImpl repository;
   late ProviderContainer container;
+  late FakeRefreshSignals signals;
 
   setUp(() {
     dataSource = FakeAlbumDataSource();
     repository = fakeAlbumRepository(dataSource);
-    container = ProviderContainer.test(
-      overrides: [albumRepositoryProvider.overrideWithValue(repository)],
-    );
+    signals = FakeRefreshSignals();
+    container = ProviderContainer.test(overrides: [
+      albumRepositoryProvider.overrideWithValue(repository),
+      refreshSignalsProvider.overrideWithValue(signals.value),
+    ]);
   });
 
   // 첫 listen에서 build()가 실행되고 조회는 다음 microtask에 시작한다.
@@ -84,5 +87,32 @@ void main() {
 
     expect(state().list.items.map((m) => m.id), [2]);
     expect(state().list.hasNext, isFalse);
+  });
+
+  test('새 게시물 푸시를 받으면 미디어를 다시 불러온다', () async {
+    dataSource.mediaFeed = okResponse(page([media(1, postId: 10)]));
+    listen();
+    await pumpEventQueue();
+
+    dataSource.mediaFeed = okResponse(
+      page([media(2, postId: 11), media(1, postId: 10)]),
+    );
+    signals.push('ALBUM_UPLOAD_COMPLETE');
+    await pumpEventQueue();
+    expect(state().list.items.map((m) => m.id), [2, 1]);
+  });
+
+  test('앱 복귀 때 미디어를 다시 불러오고 무관한 푸시는 무시한다', () async {
+    listen();
+    await pumpEventQueue();
+    dataSource.calls.clear();
+
+    signals.push('WALK_GOAL_CHANGED');
+    await pumpEventQueue();
+    expect(dataSource.calls, isEmpty);
+
+    signals.resume();
+    await pumpEventQueue();
+    expect(dataSource.calls, ['fetchMediaFeed']);
   });
 }

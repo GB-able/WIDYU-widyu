@@ -2,12 +2,14 @@ import 'dart:async';
 
 import 'package:clock/clock.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:rxdart/rxdart.dart';
 import 'package:widyu/core/data/repository/goal/goal_repository.dart';
 import 'package:widyu/core/di/providers.dart';
 import 'package:widyu/core/model/api/api_result.dart';
 import 'package:widyu/core/model/goal/hospital/daily_health_schedule.dart';
 import 'package:widyu/core/model/goal/monthly/daily_medicine_schedule.dart';
 import 'package:widyu/core/model/goal/monthly/walk_daily.dart';
+import 'package:widyu/core/model/notification/notification_type.dart';
 import 'package:widyu/core/util/extension/date_extension.dart';
 import 'package:widyu/core/util/find_route.dart';
 import 'package:widyu/feature/goal/monthly/monthly_goal_ui_state.dart';
@@ -16,6 +18,11 @@ part 'monthly_goal_view_model.g.dart';
 
 @riverpod
 class MonthlyGoalViewModel extends _$MonthlyGoalViewModel {
+  static const _refreshTypes = {
+    ...NotificationType.healthScheduleChanges,
+    NotificationType.walkGoalChanged,
+  };
+
   int _dayRequest = 0;
   // 건강 일정이 있는 날은 달 단위로 받아 모아 둔다. 접힌 주가 두 달에 걸칠 수 있다.
   final Set<DateTime> _healthMonths = {};
@@ -46,6 +53,14 @@ class MonthlyGoalViewModel extends _$MonthlyGoalViewModel {
       unawaited(_loadDay(state.selectedDay));
     });
     ref.onDispose(medicationChanges.cancel);
+    // 보호자가 건강 일정·걷기 목표를 바꿨거나, 앱이 다시 열리면 보고 있는 곳을 다시 받는다.
+    final signals = ref.read(refreshSignalsProvider);
+    final refreshes = Rx.merge([
+      signals.messages.where((message) =>
+          NotificationType.anyMatches(_refreshTypes, message.data)),
+      signals.resumes,
+    ]).listen((_) => _reload());
+    ref.onDispose(refreshes.cancel);
     // 화면을 연 채 자정이 지나면 오늘을 바꾼다. 보고 있던 날짜는 그대로 둔다.
     final dayTimer = Timer.periodic(const Duration(minutes: 1), (_) {
       final today = clock.now().onlyDateTime;
@@ -55,6 +70,15 @@ class MonthlyGoalViewModel extends _$MonthlyGoalViewModel {
     unawaited(loadMonth(state.focusedMonth));
     _loadWeekHealthDays(state.selectedDay);
     unawaited(_loadDay(state.selectedDay));
+  }
+
+  void _reload() {
+    _healthMonths.clear();
+    _walksByMonth.clear();
+    _pastDays.clear();
+    unawaited(loadMonth(state.focusedMonth));
+    _loadWeekHealthDays(state.selectedDay);
+    unawaited(_loadDay(state.selectedDay, silent: true));
   }
 
   // 접힌 주가 이웃 달로 넘어가면 그 달의 건강 일정도 받아 둔다.
@@ -87,8 +111,9 @@ class MonthlyGoalViewModel extends _$MonthlyGoalViewModel {
     if (!ref.mounted) return;
     switch (result) {
       case Success(:final data):
+        // 그 달 것은 새로 받은 값으로 바꿔, 삭제된 일정의 표시가 남지 않게 한다.
         state = state.copyWith(healthDays: {
-          ...state.healthDays,
+          ...state.healthDays.where((day) => !day.isSameMonth(target)),
           for (final day in data) DateTime(target.year, target.month, day),
         });
       case Failure():
@@ -130,14 +155,15 @@ class MonthlyGoalViewModel extends _$MonthlyGoalViewModel {
 
   Future<void> retry() => _loadDay(state.selectedDay);
 
-  Future<void> _loadDay(DateTime date) async {
+  /// [silent]이면 로딩 표시 없이 받고, 실패하면 보고 있던 날짜 내용을 그대로 둔다.
+  Future<void> _loadDay(DateTime date, {bool silent = false}) async {
     final request = ++_dayRequest;
     if (_pastDays[date] case final cached?) {
       state =
           state.copyWith(isDayLoading: false, hasDayError: false, day: cached);
       return;
     }
-    state = state.copyWith(isDayLoading: true, hasDayError: false);
+    if (!silent) state = state.copyWith(isDayLoading: true, hasDayError: false);
 
     final month = DateTime(date.year, date.month);
     final fetchWalks =
@@ -165,6 +191,7 @@ class MonthlyGoalViewModel extends _$MonthlyGoalViewModel {
     if (medicines is! Success<List<DailyMedicineSchedule>> ||
         health is! Success<List<DailyHealthSchedule>> ||
         walkFailed) {
+      if (silent && state.day?.date.isSameDay(date) == true) return;
       state = state.copyWith(isDayLoading: false, hasDayError: true);
       return;
     }

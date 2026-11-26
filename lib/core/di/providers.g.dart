@@ -144,6 +144,47 @@ final class KakaoMapRouteOpenerProvider extends $FunctionalProvider<
 String _$kakaoMapRouteOpenerHash() =>
     r'8e8672b68aa8ce2fd691cb85b9af8fe8748552b6';
 
+@ProviderFor(refreshSignals)
+final refreshSignalsProvider = RefreshSignalsProvider._();
+
+final class RefreshSignalsProvider
+    extends $FunctionalProvider<RefreshSignals, RefreshSignals, RefreshSignals>
+    with $Provider<RefreshSignals> {
+  RefreshSignalsProvider._()
+      : super(
+          from: null,
+          argument: null,
+          retry: null,
+          name: r'refreshSignalsProvider',
+          isAutoDispose: false,
+          dependencies: null,
+          $allTransitiveDependencies: null,
+        );
+
+  @override
+  String debugGetCreateSourceHash() => _$refreshSignalsHash();
+
+  @$internal
+  @override
+  $ProviderElement<RefreshSignals> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  RefreshSignals create(Ref ref) {
+    return refreshSignals(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(RefreshSignals value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<RefreshSignals>(value),
+    );
+  }
+}
+
+String _$refreshSignalsHash() => r'd90e6c2718c30895bdb7dd84cbb649e9fd37a601';
+
 @ProviderFor(authRepository)
 final authRepositoryProvider = AuthRepositoryProvider._();
 
@@ -268,7 +309,7 @@ final class MedicationRepositoryProvider extends $FunctionalProvider<
 }
 
 String _$medicationRepositoryHash() =>
-    r'e56da345d089a266a56793b381712dd68a38758e';
+    r'64404e5ab88347b6d28e9da4a47fca228eec184d';
 
 @ProviderFor(alarmPermissionRecoveryController)
 final alarmPermissionRecoveryControllerProvider =

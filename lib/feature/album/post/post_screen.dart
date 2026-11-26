@@ -45,6 +45,8 @@ class _PostScreenState extends ConsumerState<PostScreen> {
   final _scrollController = ScrollController();
   final _targetCommentKey = GlobalKey();
   late bool _needsScrollToComment = widget.commentId != null;
+  // 스크롤 대상은 ScrollController와 함께 화면이 가진다. 알림으로 같은 게시물을 다시 가리키면 바뀐다.
+  late int? _targetCommentId = widget.commentId;
 
   @override
   void initState() {
@@ -144,6 +146,9 @@ class _PostScreenState extends ConsumerState<PostScreen> {
         );
       case FeedLocked():
         _unlockAndRetry();
+      case ScrollToComment(:final commentId):
+        setState(() => _targetCommentId = commentId);
+        _scrollToComment();
     }
   }
 
@@ -282,7 +287,7 @@ class _PostScreenState extends ConsumerState<PostScreen> {
                                               onReply: _startReply,
                                               onEdit: _startEdit,
                                               onDelete: viewModel.deleteComment,
-                                              targetCommentId: widget.commentId,
+                                              targetCommentId: _targetCommentId,
                                               targetKey: _targetCommentKey,
                                             ),
                                           )

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:fake_async/fake_async.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:widyu/core/data/repository/goal/goal_repository.dart';
@@ -14,6 +15,7 @@ import 'package:widyu/core/model/goal/medication/medication.dart';
 import 'package:widyu/core/model/goal/medication/medication_point_result.dart';
 import 'package:widyu/core/model/goal/walk/walk.dart';
 import 'package:widyu/core/util/extension/walk_extension.dart';
+import 'package:widyu/core/util/refresh_signals.dart';
 import 'package:widyu/core/util/walk_tracker.dart';
 import 'package:widyu/feature/goal/main/goal_ui_event.dart';
 import 'package:widyu/feature/goal/main/goal_ui_state.dart';
@@ -95,8 +97,15 @@ void main() {
   late _Tracker tracker;
   late ProviderContainer container;
   late List<GoalUiEvent> events;
+  // 테스트 하나가 끝나면 함께 버려지는 가짜 스트림이라 닫지 않는다.
+  // ignore: close_sinks
+  late StreamController<RemoteMessage> messages;
+  // ignore: close_sinks
+  late StreamController<void> resumes;
 
   setUp(() {
+    messages = StreamController.broadcast();
+    resumes = StreamController.broadcast();
     goal = _Goal();
     point = _Point();
     walk = _Walk();
@@ -108,6 +117,9 @@ void main() {
       walkRepositoryProvider.overrideWithValue(walk),
       medicationRepositoryProvider.overrideWithValue(medication),
       walkTrackerProvider.overrideWithValue(tracker),
+      refreshSignalsProvider.overrideWithValue(
+        RefreshSignals(messages: messages.stream, resumes: resumes.stream),
+      ),
     ]);
     events = [];
   });
@@ -223,6 +235,23 @@ void main() {
     medication.changes.add(null);
     await pumpEventQueue();
     expect(goal.calls, 2);
+    expect(state().isLoading, isFalse);
+  });
+
+  test('건강 일정·걷기 목표 푸시와 앱 재활성화 때 로딩 없이 다시 조회하고, 다른 푸시는 무시한다', () async {
+    listen();
+    await pumpEventQueue();
+    expect(goal.calls, 1);
+
+    goal.pending = Completer();
+    for (final type in ['HEALTH_SCHEDULE_UPDATED', 'WALK_GOAL_CHANGED']) {
+      messages.add(RemoteMessage(data: {'notificationType': type}));
+    }
+    resumes.add(null);
+    messages.add(const RemoteMessage(
+        data: {'notificationType': 'CHEER_MESSAGE_RECEIVED'}));
+    await pumpEventQueue();
+    expect(goal.calls, 4);
     expect(state().isLoading, isFalse);
   });
 

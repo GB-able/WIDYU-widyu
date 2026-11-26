@@ -72,9 +72,45 @@ jobs:
       # CI 검증용이라 arm64만 빌드해 AOT 컴파일을 한 번으로 줄인다.
       - run: flutter build apk --release --target-platform android-arm64
 
+  build-ios:
+    name: Build iOS
+    runs-on: xcode-27
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-flutter
+        with:
+          firebase-options-dart: ${{ secrets.FIREBASE_OPTIONS_DART }}
+          google-services-json: ${{ secrets.GOOGLE_SERVICES_JSON }}
+          dot-env: ${{ secrets.DOT_ENV }}
+      - name: Restore GoogleService-Info.plist
+        env:
+          GOOGLE_SERVICE_INFO_PLIST: ${{ secrets.GOOGLE_SERVICE_INFO_PLIST }}
+        run: |
+          echo "$GOOGLE_SERVICE_INFO_PLIST" | base64 -d > ios/Runner/GoogleService-Info.plist
+          plutil -lint ios/Runner/GoogleService-Info.plist
+      - uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        id: pods-cache
+        with:
+          path: |
+            ios/Pods
+            ~/Library/Caches/CocoaPods
+          key: pods-${{ runner.os }}-xcode-27-${{ hashFiles('ios/Podfile.lock') }}
+          restore-keys: pods-${{ runner.os }}-xcode-27-
+      - run: flutter build ios --release --no-codesign
+      - uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        if: github.event_name == 'push' && steps.pods-cache.outputs.cache-hit != 'true'
+        with:
+          path: |
+            ios/Pods
+            ~/Library/Caches/CocoaPods
+          key: ${{ steps.pods-cache.outputs.cache-primary-key }}
+
   report:
     name: Comment CI results
-    needs: [lint, test, build-apk]
+    needs: [lint, test, build-apk, build-ios]
     # fork PR은 토큰에 쓰기 권한이 없으므로 저장소 내부 PR만 대상으로 한다.
     # 새 push로 취소된 실행은 댓글을 남기지 않는다.
     if: ${{ !cancelled() && github.event.pull_request.head.repo.full_name == github.repository }}
@@ -101,7 +137,7 @@ jobs:
               skipped: '⏭️ 건너뜀',
               timed_out: '⏰ 시간 초과',
             };
-            const rows = ['Lint', 'Test', 'Build APK'].map(name => {
+            const rows = ['Lint', 'Test', 'Build APK', 'Build iOS'].map(name => {
               const job = jobs
                 .filter(job => job.name === name)
                 .sort((a, b) => b.run_attempt - a.run_attempt)[0];

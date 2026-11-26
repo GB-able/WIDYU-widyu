@@ -3,6 +3,7 @@ part of '../home_screen.dart';
 enum _CarouselCard { medication, healthSchedule, walking, album }
 
 class _CarouselMenu extends StatefulWidget {
+  final bool isInitialLoading;
   final bool isLoading;
   final bool hasGoal;
   final List<String> thumbanils;
@@ -13,6 +14,7 @@ class _CarouselMenu extends StatefulWidget {
   final VoidCallback onRouteTap;
 
   const _CarouselMenu({
+    required this.isInitialLoading,
     required this.isLoading,
     required this.hasGoal,
     required this.thumbanils,
@@ -38,6 +40,10 @@ class _CarouselMenu extends StatefulWidget {
 
 class _CarouselMenuState extends State<_CarouselMenu> {
   PageController? _controller;
+
+  // 스켈레톤을 켜고 끄면 Skeletonizer가 감싸는 층이 생기거나 없어진다.
+  // 키로 PageView를 옮겨 붙여, 컨트롤러에 PageView 둘이 동시에 붙지 않게 한다.
+  final _pageViewKey = GlobalKey();
 
   // 무한 순환을 위해 양방향으로 충분한 여유를 둔 시작 페이지
   // 인덱스는 이 페이지를 0으로 두고 계산하므로 카드 수가 몇 개든 첫 인디케이터가 0을 가리킨다
@@ -73,6 +79,13 @@ class _CarouselMenuState extends State<_CarouselMenu> {
   /// [page] 위치에 놓일 카드. 중앙 카드에만 아이콘 바운스를 켠다.
   Widget _cardAt(int page, List<_CarouselCard> cards) {
     final isCentered = page == _currentPage;
+    if (widget.isLoading) {
+      const widths = _CarouselSkeletonCard.titleWidths;
+      return _CarouselSkeletonCard(
+        titleWidth: widths[_indexAt(page, widths.length)],
+        isCentered: isCentered,
+      );
+    }
     return switch (cards[_indexAt(page, cards.length)]) {
       _CarouselCard.medication => _MedicationCard(
           medicationStatus: widget.medicationStatus,
@@ -129,14 +142,17 @@ class _CarouselMenuState extends State<_CarouselMenu> {
             top: _carouselTopPadding,
             bottom: bottomPadding,
           ),
-          decoration: const BoxDecoration(
-            color: MyColor.grey100,
-            borderRadius: BorderRadius.only(
+          decoration: BoxDecoration(
+            color: widget.isInitialLoading ? MyColor.grey50 : MyColor.grey100,
+            borderRadius: const BorderRadius.only(
               topLeft: Radius.circular(_sheetRadius),
               topRight: Radius.circular(_sheetRadius),
             ),
           ),
-          child: _content(controller, cards, cardHeight),
+          child: _HomeSkeletonizer(
+            enabled: widget.isLoading,
+            child: _content(controller, cards, cardHeight),
+          ),
         );
       },
     );
@@ -146,16 +162,8 @@ class _CarouselMenuState extends State<_CarouselMenu> {
       PageController controller, List<_CarouselCard> cards, double cardHeight) {
     final contentHeight = cardHeight + _carouselIndicatorArea;
 
-    // 로딩
-    if (widget.isLoading) {
-      return SizedBox(
-        height: contentHeight,
-        child: const Center(child: CircularProgressIndicator()),
-      );
-    }
-
     // 목표가 존재하지 않음
-    if (!widget.hasGoal) {
+    if (!widget.isLoading && !widget.hasGoal) {
       return SizedBox(
         height: contentHeight,
         child: const _CarouselEmptyView(),
@@ -168,6 +176,7 @@ class _CarouselMenuState extends State<_CarouselMenu> {
         SizedBox(
           height: cardHeight,
           child: PageView.builder(
+            key: _pageViewKey,
             controller: controller,
             clipBehavior: Clip.none,
             onPageChanged: (index) => setState(() => _currentPage = index),
@@ -217,10 +226,13 @@ class _CarouselMenuState extends State<_CarouselMenu> {
           ),
         ),
         const SizedBox(height: _carouselIndicatorGap),
-        _CarouselIndicator(
-          count: cards.length,
-          currentIndex: _indexAt(_currentPage, cards.length),
-        ),
+        if (widget.isLoading)
+          const _CarouselSkeletonIndicator()
+        else
+          _CarouselIndicator(
+            count: cards.length,
+            currentIndex: _indexAt(_currentPage, cards.length),
+          ),
         const SizedBox(height: _carouselBottomPadding),
       ],
     );

@@ -350,6 +350,10 @@ class $AssetsIconsGen {
   SvgGenImage get ic76Profile =>
       const SvgGenImage('assets/icons/ic_76_profile.svg');
 
+  /// File path: assets/icons/ic_7_copyright.svg
+  SvgGenImage get ic7Copyright =>
+      const SvgGenImage('assets/icons/ic_7_copyright.svg');
+
   /// List of all assets
   List<SvgGenImage> get values => [
         ic104Profile,
@@ -431,7 +435,8 @@ class $AssetsIconsGen {
         ic66Warning,
         ic70Kakaotalk,
         ic70Message,
-        ic76Profile
+        ic76Profile,
+        ic7Copyright
       ];
 }
 
