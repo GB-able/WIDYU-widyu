@@ -213,4 +213,24 @@ void main() {
     expect(events.single, isA<SendReplyFailure>());
     expect(state().isBusy, isFalse);
   });
+
+  test('알림으로 다시 열면 새 댓글을 받고, 같은 댓글이어도 매번 이동 이벤트를 보낸다', () async {
+    final viewModel = await loaded();
+    viewModel.startReply(10);
+
+    dataSource.detail =
+        okResponse(feedDetail(_postId, comments: [comment(10), comment(72)]));
+    await viewModel.reopen(commentId: 72);
+    await pumpEventQueue();
+    expect(state().feed!.comments.map((e) => e.commentId), contains(72));
+    expect(state().replyParentId, isNull);
+
+    await viewModel.reopen(commentId: 72);
+    await viewModel.reopen();
+    await pumpEventQueue();
+    expect(
+      events.whereType<ScrollToComment>().map((e) => e.commentId),
+      [72, 72],
+    );
+  });
 }

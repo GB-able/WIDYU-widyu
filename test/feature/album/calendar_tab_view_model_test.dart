@@ -14,13 +14,16 @@ void main() {
   late FakeAlbumDataSource dataSource;
   late AlbumRepositoryImpl repository;
   late ProviderContainer container;
+  late FakeRefreshSignals signals;
 
   setUp(() {
     dataSource = FakeAlbumDataSource();
     repository = fakeAlbumRepository(dataSource);
-    container = ProviderContainer.test(
-      overrides: [albumRepositoryProvider.overrideWithValue(repository)],
-    );
+    signals = FakeRefreshSignals();
+    container = ProviderContainer.test(overrides: [
+      albumRepositoryProvider.overrideWithValue(repository),
+      refreshSignalsProvider.overrideWithValue(signals.value),
+    ]);
   });
 
   // 첫 listen에서 build()가 실행되고 조회는 다음 microtask에 시작한다.
@@ -143,5 +146,33 @@ void main() {
 
     expect(state().selectedDayState.items, [2]);
     expect(state().selectedDayState.hasNext, isFalse);
+  });
+
+  test('새 게시물 푸시를 받으면 달력과 선택한 날 목록을 다시 불러온다', () async {
+    dataSource.feeds = okResponse(page([feed(1)]));
+    listen();
+    await pumpEventQueue();
+
+    dataSource.calendarDays = okResponse([26]);
+    dataSource.feeds = okResponse(page([feed(2), feed(1)]));
+    signals.push('ALBUM_CREATED');
+    await pumpEventQueue();
+    expect(state().daysWithEvents, {26});
+    expect(state().selectedDayState.items, [2, 1]);
+  });
+
+  test('앱 복귀 때 다시 불러오고 무관한 푸시는 무시한다', () async {
+    listen();
+    await pumpEventQueue();
+    dataSource.calls.clear();
+
+    signals.push('WALK_GOAL_CHANGED');
+    await pumpEventQueue();
+    expect(dataSource.calls, isEmpty);
+
+    signals.resume();
+    await pumpEventQueue();
+    expect(
+        dataSource.calls, unorderedEquals(['fetchCalendarDays', 'fetchFeeds']));
   });
 }

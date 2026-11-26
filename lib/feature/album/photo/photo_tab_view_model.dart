@@ -7,6 +7,7 @@ import 'package:widyu/core/model/album/album_cache.dart';
 import 'package:widyu/core/model/album/media.dart';
 import 'package:widyu/core/model/api/api_result.dart';
 import 'package:widyu/core/model/api/infinite_page_result.dart';
+import 'package:widyu/core/model/notification/notification_type.dart';
 import 'package:widyu/core/util/infinite_scroll.dart';
 import 'package:widyu/feature/album/photo/photo_tab_ui_state.dart';
 
@@ -37,6 +38,16 @@ class PhotoTabViewModel extends _$PhotoTabViewModel {
     if (!ref.mounted) return;
     final cacheChanges = _repository.cache.listen(_onCache);
     ref.onDispose(cacheChanges.cancel);
+    final signals = ref.read(refreshSignalsProvider);
+    final pushes = signals.messages.listen((message) {
+      if (NotificationType.anyMatches(
+          NotificationType.newAlbumPosts, message.data)) {
+        unawaited(_scroller.init());
+      }
+    });
+    ref.onDispose(pushes.cancel);
+    final resumes = signals.resumes.listen((_) => unawaited(_scroller.init()));
+    ref.onDispose(resumes.cancel);
     await _scroller.init();
   }
 
