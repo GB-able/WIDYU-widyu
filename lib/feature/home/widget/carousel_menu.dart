@@ -41,6 +41,10 @@ class _CarouselMenu extends StatefulWidget {
 class _CarouselMenuState extends State<_CarouselMenu> {
   PageController? _controller;
 
+  // 스켈레톤을 켜고 끄면 Skeletonizer가 감싸는 층이 생기거나 없어진다.
+  // 키로 PageView를 옮겨 붙여, 컨트롤러에 PageView 둘이 동시에 붙지 않게 한다.
+  final _pageViewKey = GlobalKey();
+
   // 무한 순환을 위해 양방향으로 충분한 여유를 둔 시작 페이지
   // 인덱스는 이 페이지를 0으로 두고 계산하므로 카드 수가 몇 개든 첫 인디케이터가 0을 가리킨다
   static const _carouselInitialPage = 4000;
@@ -172,6 +176,7 @@ class _CarouselMenuState extends State<_CarouselMenu> {
         SizedBox(
           height: cardHeight,
           child: PageView.builder(
+            key: _pageViewKey,
             controller: controller,
             clipBehavior: Clip.none,
             onPageChanged: (index) => setState(() => _currentPage = index),
