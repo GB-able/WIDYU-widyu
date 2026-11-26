@@ -15,6 +15,7 @@ import 'package:widyu/feature/myPage/my_page_ui_event.dart';
 import 'package:widyu/feature/myPage/my_page_view_model.dart';
 import 'package:widyu/gen/assets.gen.dart';
 
+part 'widget/copyright_view.dart';
 part 'widget/header_content.dart';
 part 'widget/information_menu_view.dart';
 part 'widget/management_menu_view.dart';
@@ -75,6 +76,8 @@ class MyPageScreen extends ConsumerWidget {
                       appVersion: uiState.appVersion,
                       onLogout: viewModel.logout,
                     ),
+                    const SizedBox(height: 16),
+                    const _CopyrightView(),
                   ],
                 ),
               ),
