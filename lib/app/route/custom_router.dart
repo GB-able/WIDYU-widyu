@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:go_router/go_router.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:widyu/app/route/app_route.dart';
@@ -10,6 +12,7 @@ import 'package:widyu/app/route/user_session_scope.dart';
 import 'package:widyu/core/log/log.dart';
 import 'package:widyu/core/network/token_manager.dart';
 import 'package:widyu/core/ui/widget/bot_nav.dart';
+import 'package:widyu/core/util/show_toast.dart';
 import 'package:widyu/feature/album/album_screen.dart';
 import 'package:widyu/feature/album/manage_post/manage_post_screen.dart';
 import 'package:widyu/feature/album/post/post_screen.dart';
@@ -37,6 +40,21 @@ class CustomRouter {
   static bool _initialRedirectHandled = false;
 
   static bool _launchedFromDeepLink = false;
+
+  static DateTime? _lastBackPressedAt;
+
+  static void _onBackAtTabRoot(bool didPop) {
+    if (didPop) return;
+    final now = DateTime.now();
+    final last = _lastBackPressedAt;
+    if (last != null && now.difference(last) < const Duration(seconds: 2)) {
+      Fluttertoast.cancel(); // 종료 뒤에 토스트가 남지 않게 한다.
+      SystemNavigator.pop();
+      return;
+    }
+    _lastBackPressedAt = now;
+    showToast('한 번 더 뒤로 가면 앱이 종료돼요.');
+  }
 
   static bool consumeDeepLinkLaunch() {
     final launchedFromDeepLink = _launchedFromDeepLink;
@@ -158,12 +176,18 @@ class CustomRouter {
             pageBuilder: (context, state, navigationShell) => SlidePage(
               key: state.pageKey,
               slideIn: false,
-              child: Stack(
-                alignment: Alignment.bottomCenter,
-                children: [
-                  navigationShell,
-                  BotNav(navigationShell: navigationShell),
-                ],
+              // 탭 첫 화면에서 뒤로 가기를 한 번 누르면 안내만 하고, 2초 안에 다시 누르면 종료한다.
+              // 탭 안에 쌓인 화면(월간 목표)은 안쪽 내비게이터가 먼저 pop하므로 여기까지 오지 않는다.
+              child: PopScope(
+                canPop: false,
+                onPopInvokedWithResult: (didPop, _) => _onBackAtTabRoot(didPop),
+                child: Stack(
+                  alignment: Alignment.bottomCenter,
+                  children: [
+                    navigationShell,
+                    BotNav(navigationShell: navigationShell),
+                  ],
+                ),
               ),
             ),
           ),
