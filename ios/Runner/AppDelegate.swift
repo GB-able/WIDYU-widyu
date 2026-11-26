@@ -13,7 +13,7 @@ struct RunnerIntents: AppIntentsPackage {
 }
 
 @main
-@objc class AppDelegate: FlutterAppDelegate {
+@objc class AppDelegate: FlutterAppDelegate, FlutterImplicitEngineDelegate {
   private let stepBackground = StepBackgroundCoordinator()
   private var messagingChannel: FlutterMethodChannel?
 
@@ -22,22 +22,23 @@ struct RunnerIntents: AppIntentsPackage {
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
     stepBackground.launch()
-    GeneratedPluginRegistrant.register(with: self)
     if #available(iOS 10.0, *) {
       UNUserNotificationCenter.current().delegate = self as? UNUserNotificationCenterDelegate
     }
     SwiftFlutterBackgroundServicePlugin.taskIdentifier = "com.widucorp.widu.refresh"
     UIApplication.shared.setMinimumBackgroundFetchInterval(UIApplication.backgroundFetchIntervalMinimum)
 
-    if let controller = window?.rootViewController as? FlutterViewController {
-      stepBackground.attach(to: controller.binaryMessenger)
-      messagingChannel = FlutterMethodChannel(
-        name: "plugins.flutter.io/firebase_messaging",
-        binaryMessenger: controller.binaryMessenger
-      )
-    }
-
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
+  }
+
+  func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {
+    GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
+    let messenger = engineBridge.applicationRegistrar.messenger()
+    stepBackground.attach(to: messenger)
+    messagingChannel = FlutterMethodChannel(
+      name: "plugins.flutter.io/firebase_messaging",
+      binaryMessenger: messenger
+    )
   }
 
   override func applicationWillTerminate(_ application: UIApplication) {
