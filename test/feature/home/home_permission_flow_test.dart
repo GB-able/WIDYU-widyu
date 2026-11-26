@@ -464,11 +464,13 @@ void main() {
     h.medication.changes.add(null);
     await Future<void>.delayed(Duration.zero);
     expect(h.home.fetches, fetches + 1);
+    expect(h.state.isInitialLoading, isFalse);
   });
 
   group('수명', () {
     test('처음에는 시작 조회 4개를 로딩으로 보여 준다', () {
       final h = _Harness()..open();
+      expect(h.state.isInitialLoading, isTrue);
       expect(h.state.isUserLoading, isTrue);
       expect(h.state.isHeartRateLoading, isTrue);
       expect(h.state.isNotificationLoading, isTrue);
@@ -483,6 +485,7 @@ void main() {
       await h.initialize();
       expect(h.state.name, '박춘자');
       expect(h.state.isUserLoading, isFalse);
+      expect(h.state.isInitialLoading, isFalse);
 
       h.heartRate.connection.add(true);
       await Future<void>.delayed(Duration.zero);

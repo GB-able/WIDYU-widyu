@@ -10,6 +10,8 @@ abstract class HomeUiState with _$HomeUiState {
   const HomeUiState._();
 
   const factory HomeUiState({
+    /// 첫 진입 조회 4개가 모두 끝나기 전. 화면 전체를 스켈레톤으로 보여 준다.
+    required bool isInitialLoading,
     required bool isUserLoading,
     required bool isHeartRateLoading,
     required bool isNotificationLoading,
@@ -45,6 +47,7 @@ abstract class HomeUiState with _$HomeUiState {
       notifications.isEmpty ? null : notifications.first;
 
   factory HomeUiState.init() => const HomeUiState(
+        isInitialLoading: false,
         isUserLoading: false,
         isHeartRateLoading: false,
         isNotificationLoading: false,

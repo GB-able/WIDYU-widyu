@@ -87,6 +87,7 @@ class HomeViewModel extends _$HomeViewModel {
     _medicine = null;
     unawaited(Future.microtask(_start));
     return HomeUiState.init().copyWith(
+      isInitialLoading: true,
       isUserLoading: true,
       isHeartRateLoading: true,
       isNotificationLoading: true,
@@ -96,11 +97,16 @@ class HomeViewModel extends _$HomeViewModel {
 
   void _start() {
     if (!ref.mounted) return;
-    unawaited(_fetchNotification());
-    _observeUser();
+    final userLoading = _observeUser();
     _observeWatchConnection();
-    unawaited(fetchHeartRate());
-    unawaited(_fetchSeniorCard());
+    unawaited(Future.wait([
+      _fetchNotification(),
+      userLoading,
+      fetchHeartRate(),
+      _fetchSeniorCard(),
+    ]).whenComplete(() {
+      if (ref.mounted) state = state.copyWith(isInitialLoading: false);
+    }));
     unawaited(_evaluateBackgroundLocationNotice());
     final medicationChanges = ref
         .read(medicationRepositoryProvider)
@@ -333,7 +339,8 @@ class HomeViewModel extends _$HomeViewModel {
   }
 
   /// 세션에 캐시된 사용자 정보를 구독한다. 프로필에서 이름을 바꾸면 바로 반영된다.
-  void _observeUser() {
+  /// 첫 조회가 끝나면 완료되는 Future를 돌려준다.
+  Future<void> _observeUser() {
     final userRepository = _userRepository;
     // 조회를 먼저 시작해 구독 시 '조회 중'을 받도록 한다.
     final loading = userRepository.ensureLoaded();
@@ -344,9 +351,9 @@ class HomeViewModel extends _$HomeViewModel {
       );
     });
     ref.onDispose(user.cancel);
-    unawaited(loading.then((isLoaded) {
+    return loading.then((isLoaded) {
       if (!isLoaded) _emit(const FetchUserFailure());
-    }));
+    });
   }
 
   /// [silent]이면 로딩 표시와 실패 토스트 없이 갱신한다.
