@@ -33,12 +33,16 @@ class _SafetyCheckContent extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  '괜찮으시면 밀어서 취소해주세요.\n시간 안에 취소하지 않으면\n보호자에게 알려드려요.',
+                  '괜찮으시다면 정해진 시간 안에 버튼을 눌러주세요. 응답이 없을 경우 보호자분께 안부를 전해드려요.'
+                      .split(' ')
+                      .map((word) => word.split('').join('‍'))
+                      .join(' '),
                   textAlign: TextAlign.center,
                   style: MyTypo.body1.copyWith(color: MyColor.white),
+                  overflow: TextOverflow.visible,
                 ),
-                if (deadline case final deadline?)
-                  _RemainingSeconds(deadline: deadline),
+                if (kDebugMode && deadline != null)
+                  _RemainingSeconds(deadline: deadline!),
               ],
             ),
             _SlideButton(onCompleted: onCancel),

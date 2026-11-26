@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -87,8 +88,8 @@ class _SafetyCheckView extends ConsumerWidget {
                   alignment: Alignment.topCenter,
                   child: Padding(
                     padding: const EdgeInsets.only(top: _logoTop),
-                    child: Image.asset('assets/images/img_64_logo.png',
-                        width: _logoSize, fit: BoxFit.contain),
+                    child: Assets.images.img64Logo
+                        .image(width: _logoSize, fit: BoxFit.contain),
                   ),
                 ),
                 Padding(

@@ -12,7 +12,7 @@ class _FamilyContactView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(10),
+      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -21,23 +21,20 @@ class _FamilyContactView extends StatelessWidget {
             style: MyTypo.title3.copyWith(color: MyColor.grey900),
           ),
           const SizedBox(height: 16),
-          Padding(
-            padding: const EdgeInsets.only(right: 12),
-            child: ListView.builder(
-              shrinkWrap: true,
-              itemCount: familyMembers.length,
-              itemBuilder: (context, index) {
-                final member = familyMembers[index];
-                return _FamilyContactContent(
-                  memberId: member.memberId,
-                  name: member.name,
-                  phoneNumber: member.phoneNumber.formattedPhoneNumber,
-                  isRepresentative: member.isRepresentative,
-                  onRepresentativeSelected:
-                      member.isRepresentative ? null : onRepresentativeSelected,
-                );
-              },
-            ),
+          ListView.builder(
+            shrinkWrap: true,
+            itemCount: familyMembers.length,
+            itemBuilder: (context, index) {
+              final member = familyMembers[index];
+              return _FamilyContactContent(
+                memberId: member.memberId,
+                name: member.name,
+                phoneNumber: member.phoneNumber.formattedPhoneNumber,
+                isRepresentative: member.isRepresentative,
+                onRepresentativeSelected:
+                    member.isRepresentative ? null : onRepresentativeSelected,
+              );
+            },
           )
         ],
       ),
