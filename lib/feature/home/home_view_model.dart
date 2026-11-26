@@ -17,6 +17,7 @@ import 'package:widyu/core/model/home/medication_status.dart';
 import 'package:widyu/core/model/home/senior_card.dart';
 import 'package:widyu/core/model/location/user_location.dart';
 import 'package:widyu/core/model/notification/notification_page.dart';
+import 'package:widyu/core/model/notification/notification_type.dart';
 import 'package:widyu/core/model/permission/permission_recovery_prompt.dart';
 import 'package:widyu/core/model/permission/permission_type.dart';
 import 'package:widyu/core/util/background_location_notice_controller.dart';
@@ -41,6 +42,11 @@ enum _CameraPermissionOutcome {
 
 @riverpod
 class HomeViewModel extends _$HomeViewModel {
+  static const _seniorCardTypes = {
+    ...NotificationType.healthScheduleChanges,
+    NotificationType.walkGoalChanged,
+  };
+
   late PermissionRecoveryController _permissionRecoveryController;
 
   final _uiEvent = StreamController<HomeUiEvent>.broadcast();
@@ -101,6 +107,22 @@ class HomeViewModel extends _$HomeViewModel {
         .medicationChanges
         .listen((_) => unawaited(_fetchSeniorCard()));
     ref.onDispose(medicationChanges.cancel);
+    // 보호자가 건강 일정·걷기 목표를 바꿨으면 카드를, 화면에 보이는 푸시가 오면 알림을 다시 받는다.
+    final signals = ref.read(refreshSignalsProvider);
+    final pushes = signals.messages.listen((message) {
+      if (NotificationType.anyMatches(_seniorCardTypes, message.data)) {
+        unawaited(_fetchSeniorCard(silent: true));
+      }
+      if (message.notification != null) {
+        unawaited(_fetchNotification(silent: true));
+      }
+    });
+    ref.onDispose(pushes.cancel);
+    final resumes = signals.resumes.listen((_) {
+      unawaited(_fetchSeniorCard(silent: true));
+      unawaited(_fetchNotification(silent: true));
+    });
+    ref.onDispose(resumes.cancel);
     // 갱신용 타이머
     final medicationTicker = Timer.periodic(
       const Duration(seconds: 30),
@@ -327,8 +349,9 @@ class HomeViewModel extends _$HomeViewModel {
     }));
   }
 
-  Future<void> _fetchNotification() async {
-    state = state.copyWith(isNotificationLoading: true);
+  /// [silent]이면 로딩 표시와 실패 토스트 없이 갱신한다.
+  Future<void> _fetchNotification({bool silent = false}) async {
+    if (!silent) state = state.copyWith(isNotificationLoading: true);
 
     final result = await _notificationRepository.fetchNotificationPage(null);
     if (!ref.mounted) return;
@@ -336,17 +359,18 @@ class HomeViewModel extends _$HomeViewModel {
       final data = (result as Success<NotificationPage>).data;
       final notifications = data.notifications;
       state = state.copyWith(notifications: notifications.toUiModel());
-    } else {
+    } else if (!silent) {
       _emit(const FetchNotificationFailure());
     }
     state = state.copyWith(isNotificationLoading: false);
   }
 
-  Future<void> _fetchSeniorCard() async {
+  /// [silent]이면 로딩 표시와 실패 토스트 없이 갱신한다.
+  Future<void> _fetchSeniorCard({bool silent = false}) async {
     final requestedDay = DateTime.now().walkDate;
     _seniorCardDay = requestedDay;
     final walkRepository = _walkRepository;
-    state = state.copyWith(isSeniorCardLoading: true);
+    if (!silent) state = state.copyWith(isSeniorCardLoading: true);
 
     final result = await _homeRepository.fetchSeniorCard();
     final data = result is Success<SeniorCard> ? result.data : null;
@@ -376,7 +400,7 @@ class HomeViewModel extends _$HomeViewModel {
         healthScheduleLongitude: schedule?.longitude,
       );
       _applyMedicationStatus();
-    } else {
+    } else if (!silent) {
       _emit(const FetchSeniorCardFailure());
     }
     state = state.copyWith(isSeniorCardLoading: false);

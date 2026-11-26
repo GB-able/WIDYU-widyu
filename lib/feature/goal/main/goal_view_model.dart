@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:clock/clock.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:rxdart/rxdart.dart';
 import 'package:widyu/core/data/repository/goal/goal_repository.dart';
 import 'package:widyu/core/data/repository/goal/walk_repository.dart';
 import 'package:widyu/core/data/repository/location/location_repository.dart';
@@ -11,6 +12,7 @@ import 'package:widyu/core/model/api/api_result.dart';
 import 'package:widyu/core/model/goal/goal_home_response.dart';
 import 'package:widyu/core/model/goal/hospital/daily_health_schedule.dart';
 import 'package:widyu/core/model/goal/medication/medication_point_result.dart';
+import 'package:widyu/core/model/notification/notification_type.dart';
 import 'package:widyu/core/util/extension/walk_extension.dart';
 import 'package:widyu/core/util/find_route.dart';
 import 'package:widyu/feature/goal/main/goal_ui_event.dart';
@@ -20,6 +22,11 @@ part 'goal_view_model.g.dart';
 
 @riverpod
 class GoalViewModel extends _$GoalViewModel {
+  static const _refreshTypes = {
+    ...NotificationType.healthScheduleChanges,
+    NotificationType.walkGoalChanged,
+  };
+
   String? _loadedDay;
 
   final _uiEvent = StreamController<GoalUiEvent>.broadcast();
@@ -59,6 +66,14 @@ class GoalViewModel extends _$GoalViewModel {
         .medicationChanges
         .listen((_) => unawaited(refresh(showLoading: false)));
     ref.onDispose(medicationChanges.cancel);
+    // 보호자가 건강 일정·걷기 목표를 바꿨거나, 앱이 다시 열리면 다시 받는다.
+    final signals = ref.read(refreshSignalsProvider);
+    final refreshes = Rx.merge([
+      signals.messages.where((message) =>
+          NotificationType.anyMatches(_refreshTypes, message.data)),
+      signals.resumes,
+    ]).listen((_) => unawaited(refresh(showLoading: false)));
+    ref.onDispose(refreshes.cancel);
     final dayTimer = Timer.periodic(const Duration(seconds: 30), (_) {
       if (_loadedDay != clock.now().walkDate) {
         unawaited(refresh(showLoading: false));
