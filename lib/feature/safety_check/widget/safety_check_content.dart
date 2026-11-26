@@ -43,8 +43,8 @@ class _SafetyCheckContent extends StatelessWidget {
                     style: MyTypo.body1.copyWith(color: MyColor.white),
                   ),
                 ),
-                if (deadline case final deadline?)
-                  _RemainingSeconds(deadline: deadline),
+                if (kDebugMode && deadline != null)
+                  _RemainingSeconds(deadline: deadline!),
               ],
             ),
             _SlideButton(onCompleted: onCancel),
