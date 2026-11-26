@@ -22,6 +22,7 @@ import 'package:widyu/core/ui/widget/bot_nav.dart';
 import 'package:widyu/core/ui/widget/custom_network_image.dart';
 import 'package:widyu/core/ui/widget/medication_reward_dialog.dart';
 import 'package:widyu/core/ui/widget/ui_event_listener.dart';
+import 'package:widyu/core/ui/widget/wave_pulse_effect.dart';
 import 'package:widyu/core/ui/widget/widu_icon.dart';
 import 'package:widyu/core/ui/widget/widyu_permission_dialog.dart';
 import 'package:widyu/core/ui/widget/widyu_text_button.dart';
@@ -40,6 +41,7 @@ part 'widget/dose_countdown.dart';
 part 'widget/health_schedule_card.dart';
 part 'widget/home_app_bar.dart';
 part 'widget/home_greeting_view.dart';
+part 'widget/home_skeleton.dart';
 part 'widget/medication_card.dart';
 part 'widget/mesh_gradient_background.dart';
 part 'widget/notification_view.dart';
@@ -138,12 +140,13 @@ class HomeScreen extends ConsumerWidget {
     final viewModel = ref.watch(homeViewModelProvider.notifier);
     final uiState = ref.watch(homeViewModelProvider);
     final notification = uiState.notification;
+    final isInitialLoading = uiState.isInitialLoading;
 
     return UiEventListener(
       stream: viewModel.uiEvent,
       onEvent: (event) => _handleEvent(context, viewModel, event),
       child: Scaffold(
-        backgroundColor: MyColor.grey100,
+        backgroundColor: isInitialLoading ? MyColor.white : MyColor.grey100,
         extendBodyBehindAppBar: true,
         appBar: const _HomeAppBar(),
         body: LayoutBuilder(
@@ -154,18 +157,20 @@ class HomeScreen extends ConsumerWidget {
 
             return Stack(
               children: [
-                Positioned(
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(minHeight: backgroundMinHeight),
-                    child: Assets.images.img375HomeBackground.image(
-                      fit: BoxFit.cover,
-                      alignment: Alignment.topCenter,
+                if (!isInitialLoading)
+                  Positioned(
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    child: ConstrainedBox(
+                      constraints:
+                          BoxConstraints(minHeight: backgroundMinHeight),
+                      child: Assets.images.img375HomeBackground.image(
+                        fit: BoxFit.cover,
+                        alignment: Alignment.topCenter,
+                      ),
                     ),
                   ),
-                ),
                 Padding(
                   padding: EdgeInsets.only(
                     top: Scaffold.of(context).appBarMaxHeight!,
@@ -175,41 +180,45 @@ class HomeScreen extends ConsumerWidget {
                     children: [
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            if (notification == null)
-                              const SizedBox(height: 28)
-                            else ...[
-                              _NotificationView(
-                                id: notification.notificationId,
-                                icon: notification.icon,
-                                description: notification.description,
-                                onTap: viewModel.markNotificationAsRead,
+                        child: isInitialLoading
+                            ? const _HomeSkeleton()
+                            : Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  if (notification == null)
+                                    const SizedBox(height: 28)
+                                  else ...[
+                                    _NotificationView(
+                                      id: notification.notificationId,
+                                      icon: notification.icon,
+                                      description: notification.description,
+                                      onTap: viewModel.markNotificationAsRead,
+                                    ),
+                                    const SizedBox(height: 10),
+                                  ],
+                                  _HomeGreetingView(
+                                    isLoading: uiState.isUserLoading,
+                                    name: uiState.name,
+                                  ),
+                                  const SizedBox(height: 26),
+                                  _WatchDataView(
+                                    isLoading: uiState.isHeartRateLoading,
+                                    isWearing: uiState.isWearing,
+                                    heartRate: uiState.heartRate,
+                                    status: uiState.heartRateStatus,
+                                    measuredAt: uiState.measuredAt,
+                                    onHeartRateClick: viewModel.fetchHeartRate,
+                                  ),
+                                ],
                               ),
-                              const SizedBox(height: 10),
-                            ],
-                            _HomeGreetingView(
-                              isLoading: uiState.isUserLoading,
-                              name: uiState.name,
-                            ),
-                            const SizedBox(height: 26),
-                            _WatchDataView(
-                              isLoading: uiState.isHeartRateLoading,
-                              isWearing: uiState.isWearing,
-                              heartRate: uiState.heartRate,
-                              status: uiState.heartRateStatus,
-                              measuredAt: uiState.measuredAt,
-                              onHeartRateClick: viewModel.fetchHeartRate,
-                            ),
-                          ],
-                        ),
                       ),
                       Flexible(
                         child: Padding(
                           padding: const EdgeInsets.only(top: 24),
                           child: _CarouselMenu(
-                            isLoading: uiState.isSeniorCardLoading,
+                            isInitialLoading: isInitialLoading,
+                            isLoading:
+                                isInitialLoading || uiState.isSeniorCardLoading,
                             hasGoal: uiState.hasGoal,
                             thumbanils: uiState.thumbnails,
                             medicationStatus: uiState.medicationStatus,

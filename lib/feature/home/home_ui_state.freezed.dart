@@ -14,6 +14,8 @@ T _$identity<T>(T value) => value;
 
 /// @nodoc
 mixin _$HomeUiState {
+  /// 첫 진입 조회 4개가 모두 끝나기 전. 화면 전체를 스켈레톤으로 보여 준다.
+  bool get isInitialLoading;
   bool get isUserLoading;
   bool get isHeartRateLoading;
   bool get isNotificationLoading;
@@ -43,6 +45,8 @@ mixin _$HomeUiState {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is HomeUiState &&
+            (identical(other.isInitialLoading, isInitialLoading) ||
+                other.isInitialLoading == isInitialLoading) &&
             (identical(other.isUserLoading, isUserLoading) ||
                 other.isUserLoading == isUserLoading) &&
             (identical(other.isHeartRateLoading, isHeartRateLoading) ||
@@ -80,6 +84,7 @@ mixin _$HomeUiState {
   @override
   int get hashCode => Object.hash(
       runtimeType,
+      isInitialLoading,
       isUserLoading,
       isHeartRateLoading,
       isNotificationLoading,
@@ -99,7 +104,7 @@ mixin _$HomeUiState {
 
   @override
   String toString() {
-    return 'HomeUiState(isUserLoading: $isUserLoading, isHeartRateLoading: $isHeartRateLoading, isNotificationLoading: $isNotificationLoading, isSeniorCardLoading: $isSeniorCardLoading, notifications: $notifications, name: $name, isWearing: $isWearing, heartRate: $heartRate, heartRateStatus: $heartRateStatus, measuredAt: $measuredAt, thumbnails: $thumbnails, medicationStatus: $medicationStatus, stepGoal: $stepGoal, healthSchedulePlace: $healthSchedulePlace, healthScheduleLatitude: $healthScheduleLatitude, healthScheduleLongitude: $healthScheduleLongitude)';
+    return 'HomeUiState(isInitialLoading: $isInitialLoading, isUserLoading: $isUserLoading, isHeartRateLoading: $isHeartRateLoading, isNotificationLoading: $isNotificationLoading, isSeniorCardLoading: $isSeniorCardLoading, notifications: $notifications, name: $name, isWearing: $isWearing, heartRate: $heartRate, heartRateStatus: $heartRateStatus, measuredAt: $measuredAt, thumbnails: $thumbnails, medicationStatus: $medicationStatus, stepGoal: $stepGoal, healthSchedulePlace: $healthSchedulePlace, healthScheduleLatitude: $healthScheduleLatitude, healthScheduleLongitude: $healthScheduleLongitude)';
   }
 }
 
@@ -110,7 +115,8 @@ abstract mixin class $HomeUiStateCopyWith<$Res> {
       _$HomeUiStateCopyWithImpl;
   @useResult
   $Res call(
-      {bool isUserLoading,
+      {bool isInitialLoading,
+      bool isUserLoading,
       bool isHeartRateLoading,
       bool isNotificationLoading,
       bool isSeniorCardLoading,
@@ -142,6 +148,7 @@ class _$HomeUiStateCopyWithImpl<$Res> implements $HomeUiStateCopyWith<$Res> {
   @pragma('vm:prefer-inline')
   @override
   $Res call({
+    Object? isInitialLoading = null,
     Object? isUserLoading = null,
     Object? isHeartRateLoading = null,
     Object? isNotificationLoading = null,
@@ -160,6 +167,10 @@ class _$HomeUiStateCopyWithImpl<$Res> implements $HomeUiStateCopyWith<$Res> {
     Object? healthScheduleLongitude = freezed,
   }) {
     return _then(_self.copyWith(
+      isInitialLoading: null == isInitialLoading
+          ? _self.isInitialLoading
+          : isInitialLoading // ignore: cast_nullable_to_non_nullable
+              as bool,
       isUserLoading: null == isUserLoading
           ? _self.isUserLoading
           : isUserLoading // ignore: cast_nullable_to_non_nullable
@@ -332,6 +343,7 @@ extension HomeUiStatePatterns on HomeUiState {
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>(
     TResult Function(
+            bool isInitialLoading,
             bool isUserLoading,
             bool isHeartRateLoading,
             bool isNotificationLoading,
@@ -355,6 +367,7 @@ extension HomeUiStatePatterns on HomeUiState {
     switch (_that) {
       case _HomeUiState() when $default != null:
         return $default(
+            _that.isInitialLoading,
             _that.isUserLoading,
             _that.isHeartRateLoading,
             _that.isNotificationLoading,
@@ -392,6 +405,7 @@ extension HomeUiStatePatterns on HomeUiState {
   @optionalTypeArgs
   TResult when<TResult extends Object?>(
     TResult Function(
+            bool isInitialLoading,
             bool isUserLoading,
             bool isHeartRateLoading,
             bool isNotificationLoading,
@@ -414,6 +428,7 @@ extension HomeUiStatePatterns on HomeUiState {
     switch (_that) {
       case _HomeUiState():
         return $default(
+            _that.isInitialLoading,
             _that.isUserLoading,
             _that.isHeartRateLoading,
             _that.isNotificationLoading,
@@ -450,6 +465,7 @@ extension HomeUiStatePatterns on HomeUiState {
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>(
     TResult? Function(
+            bool isInitialLoading,
             bool isUserLoading,
             bool isHeartRateLoading,
             bool isNotificationLoading,
@@ -472,6 +488,7 @@ extension HomeUiStatePatterns on HomeUiState {
     switch (_that) {
       case _HomeUiState() when $default != null:
         return $default(
+            _that.isInitialLoading,
             _that.isUserLoading,
             _that.isHeartRateLoading,
             _that.isNotificationLoading,
@@ -498,7 +515,8 @@ extension HomeUiStatePatterns on HomeUiState {
 
 class _HomeUiState extends HomeUiState {
   const _HomeUiState(
-      {required this.isUserLoading,
+      {required this.isInitialLoading,
+      required this.isUserLoading,
       required this.isHeartRateLoading,
       required this.isNotificationLoading,
       required this.isSeniorCardLoading,
@@ -518,6 +536,9 @@ class _HomeUiState extends HomeUiState {
         _thumbnails = thumbnails,
         super._();
 
+  /// 첫 진입 조회 4개가 모두 끝나기 전. 화면 전체를 스켈레톤으로 보여 준다.
+  @override
+  final bool isInitialLoading;
   @override
   final bool isUserLoading;
   @override
@@ -576,6 +597,8 @@ class _HomeUiState extends HomeUiState {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _HomeUiState &&
+            (identical(other.isInitialLoading, isInitialLoading) ||
+                other.isInitialLoading == isInitialLoading) &&
             (identical(other.isUserLoading, isUserLoading) ||
                 other.isUserLoading == isUserLoading) &&
             (identical(other.isHeartRateLoading, isHeartRateLoading) ||
@@ -613,6 +636,7 @@ class _HomeUiState extends HomeUiState {
   @override
   int get hashCode => Object.hash(
       runtimeType,
+      isInitialLoading,
       isUserLoading,
       isHeartRateLoading,
       isNotificationLoading,
@@ -632,7 +656,7 @@ class _HomeUiState extends HomeUiState {
 
   @override
   String toString() {
-    return 'HomeUiState(isUserLoading: $isUserLoading, isHeartRateLoading: $isHeartRateLoading, isNotificationLoading: $isNotificationLoading, isSeniorCardLoading: $isSeniorCardLoading, notifications: $notifications, name: $name, isWearing: $isWearing, heartRate: $heartRate, heartRateStatus: $heartRateStatus, measuredAt: $measuredAt, thumbnails: $thumbnails, medicationStatus: $medicationStatus, stepGoal: $stepGoal, healthSchedulePlace: $healthSchedulePlace, healthScheduleLatitude: $healthScheduleLatitude, healthScheduleLongitude: $healthScheduleLongitude)';
+    return 'HomeUiState(isInitialLoading: $isInitialLoading, isUserLoading: $isUserLoading, isHeartRateLoading: $isHeartRateLoading, isNotificationLoading: $isNotificationLoading, isSeniorCardLoading: $isSeniorCardLoading, notifications: $notifications, name: $name, isWearing: $isWearing, heartRate: $heartRate, heartRateStatus: $heartRateStatus, measuredAt: $measuredAt, thumbnails: $thumbnails, medicationStatus: $medicationStatus, stepGoal: $stepGoal, healthSchedulePlace: $healthSchedulePlace, healthScheduleLatitude: $healthScheduleLatitude, healthScheduleLongitude: $healthScheduleLongitude)';
   }
 }
 
@@ -645,7 +669,8 @@ abstract mixin class _$HomeUiStateCopyWith<$Res>
   @override
   @useResult
   $Res call(
-      {bool isUserLoading,
+      {bool isInitialLoading,
+      bool isUserLoading,
       bool isHeartRateLoading,
       bool isNotificationLoading,
       bool isSeniorCardLoading,
@@ -678,6 +703,7 @@ class __$HomeUiStateCopyWithImpl<$Res> implements _$HomeUiStateCopyWith<$Res> {
   @override
   @pragma('vm:prefer-inline')
   $Res call({
+    Object? isInitialLoading = null,
     Object? isUserLoading = null,
     Object? isHeartRateLoading = null,
     Object? isNotificationLoading = null,
@@ -696,6 +722,10 @@ class __$HomeUiStateCopyWithImpl<$Res> implements _$HomeUiStateCopyWith<$Res> {
     Object? healthScheduleLongitude = freezed,
   }) {
     return _then(_HomeUiState(
+      isInitialLoading: null == isInitialLoading
+          ? _self.isInitialLoading
+          : isInitialLoading // ignore: cast_nullable_to_non_nullable
+              as bool,
       isUserLoading: null == isUserLoading
           ? _self.isUserLoading
           : isUserLoading // ignore: cast_nullable_to_non_nullable
