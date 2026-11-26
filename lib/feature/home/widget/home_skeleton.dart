@@ -44,7 +44,12 @@ class _HomeSkeleton extends StatelessWidget {
           color: MyColor.grey50,
           borderRadius: BorderRadius.circular(20),
         ),
-        child: child,
+        // 좁은 화면에서만 줄인다. 375 폭에서는 시안 크기 그대로다.
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: Alignment.centerLeft,
+          child: child,
+        ),
       );
 
   @override
