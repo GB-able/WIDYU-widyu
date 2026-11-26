@@ -9,6 +9,7 @@ import 'package:go_router/go_router.dart';
 import 'package:widyu/app/route/app_route.dart';
 import 'package:widyu/core/di/providers.dart';
 import 'package:widyu/core/notification/local_notification_manager.dart';
+import 'package:widyu/feature/album/post/post_view_model.dart';
 
 class NotificationTapListener extends ConsumerStatefulWidget {
   const NotificationTapListener({super.key, required this.child});
@@ -66,7 +67,29 @@ class _NotificationTapListenerState
       );
     }
     final path = data['deepLink'];
-    if (path is String) GoRouter.of(context).openDeepLink(path);
+    if (path is! String) return;
+    final router = GoRouter.of(context);
+    if (_refreshOpenPost(router, path)) return;
+    router.openDeepLink(path);
+  }
+
+  /// 보고 있는 게시물의 알림이면 같은 화면을 또 쌓지 않고 다시 조회한다.
+  /// 게시물 ViewModel은 id별로 공유돼, 새로 쌓은 화면은 다시 조회하지 않기 때문이다.
+  bool _refreshOpenPost(GoRouter router, String path) {
+    final target = Uri.tryParse(path);
+    // push한 화면의 경로는 currentConfiguration.uri가 아니라 state.uri에 있다.
+    final current = router.state.uri;
+    final postId = target?.queryParameters['postId'];
+    if (target?.path != AppRoute.post.path ||
+        current.path != AppRoute.post.path ||
+        postId == null ||
+        postId != current.queryParameters['postId']) {
+      return false;
+    }
+    final id = int.tryParse(postId);
+    if (id == null) return false;
+    unawaited(ref.read(postViewModelProvider(id).notifier).retry());
+    return true;
   }
 
   @override
